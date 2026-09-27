@@ -774,27 +774,104 @@ function renderTelegramOnboarding() {
   const onboarding = state.onboarding;
   const configured = Boolean(onboarding?.telegram?.botConfigured);
   const linked = Boolean(onboarding?.telegram?.linked);
-  const form = document.querySelector('[data-telegram-onboarding-form]');
-  const issue = document.querySelector('[data-telegram-issue-code]');
+  const step = linked ? 2 : configured ? 1 : 0;
+
+  // Bot card
+  const avatar = document.querySelector('[data-tg-avatar]');
+  const name = document.querySelector('[data-tg-name]');
+  const meta = document.querySelector('[data-tg-meta]');
+  const status = document.querySelector('[data-tg-status]');
+  const botUsername = onboarding?.telegram?.bot?.username;
+  if (avatar) {
+    avatar.textContent = botUsername ? botUsername.slice(0, 1).toUpperCase() : 'Z';
+    avatar.classList.toggle('tg-bot__avatar--on', linked);
+  }
+  if (name) name.textContent = botUsername ? `@${botUsername}` : linked ? 'Telegram-бот' : 'Ещё не настроен';
+  if (meta) meta.textContent = configured ? (linked ? 'Работает и принимает события' : 'Токен сохранён в vault') : 'Создайте бота через @BotFather';
+  if (status) {
+    status.className = `tg-bot__status${linked ? ' tg-bot__status--on' : configured ? ' tg-bot__status--wait' : ''}`;
+    status.textContent = linked ? 'Онлайн' : configured ? 'Ожидает /start' : 'Не готов';
+  }
+
+  // Progress steps
+  document.querySelectorAll('[data-tg-step]').forEach((stepEl) => {
+    const index = Number(stepEl.dataset.tgStep);
+    stepEl.classList.toggle('is-done', index < step);
+    stepEl.classList.toggle('is-active', index === step);
+    stepEl.querySelector('b').textContent = index < step ? '✓' : String(index + 1);
+  });
+
+  // Health pill
   const health = document.querySelector('[data-telegram-health]');
-  const stateLabel = document.querySelector('[data-telegram-state]');
-  const botName = document.querySelector('[data-telegram-bot-name]');
-  const message = document.querySelector('[data-telegram-message]');
-  if (form) form.hidden = configured;
-  if (issue) issue.hidden = !configured || linked;
   if (health) {
     health.className = `health-pill ${linked ? 'health-pill--active' : 'health-pill--waiting'}`;
     health.innerHTML = `<i></i> ${linked ? 'Подключён' : configured ? 'Ожидает /start' : 'Не подключён'}`;
   }
-  if (stateLabel) stateLabel.textContent = linked ? 'Telegram подключён' : configured ? 'Bot Token сохранён' : authState.user ? 'Ожидает Bot Token' : 'Ожидает входа';
-  if (botName) botName.textContent = onboarding?.telegram?.bot?.username ? `@${onboarding.telegram.bot.username}` : 'Бот ещё не настроен';
-  if (message) message.textContent = linked ? 'Привязка подтверждена. Теперь можно включить Telegram-уведомления в каталоге плагинов.' : configured ? 'Получите код и отправьте боту команду /start с этим кодом.' : authState.user ? 'Создайте бота через BotFather и вставьте Bot Token.' : 'Войдите в аккаунт, чтобы начать подключение.';
+
+  // Form / link / done visibility
+  const form = document.querySelector('[data-telegram-onboarding-form]');
+  const linkBlock = document.querySelector('[data-telegram-link-code]');
+  const doneBlock = document.querySelector('[data-tg-done]');
+  const waiting = document.querySelector('[data-tg-waiting]');
+  if (form) form.hidden = configured;
+  if (linkBlock) linkBlock.hidden = !configured || linked;
+  if (doneBlock) doneBlock.hidden = !linked;
+  if (waiting) waiting.hidden = linked;
+
+  // Deep link with code
+  const deepLink = document.querySelector('[data-tg-deep-link]');
+  if (deepLink && serviceBotUsername) {
+    const code = document.querySelector('[data-tg-code]')?.textContent?.trim();
+    deepLink.href = code ? `https://t.me/${serviceBotUsername}?start=${code}` : `https://t.me/${serviceBotUsername}`;
+  } else if (deepLink) {
+    deepLink.style.display = 'none';
+  }
+
+  const hint = document.querySelector('[data-tg-hint]');
+  if (hint) hint.textContent = linked
+    ? 'Всё готово: бот принимает события. Включите уведомления в каталоге плагинов.'
+    : configured
+      ? 'Шаг 2 из 3: отправьте боту ZetSlay команду /start с кодом в любое время в течение 10 минут.'
+      : 'Шаг 1 из 3: вставьте Bot Token от @BotFather в защищённое поле.';
+
+  const message = document.querySelector('[data-telegram-message]');
+  if (message) message.textContent = authState.user ? '' : 'Войдите в аккаунт, чтобы подключить бота.';
+}
+
+// Service bot username for deep links (server tells it via onboarding status or ?bot= override)
+let serviceBotUsername = new URLSearchParams(location.search).get('bot') || '';
+async function loadServiceBotUsername() {
+  if (serviceBotUsername || !authState.token || !API_BASE_URL) return;
+  try {
+    const onboarding = await apiRequest('/api/v1/onboarding', { authenticated: true });
+    serviceBotUsername = onboarding?.serviceBot || '';
+  } catch { /* ignore */ }
 }
 
 async function loadOnboarding() {
   if (!authState.token || !API_BASE_URL) { renderTelegramOnboarding(); return; }
   state.onboarding = await apiRequest('/api/v1/onboarding', { authenticated: true });
+  await loadServiceBotUsername();
   renderTelegramOnboarding();
+}
+
+let telegramLinkTimer = null;
+function stopTelegramLinkPolling() {
+  if (telegramLinkTimer) { clearInterval(telegramLinkTimer); telegramLinkTimer = null; }
+}
+
+function startTelegramLinkPolling() {
+  stopTelegramLinkPolling();
+  telegramLinkTimer = setInterval(async () => {
+    try {
+      state.onboarding = await apiRequest('/api/v1/onboarding', { authenticated: true });
+      if (state.onboarding?.telegram?.linked) {
+        stopTelegramLinkPolling();
+        renderTelegramOnboarding();
+        showToast('Telegram привязан к аккаунту', 'success');
+      }
+    } catch { /* ignore */ }
+  }, 3000);
 }
 
 async function issueTelegramCode() {
@@ -805,26 +882,43 @@ async function issueTelegramCode() {
     const block = document.querySelector('[data-telegram-link-code]');
     if (block) {
       block.hidden = false;
-      block.querySelector('span').textContent = result.code;
+      const codeNode = block.querySelector('[data-tg-code]');
+      if (codeNode) codeNode.textContent = result.code;
     }
     renderTelegramOnboarding();
+    startTelegramLinkPolling();
     showToast('Одноразовый Telegram-код создан', 'success');
   } catch (error) {
     showToast(humanError(error), 'error');
   }
 }
 
+async function copyTelegramCode() {
+  const code = document.querySelector('[data-tg-code]')?.textContent?.trim();
+  if (!code) return;
+  try {
+    await navigator.clipboard.writeText(`/start ${code}`);
+    showToast('Код скопирован', 'success');
+  } catch {
+    showToast(`/start ${code}`);
+  }
+}
+
 async function submitTelegramOnboarding(form) {
   if (!authState.user) { setAuthModal(true); return; }
   const button = form.querySelector('button[type="submit"]');
+  const statusNode = form.querySelector('[data-tg-token-status]');
   const token = new FormData(form).get('token');
   button.disabled = true;
+  if (statusNode) statusNode.className = 'tg-token-status'; statusNode && (statusNode.textContent = 'Проверяем через Telegram API…');
   try {
     state.onboarding = await apiRequest('/api/v1/onboarding/telegram/bot', { method: 'POST', authenticated: true, body: { token } });
     form.reset();
+    if (statusNode) { statusNode.className = 'tg-token-status tg-token-status--ok'; statusNode.textContent = 'Токен принят. Бот подключён.'; }
     renderTelegramOnboarding();
     await issueTelegramCode();
   } catch (error) {
+    if (statusNode) { statusNode.className = 'tg-token-status tg-token-status--fail'; statusNode.textContent = humanError(error); }
     showToast(humanError(error), 'error');
   } finally {
     button.disabled = false;
@@ -1309,6 +1403,7 @@ function bindInteractions() {
     if (event.target.closest('[data-store-runtime]')) { setStoreRuntime(); return; }
     if (event.target.closest('[data-sync-content]')) { syncStoreContent().catch(() => {}); return; }
     if (event.target.closest('[data-telegram-issue-code]')) { issueTelegramCode(); return; }
+    if (event.target.closest('[data-tg-copy]')) { copyTelegramCode(); return; }
     if (event.target.closest('[data-close-connect]') || event.target.matches('.modal-backdrop')) {
       setModal(false);
       return;
