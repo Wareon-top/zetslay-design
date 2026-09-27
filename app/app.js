@@ -74,7 +74,8 @@ const iconNames = {
 };
 const icon = (name) => `<svg aria-hidden="true"><use href="#i-${iconNames[name] || name}"></use></svg>`;
 const byId = (id) => document.getElementById(id);
-const API_BASE_URL = (window.ZENLOT_API_BASE_URL || document.querySelector('meta[name="zenlot-api-base-url"]')?.content || '').replace(/\/$/, '');
+const localApi = ['localhost', '127.0.0.1'].includes(location.hostname) ? 'http://localhost:3000' : '';
+const API_BASE_URL = (window.ZENLOT_API_BASE_URL || localApi || document.querySelector('meta[name="zenlot-api-base-url"]')?.content || '').replace(/\/$/, '');
 const authState = { mode: 'login', token: sessionStorage.getItem('zenlot_session') || '', user: null };
 
 async function apiRequest(path, { method = 'GET', body, authenticated = false } = {}) {
@@ -166,6 +167,7 @@ async function submitAuth(form) {
     sessionStorage.setItem('zenlot_session', session.token);
     renderAuthState();
     await loadPluginCatalog().catch(() => {});
+    await refreshConnectionState();
     showToast('Вход выполнен через защищённый API', 'success');
   } catch (error) {
     message.classList.add('is-error');
@@ -179,7 +181,7 @@ async function submitAuth(form) {
 
 async function restoreSession() {
   document.querySelector('[data-api-state]').textContent = API_BASE_URL || 'не настроен';
-  if (!authState.token) { renderAuthState(); return; }
+  if (!authState.token) { renderAuthState(); renderConnectionSummary(); return; }
   try {
     const context = await apiRequest('/api/v1/me', { authenticated: true });
     authState.user = context.user;
@@ -188,7 +190,11 @@ async function restoreSession() {
     sessionStorage.removeItem('zenlot_session');
   }
   renderAuthState();
-  if (authState.user) await loadPluginCatalog().catch(() => {});
+  renderConnectionSummary();
+  if (authState.user) {
+    await loadPluginCatalog().catch(() => {});
+    await refreshConnectionState();
+  }
 }
 
 function resetPluginCatalog() {
@@ -379,52 +385,95 @@ function showToast(message, tone = 'default') {
   }, 3100);
 }
 
-let connectionStep = 0;
-const connectionDemoSteps = [
-  {
-    icon: 'card',
-    title: 'Тариф активен',
-    text: 'Подключение магазина доступно после покупки любого тарифа. В демонстрации активирован тариф «Про».',
-    points: ['Проверка подписки на backend', 'Лимиты модулей из тарифа', 'Один магазин в первом MVP'],
-    action: 'Перейти к Telegram',
-  },
-  {
-    icon: 'send',
-    title: 'Привязка Telegram-бота',
-    text: 'Bot Token добавляется на защищённом сайте. После /start бот принимает одноразовый код из кабинета и привязывается к workspace.',
-    points: ['Создание бота через BotFather', 'Одноразовый код с коротким сроком', 'Никаких FunPay-секретов в сообщениях'],
-    action: 'Смоделировать привязку',
-  },
-  {
-    icon: 'lock',
-    title: 'FunPay и закреплённый прокси',
-    text: 'Golden Key и прокси вводятся по очереди только в защищённом кабинете. В публичном прототипе реальные поля намеренно отключены.',
-    points: ['Шифрование до сохранения', 'Read-only проверка через прокси', 'Остановка при CAPTCHA или потере авторизации'],
-    action: 'Запустить демо-проверку',
-  },
-  {
-    icon: 'check',
-    title: 'Магазин подключён',
-    text: 'Магазин FunPay успешно подключён к сервису и боту. Приятного пользования.',
-    points: ['Доступен безопасный режим чтения', 'Управление на сайте и в Telegram', 'Автоматические действия пока заблокированы'],
-    action: 'Открыть управление',
-  },
-];
+let connectionState = null;
+let connectionCode = '';
 
-function renderConnectionDemo() {
+function renderConnectionSummary() {
+  const configured = connectionState?.funPay;
+  const summary = document.querySelector('[data-connect-summary]');
+  if (!summary) return;
+  summary.textContent = !authState.token ? 'Войдите, чтобы проверить статус подключений.'
+    : !connectionState ? 'Статус подключений пока недоступен.'
+      : connectionState.state === 'connected_read_only' ? 'Проверка соединения завершена. Доступно только чтение.'
+        : connectionState.state === 'blocked' ? 'Соединение остановлено; откройте мастер для причины.'
+          : 'Подключение не завершено; откройте мастер для следующего шага.';
+  for (const [selector, present] of [
+    ['[data-connect-key-state]', configured?.credentialConfigured],
+    ['[data-connect-proxy-state]', configured?.proxyConfigured],
+    ['[data-connect-bot-state]', connectionState?.telegram?.botConfigured]
+  ]) {
+    const item = document.querySelector(selector);
+    if (item) item.textContent = !connectionState ? 'Неизвестно' : present ? 'Сохранён' : 'Не добавлен';
+  }
+}
+
+function renderConnectionState() {
   const modal = document.querySelector('.connect-modal');
   if (!modal) return;
-  const step = connectionDemoSteps[connectionStep];
-  const body = modal.querySelector('.connect-modal__body');
-  const action = modal.querySelector('[data-connect-next]');
+  const stateName = connectionState?.state || '';
+  const stepName = stateName === 'plan_required' ? 'plan'
+    : ['telegram_bot_required', 'telegram_link_pending'].includes(stateName) ? 'telegram'
+      : stateName === 'connected_read_only' ? 'complete' : 'funpay';
+  const stepNumber = { plan: 0, telegram: 1, funpay: 2, complete: 3 }[stepName];
   modal.querySelectorAll('.connect-progress > span').forEach((item, index) => {
-    item.classList.toggle('is-active', index === connectionStep);
-    item.classList.toggle('is-complete', index < connectionStep);
+    item.classList.toggle('is-active', index === stepNumber);
+    item.classList.toggle('is-complete', index < stepNumber);
   });
-  if (body) {
-    body.innerHTML = `<span class="connect-illustration${connectionStep === 3 ? ' connect-illustration--success' : ''}">${icon(step.icon)}<i></i></span><h3>${step.title}</h3><p>${step.text}</p><ul>${step.points.map((point) => `<li>${icon('check')} ${point}</li>`).join('')}</ul>`;
+  modal.querySelectorAll('[data-connect-step]').forEach((item) => { item.hidden = item.dataset.connectStep !== stepName; });
+  modal.querySelector('[data-connect-bot-form]').hidden = stateName !== 'telegram_bot_required';
+  modal.querySelector('[data-connect-issue-code]').hidden = stateName !== 'telegram_link_pending';
+  modal.querySelector('[data-connect-link]').hidden = stateName !== 'telegram_link_pending' || !connectionCode;
+  modal.querySelector('[data-connect-code]').textContent = connectionCode ? `/start ${connectionCode}` : '';
+  modal.querySelector('[data-connect-key-form]').hidden = stateName !== 'funpay_key_required';
+  modal.querySelector('[data-connect-proxy-form]').hidden = stateName !== 'proxy_required';
+  modal.querySelector('[data-connect-preflight]').hidden = stateName !== 'verifying_read_only';
+  modal.querySelector('[data-connect-store]').textContent = connectionState?.funPay?.store?.displayName || 'Магазин FunPay';
+  const status = modal.querySelector('[data-connect-status]');
+  status.classList.toggle('is-error', stateName === 'blocked');
+  status.textContent = stateName === 'blocked'
+    ? `Соединение остановлено: ${connectionState.blockReason || 'требуется проверка'}.`
+    : stateName === 'connected_read_only'
+      ? 'Магазин подключён в режиме чтения. Живые действия FunPay отключены.'
+      : stateName === 'telegram_link_pending'
+        ? 'Ожидаем подтверждения в вашем Telegram-боте.'
+        : stateName === 'verifying_read_only'
+          ? 'Данные сохранены. Запустите проверку соединения.'
+          : 'Выполните текущий шаг подключения.';
+  renderConnectionSummary();
+}
+
+async function refreshConnectionState() {
+  const status = document.querySelector('[data-connect-status]');
+  status.textContent = 'Проверяем состояние…';
+  try {
+    connectionState = await apiRequest('/api/v1/onboarding', { authenticated: true });
+    if (connectionState.state !== 'telegram_link_pending') connectionCode = '';
+    renderConnectionState();
+  } catch (error) {
+    status.textContent = error.message;
+    status.classList.add('is-error');
+    connectionState = null;
+    renderConnectionSummary();
   }
-  if (action) action.innerHTML = `${step.action} ${icon('chevron-right')}`;
+}
+
+async function submitConnection(path, body, source = null) {
+  const status = document.querySelector('[data-connect-status]');
+  const button = source?.querySelector('button[type="submit"]') || source;
+  if (button) button.disabled = true;
+  status.textContent = 'Сохраняем и проверяем…';
+  try {
+    await apiRequest(path, { method: 'POST', body, authenticated: true });
+    await refreshConnectionState();
+  } catch (error) {
+    status.textContent = error.message;
+    status.classList.add('is-error');
+    await refreshConnectionState();
+    status.textContent = error.message;
+    status.classList.add('is-error');
+  } finally {
+    if (button) button.disabled = false;
+  }
 }
 
 function setModal(open) {
@@ -432,9 +481,16 @@ function setModal(open) {
   const backdrop = document.querySelector('.modal-backdrop');
   if (!modal) return;
   if (open) {
+    if (!authState.token) {
+      showToast('Войдите в защищённый кабинет для подключения магазина');
+      setAuthModal(true);
+      return;
+    }
     modal.hidden = false;
-    connectionStep = 0;
-    renderConnectionDemo();
+    refreshConnectionState();
+  } else {
+    modal.querySelectorAll('input[type="password"]').forEach((input) => { input.value = ''; });
+    connectionCode = '';
   }
   requestAnimationFrame(() => {
     modal.classList.toggle('is-open', open);
@@ -458,7 +514,7 @@ function bindInteractions() {
     if (event.target.closest('[data-auth-close]')) { setAuthModal(false); return; }
     if (event.target.closest('[data-auth-logout]')) {
       apiRequest('/api/v1/auth/logout', { method: 'POST', authenticated: true }).catch(() => {}).finally(() => {
-        authState.token = ''; authState.user = null; sessionStorage.removeItem('zenlot_session'); resetPluginCatalog(); renderAuthState(); setAuthMode('login');
+        setModal(false); connectionState = null; authState.token = ''; authState.user = null; sessionStorage.removeItem('zenlot_session'); resetPluginCatalog(); renderAuthState(); renderConnectionSummary(); setAuthMode('login');
       });
       return;
     }
@@ -483,6 +539,27 @@ function bindInteractions() {
     }
     if (event.target.closest('[data-close-connect]') || event.target.matches('.modal-backdrop')) {
       setModal(false);
+      return;
+    }
+    if (event.target.closest('[data-connect-refresh]')) {
+      refreshConnectionState();
+      return;
+    }
+    if (event.target.closest('[data-connect-demo-plan]')) {
+      submitConnection('/api/v1/onboarding/demo-plan', {}, event.target.closest('button'));
+      return;
+    }
+    if (event.target.closest('[data-connect-issue-code]')) {
+      const button = event.target.closest('button');
+      button.disabled = true;
+      apiRequest('/api/v1/onboarding/telegram/link-code', { method: 'POST', authenticated: true })
+        .then((result) => { connectionCode = result.code; connectionState = result.onboarding; renderConnectionState(); })
+        .catch((error) => { document.querySelector('[data-connect-status]').textContent = error.message; })
+        .finally(() => { button.disabled = false; });
+      return;
+    }
+    if (event.target.closest('[data-connect-preflight]')) {
+      submitConnection('/api/v1/onboarding/funpay/preflight', {}, event.target.closest('button'));
       return;
     }
 
@@ -554,16 +631,20 @@ function bindInteractions() {
     }
   });
 
-  document.querySelector('[data-connect-next]')?.addEventListener('click', () => {
-    if (connectionStep < connectionDemoSteps.length - 1) {
-      connectionStep += 1;
-      renderConnectionDemo();
-      showToast(`Шаг ${connectionStep + 1} из ${connectionDemoSteps.length}`);
-      return;
-    }
-    setModal(false);
-    showToast('Демо-магазин подключён в безопасном read-only режиме.', 'success');
-  });
+  for (const [selector, path, field] of [
+    ['[data-connect-bot-form]', '/api/v1/onboarding/telegram/bot', 'token'],
+    ['[data-connect-key-form]', '/api/v1/onboarding/funpay/key', 'goldenKey'],
+    ['[data-connect-proxy-form]', '/api/v1/onboarding/funpay/proxy', 'proxyUrl']
+  ]) {
+    document.querySelector(selector)?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      if (!form.reportValidity()) return;
+      const value = form.elements[field].value.trim();
+      form.reset();
+      submitConnection(path, { [field]: value }, form);
+    });
+  }
 
   byId('send-message')?.addEventListener('click', () => {
     const composer = byId('message-composer');
