@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="theme-color" content="#08090d">
     <meta name="robots" content="noindex,nofollow">
-    <meta name="zenlot-api-base-url" content="http://localhost:3000">
+    <meta name="zenlot-api-base-url" content="https://api.zetslay.pro">
     <title>ZenLot Control — личный кабинет</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -294,7 +294,7 @@
 
           <section class="view" data-view="security" aria-labelledby="security-title">
             <div class="view-heading view-heading--compact"><div><span class="eyebrow">Access / Connections</span><h1 id="security-title">Безопасность</h1><p>Доступ к аккаунту, подключения и критические действия.</p></div><span class="health-pill health-pill--active"><i></i> Защита активна</span></div>
-            <div class="security-grid"><section class="panel security-card"><div class="security-card__icon"><svg><use href="#i-lock"/></svg></div><div><span class="panel-label">Account access</span><h2>Вход и сессии</h2><p>Пароль обновлён 12 дней назад. Активна одна сессия.</p></div><div class="security-row"><span><strong>Двухфакторная защита</strong><small>Дополнительное подтверждение входа</small></span><button class="toggle" type="button" role="switch" aria-checked="false" aria-label="Двухфакторная защита"></button></div><div class="security-row"><span><strong>Текущая сессия</strong><small>Chrome · Алматы · сейчас</small></span><span class="table-status table-status--success">Активна</span></div><button class="full-width-link" type="button">Управление сессиями <svg><use href="#i-chevron"/></svg></button></section><section class="panel security-card"><div class="security-card__icon security-card__icon--violet"><svg><use href="#i-shield"/></svg></div><div><span class="panel-label">Secret vault</span><h2>Подключения</h2><p>Секреты не добавлены. Они будут зашифрованы и доступны только Connector Worker.</p></div><div class="connection-secret"><span><i class="node"></i><strong>FunPay Golden Key</strong></span><b>Не добавлен</b></div><div class="connection-secret"><span><i class="node"></i><strong>Закреплённый прокси</strong></span><b>Не добавлен</b></div><div class="connection-secret"><span><i class="node"></i><strong>Telegram Bot Token</strong></span><b>Не добавлен</b></div><button class="button button--primary button--wide" type="button" data-open-connect>Настроить подключения</button></section></div>
+            <div class="security-grid"><section class="panel security-card"><div class="security-card__icon"><svg><use href="#i-lock"/></svg></div><div><span class="panel-label">Account access</span><h2>Вход и сессии</h2><p>Пароль обновлён 12 дней назад. Активна одна сессия.</p></div><div class="security-row"><span><strong>Двухфакторная защита</strong><small>Дополнительное подтверждение входа</small></span><button class="toggle" type="button" role="switch" aria-checked="false" aria-label="Двухфакторная защита"></button></div><div class="security-row"><span><strong>Текущая сессия</strong><small>Chrome · Алматы · сейчас</small></span><span class="table-status table-status--success">Активна</span></div><button class="full-width-link" type="button">Управление сессиями <svg><use href="#i-chevron"/></svg></button></section><section class="panel security-card"><div class="security-card__icon security-card__icon--violet"><svg><use href="#i-shield"/></svg></div><div><span class="panel-label">Secret vault</span><h2>Подключения</h2><p data-connect-summary>Войдите, чтобы проверить статус подключений.</p></div><div class="connection-secret"><span><i class="node"></i><strong>FunPay Golden Key</strong></span><b data-connect-key-state>Неизвестно</b></div><div class="connection-secret"><span><i class="node"></i><strong>Закреплённый прокси</strong></span><b data-connect-proxy-state>Неизвестно</b></div><div class="connection-secret"><span><i class="node"></i><strong>Telegram Bot Token</strong></span><b data-connect-bot-state>Неизвестно</b></div><button class="button button--primary button--wide" type="button" data-open-connect>Настроить подключения</button></section></div>
             <section class="danger-zone panel"><div><span class="panel-label">Danger zone</span><h2>Критические действия</h2><p>Эти операции останавливают работу магазина и требуют повторного подтверждения.</p></div><div><button type="button" data-toast="Демо: все автоматизации остановлены">Остановить автопилот</button><button type="button" data-toast="Отключение магазина будет доступно после реального подключения">Отключить магазин</button><button type="button" data-toast="Удаление аккаунта требует отдельного защищённого процесса">Удалить аккаунт</button></div></section>
           </section>
         </div>
@@ -303,10 +303,40 @@
 
     <div class="modal-backdrop" data-modal-backdrop></div>
     <section class="connect-modal" role="dialog" aria-modal="true" aria-labelledby="connect-modal-title" hidden>
-      <header><div><span class="panel-label">Connection wizard / Demo</span><h2 id="connect-modal-title">Подключение магазина</h2></div><button class="icon-button" type="button" aria-label="Закрыть" data-close-connect><svg><use href="#i-close"/></svg></button></header>
+      <header><div><span class="panel-label">Connection wizard / Read-only</span><h2 id="connect-modal-title">Подключение магазина</h2></div><button class="icon-button" type="button" aria-label="Закрыть" data-close-connect><svg><use href="#i-close"/></svg></button></header>
       <div class="connect-progress"><span class="is-active"><b>01</b><small>Тариф</small></span><i></i><span><b>02</b><small>Telegram</small></span><i></i><span><b>03</b><small>FunPay</small></span><i></i><span><b>04</b><small>Готово</small></span></div>
-      <div class="connect-modal__body"><span class="connect-illustration"><svg><use href="#i-lock"/></svg><i></i></span><h3>Безопасное подключение</h3><p>ZenLot сначала проверит подписку и Telegram, затем предложит защищённые поля для Golden Key и прокси. Секреты никогда не отправляются сообщениями.</p><ul><li><svg><use href="#i-check"/></svg> Тариф «Про» активен</li><li><svg><use href="#i-check"/></svg> Одноразовая привязка Telegram</li><li><svg><use href="#i-check"/></svg> Read-only проверка перед автоматизацией</li></ul></div>
-      <footer><button class="button button--ghost" type="button" data-close-connect>Отмена</button><button class="button button--primary" type="button" data-connect-next>Начать подключение <svg><use href="#i-chevron"/></svg></button></footer>
+      <div class="connect-modal__body">
+        <p class="connect-status" data-connect-status role="status" aria-live="polite">Загружаем состояние подключения…</p>
+        <section class="connect-step" data-connect-step="plan" hidden>
+          <h3>Нужен активный тариф</h3><p>Сначала активируйте тариф ZetSlay. На тестовом стенде доступна демо-активация.</p>
+          <button class="button button--primary" type="button" data-connect-demo-plan>Активировать тестовый тариф</button>
+        </section>
+        <section class="connect-step" data-connect-step="telegram" hidden>
+          <h3>Привяжите своего Telegram-бота</h3><p>Токен принимается только в кабинете и сразу сохраняется в зашифрованном vault.</p>
+          <form data-connect-bot-form class="connect-form">
+            <label>Bot Token<input type="password" name="token" autocomplete="off" minlength="10" maxlength="256" required></label>
+            <button class="button button--primary" type="submit">Сохранить токен</button>
+          </form>
+          <div class="connect-link" data-connect-link hidden><p>Отправьте своему боту команду <code data-connect-code></code>. Код действует ограниченное время.</p><button class="button button--ghost" type="button" data-connect-refresh>Проверить привязку</button></div>
+          <button class="button button--primary" type="button" data-connect-issue-code hidden>Получить одноразовый код</button>
+        </section>
+        <section class="connect-step" data-connect-step="funpay" hidden>
+          <h3>FunPay и закреплённый прокси</h3><p>Только ваш аккаунт FunPay. Сначала сохраняется Golden Key, затем прокси; проверка выполняется в режиме чтения.</p>
+          <form data-connect-key-form class="connect-form" hidden>
+            <label>Golden Key<input type="password" name="goldenKey" autocomplete="off" minlength="12" maxlength="4096" required></label>
+            <button class="button button--primary" type="submit">Сохранить Golden Key</button>
+          </form>
+          <form data-connect-proxy-form class="connect-form" hidden>
+            <label>HTTP(S)-прокси<input type="password" name="proxyUrl" autocomplete="off" placeholder="http://user:password@host:port" required></label>
+            <button class="button button--primary" type="submit">Сохранить прокси</button>
+          </form>
+          <button class="button button--primary" type="button" data-connect-preflight hidden>Проверить соединение</button>
+        </section>
+        <section class="connect-step" data-connect-step="complete" hidden>
+          <h3>Подключение проверено</h3><p data-connect-store></p><p>Доступен экспериментальный режим чтения. Ответы в FunPay и изменения магазина не выполняются.</p>
+        </section>
+      </div>
+      <footer><button class="button button--ghost" type="button" data-close-connect>Закрыть</button><button class="button button--ghost" type="button" data-connect-refresh>Обновить статус</button></footer>
     </section>
 
     <div class="auth-backdrop" data-auth-close></div>
