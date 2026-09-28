@@ -3,84 +3,102 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0a0b0d">
-  <meta name="description" content="ZetSlay — кабинет продавца FunPay: один аккаунт, закреплённый прокси, проверяемое подключение и события в режиме чтения.">
+  <meta name="theme-color" content="#f7f7f4">
+  <meta name="description" content="ZetSlay — облачный кабинет для продавца FunPay: один аккаунт, закреплённый прокси и понятный статус подключения.">
   <title>ZetSlay — кабинет продавца FunPay</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="landing.css">
 </head>
 <body id="top">
   <a class="skip-link" href="#main">Перейти к содержанию</a>
   <header class="site-header">
     <div class="shell header-inner">
-      <a class="brand" href="#top" aria-label="ZetSlay — на главную"><span class="brand-mark" aria-hidden="true"><span></span></span><span>ZetSlay</span></a>
+      <a class="brand" href="#top" aria-label="ZetSlay — на главную"><span class="brand-mark" aria-hidden="true"><span></span></span>ZetSlay</a>
       <nav class="desktop-nav" aria-label="Основная навигация">
-        <a href="#features">Кабинет</a><a href="#comparison">Подключение</a><a href="#plugins">Плагины</a><a href="#faq">Вопросы</a>
+        <a href="#features">О платформе</a><a href="#comparison">Возможности</a><a href="#steps">Как начать</a><a href="#plugins">Плагины</a><a href="#tariffs">Тарифы</a><a href="#faq">FAQ</a>
       </nav>
-      <div class="header-actions"><a class="header-login" href="app/?auth=login">Войти</a><a class="button button--amber button--small" href="app/?auth=register">Создать аккаунт <span aria-hidden="true">↗</span></a></div>
-      <details class="mobile-menu"><summary aria-label="Открыть меню"><span></span><span></span><span></span></summary><nav aria-label="Мобильная навигация"><a href="#features">Кабинет</a><a href="#comparison">Подключение</a><a href="#plugins">Плагины</a><a href="#faq">Вопросы</a><a href="app/?auth=login">Войти</a><a href="app/?auth=register">Создать аккаунт</a></nav></details>
+      <div class="header-actions"><a class="header-login" href="app/?auth=login">Войти</a><a class="button button--black button--header" href="app/?auth=register">Регистрация</a></div>
+      <details class="mobile-menu"><summary aria-label="Открыть меню"><span></span><span></span><span></span></summary><nav aria-label="Мобильная навигация"><a href="#features">О платформе</a><a href="#comparison">Возможности</a><a href="#steps">Как начать</a><a href="#plugins">Плагины</a><a href="#tariffs">Тарифы</a><a href="#faq">FAQ</a><a href="app/?auth=login">Войти</a><a href="app/?auth=register">Регистрация</a></nav></details>
     </div>
   </header>
 
   <main id="main">
-    <section class="hero" aria-labelledby="hero-title">
-      <div class="shell hero-grid">
-        <div class="hero-copy">
-          <span class="eyebrow eyebrow--dark"><i aria-hidden="true"></i> Облачный кабинет для продавца FunPay</span>
-          <h1 id="hero-title">Один магазин.<br><em>Всё под контролем.</em></h1>
-          <p class="hero-lead">ZetSlay собирает состояние магазина, сообщения и заказы в понятном кабинете. Подключение начинается с проверки в режиме чтения — каждое ограничение видно прямо в интерфейсе.</p>
-          <div class="hero-actions"><a class="button button--amber" href="app/?auth=register">Создать аккаунт <span aria-hidden="true">↗</span></a><a class="button button--outline" href="#comparison">Как устроено подключение <span aria-hidden="true">↓</span></a></div>
-          <p class="hero-note"><span aria-hidden="true">●</span> Один аккаунт FunPay · Один закреплённый прокси · Без скрытых действий</p>
-        </div>
-        <div class="hero-preview" aria-label="Демонстрационный фрагмент кабинета ZetSlay">
-          <div class="preview-caption"><span class="preview-caption__dot"></span> Пример интерфейса <span>Демонстрационные данные</span></div>
-          <div class="preview-window">
-            <div class="preview-top"><span class="preview-brand"><span class="brand-mark brand-mark--mini" aria-hidden="true"><span></span></span>ZetSlay <small>/ обзор</small></span><span class="preview-top__time">Режим чтения</span></div>
-            <div class="preview-heading"><div><small>Состояние магазина</small><strong>Всё важное — на виду</strong></div><span class="status-pill"><span></span> Подключение проверено</span></div>
-            <div class="preview-metrics"><div><small>Заказы</small><strong>Обзор</strong><span>Состояние и история</span></div><div><small>Сообщения</small><strong>Диалоги</strong><span>Новые события</span></div><div><small>Доступ</small><strong>Read-only</strong><span>Без изменений в FunPay</span></div></div>
-            <div class="preview-lower"><div class="preview-list"><div class="preview-list__head"><strong>Лента событий</strong><span>Демо</span></div><div class="preview-row"><span class="preview-icon preview-icon--blue" aria-hidden="true">↗</span><span><strong>Новое сообщение</strong><small>Покупатель · демонстрация</small></span><i>только чтение</i></div><div class="preview-row"><span class="preview-icon preview-icon--amber" aria-hidden="true">◇</span><span><strong>Заказ оплачен</strong><small>Событие · демонстрация</small></span><i>зафиксировано</i></div></div><div class="preview-guard"><span class="preview-guard__icon" aria-hidden="true">⌁</span><strong>Под вашим контролем</strong><p>Секреты сохраняются в зашифрованном vault. Прокси закрепляется за одним аккаунтом.</p><span>Golden Key <b>скрыт</b></span><span>Прокси <b>закреплён</b></span></div></div>
-          </div>
-          <div class="preview-foot">Интерфейс показан для знакомства с продуктом; реальные данные появятся после подключения.</div>
+    <section class="hero" id="landing" aria-labelledby="hero-title">
+      <div class="shell hero-inner">
+        <span class="hero-badge"><i aria-hidden="true"></i> Облачный кабинет для продавца FunPay <span aria-hidden="true">↗</span></span>
+        <h1 id="hero-title">Ваш магазин FunPay.<br><span>Всё важное —</span><br>перед глазами.</h1>
+        <p class="hero-lead">Заказы, сообщения и состояние подключения — в одном спокойном интерфейсе. Сначала проверка в режиме чтения, затем только разрешённые вами сценарии.</p>
+        <div class="hero-actions"><a class="button button--black" href="app/?auth=register">Создать аккаунт <span aria-hidden="true">↗</span></a><a class="button button--white" href="#steps">Как подключить магазин <span aria-hidden="true">↓</span></a></div>
+        <div class="hero-facts" aria-label="Принципы ZetSlay">
+          <article><span>Рабочее пространство</span><strong>1 аккаунт</strong><small>Один продавец FunPay</small></article>
+          <article><span>Соединение</span><strong>Read-only</strong><small>Проверка перед запуском</small></article>
+          <article><span>Секреты</span><strong>Vault</strong><small>Шифрование на сервере</small></article>
+          <article><span>Состояние</span><strong>Видно</strong><small>Ошибки не скрываются</small></article>
         </div>
       </div>
     </section>
 
-    <section class="principles shell" aria-label="Принципы подключения">
-      <div class="principle"><span class="principle__icon principle__icon--amber" aria-hidden="true">01</span><div><strong>Один аккаунт</strong><p>У каждого пользователя свой магазин FunPay.</p></div></div>
-      <div class="principle"><span class="principle__icon principle__icon--blue" aria-hidden="true">02</span><div><strong>Свой прокси</strong><p>Постоянный маршрут для подключения.</p></div></div>
-      <div class="principle"><span class="principle__icon principle__icon--violet" aria-hidden="true">03</span><div><strong>Секреты в vault</strong><p>Ключи вводятся только в веб-кабинете.</p></div></div>
-      <div class="principle"><span class="principle__icon principle__icon--green" aria-hidden="true">04</span><div><strong>Честный статус</strong><p>Проверка покажет, если доступ остановлен.</p></div></div>
-    </section>
-
-    <section class="section section--light" id="features" aria-labelledby="features-title">
+    <section class="section section--white" id="features" aria-labelledby="features-title">
       <div class="shell">
-        <div class="section-heading section-heading--split"><div><span class="eyebrow">Кабинет ZetSlay</span><h2 id="features-title">Порядок в событиях.<br>Спокойствие в работе.</h2></div><p>Одна точка входа для продавца. Вы видите состояние подключения и данные, которые удалось безопасно прочитать, без обещания действий за вас.</p></div>
-        <div class="feature-grid">
-          <article class="feature-card"><span class="feature-icon feature-icon--amber" aria-hidden="true">▤</span><span class="feature-index">01 / Обзор</span><h3>Заказы в контексте</h3><p>Статусы и история заказов в кабинете, когда источник доступен. При ошибке подключения показываем причину и не подменяем её демо-цифрами.</p><span class="feature-foot">Данные из режима чтения <span aria-hidden="true">↗</span></span></article>
-          <article class="feature-card"><span class="feature-icon feature-icon--blue" aria-hidden="true">◌</span><span class="feature-index">02 / Диалоги</span><h3>Сообщения без суеты</h3><p>Новые события из переписки помогают увидеть, где требуется ваше внимание. Сообщения продавца не запускают ответный цикл.</p><span class="feature-foot">Контекст прежде реакции <span aria-hidden="true">↗</span></span></article>
-          <article class="feature-card"><span class="feature-icon feature-icon--green" aria-hidden="true">✓</span><span class="feature-index">03 / Состояние</span><h3>Ясно, что подключено</h3><p>В кабинете виден статус Telegram-бота, Golden Key, прокси и read-only проверки. Если FunPay потребует подтверждения, соединение остановится.</p><span class="feature-foot">Без скрытого продолжения <span aria-hidden="true">↗</span></span></article>
+        <div class="section-intro"><span class="section-pill"><span aria-hidden="true">◈</span> О платформе</span><h2 id="features-title">Кабинет, в котором<br>легко разобраться.</h2><p>ZetSlay помогает видеть рабочие события магазина без десятка открытых вкладок. Данные появляются, когда подключение прошло проверку и источник доступен.</p></div>
+        <div class="about-grid">
+          <article class="about-card"><span class="mini-icon mini-icon--amber" aria-hidden="true">▤</span><div><h3>События на виду</h3><p>Заказы и новые сообщения собраны рядом, чтобы вы быстрее замечали то, что требует внимания.</p></div><span class="card-foot">История и контекст</span></article>
+          <article class="about-card"><span class="mini-icon mini-icon--blue" aria-hidden="true">◌</span><div><h3>Понятное состояние</h3><p>Видно, подключён ли магазин, прошла ли проверка и когда доступ требует вашего участия.</p></div><span class="card-foot">Никаких ложных «онлайн»</span></article>
+          <article class="about-card"><span class="mini-icon mini-icon--violet" aria-hidden="true">⌁</span><div><h3>Контроль доступа</h3><p>Golden Key и прокси вводятся только в кабинете, хранятся зашифрованно и не возвращаются на экран.</p></div><span class="card-foot">Один аккаунт · один прокси</span></article>
         </div>
       </div>
     </section>
 
-    <section class="section section--dark" id="comparison" aria-labelledby="connection-title">
-      <div class="shell connection-grid"><div><span class="eyebrow eyebrow--dark">Подключение</span><h2 id="connection-title">Сначала проверка.<br><span>Потом события.</span></h2><p class="connection-lead">Мастер ведёт по реальным шагам и не принимает секреты в Telegram или переписке. Пока проверка не пройдена, кабинет не показывает магазин как работающий.</p><a class="text-link" href="app/?auth=register">Перейти к настройке <span aria-hidden="true">↗</span></a></div><ol class="steps"><li><b>01</b><div><h3>Создайте кабинет</h3><p>Один пользователь — один аккаунт FunPay.</p></div></li><li><b>02</b><div><h3>Привяжите своего бота</h3><p>Токен вводится в защищённое поле, связь подтверждается одноразовым кодом.</p></div></li><li><b>03</b><div><h3>Добавьте доступ</h3><p>Golden Key и HTTP(S)-прокси сохраняются раздельно в зашифрованном vault.</p></div></li><li><b>04</b><div><h3>Запустите read-only проверку</h3><p>Результат виден в кабинете. При блокировке запросы останавливаются.</p></div></li></ol></div>
+    <section class="section section--soft" id="comparison" aria-labelledby="comparison-title">
+      <div class="shell">
+        <div class="section-intro"><span class="section-pill"><span aria-hidden="true">✧</span> В ежедневной работе</span><h2 id="comparison-title">Меньше неопределённости.<br>Больше ясности.</h2><p>Четыре простых принципа вместо обещаний, что любая интеграция всегда будет работать без остановок.</p></div>
+        <div class="use-grid">
+          <article class="use-card"><span class="use-icon" aria-hidden="true">01</span><h3>Один магазин</h3><p>У каждого пользователя свой аккаунт FunPay и закреплённый за ним маршрут через прокси.</p></article>
+          <article class="use-card"><span class="use-icon" aria-hidden="true">02</span><h3>События по делу</h3><p>Плагины получают только разрешённые события: новое сообщение или оплаченный заказ.</p></article>
+          <article class="use-card"><span class="use-icon" aria-hidden="true">03</span><h3>Ваш Telegram-бот</h3><p>Подключается через защищённое поле и одноразовый код. Уведомления идут владельцу.</p></article>
+          <article class="use-card"><span class="use-icon" aria-hidden="true">04</span><h3>Пауза при ошибке</h3><p>При CAPTCHA, отказе входа или ограничении запросов соединение останавливается, а статус виден в кабинете.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--white" id="steps" aria-labelledby="steps-title">
+      <div class="shell">
+        <div class="section-intro"><span class="section-pill"><span aria-hidden="true">↗</span> Начало работы</span><h2 id="steps-title">Подключение — шаг за шагом.</h2><p>Секреты вводятся только на сайте. Telegram помогает подтвердить связь, но не принимает Golden Key и адрес прокси.</p></div>
+        <ol class="steps-grid"><li><b>01</b><h3>Создайте кабинет</h3><p>Зарегистрируйте своё рабочее пространство ZetSlay.</p></li><li><b>02</b><h3>Привяжите бота</h3><p>Сохраните Bot Token и подтвердите связь одноразовым кодом.</p></li><li><b>03</b><h3>Добавьте доступ</h3><p>Укажите Golden Key и закреплённый HTTP(S)-прокси.</p></li><li><b>04</b><h3>Проверьте соединение</h3><p>Запустите read-only проверку и посмотрите реальный статус.</p></li></ol>
+        <div class="center-action"><a class="button button--black" href="app/?auth=register">Перейти в кабинет <span aria-hidden="true">↗</span></a></div>
+      </div>
     </section>
 
     <section class="section section--soft" id="plugins" aria-labelledby="plugins-title">
-      <div class="shell plugins-grid"><div class="plugins-intro"><span class="eyebrow">Плагины и события</span><h2 id="plugins-title">Добавляйте нужное.<br>Сохраняйте контроль.</h2><p>Плагины получают только разрешённые события и возвращают ограниченный набор действий. Уведомления могут идти через вашего Telegram-бота; отправка ответов в FunPay сейчас не выполняется.</p><a class="button button--dark" href="app/#plugins">Посмотреть каталог <span aria-hidden="true">↗</span></a></div><div class="plugin-stack"><article><span class="plugin-symbol plugin-symbol--blue" aria-hidden="true">↗</span><div><small>Событие</small><h3>Новое сообщение</h3><p>Контекст диалога для включённых сценариев.</p></div><span class="plugin-tag">messages:read</span></article><article><span class="plugin-symbol plugin-symbol--amber" aria-hidden="true">◇</span><div><small>Событие</small><h3>Оплаченный заказ</h3><p>Сигнал об оплате для разрешённых плагинов.</p></div><span class="plugin-tag">orders:read</span></article><article><span class="plugin-symbol plugin-symbol--violet" aria-hidden="true">✦</span><div><small>Действие</small><h3>Telegram-уведомление</h3><p>Сообщение владельцу через привязанного бота.</p></div><span class="plugin-tag">telegram:send</span></article></div></div>
+      <div class="shell">
+        <div class="section-intro"><span class="section-pill"><span aria-hidden="true">✳</span> Плагины</span><h2 id="plugins-title">Автоматизация с границами.</h2><p>Каждый плагин работает с разрешёнными событиями и действиями. Ответы в FunPay, изменение лотов и финансовые операции текущий коннектор не выполняет.</p></div>
+        <div class="modules-grid">
+          <article class="module-card"><span class="module-meta">СОБЫТИЕ / 01</span><span class="module-symbol module-symbol--blue" aria-hidden="true">↗</span><h3>Новое сообщение</h3><p>Контекст входящего сообщения доступен сценарию с разрешением на чтение.</p><span class="module-foot">messages:read</span></article>
+          <article class="module-card"><span class="module-meta">СОБЫТИЕ / 02</span><span class="module-symbol module-symbol--amber" aria-hidden="true">◇</span><h3>Оплаченный заказ</h3><p>Событие оплаты можно использовать для уведомления владельца.</p><span class="module-foot">orders:read</span></article>
+          <article class="module-card"><span class="module-meta">ДЕЙСТВИЕ / 03</span><span class="module-symbol module-symbol--violet" aria-hidden="true">✦</span><h3>Уведомление в Telegram</h3><p>Сигнал отправляется через привязанного личного бота при активном подключении.</p><span class="module-foot">telegram:send</span></article>
+        </div>
+      </div>
     </section>
 
-    <section class="section section--light" id="tariffs" aria-labelledby="tariffs-title"><div class="shell access-panel"><div><span class="eyebrow">Доступ к сервису</span><h2 id="tariffs-title">Прозрачно на каждом этапе.</h2><p>Для подключения нужен активный тариф. Условия коммерческого доступа уточняются; тестовые возможности в кабинете отмечены отдельно. Оплата и доступные функции не запускаются без вашего действия.</p></div><div class="access-note"><span class="access-note__icon" aria-hidden="true">i</span><p>Read-only коннектор проходит проверку на реальном подключении. Успешная регистрация сама по себе не означает, что данные FunPay уже доступны.</p><a href="app/?auth=register">Создать аккаунт <span aria-hidden="true">↗</span></a></div></div></section>
+    <section class="section section--white" id="tariffs" aria-labelledby="tariffs-title">
+      <div class="shell">
+        <div class="section-intro"><span class="section-pill"><span aria-hidden="true">◇</span> Доступ</span><h2 id="tariffs-title">Условия без мелкого шрифта.</h2><p>Для подключения требуется активный тариф. Коммерческие условия уточняются; тестовые возможности в кабинете обозначены отдельно.</p></div>
+        <div class="access-card"><div><span class="access-label">Текущий этап</span><h3>Сначала проверка подключения.</h3><p>Регистрация не означает, что FunPay уже доступен. Мастер покажет результат проверки и остановит соединение, если источник потребует вашего участия.</p></div><a class="button button--black" href="app/?auth=register">Создать аккаунт <span aria-hidden="true">↗</span></a></div>
+      </div>
+    </section>
 
-    <section class="section section--faq" id="faq" aria-labelledby="faq-title"><div class="shell faq-grid"><div><span class="eyebrow">Коротко о важном</span><h2 id="faq-title">Ответы без мелкого шрифта.</h2><p>Как устроено подключение и чего ожидать от текущей версии ZetSlay.</p></div><div class="faq-list"><details><summary>Можно подключить несколько аккаунтов FunPay?<span aria-hidden="true">+</span></summary><p>Нет. В текущей модели одному пользователю соответствует один аккаунт FunPay и один закреплённый прокси.</p></details><details><summary>Где вводить Golden Key и данные прокси?<span aria-hidden="true">+</span></summary><p>Только в защищённом веб-кабинете. Эти данные не принимаются в Telegram, чатах и логах; сервер сохраняет их зашифрованно в vault.</p></details><details><summary>ZetSlay отвечает покупателям сам?<span aria-hidden="true">+</span></summary><p>Нет. Текущий коннектор читает данные и не отправляет сообщения, не изменяет лоты и не выполняет финансовые действия в FunPay.</p></details><details><summary>Что произойдёт при ошибке соединения?<span aria-hidden="true">+</span></summary><p>Кабинет покажет состояние. При CAPTCHA, отказе авторизации или ограничении запросов коннектор прекращает работу до разбирательства.</p></details><details><summary>ZetSlay — официальный сервис FunPay?<span aria-hidden="true">+</span></summary><p>Нет. ZetSlay — независимый сервис для продавцов и не является официальным продуктом FunPay.</p></details></div></div></section>
+    <section class="section section--soft" id="faq" aria-labelledby="faq-title">
+      <div class="shell"><div class="section-intro"><span class="section-pill"><span aria-hidden="true">?</span> Частые вопросы</span><h2 id="faq-title">Коротко о главном.</h2><p>Ответы о текущем режиме ZetSlay и границах подключения.</p></div>
+        <div class="faq-list"><details><summary>Можно подключить несколько аккаунтов FunPay?<span aria-hidden="true">+</span></summary><p>Нет. Один пользователь подключает один аккаунт FunPay через один закреплённый прокси.</p></details><details><summary>Где вводить Golden Key и данные прокси?<span aria-hidden="true">+</span></summary><p>Только в защищённом веб-кабинете. Секреты не принимаются в Telegram и сохраняются зашифрованно в vault.</p></details><details><summary>ZetSlay отвечает покупателям автоматически?<span aria-hidden="true">+</span></summary><p>Нет. Текущий коннектор работает в режиме чтения и не отправляет сообщения в FunPay.</p></details><details><summary>Что будет, если FunPay запросит подтверждение?<span aria-hidden="true">+</span></summary><p>Соединение остановится, а кабинет покажет причину. Защита площадки не обходится автоматически.</p></details><details><summary>ZetSlay — официальный сервис FunPay?<span aria-hidden="true">+</span></summary><p>Нет. ZetSlay — независимый сервис для продавцов, не связанный с FunPay официальным партнёрством.</p></details></div>
+      </div>
+    </section>
 
-    <section class="closing" id="cta" aria-labelledby="cta-title"><div class="shell closing-inner"><div><span class="eyebrow eyebrow--dark">ZetSlay / Начало работы</span><h2 id="cta-title">Ваш магазин.<br><em>Ваши правила.</em></h2><p>Начните с кабинета и проверьте подключение в режиме чтения. Дальше — только те сценарии, которые вы включите сами.</p></div><div class="closing-actions"><a class="button button--amber" href="app/?auth=register">Создать аккаунт <span aria-hidden="true">↗</span></a><a class="button button--outline" href="app/?auth=login">Уже есть аккаунт? Войти</a></div></div></section>
+    <section class="closing" id="cta" aria-labelledby="cta-title"><div class="shell closing-inner"><span class="section-pill section-pill--dark"><span aria-hidden="true">✦</span> ZetSlay для продавца FunPay</span><h2 id="cta-title">Работайте спокойнее.<br>Сохраняйте контроль.</h2><p>Создайте кабинет и проверьте доступ к своему магазину. Дальше включайте только нужные сценарии.</p><div class="closing-actions"><a class="button button--amber" href="app/?auth=register">Создать аккаунт <span aria-hidden="true">↗</span></a><a class="button button--dark-outline" href="app/?auth=login">Войти в кабинет</a></div></div></section>
   </main>
-
-  <footer class="site-footer"><div class="shell footer-main"><div><a class="brand" href="#top"><span class="brand-mark" aria-hidden="true"><span></span></span><span>ZetSlay</span></a><p>Спокойный контроль магазина FunPay с честным статусом подключения.</p></div><nav aria-label="Разделы сайта"><a href="#features">Кабинет</a><a href="#comparison">Подключение</a><a href="#plugins">Плагины</a><a href="#faq">FAQ</a></nav><div class="footer-entry"><a href="app/?auth=login">Войти в кабинет ↗</a><small>ZetSlay не является официальным сервисом FunPay.</small></div></div><div class="shell footer-bottom"><span>© 2026 ZetSlay</span><a href="#top">Наверх ↑</a></div></footer>
+  <footer class="site-footer"><div class="shell footer-top"><a class="brand" href="#top"><span class="brand-mark" aria-hidden="true"><span></span></span>ZetSlay</a><nav aria-label="Разделы сайта"><a href="#features">О платформе</a><a href="#comparison">Возможности</a><a href="#steps">Как начать</a><a href="#plugins">Плагины</a><a href="#faq">FAQ</a></nav><a href="app/?auth=login">Войти ↗</a></div><div class="shell footer-bottom"><span>© 2026 ZetSlay. Независимый сервис для продавцов FunPay.</span><a href="#top">Наверх ↑</a></div></footer>
   <script>document.querySelectorAll('.mobile-menu a').forEach(link => link.addEventListener('click', () => { link.closest('details').open = false; }));</script>
 </body>
 </html>
+
