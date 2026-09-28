@@ -54,7 +54,9 @@ button { font: inherit; }
 .hero h1 { max-width: 900px; margin: 24px auto; color: #fff; font-family: Manrope, Inter, sans-serif; font-size: clamp(47px, 5.6vw, 76px); font-weight: 800; letter-spacing: -.055em; line-height: 1.04; }
 .hero h1 span { color: #ffe0a0; }
 .hero-lead { max-width: 650px; margin: 0 auto; color: rgba(255,255,255,.96); font-size: 18px; line-height: 1.6; letter-spacing: -.012em; }
-.hero-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 11px; margin: 32px auto 56px; }
+.hero-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 11px; margin: 32px auto 10px; }
+.hero-login { display: inline-flex; align-items: center; justify-content: center; min-height: 37px; margin: 0 auto 56px; padding: 0 16px; border: 1px solid rgba(255,255,255,.55); border-radius: 10px; background: rgba(255,255,255,.65); color: var(--black); font-size: 11px; font-weight: 650; transition: background .2s; }
+.hero-login:hover { background: #fff; }
 .hero-facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; max-width: 1000px; margin-inline: auto; text-align: left; }
 .hero-facts article { display: flex; flex-direction: column; min-height: 130px; padding: 23px 24px; border: 1px solid rgba(255,255,255,.65); border-radius: 22px; background: rgba(255,255,255,.91); box-shadow: 0 12px 30px rgba(9,15,22,.06); }
 .hero-facts article > span { color: #62696e; font-size: 11px; }
@@ -172,7 +174,8 @@ button { font: inherit; }
   .hero-badge { max-width: 100%; font-size: 9px; }
   .hero h1 { margin: 24px auto; font-size: clamp(39px, 10vw, 50px); letter-spacing: -.06em; }
   .hero-lead { font-size: 14px; }
-  .hero-actions { display: grid; max-width: 320px; margin: 28px auto 40px; }
+  .hero-actions { display: grid; max-width: 320px; margin: 28px auto 10px; }
+  .hero-login { margin-bottom: 40px; }
   .hero-actions .button { width: 100%; }
   .hero-facts { gap: 8px; }
   .hero-facts article { min-height: 116px; padding: 16px; border-radius: 17px; }
@@ -199,4 +202,3 @@ button { font: inherit; }
   html { scroll-behavior: auto; }
   .button { transition: none; }
 }
-
