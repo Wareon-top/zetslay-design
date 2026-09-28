@@ -38,6 +38,7 @@
       <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
       <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
       <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
+      <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.5 12s3.5-5.5 9.5-5.5 9.5 5.5 9.5 5.5-3.5 5.5-9.5 5.5S2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></symbol>
       <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></symbol>
       <symbol id="i-filter" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></symbol>
       <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v2.5M12 19.5V22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M2 12h2.5M19.5 12H22M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></symbol>
@@ -362,33 +363,35 @@
       <aside class="auth-promo">
         <a class="auth-modal__brand" href="../"><span class="brand__mark"></span><strong>ZetSlay</strong></a>
         <div class="auth-promo__copy">
-          <span>Единое рабочее пространство</span>
-          <h2>Ваш магазин остаётся под контролем.</h2>
-          <p>Заказы, сообщения и лоты в одном read-only кабинете.</p>
+          <span class="auth-promo__eyebrow"><i></i> Кабинет продавца</span>
+          <h2>Начните работу<br>с ZetSlay.</h2>
+          <p>Подключите свой магазин и следите за заказами и сообщениями в одном спокойном пространстве.</p>
         </div>
-        <div class="auth-promo__points">
-          <span><i>✓</i> Один аккаунт FunPay на ZetSlay</span>
-          <span><i>✓</i> Секреты не отображаются повторно</span>
-          <span><i>✓</i> Прозрачный журнал действий</span>
+        <div class="auth-promo__journey" aria-label="Путь подключения">
+          <div class="auth-promo__step auth-promo__step--current"><span>01</span><strong>Создайте<br>аккаунт</strong></div>
+          <div class="auth-promo__step"><span>02</span><strong>Привяжите<br>Telegram</strong></div>
+          <div class="auth-promo__step"><span>03</span><strong>Подключите<br>FunPay</strong></div>
         </div>
       </aside>
       <div class="auth-content">
         <a class="auth-modal__close" href="../" aria-label="Вернуться на главную"><svg><use href="#i-close"/></svg></a>
-        <span class="panel-label">Защищённый доступ</span>
+        <span class="auth-content__eyebrow"><i></i> Защищённый доступ</span>
         <h2 id="auth-modal-title">Вход в кабинет</h2>
-        <p class="auth-intro">Войдите, чтобы продолжить работу с магазинами ZetSlay.</p>
-        <div class="auth-tabs" role="tablist">
-          <button class="is-active" type="button" role="tab" data-auth-mode="login">Вход</button>
-          <button type="button" role="tab" data-auth-mode="register">Регистрация</button>
-        </div>
+        <p class="auth-intro">Войдите, чтобы продолжить работу с вашим магазином.</p>
+        <button class="button button--telegram button--wide" type="button" data-telegram-login data-auth-only><svg><use href="#i-send"/></svg> Продолжить через Telegram</button>
+        <div class="auth-divider" data-auth-only><span>или через email</span></div>
         <form class="auth-form" data-auth-form>
-          <label>Email<input name="email" type="email" autocomplete="email" required placeholder="you@example.com"></label>
-          <label>Пароль<input name="password" type="password" autocomplete="current-password" minlength="12" maxlength="256" required placeholder="Не менее 12 символов"></label>
+          <label>Email<input name="email" type="email" autocomplete="email" required placeholder="name@example.com"></label>
+          <label>Пароль
+            <span class="auth-password-field">
+              <input name="password" type="password" autocomplete="current-password" minlength="12" maxlength="256" required placeholder="Не менее 12 символов">
+              <button type="button" data-password-toggle aria-label="Показать пароль" aria-pressed="false"><svg><use href="#i-eye"/></svg></button>
+            </span>
+          </label>
           <div class="auth-message" data-auth-message aria-live="polite"></div>
           <button class="button button--primary button--wide" type="submit" data-auth-submit>Войти</button>
         </form>
-        <div class="auth-divider" data-auth-only><span>или</span></div>
-        <button class="button button--telegram button--wide" type="button" data-telegram-login data-auth-only><svg><use href="#i-send"/></svg> Войти через Telegram</button>
+        <p class="auth-switch" data-auth-only><span data-auth-switch-copy>Ещё нет аккаунта?</span> <button type="button" data-auth-mode="register" data-auth-switch>Создать аккаунт</button></p>
         <div class="telegram-login-status" data-telegram-login-status data-auth-only hidden>
           <strong>Почти готово</strong>
           <p>Открылся чат с ботом ZetSlay — нажмите «Начать». Вход завершится автоматически.</p>
@@ -399,8 +402,7 @@
           <div><strong data-auth-session-email></strong><small>Защищённая сессия активна</small></div>
           <button class="button button--ghost" type="button" data-auth-logout>Выйти</button>
         </div>
-        <p class="auth-legal">Продолжая, вы принимаете условия использования и политику конфиденциальности.</p>
-        <small class="auth-api-state">API: <b data-api-state>локальный контур</b></small>
+        <p class="auth-legal">Секреты FunPay вводятся только после входа в защищённом мастере подключения.</p>
       </div>
     </section>
 
