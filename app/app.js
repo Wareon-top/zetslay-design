@@ -128,8 +128,8 @@ function setAuthMode(mode) {
   if (title) title.textContent = authState.mode === 'register' ? 'Создать аккаунт' : 'Вход в кабинет';
   if (submit) submit.textContent = authState.mode === 'register' ? 'Зарегистрироваться' : 'Войти';
   if (intro) intro.textContent = authState.mode === 'register'
-    ? 'Создайте единый аккаунт для управления магазинами ZetSlay.'
-    : 'Войдите, чтобы продолжить работу с магазинами ZetSlay.';
+    ? 'Создайте аккаунт для одного магазина FunPay.'
+    : 'Войдите, чтобы продолжить работу с вашим магазином.';
   if (password) password.autocomplete = authState.mode === 'register' ? 'new-password' : 'current-password';
   const message = document.querySelector('[data-auth-message]');
   if (message) { message.textContent = ''; message.className = 'auth-message'; }
