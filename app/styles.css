@@ -1058,6 +1058,10 @@ body { background:radial-gradient(circle at 78% -10%,rgba(255,190,28,.07),transp
 .auth-session { border-color:#2b4d3a; background:#11241a; }
 .auth-session__avatar { background:#ffca22; color:#17140a; }
 
+/* Keep the workspace and account-only controls out of view until the API
+   confirms the session, regardless of component display rules. */
+[hidden] { display:none !important; }
+
 /* Readability and calm workspace */
 :root { --sidebar:224px; --topbar:76px; }
 .sidebar { padding:22px 16px 16px; }
