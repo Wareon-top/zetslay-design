@@ -1,33 +1,8 @@
 const state = {
-  orders: [
-    { id: '#DEMO-001', buyer: 'demo_buyer_01', product: 'Демо-товар · категория A', total: '1 490 ₽', status: 'Новый', tone: 'yellow', time: '2 мин' },
-    { id: '#DEMO-002', buyer: 'demo_buyer_02', product: 'Демо-товар · категория B', total: '719 ₽', status: 'В работе', tone: 'violet', time: '11 мин' },
-    { id: '#DEMO-003', buyer: 'demo_buyer_03', product: 'Демо-товар · категория C', total: '1 020 ₽', status: 'Выдан', tone: 'green', time: '28 мин' },
-    { id: '#DEMO-004', buyer: 'demo_buyer_04', product: 'Демо-товар · категория D', total: '2 399 ₽', status: 'Спор', tone: 'red', time: '42 мин' },
-    { id: '#DEMO-005', buyer: 'demo_buyer_05', product: 'Демо-товар · категория E', total: '1 850 ₽', status: 'Завершён', tone: 'muted', time: '1 ч' },
-    { id: '#DEMO-006', buyer: 'demo_buyer_06', product: 'Демо-товар · категория F', total: '1 199 ₽', status: 'Завершён', tone: 'muted', time: '2 ч' },
-  ],
-  conversations: [
-    { initials: 'D1', name: 'demo_buyer_01', preview: 'Демонстрационное новое сообщение', time: '12:46', unread: 2, active: true },
-    { initials: 'D2', name: 'demo_buyer_02', preview: 'Демонстрационный заказ завершён', time: '12:31', unread: 0 },
-    { initials: 'D3', name: 'demo_buyer_03', preview: 'Демонстрационный вопрос о заказе', time: '11:58', unread: 0 },
-    { initials: 'D4', name: 'demo_buyer_04', preview: 'Демонстрационное обращение', time: '11:40', unread: 1 },
-    { initials: 'D5', name: 'demo_buyer_05', preview: 'Демонстрационная обратная связь', time: '10:12', unread: 0 },
-  ],
-  lots: [
-    { tag: 'ROBLOX', title: '1000 Robux · Xbox / Microsoft', price: '1 490 ₽', stock: 84, sales: 31, position: 3, active: true },
-    { tag: 'DISCORD', title: 'Discord Nitro · 1 месяц', price: '719 ₽', stock: 210, sales: 47, position: 1, active: true },
-    { tag: 'STEAM', title: 'Steam Wallet · 10 USD', price: '1 020 ₽', stock: 33, sales: 19, position: 7, active: true },
-    { tag: 'FORTNITE', title: '2800 V-Bucks · Все регионы', price: '2 399 ₽', stock: 0, sales: 12, position: 16, active: false },
-    { tag: 'TELEGRAM', title: 'Telegram Premium · 3 месяца', price: '1 199 ₽', stock: 51, sales: 28, position: 4, active: true },
-    { tag: 'MINECRAFT', title: 'Java & Bedrock Edition · Key', price: '1 850 ₽', stock: 14, sales: 8, position: 11, active: true },
-  ],
-  automations: [
-    { icon: 'message-square', name: 'Приветствие нового покупателя', description: 'Отвечает в течение 4 секунд после первого сообщения', runs: '128 запусков', active: true },
-    { icon: 'package', name: 'Автовыдача цифрового товара', description: 'Выдаёт ключ после подтверждения оплаты', runs: '94 запуска', active: true },
-    { icon: 'refresh-cw', name: 'Поднятие активных лотов', description: 'Каждые 60 минут с безопасной случайной задержкой', runs: '36 запусков', active: true },
-    { icon: 'alert-triangle', name: 'Эскалация спорного заказа', description: 'Уведомляет владельца и ставит автоматизацию на паузу', runs: '3 запуска', active: false },
-  ],
+  orders: [],
+  conversations: [],
+  lots: [],
+  automations: [],
   plugins: [
     { id: 'zetslay.auto-reply', icon: 'zap', name: 'Автоответчик', vendor: 'ZetSlay Core', category: 'chat', price: 'от 490 ₽', description: 'Безопасно ставит ответ покупателю в очередь и защищён от циклических сообщений.', permissions: ['Сообщения', 'Очередь ответов'], installed: false, active: false, config: { text: 'Здравствуйте! Сообщение получено — скоро вернёмся с ответом.', scenario: 'all', keywords: [], excludeKeywords: [], quietHours: { enabled: false, start: '22:00', end: '08:00', timeZone: 'Asia/Almaty', behavior: 'pause', text: 'Сейчас мы офлайн. Ответим утром.' } } },
     { id: 'zetslay.telegram-notifications', icon: 'send', name: 'Telegram-уведомления', vendor: 'ZetSlay Core', category: 'control', price: 'от 290 ₽', description: 'Сообщает владельцу о новых сообщениях и оплаченных заказах.', permissions: ['Сообщения', 'Заказы', 'Telegram'], installed: false, active: false, config: { messages: true, paidOrders: true } },
@@ -39,43 +14,18 @@ const state = {
   pluginFilter: { cat: 'all', query: '' },
   pluginCoverAdmin: false,
   pluginAudit: [],
-  storeFleet: {
-    selectedStoreId: 'demo-store-main',
-    capacity: { used: 1, limit: 1 },
-    liveActionsEnabled: false,
-    stores: [
-      { id: 'demo-store-main', displayName: 'Digital Hub', status: 'connected_read_only', proxyConfigured: true, workerId: 'worker-main-01', lastSeenAt: new Date().toISOString(), demo: true, metrics: { balance: '1 842 ₽', lots: 84, unread: 2 } },
-    ]
-  },
+  storeFleet: { selectedStoreId: null, capacity: { used: 0, limit: 1 }, liveActionsEnabled: false, stores: [] },
   finance: { stores: [], withdrawalIntents: [], liveWithdrawalEnabled: false },
   storeContent: { observedAt: null, orders: [], messages: [], lots: [] },
   onboarding: null,
-  analytics: [
-    { day: 'Пн', revenue: 42, orders: 26 }, { day: 'Вт', revenue: 58, orders: 36 },
-    { day: 'Ср', revenue: 47, orders: 31 }, { day: 'Чт', revenue: 76, orders: 49 },
-    { day: 'Пт', revenue: 65, orders: 43 }, { day: 'Сб', revenue: 92, orders: 61 },
-    { day: 'Вс', revenue: 82, orders: 53 },
-  ],
-  products: [
-    { name: 'Discord Nitro · 1 месяц', revenue: '33 793 ₽', share: 88 },
-    { name: '1000 Robux · Xbox', revenue: '46 190 ₽', share: 74 },
-    { name: 'Telegram Premium · 3 месяца', revenue: '33 572 ₽', share: 58 },
-    { name: 'Steam Wallet · 10 USD', revenue: '19 380 ₽', share: 41 },
-  ],
-  events: [
-    { time: '12:48:14', type: 'automation', title: 'Автоответ отправлен', detail: 'Демо-заказ #DEMO-001', tone: 'violet' },
-    { time: '12:46:02', type: 'order', title: 'Получен новый заказ', detail: 'Демо-товар · 1 490 ₽', tone: 'yellow' },
-    { time: '12:39:47', type: 'lot', title: 'Лот поднят', detail: 'Демо-лот · позиция №1', tone: 'green' },
-    { time: '12:31:21', type: 'message', title: 'Получено сообщение', detail: 'Демонстрационный диалог', tone: 'blue' },
-    { time: '12:20:09', type: 'system', title: 'Синхронизация завершена', detail: 'Данные магазина обновлены за 1.2 сек.', tone: 'muted' },
-    { time: '11:40:33', type: 'warning', title: 'Автовыдача остановлена', detail: 'Демо-заказ #DEMO-004 требует внимания', tone: 'red' },
-  ],
+  analytics: [],
+  products: [],
+  events: [],
 };
 
 const viewTitles = {
   dashboard: 'Обзор', orders: 'Заказы', messages: 'Сообщения', lots: 'Лоты',
-  automations: 'Автоматизации', plugins: 'Плагины', telegram: 'Telegram',
-  analytics: 'Аналитика', events: 'Журнал', billing: 'Финансы', security: 'Безопасность',
+  plugins: 'Плагины', telegram: 'Telegram', billing: 'Финансы', security: 'Безопасность',
   guide: 'База знаний',
 };
 
@@ -91,20 +41,22 @@ const byId = (id) => document.getElementById(id);
 const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
 // Optional dev override: open the cabinet with ?api=http://host:port to point it
 // at a running backend (stored in localStorage; use ?api=clear to reset).
-const apiOverrideRaw = new URLSearchParams(location.search).get('api');
-if (apiOverrideRaw === 'clear') {
+const localCabinet = ['localhost', '127.0.0.1'].includes(location.hostname);
+const apiOverrideRaw = localCabinet ? new URLSearchParams(location.search).get('api') : null;
+if (!localCabinet || apiOverrideRaw === 'clear') {
   localStorage.removeItem('zetslay_api_base_url');
 } else if (apiOverrideRaw) {
   try {
     const parsedOverride = new URL(apiOverrideRaw);
-    if (['http:', 'https:'].includes(parsedOverride.protocol) && parsedOverride.host) {
+    if (['http:', 'https:'].includes(parsedOverride.protocol) && ['localhost', '127.0.0.1'].includes(parsedOverride.hostname)) {
       localStorage.setItem('zetslay_api_base_url', `${parsedOverride.protocol}//${parsedOverride.host}`);
     }
   } catch { /* ignore malformed override */ }
 }
-const configuredApiUrl = (localStorage.getItem('zetslay_api_base_url') || window.ZETSLAY_API_BASE_URL || document.querySelector('meta[name="zetslay-api-base-url"]')?.content || '').replace(/\/$/, '');
+const configuredApiUrl = ((localCabinet && localStorage.getItem('zetslay_api_base_url')) || document.querySelector('meta[name="zetslay-api-base-url"]')?.content || '').replace(/\/$/, '');
 const API_BASE_URL = !['localhost', '127.0.0.1'].includes(location.hostname) && /localhost|127\.0\.0\.1/.test(configuredApiUrl) ? '' : configuredApiUrl;
-const authState = { mode: 'login', token: sessionStorage.getItem('zetslay_session') || '', user: null };
+const authState = { mode: 'login', token: sessionStorage.getItem('zetslay_session') || '', user: null, workspace: null };
+let sessionGeneration = 0;
 
 const errorMessages = {
   API_URL_MISSING: 'Backend ZetSlay ещё не подключён к опубликованному кабинету.',
@@ -141,22 +93,29 @@ function accountInitials(email = '') {
 
 function renderAuthState() {
   const email = authState.user?.email || '';
-  document.querySelectorAll('[data-auth-name]').forEach((node) => { node.textContent = email || 'Войти'; });
-  document.querySelectorAll('[data-auth-avatar]').forEach((node) => { node.textContent = accountInitials(email); });
+  const accountName = email || (authState.user ? 'Telegram-аккаунт' : 'Войти');
+  document.querySelectorAll('[data-auth-name]').forEach((node) => { node.textContent = accountName; });
+  document.querySelectorAll('[data-auth-avatar]').forEach((node) => { node.textContent = accountInitials(accountName); });
   const sidebar = document.querySelector('.user-card');
   if (sidebar) {
-    sidebar.querySelector('strong').textContent = email || 'Гостевой режим';
-    sidebar.querySelector('small').textContent = email ? 'Защищённая сессия' : 'Войти в ZetSlay';
-    sidebar.querySelector('.user-card__avatar').textContent = accountInitials(email);
+    sidebar.querySelector('strong').textContent = accountName;
+    sidebar.querySelector('small').textContent = authState.user ? 'Защищённая сессия' : 'Войти в ZetSlay';
+    sidebar.querySelector('.user-card__avatar').textContent = accountInitials(accountName);
   }
   const form = document.querySelector('[data-auth-form]');
   const session = document.querySelector('[data-auth-session]');
-  if (form) form.hidden = Boolean(email);
+  if (form) form.hidden = Boolean(authState.user);
   if (session) {
-    session.hidden = !email;
-    session.querySelector('[data-auth-session-email]').textContent = email;
-    session.querySelector('[data-auth-session-avatar]').textContent = accountInitials(email);
+    session.hidden = !authState.user;
+    session.querySelector('[data-auth-session-email]').textContent = accountName;
+    session.querySelector('[data-auth-session-avatar]').textContent = accountInitials(accountName);
   }
+  document.querySelector('.app-shell')?.toggleAttribute('hidden', !authState.user);
+  document.querySelectorAll('[data-auth-only]').forEach((node) => { node.hidden = Boolean(authState.user); });
+  if (authState.user) document.querySelector('[data-telegram-login-status]')?.setAttribute('hidden', '');
+  renderDashboard();
+  const account = document.querySelector('[data-security-account]');
+  if (account) account.textContent = authState.user ? `${accountName} · сессия активна` : 'Войдите в аккаунт.';
 }
 
 function setAuthMode(mode) {
@@ -177,6 +136,7 @@ function setAuthMode(mode) {
 }
 
 function setAuthModal(open) {
+  if (!open && !authState.user) return;
   const modal = document.querySelector('.auth-modal');
   const backdrop = document.querySelector('.auth-backdrop');
   if (!modal) return;
@@ -192,31 +152,89 @@ function setAuthModal(open) {
   if (!open) window.setTimeout(() => { if (!modal.classList.contains('is-open')) modal.hidden = true; }, 220);
 }
 
+function resetAccountData() {
+  state.orders = [];
+  state.conversations = [];
+  state.lots = [];
+  state.analytics = [];
+  state.products = [];
+  state.events = [];
+  state.storeContent = { observedAt: null, orders: [], messages: [], lots: [] };
+  state.storeFleet = { selectedStoreId: null, capacity: { used: 0, limit: 1 }, liveActionsEnabled: false, stores: [] };
+  state.finance = { stores: [], withdrawalIntents: [], liveWithdrawalEnabled: false };
+  state.onboarding = null;
+  state.pluginAudit = [];
+  resetPluginCatalog();
+  renderStoreFleet();
+  renderOrders();
+  renderConversations();
+  renderLots();
+  renderAnalytics();
+  renderEvents();
+  renderFinance();
+  renderPluginAudit();
+  renderTelegramOnboarding();
+}
+
+function clearSession() {
+  sessionGeneration++;
+  authState.token = '';
+  authState.user = null;
+  authState.workspace = null;
+  sessionStorage.removeItem('zetslay_session');
+  resetAccountData();
+  renderAuthState();
+  setAuthMode('login');
+  setAuthModal(true);
+}
+
+async function loadAccountData() {
+  const generation = ++sessionGeneration;
+  const tasks = [loadPluginCatalog, loadPluginAudit, loadStoreFleet, loadFinance, loadOnboarding];
+  const results = await Promise.allSettled(tasks.map((task) => task()));
+  if (generation !== sessionGeneration) return;
+  const errors = results.filter((result) => result.status === 'rejected');
+  if (errors.length) showToast('Часть данных кабинета недоступна. Проверьте соединение и обновите страницу.', 'error');
+  await syncStoreContent({ silent: true }).catch(() => {});
+}
+
+async function acceptSession(session) {
+  if (!session?.token || !session?.user) throw new Error('Сервер не вернул сессию');
+  resetAccountData();
+  authState.token = session.token;
+  authState.user = session.user;
+  authState.workspace = session.workspace || null;
+  sessionStorage.setItem('zetslay_session', session.token);
+  renderAuthState();
+  setAuthModal(false);
+  await loadAccountData();
+}
+
 async function submitAuth(form) {
   const message = form.querySelector('[data-auth-message]');
   const submit = form.querySelector('[data-auth-submit]');
   const body = Object.fromEntries(new FormData(form));
+  if (!form.reportValidity()) return;
   message.className = 'auth-message';
   message.textContent = 'Проверяем данные…';
   submit.disabled = true;
   try {
     if (authState.mode === 'register') {
-      await apiRequest('/api/v1/auth/register', { method: 'POST', body });
-      message.classList.add('is-success');
-      message.textContent = 'Аккаунт создан. Подтвердите email, затем выполните вход.';
+      const registration = await apiRequest('/api/v1/auth/register', { method: 'POST', body });
       form.reset();
+      if (!registration.verificationRequired) {
+        await acceptSession(await apiRequest('/api/v1/auth/login', { method: 'POST', body }));
+        showToast('Аккаунт создан. Добро пожаловать в кабинет.', 'success');
+        return;
+      }
+      setAuthMode('login');
+      message.classList.add('is-success');
+      message.textContent = 'Аккаунт создан. Подтвердите адрес по письму, затем войдите.';
       return;
     }
     const session = await apiRequest('/api/v1/auth/login', { method: 'POST', body });
-    authState.token = session.token;
-    authState.user = session.user;
-    sessionStorage.setItem('zetslay_session', session.token);
-    renderAuthState();
-    await loadPluginCatalog().catch(() => {});
-    await loadStoreFleet().catch(() => {});
-    await loadFinance().catch(() => {});
-    await loadOnboarding().catch(() => {});
-    await syncStoreContent({ silent: true }).catch(() => {});
+    form.reset();
+    await acceptSession(session);
     showToast('Вход выполнен через защищённый API', 'success');
   } catch (error) {
     message.classList.add('is-error');
@@ -255,15 +273,7 @@ async function startTelegramLogin(button) {
         if (poll.status === 'confirmed') {
           stopTelegramLoginPolling();
           if (statusBox) statusBox.hidden = true;
-          authState.token = poll.token;
-          authState.user = poll.user;
-          sessionStorage.setItem('zetslay_session', poll.token);
-          setAuthModal(false);
-          renderAuthState();
-          await loadPluginCatalog().catch(() => {});
-          await loadStoreFleet().catch(() => {});
-          await loadFinance().catch(() => {});
-          await loadOnboarding().catch(() => {});
+          await acceptSession(poll);
           showToast('Вход через Telegram выполнен', 'success');
         }
       } catch {
@@ -279,26 +289,17 @@ async function startTelegramLogin(button) {
 
 async function restoreSession() {
   document.querySelector('[data-api-state]').textContent = API_BASE_URL || 'не настроен';
-  if (!authState.token) { renderAuthState(); return; }
+  if (!authState.token) { renderAuthState(); setAuthModal(true); return; }
   try {
     const context = await apiRequest('/api/v1/me', { authenticated: true });
     authState.user = context.user;
+    authState.workspace = context.workspace;
   } catch {
-    authState.token = '';
-    sessionStorage.removeItem('zetslay_session');
+    clearSession();
+    return;
   }
   renderAuthState();
-  if (authState.user) {
-    await loadPluginCatalog().catch(() => {});
-    await loadPluginAudit().catch(() => {});
-    await loadStoreFleet().catch(() => {});
-    await loadFinance().catch(() => {});
-    await loadOnboarding().catch(() => {});
-    await syncStoreContent({ silent: true }).catch(() => {});
-  } else {
-    renderPluginAudit();
-    renderTelegramOnboarding();
-  }
+  await loadAccountData();
 }
 
 async function verifyEmailFromUrl() {
@@ -356,11 +357,10 @@ function renderStoreFleet() {
   const runtimeButton = document.querySelector('[data-store-runtime]');
   if (runtimeButton) {
     const awaiting = !selected || selected.status === 'awaiting_credentials';
-    const paused = selected?.status === 'paused';
-    runtimeButton.disabled = !selected;
-    runtimeButton.classList.toggle('button--danger', Boolean(selected && !paused && !awaiting));
-    runtimeButton.classList.toggle('button--primary', !selected || paused || awaiting);
-    runtimeButton.innerHTML = `${icon(awaiting ? 'shield' : paused ? 'bolt' : 'pause')} ${awaiting ? 'Настроить' : paused ? 'Запустить' : 'Остановить'}`;
+    runtimeButton.disabled = !awaiting;
+    runtimeButton.classList.remove('button--danger');
+    runtimeButton.classList.toggle('button--primary', awaiting);
+    runtimeButton.innerHTML = `${icon('shield')} ${awaiting ? 'Настроить' : 'Только чтение'}`;
   }
   const systemHealth = document.querySelector('[data-system-health]');
   if (systemHealth) {
@@ -376,6 +376,10 @@ function renderStoreFleet() {
     button.disabled = connected;
     button.title = connected ? 'ZetSlay поддерживает один аккаунт FunPay.' : '';
   });
+  const security = document.querySelector('[data-security-connections]');
+  if (security) security.textContent = selected ? `FunPay: ${storeStatus(selected).label}. Прокси: ${selected.proxyConfigured ? 'настроен' : 'не настроен'}.` : 'Магазин FunPay ещё не подключён.';
+  document.querySelector('[data-nav-orders]')?.replaceChildren(document.createTextNode(String(state.orders.length)));
+  document.querySelector('[data-nav-messages]')?.replaceChildren(document.createTextNode(String(state.conversations.length)));
   renderDashboard();
 }
 
@@ -406,7 +410,9 @@ function mapConnectionToFleet(connection) {
 
 async function loadStoreFleet() {
   if (!authState.token || !API_BASE_URL) { renderStoreFleet(); return; }
+  const token = authState.token;
   const connection = await apiRequest('/api/v1/funpay/connection', { authenticated: true });
+  if (token !== authState.token) return;
   state.storeFleet = mapConnectionToFleet(connection);
   renderStoreFleet();
 }
@@ -415,31 +421,23 @@ async function setStoreRuntime() {
   const store = selectedStore();
   if (!authState.user) { setAuthModal(true); showToast('Войдите, чтобы управлять магазином'); return; }
   if (!store || store.status === 'awaiting_credentials') { setModal(true); return; }
-  if (API_BASE_URL) {
-    showToast('Управление запуском появится после разрешённой write-автоматизации. Сейчас режим read-only.');
-    return;
-  }
-  // Local demo mode: toggle the runtime flag in memory only.
-  store.demo = true;
-  store.status = store.status === 'paused' ? 'connected_read_only' : 'paused';
-  renderStoreFleet();
-  showToast(store.status === 'paused' ? 'Демо: магазин остановлен' : 'Демо: read-only worker активен', 'success');
+  showToast('Управление запуском недоступно. Сейчас подключение работает только в read-only режиме.');
 }
 
 function renderFinance() {
   const storesTarget = byId('finance-store-list');
   const intentsTarget = byId('withdrawal-intent-list');
   const form = document.querySelector('[data-withdrawal-intent-form]');
-  if (!storesTarget || !intentsTarget) return;
+  if (!storesTarget) return;
   if (!authState.user) {
     storesTarget.innerHTML = '<div class="finance-empty">Войдите, чтобы увидеть балансы подключённых магазинов.</div>';
-    intentsTarget.textContent = 'Журнал намерений появится после входа.';
+    if (intentsTarget) intentsTarget.textContent = 'Журнал намерений появится после входа.';
     if (form) form.hidden = true;
     return;
   }
   if (!state.finance.stores.length) {
-    storesTarget.innerHTML = '<div class="finance-empty">Нет финансового снимка. Подключите магазин в read-only режиме и обновите данные.</div>';
-    intentsTarget.textContent = 'Симулированных намерений пока нет.';
+    storesTarget.innerHTML = '<div class="finance-empty">Баланс пока недоступен текущему read-only коннектору FunPay.</div>';
+    if (intentsTarget) intentsTarget.textContent = 'Симулированных намерений пока нет.';
     if (form) form.hidden = true;
     return;
   }
@@ -454,14 +452,17 @@ function renderFinance() {
     form.hidden = false;
     form.elements.storeId.innerHTML = state.finance.stores.map((store) => `<option value="${escapeHtml(store.storeId)}">${escapeHtml(store.displayName)}</option>`).join('');
   }
-  intentsTarget.innerHTML = state.finance.withdrawalIntents.length
+  if (intentsTarget) intentsTarget.innerHTML = state.finance.withdrawalIntents.length
     ? state.finance.withdrawalIntents.map((intent) => `<article><time>${new Intl.DateTimeFormat('ru-RU', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(intent.createdAt))}</time><strong>${formatMinor(intent.amountMinor, intent.currency)}</strong><span>simulated · деньги не отправлены</span></article>`).join('')
     : 'Симулированных намерений пока нет.';
 }
 
 async function loadFinance() {
   if (!authState.token || !API_BASE_URL) { renderFinance(); return; }
-  state.finance = await apiRequest('/api/v1/finance', { authenticated: true });
+  const token = authState.token;
+  const finance = await apiRequest('/api/v1/finance', { authenticated: true });
+  if (token !== authState.token) return;
+  state.finance = finance;
   renderFinance();
 }
 
@@ -499,7 +500,9 @@ function resetPluginCatalog() {
 
 async function loadPluginCatalog() {
   if (!authState.token || !API_BASE_URL) return;
+  const token = authState.token;
   const catalog = await apiRequest('/api/v1/plugins', { authenticated: true });
+  if (token !== authState.token) return;
   const byPluginId = new Map(catalog.map((plugin) => [plugin.id, plugin]));
   state.plugins = state.plugins.map((plugin) => {
     const backend = byPluginId.get(plugin.id);
@@ -549,13 +552,16 @@ function renderPluginAudit() {
     const time = new Intl.DateTimeFormat('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(new Date(entry.at || entry.createdAt));
     const plugin = state.plugins.find((item) => item.id === entry.pluginId)?.name || entry.pluginId || 'ZetSlay';
     const detail = entry.actionCount != null ? `${entry.actionCount} предлож. действий · simulated` : plugin;
-    return `<article class="plugin-audit__entry"><time>${time}</time><strong>${labels[entry.event] || 'Событие плагина'}</strong><span>${detail}</span></article>`;
+    return `<article class="plugin-audit__entry"><time>${escapeHtml(time)}</time><strong>${escapeHtml(labels[entry.event] || 'Событие плагина')}</strong><span>${escapeHtml(detail)}</span></article>`;
   }).join('');
 }
 
 async function loadPluginAudit() {
   if (!authState.token || !API_BASE_URL) { renderPluginAudit(); return; }
-  state.pluginAudit = await apiRequest('/api/v1/plugins/audit?limit=30', { authenticated: true });
+  const token = authState.token;
+  const audit = await apiRequest('/api/v1/plugins/audit?limit=30', { authenticated: true });
+  if (token !== authState.token) return;
+  state.pluginAudit = audit;
   renderPluginAudit();
 }
 
@@ -569,8 +575,8 @@ function renderDashboard() {
   setText('[data-dash-balance]', metrics.balance ?? '—');
   setText('[data-topbar-balance]', metrics.balance ?? '—');
   setText('[data-dash-orders]', String(state.orders.length));
-  setText('[data-dash-unread]', metrics.unread != null ? String(metrics.unread) : String(state.conversations.reduce((sum, chat) => sum + (chat.unread || 0), 0)));
-  setText('[data-dash-plan]', authState.user ? 'Про' : 'Гостевой');
+  setText('[data-dash-unread]', state.storeContent.observedAt ? String(state.conversations.length) : '—');
+  setText('[data-dash-plan]', authState.workspace?.plan?.active ? (authState.workspace.plan.id || 'Активен') : 'Не активен');
 
   const statusClass = (tone) => (tone === 'green' || tone === 'muted' ? 'table-status--success' : tone === 'yellow' || tone === 'violet' ? 'table-status--processing' : '');
   const ordersTarget = byId('dash-orders-list');
@@ -578,7 +584,7 @@ function renderDashboard() {
     ordersTarget.innerHTML = state.orders.length ? state.orders.slice(0, 4).map((order) => `
       <article>
         <span class="dash-list__icon"><svg><use href="#i-bag"/></svg></span>
-        <div><strong>${escapeHtml(order.id)} · ${escapeHtml(order.product)}</strong><small>${escapeHtml(order.buyer)} · ${escapeHtml(order.time)} назад</small></div>
+        <div><strong>${escapeHtml(order.id)} · ${escapeHtml(order.product)}</strong><small>${escapeHtml(order.buyer)} · ${escapeHtml(order.time)}</small></div>
         <span class="table-status ${statusClass(order.tone)}">${escapeHtml(order.status)}</span>
         <b>${escapeHtml(order.total)}</b>
       </article>`).join('') : '<div class="content-empty">Заказы появятся после синхронизации магазина.</div>';
@@ -598,7 +604,7 @@ function renderDashboard() {
         <div><strong>Ожидает подтверждения</strong><small>вывод средств отключён политикой безопасности</small></div>
         <span class="table-status table-status--processing">Ожидает</span>
         <b>${formatMinor(store.pendingMinor, store.currency)}</b>
-      </article>`).join('') : '<div class="content-empty">Движение средств появится после read-only подключения магазина.</div>';
+      </article>`).join('') : '<div class="content-empty">Баланс пока недоступен текущему read-only коннектору.</div>';
   }
 
   renderDashChart();
@@ -610,11 +616,11 @@ function renderDashChart() {
   const days = byId('dash-chart-days');
   if (!target || !days) return;
   const data = state.analytics;
-  if (!data.length) { target.innerHTML = '<div class="content-empty">Данные появятся после первой недели работы магазина.</div>'; days.innerHTML = ''; return; }
+  if (!data.length) { target.innerHTML = '<div class="content-empty">FunPay пока не отдаёт даты заказов в read-only снимке.</div>'; days.innerHTML = ''; return; }
   const width = 560;
   const height = 150;
   const pad = 8;
-  const values = data.map((point) => point.revenue);
+  const values = data.map((point) => point.orders);
   const max = Math.max(...values, 1);
   const step = (width - pad * 2) / Math.max(values.length - 1, 1);
   const points = values.map((value, index) => [pad + index * step, height - 16 - (value / max) * (height - 34)]);
@@ -679,14 +685,14 @@ function renderOrders() {
   if (!target) return;
   target.innerHTML = state.orders.length ? state.orders.map((order) => `
     <tr>
-      <td><div class="order-cell"><strong>${escapeHtml(order.id)}</strong><small>${escapeHtml(order.time)} назад</small></div></td>
+      <td><div class="order-cell"><strong>${escapeHtml(order.id)}</strong><small>${escapeHtml(order.time)}</small></div></td>
       <td><div class="product-cell"><i>${escapeHtml(String(order.product).slice(0, 2).toUpperCase())}</i><span>${escapeHtml(order.product)}</span></div></td>
       <td><div class="buyer-cell"><span class="avatar ${avatarTone(order.buyer)}">${escapeHtml(String(order.buyer).slice(0, 2).toUpperCase())}</span><span>${escapeHtml(order.buyer)}</span></div></td>
       <td class="cell-right"><strong class="order-amount">${escapeHtml(order.total)}</strong></td>
-      <td><span class="source-pill ${order.status === 'Новый' ? 'source-pill--web' : 'source-pill--auto'}"><i></i>${order.status === 'Новый' ? 'Web' : 'Автопилот'}</span></td>
+      <td><span class="source-pill source-pill--web"><i></i>FunPay</span></td>
       <td><span class="table-status ${order.tone === 'green' || order.tone === 'muted' ? 'table-status--success' : order.tone === 'yellow' || order.tone === 'violet' ? 'table-status--processing' : ''}"><i></i>${escapeHtml(order.status)}</span></td>
       <td><span class="cell-muted">${escapeHtml(order.time)}</span></td>
-      <td class="cell-right"><button class="row-action" data-toast="Заказ ${escapeHtml(order.id)} открыт в read-only режиме" aria-label="Открыть ${escapeHtml(order.id)}">${icon('chevron-right')}</button></td>
+      <td class="cell-right">—</td>
     </tr>`).join('') : '<tr><td colspan="8"><div class="content-empty"><span class="chat-empty__icon"><svg><use href="#i-bag"/></svg></span><strong>Заказов пока нет</strong><p>Запустите магазин и выполните синхронизацию — заказы появятся здесь.</p></div></td></tr>';
   const total = state.orders.length;
   const active = state.orders.filter((order) => !['Завершён', 'Выдан'].includes(order.status)).length;
@@ -739,7 +745,8 @@ function normalizeStoreContent(content) {
       total: order.totalMinor != null ? formatMinor(order.totalMinor, order.currency || 'RUB') : '—',
       status,
       tone: ['Завершён', 'Выдан'].includes(status) ? 'green' : status === 'Спор' ? 'red' : 'yellow',
-      time: order.createdAt ? new Date(order.createdAt).toLocaleString('ru-RU') : 'только что'
+      time: order.createdAt ? new Date(order.createdAt).toLocaleString('ru-RU') : '—',
+      createdAt: order.createdAt || null
     };
   });
   const grouped = new Map();
@@ -749,17 +756,35 @@ function normalizeStoreContent(content) {
     group.messages.push({ text: message.text, sender: message.sender, time: message.createdAt ? new Date(message.createdAt).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) : '' });
     grouped.set(threadId, group);
   });
-  state.conversations = [...grouped.values()].map((group, index) => ({ ...group, initials: group.name.slice(0, 2).toUpperCase(), preview: group.messages.at(-1)?.text || 'Новое сообщение', time: group.messages.at(-1)?.time || 'сейчас', unread: group.messages.length, active: index === 0 }));
+  state.conversations = [...grouped.values()].map((group, index) => ({ ...group, initials: group.name.slice(0, 2).toUpperCase(), preview: group.messages.at(-1)?.text || 'Сообщение без текста', time: group.messages.at(-1)?.time || '—', unread: 0, active: index === 0 }));
   state.lots = (content.lots || []).map((lot) => ({ tag: String(lot.id || 'LOT').slice(0, 12).toUpperCase(), title: lot.title || 'Лот FunPay', price: lot.priceMinor != null ? formatMinor(lot.priceMinor, lot.currency || 'RUB') : '—', stock: lot.stock ?? '—', sales: lot.sales ?? '—', position: lot.position ?? '—', active: lot.status !== 'paused' }));
+  const days = new Map();
+  state.orders.forEach((order) => {
+    if (!order.createdAt) return;
+    const date = new Date(order.createdAt);
+    if (Number.isNaN(date.getTime())) return;
+    const key = date.toISOString().slice(0, 10);
+    const point = days.get(key) || { day: date.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' }), revenue: 0, orders: 0 };
+    point.orders++;
+    days.set(key, point);
+  });
+  state.analytics = [...days.entries()].sort(([a], [b]) => a.localeCompare(b)).slice(-7).map(([, point]) => point);
+  renderAnalytics();
 }
 
 async function syncStoreContent({ silent = false } = {}) {
   const store = selectedStore();
-  if (!authState.user || !API_BASE_URL || !store || store.status !== 'connected_read_only') return;
+  if (!authState.user) { setAuthModal(true); return; }
+  if (!store || store.status !== 'connected_read_only') {
+    if (!silent) showToast('Сначала завершите read-only подключение FunPay.');
+    return;
+  }
+  const generation = sessionGeneration;
   try {
     const content = await apiRequest('/api/v1/funpay/content', { authenticated: true });
+    if (generation !== sessionGeneration) return;
     normalizeStoreContent(content);
-    store.metrics = { balance: formatMinor(content.balance?.availableMinor, content.balance?.currency || 'RUB'), lots: content.lots?.length || 0, unread: content.messages?.length || 0 };
+    store.metrics = { balance: content.balance?.availableMinor != null ? formatMinor(content.balance.availableMinor, content.balance.currency || 'RUB') : '—', lots: content.lots?.length ?? '—', unread: '—' };
     renderStoreFleet(); renderOrders(); renderConversations(); renderLots();
     const health = document.querySelector('[data-messages-health]');
     if (health) { health.className = 'health-pill health-pill--active'; health.innerHTML = '<i></i> Синхронизировано'; }
@@ -850,7 +875,10 @@ async function loadServiceBotUsername() {
 
 async function loadOnboarding() {
   if (!authState.token || !API_BASE_URL) { renderTelegramOnboarding(); return; }
-  state.onboarding = await apiRequest('/api/v1/onboarding', { authenticated: true });
+  const token = authState.token;
+  const onboarding = await apiRequest('/api/v1/onboarding', { authenticated: true });
+  if (token !== authState.token) return;
+  state.onboarding = onboarding;
   await loadServiceBotUsername();
   renderTelegramOnboarding();
 }
@@ -928,21 +956,20 @@ async function submitTelegramOnboarding(form) {
 function renderLots() {
   const target = byId('lot-grid');
   if (!target) return;
-  target.innerHTML = state.lots.map((lot, index) => `
+  target.innerHTML = state.lots.length ? state.lots.map((lot) => `
     <article class="lot-card" style="opacity:${lot.active ? '1' : '.58'}">
-      <div class="lot-card__top"><span>${lot.tag}</span><button class="icon-button" data-toast="Меню лота открыто" aria-label="Меню лота">${icon('more-horizontal')}</button></div>
-      <h3>${lot.title}</h3>
-      <p>${lot.price} · цифровой товар</p>
+      <div class="lot-card__top"><span>${escapeHtml(lot.tag)}</span></div>
+      <h3>${escapeHtml(lot.title)}</h3>
+      <p>${escapeHtml(lot.price)} · FunPay</p>
       <div class="lot-card__stats">
-        <span>Остаток<strong class="${lot.stock === 0 ? 'text-red' : ''}">${lot.stock}</strong></span>
-        <span>Продажи<strong>${lot.sales}</strong></span>
-        <span>Позиция<strong>№${lot.position}</strong></span>
+        <span>Остаток<strong class="${lot.stock === 0 ? 'text-red' : ''}">${escapeHtml(lot.stock)}</strong></span>
+        <span>Продажи<strong>${escapeHtml(lot.sales)}</strong></span>
+        <span>Позиция<strong>${escapeHtml(lot.position)}</strong></span>
       </div>
       <div class="lot-card__bottom">
         <span><i class="node"></i>${lot.active ? 'Активен' : 'На паузе'}</span>
-        <button data-toast="Лот «${lot.tag}» поднят в демо-режиме">${icon('arrow-up')} Поднять</button>
       </div>
-    </article>`).join('');
+    </article>`).join('') : '<div class="content-empty">Лоты появятся после read-only синхронизации, если FunPay отдаёт их для этого магазина.</div>';
 }
 
 function renderAutomations() {
@@ -1365,9 +1392,9 @@ function bindInteractions() {
     if (event.target.closest('[data-auth-open]')) { setAuthModal(true); return; }
     if (event.target.closest('[data-auth-close]')) { stopTelegramLoginPolling(); setAuthModal(false); return; }
     if (event.target.closest('[data-auth-logout]')) {
-      apiRequest('/api/v1/auth/logout', { method: 'POST', authenticated: true }).catch(() => {}).finally(() => {
-        authState.token = ''; authState.user = null; state.finance = { stores: [], withdrawalIntents: [], liveWithdrawalEnabled: false }; sessionStorage.removeItem('zetslay_session'); resetPluginCatalog(); renderFinance(); renderStoreFleet(); renderAuthState(); setAuthMode('login');
-      });
+      apiRequest('/api/v1/auth/logout', { method: 'POST', authenticated: true }).catch(() => {});
+      clearSession();
+      setView('dashboard');
       return;
     }
     const viewButton = event.target.closest('[data-view-target], [data-view-link]');
