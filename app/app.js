@@ -120,17 +120,33 @@ function renderAuthState() {
 
 function setAuthMode(mode) {
   authState.mode = mode === 'register' ? 'register' : 'login';
-  document.querySelectorAll('[data-auth-mode]').forEach((button) => button.classList.toggle('is-active', button.dataset.authMode === authState.mode));
   const title = byId('auth-modal-title');
   const submit = document.querySelector('[data-auth-submit]');
   const password = document.querySelector('[data-auth-form] input[name="password"]');
   const intro = document.querySelector('.auth-intro');
+  const switchButton = document.querySelector('[data-auth-switch]');
+  const switchCopy = document.querySelector('[data-auth-switch-copy]');
   if (title) title.textContent = authState.mode === 'register' ? 'Создать аккаунт' : 'Вход в кабинет';
   if (submit) submit.textContent = authState.mode === 'register' ? 'Зарегистрироваться' : 'Войти';
   if (intro) intro.textContent = authState.mode === 'register'
     ? 'Создайте аккаунт для одного магазина FunPay.'
     : 'Войдите, чтобы продолжить работу с вашим магазином.';
-  if (password) password.autocomplete = authState.mode === 'register' ? 'new-password' : 'current-password';
+  if (switchButton) {
+    switchButton.dataset.authMode = authState.mode === 'register' ? 'login' : 'register';
+    switchButton.textContent = authState.mode === 'register' ? 'Войти' : 'Создать аккаунт';
+  }
+  if (switchCopy) switchCopy.textContent = authState.mode === 'register' ? 'Уже есть аккаунт?' : 'Ещё нет аккаунта?';
+  document.querySelectorAll('[data-auth-mode]').forEach((button) => button.classList.toggle('is-active', button.dataset.authMode === authState.mode));
+  if (password) {
+    password.value = '';
+    password.type = 'password';
+    password.autocomplete = authState.mode === 'register' ? 'new-password' : 'current-password';
+  }
+  const reveal = document.querySelector('[data-password-toggle]');
+  if (reveal) {
+    reveal.setAttribute('aria-pressed', 'false');
+    reveal.setAttribute('aria-label', 'Показать пароль');
+  }
   const message = document.querySelector('[data-auth-message]');
   if (message) { message.textContent = ''; message.className = 'auth-message'; }
 }
@@ -288,7 +304,6 @@ async function startTelegramLogin(button) {
 }
 
 async function restoreSession() {
-  document.querySelector('[data-api-state]').textContent = API_BASE_URL || 'не настроен';
   if (!authState.token) { renderAuthState(); setAuthModal(true); return; }
   try {
     const context = await apiRequest('/api/v1/me', { authenticated: true });
@@ -1385,6 +1400,16 @@ function bindInteractions() {
   document.addEventListener('click', (event) => {
     const noticeDismiss = event.target.closest('[data-notice-dismiss]');
     if (noticeDismiss) { noticeDismiss.closest('.notice-banner')?.remove(); return; }
+    const passwordToggle = event.target.closest('[data-password-toggle]');
+    if (passwordToggle) {
+      const password = document.querySelector('[data-auth-form] input[name="password"]');
+      if (!password) return;
+      const visible = password.type === 'password';
+      password.type = visible ? 'text' : 'password';
+      passwordToggle.setAttribute('aria-pressed', String(visible));
+      passwordToggle.setAttribute('aria-label', visible ? 'Скрыть пароль' : 'Показать пароль');
+      return;
+    }
     const authMode = event.target.closest('[data-auth-mode]');
     if (authMode) { setAuthMode(authMode.dataset.authMode); return; }
     const telegramLogin = event.target.closest('[data-telegram-login]');
