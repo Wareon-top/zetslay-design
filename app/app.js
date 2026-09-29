@@ -935,6 +935,7 @@ function renderTelegramOnboarding() {
 
 // Service bot username for deep links (server tells it via onboarding status or ?bot= override)
 let serviceBotUsername = new URLSearchParams(location.search).get('bot') || '';
+let onboardingRevision = 0;
 async function loadServiceBotUsername() {
   if (serviceBotUsername || !authState.token || !API_BASE_URL) return;
   try {
@@ -946,8 +947,9 @@ async function loadServiceBotUsername() {
 async function loadOnboarding() {
   if (!authState.token || !API_BASE_URL) { renderTelegramOnboarding(); return; }
   const token = authState.token;
+  const revision = onboardingRevision;
   const onboarding = await apiRequest('/api/v1/onboarding', { authenticated: true });
-  if (token !== authState.token) return;
+  if (token !== authState.token || revision !== onboardingRevision) return;
   state.onboarding = onboarding;
   await loadServiceBotUsername();
   renderTelegramOnboarding();
@@ -1434,6 +1436,7 @@ async function advanceConnectionWizard() {
   try {
     if (connectionStep === 0 && planRequired) {
       const activated = await apiRequest('/api/v1/onboarding/demo-plan', { method: 'POST', authenticated: true, body: {} });
+      onboardingRevision += 1;
       authState.workspace = activated.workspace;
       state.onboarding = activated.onboarding;
       connectionStep = wizardInitialStep();
