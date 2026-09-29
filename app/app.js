@@ -69,8 +69,10 @@ const errorMessages = {
   RATE_LIMITED: 'Слишком много запросов. Подождите и повторите попытку.',
   TELEGRAM_BOT_REJECTED: 'Bot Token не прошёл проверку Telegram.',
   EMAIL_VERIFICATION_REQUIRED: 'Подтвердите email по ссылке из письма.',
+  EMAIL_DELIVERY_UNAVAILABLE: 'Письмо пока не отправилось. Повторите отправку через несколько минут.',
 };
 const humanError = (error) => errorMessages[error?.code] || (error?.message === 'Failed to fetch' ? 'Backend ZetSlay недоступен. Проверьте адрес API и состояние сервера.' : error?.message) || 'Не удалось выполнить действие.';
+let registrationEmail = '';
 
 async function apiRequest(path, { method = 'GET', body, authenticated = false } = {}) {
   if (!API_BASE_URL) { const error = new Error('API_URL_MISSING'); error.code = 'API_URL_MISSING'; throw error; }
@@ -149,6 +151,8 @@ function setAuthMode(mode) {
   }
   const message = document.querySelector('[data-auth-message]');
   if (message) { message.textContent = ''; message.className = 'auth-message'; }
+  const resend = document.querySelector('[data-auth-resend]');
+  if (resend) resend.hidden = true;
 }
 
 function setAuthModal(open) {
@@ -243,9 +247,12 @@ async function submitAuth(form) {
         showToast('Аккаунт создан. Добро пожаловать в кабинет.', 'success');
         return;
       }
+      registrationEmail = body.email;
       setAuthMode('login');
+      form.querySelector('input[name="email"]').value = body.email;
       message.classList.add('is-success');
       message.textContent = 'Аккаунт создан. Подтвердите адрес по письму, затем войдите.';
+      form.querySelector('[data-auth-resend]').hidden = false;
       return;
     }
     const session = await apiRequest('/api/v1/auth/login', { method: 'POST', body });
@@ -255,8 +262,32 @@ async function submitAuth(form) {
   } catch (error) {
     message.classList.add('is-error');
     message.textContent = humanError(error);
+    if (['EMAIL_VERIFICATION_REQUIRED', 'EMAIL_DELIVERY_UNAVAILABLE'].includes(error?.code)) {
+      registrationEmail = body.email;
+      form.querySelector('[data-auth-resend]').hidden = false;
+    }
   } finally {
     submit.disabled = false;
+  }
+}
+
+async function resendVerification(button) {
+  const form = document.querySelector('[data-auth-form]');
+  const message = form.querySelector('[data-auth-message]');
+  const email = form.querySelector('input[name="email"]').value.trim() || registrationEmail;
+  if (!email) { message.textContent = 'Введите email для повторной отправки.'; return; }
+  button.disabled = true;
+  message.className = 'auth-message';
+  message.textContent = 'Отправляем письмо…';
+  try {
+    await apiRequest('/api/v1/auth/resend-verification', { method: 'POST', body: { email } });
+    message.classList.add('is-success');
+    message.textContent = 'Если адрес ожидает подтверждения, письмо отправлено. Проверьте также папку «Спам».';
+  } catch (error) {
+    message.classList.add('is-error');
+    message.textContent = humanError(error);
+  } finally {
+    button.disabled = false;
   }
 }
 
@@ -1626,6 +1657,7 @@ function init() {
     event.preventDefault();
     submitAuth(event.currentTarget);
   });
+  document.querySelector('[data-auth-resend]')?.addEventListener('click', (event) => resendVerification(event.currentTarget));
   document.querySelector('[data-plugin-settings]')?.addEventListener('submit', (event) => {
     event.preventDefault();
     savePluginSettings(event.currentTarget);
