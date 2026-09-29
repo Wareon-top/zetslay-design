@@ -142,3 +142,23 @@ test('demo activation failure remains visible inside the connection wizard', asy
   assert.equal(modal.error.hidden, false);
   assert.equal(modal.action.disabled, false);
 });
+
+test('late onboarding response cannot roll back an activated plan', async () => {
+  const app = cabinet({ token: 'session', modal: fakeModal() });
+  app.run('authState.user = { email: "seller@example.com" }; serviceBotUsername = "zetslay_bot"; state.onboarding = { state: "plan_required", demoPlanAvailable: true, telegram: {}, funPay: {} }');
+  app.context.renderTelegramOnboarding = () => {};
+  app.context.renderDashboard = () => {};
+  app.context.showToast = () => {};
+  let resolveOldStatus;
+  const oldStatus = new Promise((resolve) => { resolveOldStatus = resolve; });
+  app.context.apiRequest = async (path) => path === '/api/v1/onboarding' ? oldStatus : {
+    workspace: { plan: { active: true } },
+    onboarding: { state: 'telegram_bot_required', demoPlanAvailable: true, telegram: {}, funPay: {} }
+  };
+  const pending = app.run('loadOnboarding()');
+  await app.run('advanceConnectionWizard()');
+  resolveOldStatus({ state: 'plan_required', demoPlanAvailable: true, telegram: {}, funPay: {} });
+  await pending;
+  assert.equal(app.run('state.onboarding.state'), 'telegram_bot_required');
+  assert.equal(app.run('authState.workspace.plan.active'), true);
+});
