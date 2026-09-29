@@ -68,6 +68,8 @@ const errorMessages = {
   CAPTCHA_REQUIRED: 'FunPay запросил CAPTCHA. ZetSlay остановил подключение — подтвердите вход вручную.',
   RATE_LIMITED: 'Слишком много запросов. Подождите и повторите попытку.',
   TELEGRAM_BOT_REJECTED: 'Bot Token не прошёл проверку Telegram.',
+  TELEGRAM_REJECTED: 'Telegram отклонил регистрацию webhook. Проверьте доступность HTTPS API и повторите попытку.',
+  TELEGRAM_UNAVAILABLE: 'Telegram API сейчас недоступен. Повторите подключение позже.',
   EMAIL_VERIFICATION_REQUIRED: 'Подтвердите email по ссылке из письма.',
   EMAIL_DELIVERY_UNAVAILABLE: 'Регистрация по email временно недоступна. Можно войти через Telegram или повторить позже.',
 };
@@ -198,6 +200,8 @@ function resetAccountData() {
 
 function clearSession() {
   sessionGeneration++;
+  stopConnectionLinkPolling();
+  connectionStatus = null;
   authState.token = '';
   authState.user = null;
   authState.workspace = null;
@@ -1278,6 +1282,35 @@ let connectionBusy = false;
 let connectionLoading = false;
 let connectionLoadFailed = false;
 let connectionError = '';
+let connectionLinkTimer = null;
+function stopConnectionLinkPolling() {
+  if (connectionLinkTimer) { clearInterval(connectionLinkTimer); connectionLinkTimer = null; }
+}
+function startConnectionLinkPolling() {
+  stopConnectionLinkPolling();
+  connectionLinkTimer = setInterval(async () => {
+    if (connectionBusy || connectionLoading) return;
+    try {
+      const status = await apiRequest('/api/v1/onboarding', { authenticated: true });
+      if (document.querySelector('.connect-modal')?.hidden) return;
+      state.onboarding = status;
+      if (status.telegram?.linked) {
+        stopConnectionLinkPolling();
+        connectionStatus = null;
+        connectionStep = wizardInitialStep();
+        renderTelegramOnboarding();
+        showToast('Бот подтвердил привязку', 'success');
+      }
+      renderConnectionWizard();
+    } catch { /* A manual status check remains available. */ }
+  }, 3000);
+}
+function validConnectionCode() {
+  if (!connectionStatus?.linkCode) return null;
+  if (state.onboarding?.workspaceId && connectionStatus.workspaceId !== state.onboarding.workspaceId) { connectionStatus = null; return null; }
+  if (Date.now() >= Date.parse(connectionStatus.expiresAt)) { connectionStatus = null; return null; }
+  return connectionStatus.linkCode;
+}
 const connectionDemoSteps = [
   { icon: 'card', title: 'Один аккаунт FunPay', text: 'ZetSlay подключает только один аккаунт к одному рабочему пространству. В демонстрации реальные секретные поля отключены.', points: ['Один аккаунт FunPay', 'Один worker', 'Один закреплённый proxy'], action: 'Посмотреть Golden Key' },
   { icon: 'lock', title: 'Golden Key вашего аккаунта', text: 'Ключ передаётся только защищённому API, шифруется в vault и никогда не возвращается в интерфейс.', points: ['Отдельная vault-ссылка', 'Нет ключа в PostgreSQL', 'Поле очищается после отправки'], action: 'Посмотреть прокси' },
@@ -1305,9 +1338,11 @@ function renderConnectionWizard() {
   if (!modal) return;
   const body = modal.querySelector('.connect-modal__body');
   const action = modal.querySelector('[data-connect-next]');
+  const back = modal.querySelector('[data-connect-back]');
   const mode = modal.querySelector('[data-connection-mode]');
   const error = modal.querySelector('[data-connect-error]');
   if (error) { error.textContent = connectionError; error.hidden = !connectionError; }
+  if (back) { back.hidden = connectionStep === 0 || connectionLoading || connectionLoadFailed; back.disabled = connectionBusy; }
   modal.querySelectorAll('.connect-progress > span').forEach((item, index) => {
     item.classList.toggle('is-active', index === connectionStep);
     item.classList.toggle('is-complete', index < connectionStep);
@@ -1333,7 +1368,12 @@ function renderConnectionWizard() {
   }
   const onboarding = state.onboarding;
   const planRequired = onboarding?.state === 'plan_required' || (!onboarding && !connectionStatus);
-  const linkCode = connectionStatus?.linkCode;
+  const linkCode = validConnectionCode();
+  const initialStep = wizardInitialStep();
+  const configuredBot = Boolean(onboarding?.telegram?.botConfigured);
+  const linkedBot = Boolean(onboarding?.telegram?.linked);
+  const botName = onboarding?.telegram?.bot?.username;
+  const botLink = /^[A-Za-z0-9_]{5,32}$/.test(botName || '') ? `https://t.me/${botName}` : null;
   const worker = state.storeFleet.stores[0]?.workerId || 'будет создан автоматически';
   const checks = [
     `Телеграм-бот <b>${onboarding?.telegram?.botConfigured ? 'Проверен' : 'Ожидается'}</b>`,
@@ -1344,17 +1384,18 @@ function renderConnectionWizard() {
   const pages = [
     planRequired
       ? `<span class="connect-illustration">${icon('card')}<i></i></span><h3>Сначала активный тариф</h3><p>${onboarding?.demoPlanAvailable ? 'На этом сервере доступна демо-активация тарифа для проверки подключения.' : 'Тариф пока не активен. Подключение магазина станет доступно после активации тарифа ZetSlay.'}</p><div class="connection-checks"><span>Тариф <b>Не активен</b></span></div>`
-      : `<span class="connect-illustration">${icon('send')}<i></i></span><h3>Ваш рабочий бот Telegram</h3><p>Создайте бота через @BotFather и вставьте его Bot Token. Он станет рабочим инструментом вашего магазина: уведомления и автоматизация.</p><div class="connection-form"><label>Bot Token<input type="password" name="botToken" minlength="10" maxlength="256" autocomplete="off" spellcheck="false" placeholder="123456789:AA..."></label><small>Токен уйдёт напрямую в зашифрованный vault и не отобразится второй раз.</small></div>`,
-    `<span class="connect-illustration">${icon('user')}<i></i></span><h3>Одноразовый код привязки</h3><p>Откройте своего бота в Telegram и отправьте команду</p><div class="connection-store-badge"><span class="store-logo">TG</span><span><strong>/start ${escapeHtml(linkCode || '——')}</strong><small>Код действует 10 минут и виден один раз</small></span></div><div class="connection-checks"><span>Ожидание подтверждения <b>${onboarding?.telegram?.linked ? 'Подтверждено' : '…'}</b></span></div>`,
-    `<span class="connect-illustration">${icon('lock')}<i></i></span><h3>Golden Key</h3><p>${onboarding?.state === 'blocked' ? 'Предыдущая проверка остановлена. Укажите актуальный ключ и затем прокси для повторной проверки.' : 'Ключ отправляется напрямую в vault для вашего единственного аккаунта и не возвращается обратно.'}</p><div class="connection-form"><label>Golden Key<input type="password" name="goldenKey" minlength="12" maxlength="4096" autocomplete="off" spellcheck="false" placeholder="Вставьте ключ один раз"></label><small>Не отправляйте Golden Key в Telegram или поддержку.</small></div>`,
-    `<span class="connect-illustration">${icon('shield')}<i></i></span><h3>Обязательный прокси</h3><p>Этот прокси будет использовать только worker <strong>${escapeHtml(worker)}</strong> для стабильного подключения.</p><div class="connection-form"><label>Proxy URL<input type="password" name="proxyUrl" maxlength="2048" autocomplete="off" spellcheck="false" placeholder="http://user:password@host:port"></label><small>Формат: http://user:password@host:port (или https://). Адрес и пароль не появятся в ответе API.</small></div>`,
+      : linkedBot ? `<span class="connect-illustration">${icon('check')}<i></i></span><h3>Бот подключён</h3><p>Ваш бот ${escapeHtml(botName ? `@${botName}` : '')} уже привязан. Можно вернуться к следующим шагам.</p>`
+        : `<span class="connect-illustration">${icon('send')}<i></i></span><h3>${configuredBot ? 'Заменить Telegram-бота' : 'Ваш рабочий бот Telegram'}</h3><p>${configuredBot ? `Сейчас сохранён ${escapeHtml(botName ? `@${botName}` : 'бот')}. Новый Bot Token заменит его и сбросит выданный код привязки.` : 'Создайте бота через @BotFather и вставьте его Bot Token. Он будет отправлять уведомления вашего магазина.'}</p><div class="connection-form"><label>Bot Token<input type="password" name="botToken" minlength="10" maxlength="256" autocomplete="off" spellcheck="false" placeholder="123456789:AA..."></label><small>Токен отправится только в зашифрованный vault. Не передавайте его в Telegram.</small></div>${configuredBot ? '<div class="connect-helper"><button type="button" data-connect-return>Вернуться к коду без замены</button></div>' : ''}`,
+    `<span class="connect-illustration">${icon('user')}<i></i></span><h3>${linkedBot ? 'Telegram привязан' : 'Привязка Telegram'}</h3><p>${linkedBot ? 'Подтверждение получено. Продолжайте подключение магазина.' : `Команду нужно отправить именно вашему боту ${escapeHtml(botName ? `@${botName}` : '')}. Сначала проверьте его связь и получите код.`}</p>${!linkedBot && linkCode ? `<div class="connection-store-badge"><span class="store-logo">TG</span><span><strong>/start ${escapeHtml(linkCode)}</strong><small>Код действует до ${escapeHtml(new Date(connectionStatus.expiresAt).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }))}; команда отправляется боту, не @BotFather.</small></span></div>` : ''}${!linkedBot ? `<div class="connect-helper">${botLink ? `<a href="${botLink}${linkCode ? `?start=${encodeURIComponent(linkCode)}` : ''}" target="_blank" rel="noopener noreferrer">Открыть @${escapeHtml(botName)} в Telegram</a>` : ''}${linkCode ? '<button type="button" data-connect-repair>Проверить webhook бота</button>' : ''}</div><div class="connection-checks"><span>Ответ бота <b>После /start проверьте подтверждение в чате</b></span></div>` : ''}`,
+    `<span class="connect-illustration">${icon('lock')}<i></i></span><h3>Golden Key</h3><p>${onboarding?.funPay?.credentialConfigured && connectionStep < initialStep ? 'Ключ уже сохранён в vault. Значение повторно не показывается.' : onboarding?.state === 'blocked' ? 'Предыдущая проверка остановлена. Укажите актуальный ключ и затем прокси для повторной проверки.' : 'Ключ отправляется напрямую в vault для вашего единственного аккаунта и не возвращается обратно.'}</p>${onboarding?.funPay?.credentialConfigured && connectionStep < initialStep ? '' : '<div class="connection-form"><label>Golden Key<input type="password" name="goldenKey" minlength="12" maxlength="4096" autocomplete="off" spellcheck="false" placeholder="Вставьте ключ один раз"></label><small>Не отправляйте Golden Key в Telegram или поддержку.</small></div>'}`,
+    `<span class="connect-illustration">${icon('shield')}<i></i></span><h3>Обязательный прокси</h3><p>${onboarding?.funPay?.proxyConfigured && connectionStep < initialStep ? 'Прокси уже закреплён за магазином. Значение повторно не показывается.' : `Этот прокси будет использовать только worker <strong>${escapeHtml(worker)}</strong> для стабильного подключения.`}</p>${onboarding?.funPay?.proxyConfigured && connectionStep < initialStep ? '' : '<div class="connection-form"><label>Proxy URL<input type="password" name="proxyUrl" maxlength="2048" autocomplete="off" spellcheck="false" placeholder="http://user:password@host:port"></label><small>Формат: http://user:password@host:port (или https://). Адрес и пароль не появятся в ответе API.</small></div>'}`,
     `<span class="connect-illustration connect-illustration--success">${icon('check')}<i></i></span><h3>Read-only проверка</h3><p>ZetSlay проверит аккаунт, чтение заказов и чатов через закреплённый прокси. Лоты и баланс сейчас недоступны; данные на FunPay не изменяются.</p><div class="connection-checks">${checks.map((line) => `<span>${line.split(' <b>')[0]} <b>${line.split(' <b>')[1]}</b></span>`).join('')}<span>Live-действия <b>Отключены</b></span></div>`
   ];
   if (body) body.innerHTML = pages[connectionStep] || pages.at(-1);
   if (action) {
-    const labels = planRequired ? [onboarding?.demoPlanAvailable ? 'Активировать демо-тариф' : 'Тариф не активен'] : ['Сохранить Bot Token', 'Проверить привязку', 'Сохранить Golden Key', 'Закрепить прокси', 'Запустить read-only проверку'];
+    const labels = planRequired ? [onboarding?.demoPlanAvailable ? 'Активировать демо-тариф' : 'Тариф не активен'] : [configuredBot && !linkedBot ? 'Заменить бота' : 'Сохранить Bot Token', linkedBot ? 'Продолжить' : linkCode ? 'Проверить привязку' : 'Проверить бота и получить код', 'Сохранить Golden Key', 'Закрепить прокси', 'Запустить read-only проверку'];
     action.disabled = connectionBusy || (planRequired && !onboarding?.demoPlanAvailable);
-    action.innerHTML = `${connectionBusy ? 'Проверяем…' : labels[connectionStep] || labels.at(-1)} ${icon('chevron-right')}`;
+    action.innerHTML = `${connectionBusy ? 'Проверяем…' : connectionStep < initialStep && !(connectionStep === 0 && configuredBot && !linkedBot) ? 'Продолжить' : labels[connectionStep] || labels.at(-1)} ${icon('chevron-right')}`;
   }
 }
 
@@ -1367,6 +1408,7 @@ async function refreshConnectionWizard() {
   try {
     await loadOnboarding();
     connectionStep = wizardInitialStep();
+    if (connectionStep === 1 && validConnectionCode()) startConnectionLinkPolling();
   } catch (error) {
     connectionLoadFailed = true;
     connectionError = humanError(error);
@@ -1382,7 +1424,7 @@ function setModal(open) {
   if (!modal) return;
   if (open) {
     modal.hidden = false;
-    connectionStatus = null;
+    validConnectionCode();
     connectionStep = liveConnectionMode() ? wizardInitialStep() : 0;
     connectionError = '';
     if (liveConnectionMode()) refreshConnectionWizard();
@@ -1396,9 +1438,33 @@ function setModal(open) {
   if (open) {
     window.setTimeout(() => modal.querySelector('button')?.focus(), 30);
   } else {
+    stopConnectionLinkPolling();
     window.setTimeout(() => {
       if (!modal.classList.contains('is-open')) modal.hidden = true;
     }, 220);
+  }
+}
+
+function backConnectionWizard() {
+  if (connectionBusy || connectionLoading || connectionStep <= 0) return;
+  connectionError = '';
+  connectionStep -= 1;
+  renderConnectionWizard();
+}
+
+async function repairConnectionWebhook() {
+  if (connectionBusy || connectionLoading) return;
+  connectionBusy = true;
+  connectionError = '';
+  renderConnectionWizard();
+  try {
+    state.onboarding = await apiRequest('/api/v1/onboarding/telegram/webhook', { method: 'POST', authenticated: true, body: {} });
+    showToast('Связь с ботом восстановлена. Отправьте команду /start ещё раз.', 'success');
+  } catch (error) {
+    connectionError = humanError(error);
+  } finally {
+    connectionBusy = false;
+    renderConnectionWizard();
   }
 }
 
@@ -1417,6 +1483,12 @@ async function advanceConnectionWizard() {
   if (connectionLoadFailed || !state.onboarding) { await refreshConnectionWizard(); return; }
   const modal = document.querySelector('.connect-modal');
   const planRequired = state.onboarding?.state === 'plan_required';
+  if (!planRequired && connectionStep < wizardInitialStep() &&
+      !(connectionStep === 0 && state.onboarding.telegram?.botConfigured && !state.onboarding.telegram?.linked)) {
+    connectionStep += 1;
+    renderConnectionWizard();
+    return;
+  }
   let submittedValue = null;
   if (connectionStep === 0 && !planRequired) {
     submittedValue = modal.querySelector('input[name="botToken"]')?.value;
@@ -1448,22 +1520,27 @@ async function advanceConnectionWizard() {
     if (connectionStep === 0) {
       state.onboarding = await apiRequest('/api/v1/onboarding/telegram/bot', { method: 'POST', authenticated: true, body: { token: submittedValue } });
       submittedValue = null;
+      connectionStatus = null;
       showToast('Bot Token принят', 'success');
     } else if (connectionStep === 1) {
-      if (!connectionStatus?.linkCode || connectionStatus.linkCode === '——') {
+      if (!validConnectionCode()) {
+        state.onboarding = await apiRequest('/api/v1/onboarding/telegram/webhook', { method: 'POST', authenticated: true, body: {} });
         const issued = await apiRequest('/api/v1/onboarding/telegram/link-code', { method: 'POST', authenticated: true, body: {} });
-        connectionStatus = { linkCode: issued.code, expiresAt: issued.expiresAt };
+        connectionStatus = { linkCode: issued.code, expiresAt: issued.expiresAt, workspaceId: issued.onboarding.workspaceId };
         state.onboarding = issued.onboarding;
-        showToast('Код создан. Отправьте /start ' + issued.code + ' вашему боту', 'success');
+        startConnectionLinkPolling();
+        showToast('Код создан. Отправьте команду вашему боту в Telegram.', 'success');
         renderConnectionWizard();
         return;
       }
       const status = await apiRequest('/api/v1/onboarding', { authenticated: true });
       state.onboarding = status;
       if (!status.telegram?.linked) {
-        showToast('Привязка ещё не подтверждена. Отправьте боту /start с кодом', 'error');
+        connectionError = 'Подтверждение ещё не получено. Отправьте команду своему боту и проверьте его ответ. При отсутствии ответа нажмите «Проверить webhook бота».';
         return;
       }
+      stopConnectionLinkPolling();
+      connectionStatus = null;
       showToast('Telegram привязан', 'success');
     } else if (connectionStep === 2) {
       state.onboarding = await apiRequest('/api/v1/onboarding/funpay/key', { method: 'POST', authenticated: true, body: { goldenKey: submittedValue } });
@@ -1561,6 +1638,8 @@ function bindInteractions() {
       setModal(false);
       return;
     }
+    if (event.target.closest('[data-connect-return]')) { connectionStep = 1; connectionError = ''; renderConnectionWizard(); return; }
+    if (event.target.closest('[data-connect-repair]')) { repairConnectionWebhook(); return; }
 
     const guideTab = event.target.closest('[data-guide-target]');
     if (guideTab) {
@@ -1654,6 +1733,7 @@ function bindInteractions() {
   });
 
   document.querySelector('[data-connect-next]')?.addEventListener('click', () => advanceConnectionWizard());
+  document.querySelector('[data-connect-back]')?.addEventListener('click', () => backConnectionWizard());
 
   document.querySelector('[data-plugin-search]')?.addEventListener('input', (event) => {
     state.pluginFilter.query = event.target.value || '';
