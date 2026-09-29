@@ -805,6 +805,9 @@ async function syncStoreContent({ silent = false } = {}) {
     if (health) { health.className = 'health-pill health-pill--active'; health.innerHTML = '<i></i> Синхронизировано'; }
     if (!silent) showToast('Заказы и сообщения обновлены', 'success');
   } catch (error) {
+    if (['AUTH_REJECTED', 'CAPTCHA_REQUIRED', 'READ_ONLY_VIOLATION', 'PLATFORM_UNAVAILABLE'].includes(error?.code)) {
+      await Promise.allSettled([loadOnboarding(), loadStoreFleet()]);
+    }
     if (!silent) showToast(humanError(error), 'error');
     throw error;
   }
