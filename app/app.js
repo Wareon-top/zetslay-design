@@ -348,19 +348,40 @@ async function restoreSession() {
   await loadAccountData();
 }
 
+async function initializeAuthFlow() {
+  const requestedMode = new URLSearchParams(location.search).get('auth');
+  await restoreSession();
+  if (authState.user) {
+    setAuthModal(false);
+    if (requestedMode === 'login' || requestedMode === 'register') {
+      const cleanUrl = new URL(location.href);
+      cleanUrl.searchParams.delete('auth');
+      history.replaceState(null, '', `${cleanUrl.pathname}${cleanUrl.search}${cleanUrl.hash}`);
+    }
+  } else if (requestedMode === 'login' || requestedMode === 'register') {
+    setAuthMode(requestedMode);
+    setAuthModal(true);
+  }
+  await verifyEmailFromUrl();
+}
+
 async function verifyEmailFromUrl() {
   const token = new URLSearchParams(location.search).get('verify');
   if (!token) return;
-  setAuthMode('login');
-  setAuthModal(true);
+  if (!authState.user) {
+    setAuthMode('login');
+    setAuthModal(true);
+  }
   const message = document.querySelector('[data-auth-message]');
-  if (message) { message.className = 'auth-message'; message.textContent = 'Подтверждаем email…'; }
+  if (!authState.user && message) { message.className = 'auth-message'; message.textContent = 'Подтверждаем email…'; }
   try {
     await apiRequest('/api/v1/auth/verify-email', { method: 'POST', body: { token } });
-    if (message) { message.classList.add('is-success'); message.textContent = 'Email подтверждён. Теперь войдите в ZetSlay.'; }
+    if (authState.user) showToast('Email подтверждён', 'success');
+    else if (message) { message.classList.add('is-success'); message.textContent = 'Email подтверждён. Теперь войдите в ZetSlay.'; }
     const cleanUrl = new URL(location.href); cleanUrl.searchParams.delete('verify'); history.replaceState(null, '', `${cleanUrl.pathname}${cleanUrl.search}${cleanUrl.hash}`);
   } catch (error) {
-    if (message) { message.classList.add('is-error'); message.textContent = humanError(error); }
+    if (authState.user) showToast(humanError(error), 'error');
+    else if (message) { message.classList.add('is-error'); message.textContent = humanError(error); }
   }
 }
 
@@ -1252,6 +1273,9 @@ function showToast(message, tone = 'default') {
 let connectionStep = 0;
 let connectionStatus = null;
 let connectionBusy = false;
+let connectionLoading = false;
+let connectionLoadFailed = false;
+let connectionError = '';
 const connectionDemoSteps = [
   { icon: 'card', title: 'Один аккаунт FunPay', text: 'ZetSlay подключает только один аккаунт к одному рабочему пространству. В демонстрации реальные секретные поля отключены.', points: ['Один аккаунт FunPay', 'Один worker', 'Один закреплённый proxy'], action: 'Посмотреть Golden Key' },
   { icon: 'lock', title: 'Golden Key вашего аккаунта', text: 'Ключ передаётся только защищённому API, шифруется в vault и никогда не возвращается в интерфейс.', points: ['Отдельная vault-ссылка', 'Нет ключа в PostgreSQL', 'Поле очищается после отправки'], action: 'Посмотреть прокси' },
@@ -1280,6 +1304,8 @@ function renderConnectionWizard() {
   const body = modal.querySelector('.connect-modal__body');
   const action = modal.querySelector('[data-connect-next]');
   const mode = modal.querySelector('[data-connection-mode]');
+  const error = modal.querySelector('[data-connect-error]');
+  if (error) { error.textContent = connectionError; error.hidden = !connectionError; }
   modal.querySelectorAll('.connect-progress > span').forEach((item, index) => {
     item.classList.toggle('is-active', index === connectionStep);
     item.classList.toggle('is-complete', index < connectionStep);
@@ -1293,6 +1319,16 @@ function renderConnectionWizard() {
     return;
   }
   if (mode) mode.textContent = 'Один аккаунт FunPay · защищённое подключение';
+  if (connectionLoading || connectionLoadFailed) {
+    if (body) body.innerHTML = connectionLoading
+      ? `<span class="connect-illustration">${icon('shield')}<i></i></span><h3>Загружаем состояние подключения</h3><p>Проверяем тариф и шаги подключения вашего магазина.</p>`
+      : `<span class="connect-illustration">${icon('help')}<i></i></span><h3>Статус не загрузился</h3><p>Повторите запрос. Пока статус неизвестен, данные для подключения не принимаются.</p>`;
+    if (action) {
+      action.disabled = connectionLoading;
+      action.innerHTML = `${connectionLoading ? 'Загружаем…' : 'Повторить загрузку'} ${icon('chevron-right')}`;
+    }
+    return;
+  }
   const onboarding = state.onboarding;
   const planRequired = onboarding?.state === 'plan_required' || (!onboarding && !connectionStatus);
   const linkCode = connectionStatus?.linkCode;
@@ -1320,6 +1356,24 @@ function renderConnectionWizard() {
   }
 }
 
+async function refreshConnectionWizard() {
+  if (connectionLoading) return;
+  connectionLoading = true;
+  connectionLoadFailed = false;
+  connectionError = '';
+  renderConnectionWizard();
+  try {
+    await loadOnboarding();
+    connectionStep = wizardInitialStep();
+  } catch (error) {
+    connectionLoadFailed = true;
+    connectionError = humanError(error);
+  } finally {
+    connectionLoading = false;
+    renderConnectionWizard();
+  }
+}
+
 function setModal(open) {
   const modal = document.querySelector('.connect-modal');
   const backdrop = document.querySelector('.modal-backdrop');
@@ -1328,7 +1382,9 @@ function setModal(open) {
     modal.hidden = false;
     connectionStatus = null;
     connectionStep = liveConnectionMode() ? wizardInitialStep() : 0;
-    renderConnectionWizard();
+    connectionError = '';
+    if (liveConnectionMode()) refreshConnectionWizard();
+    else renderConnectionWizard();
   }
   requestAnimationFrame(() => {
     modal.classList.toggle('is-open', open);
@@ -1355,7 +1411,8 @@ async function advanceConnectionWizard() {
     showToast('Демонстрация завершена. Реальные секреты не вводились.', 'success');
     return;
   }
-  if (connectionBusy) return;
+  if (connectionBusy || connectionLoading) return;
+  if (connectionLoadFailed || !state.onboarding) { await refreshConnectionWizard(); return; }
   const modal = document.querySelector('.connect-modal');
   const planRequired = state.onboarding?.state === 'plan_required';
   let submittedValue = null;
@@ -1371,14 +1428,18 @@ async function advanceConnectionWizard() {
     submittedValue = modal.querySelector('input[name="proxyUrl"]')?.value;
     if (!submittedValue) { showToast('Введите полный URL HTTP(S)-прокси с портом'); return; }
   }
+  connectionError = '';
   connectionBusy = true;
   renderConnectionWizard();
   try {
     if (connectionStep === 0 && planRequired) {
-      await apiRequest('/api/v1/onboarding/demo-plan', { method: 'POST', authenticated: true, body: {} });
-      await loadOnboarding();
+      const activated = await apiRequest('/api/v1/onboarding/demo-plan', { method: 'POST', authenticated: true, body: {} });
+      authState.workspace = activated.workspace;
+      state.onboarding = activated.onboarding;
+      connectionStep = wizardInitialStep();
+      renderDashboard();
+      renderTelegramOnboarding();
       showToast('Демо-тариф активирован', 'success');
-      renderConnectionWizard();
       return;
     }
     if (connectionStep === 0) {
@@ -1425,7 +1486,8 @@ async function advanceConnectionWizard() {
     connectionStep += 1;
     showToast(`Шаг ${connectionStep + 1} из 5`, 'success');
   } catch (error) {
-    showToast(humanError(error), 'error');
+    connectionError = humanError(error);
+    showToast(connectionError, 'error');
   } finally {
     connectionBusy = false;
     renderConnectionWizard();
@@ -1681,14 +1743,8 @@ function init() {
   renderFinance();
   renderStoreFleet();
   renderTelegramOnboarding();
-  restoreSession();
+  initializeAuthFlow().catch((error) => showToast(humanError(error), 'error'));
   setView(location.hash.slice(1) || 'dashboard', false);
-  const requestedAuthMode = new URLSearchParams(location.search).get('auth');
-  if (requestedAuthMode === 'login' || requestedAuthMode === 'register') {
-    setAuthMode(requestedAuthMode);
-    setAuthModal(true);
-  }
-  verifyEmailFromUrl();
   updateClock();
   window.setInterval(updateClock, 1000);
   window.addEventListener('hashchange', () => setView(location.hash.slice(1), false));
