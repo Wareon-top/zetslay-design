@@ -25,6 +25,8 @@ function cabinet({ search = '', token = '', modal = null } = {}) {
     localStorage: { getItem: () => null, removeItem() {} },
     history: { replaceState: (_state, _title, url) => history.push(url) },
     requestAnimationFrame: (callback) => callback(),
+    setInterval: () => 1,
+    clearInterval: () => {},
     window: { setTimeout() {} },
     calls
   });
@@ -37,13 +39,17 @@ function fakeModal() {
   const action = { innerHTML: '', disabled: false };
   const error = { textContent: '', hidden: true };
   const mode = { textContent: '' };
+  const back = { hidden: true, disabled: false };
+  const fields = new Map();
   const elements = {
     '.connect-modal__body': body,
     '[data-connect-next]': action,
     '[data-connect-error]': error,
-    '[data-connection-mode]': mode
+    '[data-connection-mode]': mode,
+    '[data-connect-back]': back
   };
-  return { body, action, error, querySelector: (selector) => elements[selector] ?? null, querySelectorAll: () => [] };
+  return { body, action, error, back, hidden: false, fields, classList: { toggle() {}, contains: () => false },
+    querySelector: (selector) => elements[selector] ?? fields.get(selector) ?? null, querySelectorAll: () => [] };
 }
 
 test('existing session returns from landing to cabinet without showing the sign-in panel', async () => {
@@ -161,4 +167,69 @@ test('late onboarding response cannot roll back an activated plan', async () => 
   await pending;
   assert.equal(app.run('state.onboarding.state'), 'telegram_bot_required');
   assert.equal(app.run('authState.workspace.plan.active'), true);
+});
+
+test('failed Bot Token save stays on the first step and displays the cause', async () => {
+  const modal = fakeModal();
+  modal.fields.set('input[name="botToken"]', { value: 'example-bot-token' });
+  const app = cabinet({ token: 'session', modal });
+  app.run('authState.user = { email: "seller@example.com" }; state.onboarding = { state: "telegram_bot_required", telegram: {}, funPay: {} }');
+  app.context.showToast = () => {};
+  app.context.apiRequest = async () => { throw new Error('Telegram отклонил регистрацию webhook'); };
+  await app.run('advanceConnectionWizard()');
+  assert.equal(app.run('connectionStep'), 0);
+  assert.match(modal.error.textContent, /webhook/);
+  assert.equal(modal.back.hidden, true);
+});
+
+test('issuing a code repairs webhook first and retains the code after closing', async () => {
+  const modal = fakeModal();
+  const app = cabinet({ token: 'session', modal });
+  app.run('authState.user = { email: "seller@example.com" }; state.onboarding = { workspaceId: "w1", state: "telegram_link_pending", telegram: { botConfigured: true, bot: { username: "seller_bot" } }, funPay: {} }; connectionStep = 1');
+  app.context.showToast = () => {};
+  app.context.apiRequest = async (path) => {
+    app.calls.push(path);
+    if (path.endsWith('/webhook')) return app.run('state.onboarding');
+    if (path === '/api/v1/onboarding') return app.run('state.onboarding');
+    assert.equal(path, '/api/v1/onboarding/telegram/link-code');
+    return { code: '167057', expiresAt: new Date(Date.now() + 600000).toISOString(), onboarding: app.run('state.onboarding') };
+  };
+  await app.run('advanceConnectionWizard()');
+  assert.deepEqual(app.calls, ['/api/v1/onboarding/telegram/webhook', '/api/v1/onboarding/telegram/link-code']);
+  assert.match(modal.body.innerHTML, /\/start 167057/);
+  assert.match(modal.body.innerHTML, /t\.me\/seller_bot\?start=167057/);
+  app.run('setModal(false)');
+  app.run('setModal(true)');
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(app.run('connectionStatus.linkCode'), '167057');
+  assert.equal(modal.back.hidden, false);
+});
+
+test('Back goes to bot replacement and lets the user return to the same code', () => {
+  const modal = fakeModal();
+  const app = cabinet({ token: 'session', modal });
+  app.run(`authState.user = { email: "seller@example.com" }; state.onboarding = { workspaceId: "w1", state: "telegram_link_pending", telegram: { botConfigured: true, bot: { username: "seller_bot" } }, funPay: {} }; connectionStep = 1; connectionStatus = { workspaceId: "w1", linkCode: "167057", expiresAt: new Date(Date.now() + 600000).toISOString() }`);
+  app.run('backConnectionWizard()');
+  assert.equal(app.run('connectionStep'), 0);
+  assert.match(modal.body.innerHTML, /Заменить Telegram-бота/);
+  assert.match(modal.body.innerHTML, /data-connect-return/);
+  app.run('connectionStep = 1; renderConnectionWizard()');
+  assert.match(modal.body.innerHTML, /\/start 167057/);
+});
+
+test('an expired code is hidden and the next click requests a new one', async () => {
+  const modal = fakeModal();
+  const app = cabinet({ token: 'session', modal });
+  app.run('authState.user = { email: "seller@example.com" }; state.onboarding = { workspaceId: "w1", state: "telegram_link_pending", telegram: { botConfigured: true }, funPay: {} }; connectionStep = 1; connectionStatus = { workspaceId: "w1", linkCode: "167057", expiresAt: "2000-01-01T00:00:00.000Z" }');
+  app.context.showToast = () => {};
+  app.context.apiRequest = async (path) => {
+    app.calls.push(path);
+    if (path.endsWith('/webhook')) return app.run('state.onboarding');
+    return { code: '837462', expiresAt: new Date(Date.now() + 600000).toISOString(), onboarding: app.run('state.onboarding') };
+  };
+  app.run('renderConnectionWizard()');
+  assert.doesNotMatch(modal.body.innerHTML, /167057/);
+  await app.run('advanceConnectionWizard()');
+  assert.equal(app.run('connectionStatus.linkCode'), '837462');
+  assert.deepEqual(app.calls, ['/api/v1/onboarding/telegram/webhook', '/api/v1/onboarding/telegram/link-code']);
 });
