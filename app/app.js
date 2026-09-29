@@ -69,7 +69,7 @@ const errorMessages = {
   RATE_LIMITED: 'Слишком много запросов. Подождите и повторите попытку.',
   TELEGRAM_BOT_REJECTED: 'Bot Token не прошёл проверку Telegram.',
   EMAIL_VERIFICATION_REQUIRED: 'Подтвердите email по ссылке из письма.',
-  EMAIL_DELIVERY_UNAVAILABLE: 'Письмо пока не отправилось. Повторите отправку через несколько минут.',
+  EMAIL_DELIVERY_UNAVAILABLE: 'Регистрация по email временно недоступна. Можно войти через Telegram или повторить позже.',
 };
 const humanError = (error) => errorMessages[error?.code] || (error?.message === 'Failed to fetch' ? 'Backend ZetSlay недоступен. Проверьте адрес API и состояние сервера.' : error?.message) || 'Не удалось выполнить действие.';
 let registrationEmail = '';
