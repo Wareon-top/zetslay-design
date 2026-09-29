@@ -916,6 +916,12 @@ body {
 .auth-modal[hidden] { display:none; }
 .connect-modal footer { flex-wrap:wrap; }
 .connect-error { width:100%; margin:0; color:var(--red); font-size:12px; line-height:1.45; }
+.connect-modal__body { max-height:min(64vh,620px); overflow-y:auto; }
+.connect-helper { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:12px; width:100%; margin-top:14px; font-size:11px; }
+.connect-helper a,.connect-helper button { border:0; background:none; color:var(--yellow); font:inherit; text-decoration:underline; cursor:pointer; }
+.connect-helper button:disabled { opacity:.5; cursor:wait; }
+.connection-store-badge strong { user-select:all; font-size:16px; }
+.connect-modal footer [data-connect-back][hidden] { display:none; }
 .auth-modal__brand { align-self:flex-start; margin:0; color:#fff; }
 .auth-modal__brand .brand__mark { width:30px; height:30px; border-radius:9px; background:#fff; }
 .auth-modal__brand .brand__mark::after { border-color:#5d5ce2; }
