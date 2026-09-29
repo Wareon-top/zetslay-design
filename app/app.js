@@ -919,18 +919,19 @@ function renderTelegramOnboarding() {
 
   // Deep link with code
   const deepLink = document.querySelector('[data-tg-deep-link]');
-  if (deepLink && serviceBotUsername) {
-    const code = document.querySelector('[data-tg-code]')?.textContent?.trim();
-    deepLink.href = code ? `https://t.me/${serviceBotUsername}?start=${code}` : `https://t.me/${serviceBotUsername}`;
-  } else if (deepLink) {
-    deepLink.style.display = 'none';
+  const code = validConnectionCode();
+  const codeNode = document.querySelector('[data-tg-code]');
+  if (codeNode) codeNode.textContent = code || '——';
+  if (deepLink) {
+    deepLink.style.display = code && /^[A-Za-z0-9_]{5,32}$/.test(botUsername || '') ? '' : 'none';
+    if (code && botUsername) deepLink.href = `https://t.me/${botUsername}?start=${encodeURIComponent(code)}`;
   }
 
   const hint = document.querySelector('[data-tg-hint]');
   if (hint) hint.textContent = linked
     ? 'Всё готово: бот принимает события. Включите уведомления в каталоге плагинов.'
     : configured
-      ? 'Шаг 2 из 3: отправьте боту ZetSlay команду /start с кодом в любое время в течение 10 минут.'
+      ? `Шаг 2 из 3: отправьте команду своему боту ${botUsername ? `@${botUsername}` : ''} после получения кода.`
       : 'Шаг 1 из 3: вставьте Bot Token от @BotFather в защищённое поле.';
 
   const message = document.querySelector('[data-telegram-message]');
@@ -981,8 +982,10 @@ function startTelegramLinkPolling() {
 async function issueTelegramCode() {
   if (!authState.user) { setAuthModal(true); return; }
   try {
+    state.onboarding = await apiRequest('/api/v1/onboarding/telegram/webhook', { method: 'POST', authenticated: true, body: {} });
     const result = await apiRequest('/api/v1/onboarding/telegram/link-code', { method: 'POST', authenticated: true, body: {} });
     state.onboarding = result.onboarding;
+    connectionStatus = { linkCode: result.code, expiresAt: result.expiresAt, workspaceId: result.onboarding.workspaceId };
     const block = document.querySelector('[data-telegram-link-code]');
     if (block) {
       block.hidden = false;
@@ -998,7 +1001,7 @@ async function issueTelegramCode() {
 }
 
 async function copyTelegramCode() {
-  const code = document.querySelector('[data-tg-code]')?.textContent?.trim();
+  const code = validConnectionCode();
   if (!code) return;
   try {
     await navigator.clipboard.writeText(`/start ${code}`);
