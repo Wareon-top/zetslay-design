@@ -938,6 +938,9 @@ body {
 .auth-form input { min-height:48px; padding:0 14px; border-color:#e1e3ec; border-radius:11px; background:#fff; color:#24293b; font-size:10px; }
 .auth-form .button { min-height:48px; border-radius:11px; font-size:9px; }
 .auth-message { min-height:16px; }
+.auth-resend { width:max-content; max-width:100%; padding:0; border:0; background:transparent; color:var(--yellow); font:inherit; font-size:10px; font-weight:700; text-align:left; cursor:pointer; }
+.auth-resend[hidden] { display:none; }
+.auth-resend:disabled { opacity:.5; cursor:wait; }
 .auth-legal { margin:17px 0 0; color:#9a9faf; font-size:7px; line-height:1.55; text-align:center; }
 .auth-api-state { margin-top:13px; }
 .auth-session { margin-top:24px; border-color:#dcefe8; background:#f4fbf7; }
