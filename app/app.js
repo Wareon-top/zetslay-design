@@ -131,7 +131,7 @@ function setAuthMode(mode) {
   if (title) title.textContent = authState.mode === 'register' ? 'Создать аккаунт' : 'Вход в кабинет';
   if (submit) submit.textContent = authState.mode === 'register' ? 'Зарегистрироваться' : 'Войти';
   if (intro) intro.textContent = authState.mode === 'register'
-    ? 'Создайте аккаунт для одного магазина FunPay.'
+    ? 'Укажите email и пароль. Письмо подтверждения сейчас не требуется — вход откроется сразу.'
     : 'Войдите, чтобы продолжить работу с вашим магазином.';
   if (switchButton) {
     switchButton.dataset.authMode = authState.mode === 'register' ? 'login' : 'register';
