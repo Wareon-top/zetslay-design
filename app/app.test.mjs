@@ -233,3 +233,20 @@ test('an expired code is hidden and the next click requests a new one', async ()
   assert.equal(app.run('connectionStatus.linkCode'), '837462');
   assert.deepEqual(app.calls, ['/api/v1/onboarding/telegram/webhook', '/api/v1/onboarding/telegram/link-code']);
 });
+
+test('Telegram page links to the seller bot only after a valid code is issued', () => {
+  const app = cabinet({ token: 'session' });
+  const codeNode = { textContent: '' };
+  const deepLink = { href: '', style: {} };
+  app.context.document.querySelector = (selector) => ({
+    '[data-tg-code]': codeNode,
+    '[data-tg-deep-link]': deepLink
+  })[selector] ?? null;
+  app.run('state.onboarding = { workspaceId: "w1", telegram: { botConfigured: true, bot: { username: "seller_bot" } } }; serviceBotUsername = "zetslay_service_bot"');
+  app.run('renderTelegramOnboarding()');
+  assert.equal(codeNode.textContent, '——');
+  assert.equal(deepLink.style.display, 'none');
+  app.run('connectionStatus = { workspaceId: "w1", linkCode: "167057", expiresAt: new Date(Date.now() + 600000).toISOString() }; renderTelegramOnboarding()');
+  assert.equal(deepLink.href, 'https://t.me/seller_bot?start=167057');
+  assert.equal(deepLink.style.display, '');
+});
