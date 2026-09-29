@@ -914,6 +914,8 @@ body {
   box-shadow:0 34px 110px rgba(35,32,78,.18);
 }
 .auth-modal[hidden] { display:none; }
+.connect-modal footer { flex-wrap:wrap; }
+.connect-error { width:100%; margin:0; color:var(--red); font-size:12px; line-height:1.45; }
 .auth-modal__brand { align-self:flex-start; margin:0; color:#fff; }
 .auth-modal__brand .brand__mark { width:30px; height:30px; border-radius:9px; background:#fff; }
 .auth-modal__brand .brand__mark::after { border-color:#5d5ce2; }
