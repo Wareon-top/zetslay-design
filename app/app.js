@@ -1234,6 +1234,7 @@ const wizardInitialStep = () => {
   if (!onboarding) return 0;
   if (!onboarding.telegram?.botConfigured) return 0;
   if (!onboarding.telegram?.linked) return 1;
+  if (onboarding.state === 'blocked') return 2;
   if (!onboarding.funPay?.credentialConfigured) return 2;
   if (!onboarding.funPay?.proxyConfigured) return 3;
   return 4;
@@ -1257,7 +1258,7 @@ function renderConnectionWizard() {
     if (action) action.innerHTML = `${step.action} ${icon('chevron-right')}`;
     return;
   }
-  if (mode) mode.textContent = 'Protected single-account connection';
+  if (mode) mode.textContent = 'Один аккаунт FunPay · защищённое подключение';
   const onboarding = state.onboarding;
   const planRequired = onboarding?.state === 'plan_required' || (!onboarding && !connectionStatus);
   const linkCode = connectionStatus?.linkCode;
@@ -1270,17 +1271,17 @@ function renderConnectionWizard() {
   ];
   const pages = [
     planRequired
-      ? `<span class="connect-illustration">${icon('card')}<i></i></span><h3>Сначала активный тариф</h3><p>Подключение FunPay требует активного тарифа ZetSlay. В статчном контуре доступна демо-активация для проверки интерфейса.</p><div class="connection-checks"><span>Тариф <b>Не активен</b></span></div>`
+      ? `<span class="connect-illustration">${icon('card')}<i></i></span><h3>Сначала активный тариф</h3><p>${onboarding?.demoPlanAvailable ? 'На этом сервере доступна демо-активация тарифа для проверки подключения.' : 'Тариф пока не активен. Подключение магазина станет доступно после активации тарифа ZetSlay.'}</p><div class="connection-checks"><span>Тариф <b>Не активен</b></span></div>`
       : `<span class="connect-illustration">${icon('send')}<i></i></span><h3>Ваш рабочий бот Telegram</h3><p>Создайте бота через @BotFather и вставьте его Bot Token. Он станет рабочим инструментом вашего магазина: уведомления и автоматизация.</p><div class="connection-form"><label>Bot Token<input type="password" name="botToken" minlength="10" maxlength="256" autocomplete="off" spellcheck="false" placeholder="123456789:AA..."></label><small>Токен уйдёт напрямую в зашифрованный vault и не отобразится второй раз.</small></div>`,
     `<span class="connect-illustration">${icon('user')}<i></i></span><h3>Одноразовый код привязки</h3><p>Откройте своего бота в Telegram и отправьте команду</p><div class="connection-store-badge"><span class="store-logo">TG</span><span><strong>/start ${escapeHtml(linkCode || '——')}</strong><small>Код действует 10 минут и виден один раз</small></span></div><div class="connection-checks"><span>Ожидание подтверждения <b>${onboarding?.telegram?.linked ? 'Подтверждено' : '…'}</b></span></div>`,
-    `<span class="connect-illustration">${icon('lock')}<i></i></span><h3>Golden Key</h3><p>Ключ отправляется напрямую в vault для вашего единственного аккаунта и не возвращается обратно.</p><div class="connection-form"><label>Golden Key<input type="password" name="goldenKey" minlength="12" maxlength="4096" autocomplete="off" spellcheck="false" placeholder="Вставьте ключ один раз"></label><small>Не отправляйте Golden Key в Telegram или поддержку.</small></div>`,
+    `<span class="connect-illustration">${icon('lock')}<i></i></span><h3>Golden Key</h3><p>${onboarding?.state === 'blocked' ? 'Предыдущая проверка остановлена. Укажите актуальный ключ и затем прокси для повторной проверки.' : 'Ключ отправляется напрямую в vault для вашего единственного аккаунта и не возвращается обратно.'}</p><div class="connection-form"><label>Golden Key<input type="password" name="goldenKey" minlength="12" maxlength="4096" autocomplete="off" spellcheck="false" placeholder="Вставьте ключ один раз"></label><small>Не отправляйте Golden Key в Telegram или поддержку.</small></div>`,
     `<span class="connect-illustration">${icon('shield')}<i></i></span><h3>Обязательный прокси</h3><p>Этот прокси будет использовать только worker <strong>${escapeHtml(worker)}</strong> для стабильного подключения.</p><div class="connection-form"><label>Proxy URL<input type="password" name="proxyUrl" maxlength="2048" autocomplete="off" spellcheck="false" placeholder="http://user:password@host:port"></label><small>Формат: http://user:password@host:port (или https://). Адрес и пароль не появятся в ответе API.</small></div>`,
-    `<span class="connect-illustration connect-illustration--success">${icon('check')}<i></i></span><h3>Read-only проверка</h3><p>ZetSlay проверит авторизацию через закреплённый прокси. Сообщения, лоты, заказы и деньги не изменяются.</p><div class="connection-checks">${checks.map((line) => `<span>${line.split(' <b>')[0]} <b>${line.split(' <b>')[1]}</b></span>`).join('')}<span>Live-действия <b>Отключены</b></span></div>`
+    `<span class="connect-illustration connect-illustration--success">${icon('check')}<i></i></span><h3>Read-only проверка</h3><p>ZetSlay проверит аккаунт, чтение заказов и чатов через закреплённый прокси. Лоты и баланс сейчас недоступны; данные на FunPay не изменяются.</p><div class="connection-checks">${checks.map((line) => `<span>${line.split(' <b>')[0]} <b>${line.split(' <b>')[1]}</b></span>`).join('')}<span>Live-действия <b>Отключены</b></span></div>`
   ];
   if (body) body.innerHTML = pages[connectionStep] || pages.at(-1);
   if (action) {
-    const labels = planRequired ? ['Активировать демо-тариф'] : ['Сохранить Bot Token', 'Проверить привязку', 'Сохранить Golden Key', 'Закрепить прокси', 'Запустить read-only проверку'];
-    action.disabled = connectionBusy;
+    const labels = planRequired ? [onboarding?.demoPlanAvailable ? 'Активировать демо-тариф' : 'Тариф не активен'] : ['Сохранить Bot Token', 'Проверить привязку', 'Сохранить Golden Key', 'Закрепить прокси', 'Запустить read-only проверку'];
+    action.disabled = connectionBusy || (planRequired && !onboarding?.demoPlanAvailable);
     action.innerHTML = `${connectionBusy ? 'Проверяем…' : labels[connectionStep] || labels.at(-1)} ${icon('chevron-right')}`;
   }
 }
@@ -1381,9 +1382,10 @@ async function advanceConnectionWizard() {
     } else if (connectionStep === 4) {
       state.onboarding = await apiRequest('/api/v1/onboarding/funpay/preflight', { method: 'POST', authenticated: true, body: {} });
       await loadStoreFleet();
-      await syncStoreContent({ silent: true }).catch(() => {});
+      let contentLoaded = true;
+      try { await syncStoreContent({ silent: true }); } catch { contentLoaded = false; }
       setModal(false);
-      showToast('Магазин подключён в read-only режиме через отдельный worker', 'success');
+      showToast(contentLoaded ? 'Магазин подключён: заказы и чаты доступны для чтения' : 'Магазин привязан, но обновление данных не удалось. Повторите синхронизацию.', contentLoaded ? 'success' : 'error');
       return;
     }
     connectionStep += 1;
