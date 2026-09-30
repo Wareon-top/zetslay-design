@@ -571,7 +571,7 @@ function resetPluginCatalog() {
   state.pluginCanManage = false;
   state.pluginCoverAdmin = false;
   closePluginDialog();
-  state.plugins = state.plugins.filter(plugin => plugin.published !== false).map((plugin) => plugin.planned ? plugin : { ...plugin, installed: false, active: false });
+  state.plugins = state.plugins.filter(plugin => plugin.published !== false).map((plugin) => plugin.planned ? plugin : { ...plugin, installed: false, active: false, config: {} });
   renderPlugins();
 }
 
@@ -590,7 +590,7 @@ async function loadPluginCatalog() {
     permissions: backend.permissions,
     installed: Boolean(backend.installation),
     active: Boolean(backend.installation?.enabled),
-    config: backend.installation?.config || old.get(backend.id)?.config || {}
+    config: backend.installation?.config || {}
   }));
   renderPlugins();
   const autoReplyForm = document.querySelector('[data-plugin-settings]');
