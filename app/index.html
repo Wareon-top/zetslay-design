@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=20260930-connect-edit">
+    <link rel="stylesheet" href="styles.css?v=20260930-plugin-catalog">
   </head>
   <body>
     <svg class="icon-sprite" aria-hidden="true">
@@ -194,7 +194,7 @@
           </section>
 
           <section class="view" data-view="plugins" aria-labelledby="plugins-title">
-            <div class="view-heading view-heading--compact"><div><span class="eyebrow">Маркетплейс</span><h1 id="plugins-title">Каталог плагинов</h1><p>Расширения с явными разрешениями, безопасным отключением и журналом действий.</p></div><div class="view-heading__actions"><span class="catalog-count"><span id="plugin-total">2 доступно</span><strong id="plugin-installed">0 установлено</strong></span><button class="button button--ghost" type="button" data-plugin-cover-admin><svg><use href="#i-external"/></svg> Загрузить обложки</button><input type="file" accept="image/png,image/jpeg,image/webp" hidden data-plugin-cover-input></div></div>
+            <div class="view-heading view-heading--compact"><div><span class="eyebrow">Маркетплейс</span><h1 id="plugins-title">Каталог плагинов</h1><p>Расширения с явными разрешениями, безопасным отключением и журналом действий.</p></div><div class="view-heading__actions"><span class="catalog-count"><span id="plugin-total">2 доступно</span><strong id="plugin-installed">0 установлено</strong></span><button class="button button--ghost" type="button" hidden data-plugin-cover-admin><svg><use href="#i-external"/></svg> Загрузить обложки</button><button class="button button--primary" type="button" hidden data-plugin-publish>Добавить плагин</button><input type="file" accept="image/png,image/jpeg,image/webp" hidden data-plugin-cover-input></div></div>
             <div class="cat-pills" id="plugin-categories">
               <button class="is-active" type="button" data-plugin-cat="all"><svg><use href="#i-grid"/></svg> Все</button>
               <button type="button" data-plugin-cat="sales"><svg><use href="#i-bag"/></svg> Продажи</button>
@@ -205,7 +205,7 @@
             <section class="panel catalog-hero"><h2>Плагины ZetSlay</h2><p>Каталог расширений с прозрачными разрешениями и безопасной песочницей.</p></section>
             <section class="panel catalog-search">
               <div><span class="panel-label">Поиск</span><div class="search-field search-field--wide"><svg><use href="#i-search"/></svg><input type="search" placeholder="Поиск плагинов и модулей..." aria-label="Поиск плагинов" data-plugin-search></div></div>
-              <div><span class="panel-label">Категории</span><div class="catalog-select"><span id="plugin-cat-label">Все категории</span><svg><use href="#i-chevron"/></svg></div></div>
+              <label class="catalog-filter"><span class="panel-label">Категории</span><select class="catalog-select" data-plugin-category><option value="all">Все категории</option><option value="sales">Продажи</option><option value="chat">Общение</option><option value="analytics">Аналитика</option><option value="control">Контроль</option></select></label><label class="catalog-filter"><span class="panel-label">Сортировка</span><select class="catalog-select" data-plugin-sort><option value="default">По умолчанию</option><option value="price-asc">С низкой цены</option><option value="price-desc">С высокой цены</option><option value="name">По названию</option><option value="installed">Сначала установленные</option></select></label>
             </section>
             <div class="plugin-grid" id="plugin-grid"></div>
             <section class="plugin-lab panel" aria-labelledby="plugin-lab-title">
@@ -351,6 +351,7 @@
       </main>
     </div>
 
+    <dialog class="plugin-dialog" data-plugin-dialog aria-labelledby="plugin-dialog-title"><div data-plugin-dialog-body></div></dialog>
     <div class="modal-backdrop" data-modal-backdrop></div>
     <section class="connect-modal" role="dialog" aria-modal="true" aria-labelledby="connect-modal-title" hidden>
       <header><div><span class="panel-label" data-connection-mode>Per-store connection</span><h2 id="connect-modal-title">Подключение магазина</h2></div><button class="icon-button" type="button" aria-label="Закрыть" data-close-connect><svg><use href="#i-close"/></svg></button></header>
@@ -409,7 +410,7 @@
     </section>
 
     <div class="toast-region" aria-live="polite" aria-atomic="true"></div>
-    <script src="app.js?v=20260930-connect-edit" defer></script>
+    <script src="app.js?v=20260930-plugin-catalog" defer></script>
   </body>
 </html>
 
