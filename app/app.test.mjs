@@ -288,3 +288,83 @@ test('Back cancels reset and failed reset retains confirmation with an inline er
   assert.match(modal.error.textContent, /Удаление не выполнено/);
   assert.equal(app.run('state.onboarding.funPay.proxyConfigured'), true);
 });
+
+test('plugin category, search and numeric price sorting work together without changing source order', () => {
+  const app = cabinet();
+  app.run(`state.plugins = [
+    {id:'a',name:'Первый',description:'ответ',category:'chat',priceRub:900},
+    {id:'b',name:'Второй',description:'ответ',category:'chat',priceRub:100},
+    {id:'c',name:'Третий',description:'заказ',category:'sales',priceRub:0}
+  ]`);
+  assert.equal(app.run(`filterPluginCatalog(state.plugins,{cat:'chat',query:'ОТВЕТ',sort:'price-asc'}).map(p=>p.id).join(',')`), 'b,a');
+  assert.equal(app.run(`filterPluginCatalog(state.plugins,{cat:'all',query:'',sort:'price-desc'}).map(p=>p.id).join(',')`), 'a,b,c');
+  assert.equal(app.run('state.plugins.map(p=>p.id).join(",")'), 'a,b,c');
+});
+
+test('plugin description supports bold and quotes but escapes HTML and script attributes', () => {
+  const app = cabinet();
+  const html = app.run(`formatPluginDescription('**Важно**\\n> Цитата\\n<img src=x onerror=alert(1)>')`);
+  assert.ok(html.includes('<strong>Важно</strong>'));
+  assert.ok(html.includes('<blockquote>Цитата</blockquote>'));
+  assert.ok(html.includes('&lt;img'));
+  assert.ok(!html.includes('<img'));
+});
+
+test('non-admin cannot open publishing editor or save metadata through UI', async () => {
+  const app = cabinet();
+  app.run(`apiRequest = async () => { calls.push('write'); }; state.pluginCanManage = false;`);
+  app.run('openPluginEditor()');
+  await assert.rejects(app.run(`saveCatalogEntry({id:'test'})`), /администратору/);
+  assert.equal(app.calls.length, 0);
+});
+
+test('catalog capabilities and runtime state are loaded from the backend', async () => {
+  const app = cabinet({ token: 'test-token' });
+  app.run(`renderPlugins = () => {};
+    apiRequest = async () => ({canManage:true,entries:[
+      {id:'zetslay.test',name:'Тест',category:'chat',priceRub:99,description:'Описание',permissions:['messages:read'],planned:true,published:true,installation:null}
+    ]});`);
+  await app.run('loadPluginCatalog()');
+  assert.equal(app.run('state.pluginCanManage'), true);
+  assert.equal(app.run('state.plugins[0].id'), 'zetslay.test');
+  assert.equal(app.run('state.plugins[0].planned'), true);
+  assert.equal(app.run('state.plugins[0].installed'), false);
+});
+
+test('late catalog response cannot restore admin capabilities after session change', async () => {
+  const app = cabinet({ token: 'admin-token' });
+  app.run(`renderPlugins = () => {};
+    apiRequest = () => new Promise(resolve => { globalThis.resolveCatalog = resolve; });`);
+  const pending = app.run('loadPluginCatalog()');
+  app.run(`authState.token = 'user-token'; state.pluginCanManage = false; resolveCatalog({canManage:true,entries:[]});`);
+  await pending;
+  assert.equal(app.run('state.pluginCanManage'), false);
+});
+
+test('admin controls are hidden for users and names remain escaped in card HTML', () => {
+  const app = cabinet();
+  app.run(`globalThis.grid = {innerHTML:''}; globalThis.controls = [{hidden:false},{hidden:false}];
+    document.getElementById = id => id === 'plugin-grid' ? grid : null;
+    document.querySelectorAll = selector => selector.includes('data-plugin-cover-admin') ? controls : [];
+    state.plugins = [{id:'test',name:'<img src=x>',description:'**Текст**',permissions:[],category:'chat',price:'Бесплатно',planned:true}];
+    state.pluginCanManage = false; renderPlugins();`);
+  assert.equal(app.run('controls.every(button=>button.hidden)'), true);
+  assert.ok(app.run('grid.innerHTML').includes('&lt;img src=x&gt;'));
+  assert.ok(!app.run('grid.innerHTML').includes('<img src=x>'));
+  app.run('state.pluginCanManage = true; renderPlugins()');
+  assert.equal(app.run('controls.every(button=>!button.hidden)'), true);
+});
+
+test('latest catalog request wins when responses arrive out of order', async () => {
+  const app = cabinet({ token: 'test-token' });
+  app.run(`renderPlugins = () => {}; globalThis.pendingCatalog = [];
+    apiRequest = () => new Promise(resolve=>pendingCatalog.push(resolve));`);
+  const first = app.run('loadPluginCatalog()');
+  const second = app.run('loadPluginCatalog()');
+  app.run(`pendingCatalog[1]({canManage:false,entries:[{id:'new',name:'Новое',description:'',permissions:[],priceRub:0}]});`);
+  await second;
+  app.run('pendingCatalog[0]({canManage:true,entries:[]})');
+  await first;
+  assert.equal(app.run('state.plugins[0].id'), 'new');
+  assert.equal(app.run('state.pluginCanManage'), false);
+});
