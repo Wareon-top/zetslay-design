@@ -250,3 +250,41 @@ test('Telegram page links to the seller bot only after a valid code is issued', 
   assert.equal(deepLink.href, 'https://t.me/seller_bot?start=167057');
   assert.equal(deepLink.style.display, '');
 });
+
+
+test('changing proxy requires confirmation and returns to an editable proxy step', async () => {
+  const modal = fakeModal();
+  const app = cabinet({ token: 'session', modal });
+  app.run('authState.user = { email: "seller@example.com" }; state.onboarding = { state: "verifying_read_only", telegram: { botConfigured: true, linked: true }, funPay: { credentialConfigured: true, proxyConfigured: true } }; connectionStep = 4');
+  app.context.showToast = () => {};
+  app.context.apiRequest = async (path, options) => {
+    app.calls.push(path);
+    assert.equal(path, '/api/v1/onboarding/reset');
+    assert.equal(options.body.target, 'proxy');
+    assert.equal(options.body.confirmed, true);
+    return { state: 'proxy_required', telegram: { botConfigured: true, linked: true }, funPay: { credentialConfigured: true, proxyConfigured: false } };
+  };
+  app.run('renderConnectionWizard()');
+  assert.match(modal.body.innerHTML, /data-connect-edit="proxy"/);
+  app.run('beginConnectionReset("proxy")');
+  assert.equal(app.calls.length, 0);
+  assert.match(modal.body.innerHTML, /Golden Key и привязка Telegram сохранятся/);
+  await app.run('advanceConnectionWizard()');
+  assert.equal(app.run('connectionStep'), 3);
+  assert.match(modal.body.innerHTML, /name="proxyUrl"/);
+});
+
+test('Back cancels reset and failed reset retains confirmation with an inline error', async () => {
+  const modal = fakeModal();
+  const app = cabinet({ token: 'session', modal });
+  app.run('authState.user = {}; state.onboarding = { state: "verifying_read_only", telegram: { linked: true }, funPay: { credentialConfigured: true, proxyConfigured: true } }; connectionStep = 4');
+  app.run('beginConnectionReset("all"); backConnectionWizard()');
+  assert.equal(app.run('connectionResetTarget'), null);
+  assert.equal(app.run('connectionStep'), 4);
+  app.context.apiRequest = async () => { throw new Error('Удаление не выполнено'); };
+  app.run('beginConnectionReset("all")');
+  await app.run('advanceConnectionWizard()');
+  assert.equal(app.run('connectionResetTarget'), 'all');
+  assert.match(modal.error.textContent, /Удаление не выполнено/);
+  assert.equal(app.run('state.onboarding.funPay.proxyConfigured'), true);
+});
