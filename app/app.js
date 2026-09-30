@@ -1285,6 +1285,7 @@ let connectionBusy = false;
 let connectionLoading = false;
 let connectionLoadFailed = false;
 let connectionError = '';
+let connectionResetTarget = null;
 let connectionLinkTimer = null;
 function stopConnectionLinkPolling() {
   if (connectionLinkTimer) { clearInterval(connectionLinkTimer); connectionLinkTimer = null; }
@@ -1342,9 +1343,11 @@ function renderConnectionWizard() {
   const body = modal.querySelector('.connect-modal__body');
   const action = modal.querySelector('[data-connect-next]');
   const back = modal.querySelector('[data-connect-back]');
+  const reset = modal.querySelector('[data-connect-reset]');
   const mode = modal.querySelector('[data-connection-mode]');
   const error = modal.querySelector('[data-connect-error]');
   if (error) { error.textContent = connectionError; error.hidden = !connectionError; }
+  if (reset) { reset.hidden = !liveConnectionMode() || !state.onboarding || Boolean(state.onboarding.funPay?.store) || connectionLoading || connectionLoadFailed || Boolean(connectionResetTarget); reset.disabled = connectionBusy; }
   if (back) { back.hidden = connectionStep === 0 || connectionLoading || connectionLoadFailed; back.disabled = connectionBusy; }
   modal.querySelectorAll('.connect-progress > span').forEach((item, index) => {
     item.classList.toggle('is-active', index === connectionStep);
@@ -1370,6 +1373,18 @@ function renderConnectionWizard() {
     return;
   }
   const onboarding = state.onboarding;
+  if (connectionResetTarget) {
+    const descriptions = {
+      proxy: ['Изменить прокси?', 'Сохранённый прокси будет удалён из vault. Golden Key и привязка Telegram сохранятся. Затем введите новый адрес прокси.'],
+      key: ['Изменить Golden Key?', 'Сохранённые Golden Key и прокси будут удалены из vault. Привязка Telegram сохранится. Затем введите ключ и прокси заново.'],
+      all: ['Начать подключение заново?', 'Bot Token, Golden Key и прокси этого незавершённого подключения будут удалены из vault, а webhook рабочего бота отключён. Тариф и вход в кабинет сохранятся. Все шаги подключения нужно будет пройти заново.']
+    };
+    const [title, description] = descriptions[connectionResetTarget];
+    if (body) body.innerHTML = `<span class="connect-illustration">${icon('help')}<i></i></span><h3>${title}</h3><p>${description}</p>`;
+    if (back) { back.hidden = false; back.disabled = connectionBusy; }
+    if (action) { action.disabled = connectionBusy; action.innerHTML = connectionBusy ? 'Удаляем…' : 'Подтвердить удаление'; }
+    return;
+  }
   const planRequired = onboarding?.state === 'plan_required' || (!onboarding && !connectionStatus);
   const linkCode = validConnectionCode();
   const initialStep = wizardInitialStep();
@@ -1395,6 +1410,12 @@ function renderConnectionWizard() {
     `<span class="connect-illustration connect-illustration--success">${icon('check')}<i></i></span><h3>Read-only проверка</h3><p>ZetSlay проверит аккаунт, чтение заказов и чатов через закреплённый прокси. Лоты и баланс сейчас недоступны; данные на FunPay не изменяются.</p><div class="connection-checks">${checks.map((line) => `<span>${line.split(' <b>')[0]} <b>${line.split(' <b>')[1]}</b></span>`).join('')}<span>Live-действия <b>Отключены</b></span></div>`
   ];
   if (body) body.innerHTML = pages[connectionStep] || pages.at(-1);
+  if (body && !onboarding?.funPay?.store) {
+    const edits = [];
+    if (onboarding?.funPay?.proxyConfigured && connectionStep >= 3) edits.push('<button type="button" data-connect-edit="proxy">Изменить прокси</button>');
+    if (onboarding?.funPay?.credentialConfigured && connectionStep >= 2) edits.push('<button type="button" data-connect-edit="key">Изменить Golden Key</button>');
+    if (edits.length) body.innerHTML += `<div class="connect-helper">${edits.join('')}</div>`;
+  }
   if (action) {
     const labels = planRequired ? [onboarding?.demoPlanAvailable ? 'Активировать демо-тариф' : 'Тариф не активен'] : [configuredBot && !linkedBot ? 'Заменить бота' : 'Сохранить Bot Token', linkedBot ? 'Продолжить' : linkCode ? 'Проверить привязку' : 'Проверить бота и получить код', 'Сохранить Golden Key', 'Закрепить прокси', 'Запустить read-only проверку'];
     action.disabled = connectionBusy || (planRequired && !onboarding?.demoPlanAvailable);
@@ -1428,6 +1449,7 @@ function setModal(open) {
   if (open) {
     modal.hidden = false;
     validConnectionCode();
+    connectionResetTarget = null;
     connectionStep = liveConnectionMode() ? wizardInitialStep() : 0;
     connectionError = '';
     if (liveConnectionMode()) refreshConnectionWizard();
@@ -1449,10 +1471,43 @@ function setModal(open) {
 }
 
 function backConnectionWizard() {
-  if (connectionBusy || connectionLoading || connectionStep <= 0) return;
+  if (connectionBusy || connectionLoading) return;
+  if (connectionResetTarget) { connectionResetTarget = null; connectionError = ''; renderConnectionWizard(); return; }
+  if (connectionStep <= 0) return;
   connectionError = '';
   connectionStep -= 1;
   renderConnectionWizard();
+}
+
+function beginConnectionReset(target) {
+  if (connectionBusy || connectionLoading || state.onboarding?.funPay?.store || !['all', 'key', 'proxy'].includes(target)) return;
+  connectionResetTarget = target;
+  connectionError = '';
+  renderConnectionWizard();
+}
+
+async function confirmConnectionReset() {
+  const target = connectionResetTarget;
+  if (!target || connectionBusy || connectionLoading) return;
+  connectionBusy = true;
+  connectionError = '';
+  stopConnectionLinkPolling();
+  renderConnectionWizard();
+  try {
+    const updated = await apiRequest('/api/v1/onboarding/reset', { method: 'POST', authenticated: true, body: { target, confirmed: true } });
+    onboardingRevision += 1;
+    state.onboarding = updated;
+    connectionStatus = null;
+    connectionResetTarget = null;
+    connectionStep = wizardInitialStep();
+    renderTelegramOnboarding();
+    showToast(target === 'all' ? 'Подключение сброшено. Можно начать заново.' : 'Сохранённые данные удалены. Введите новое значение.', 'success');
+  } catch (error) {
+    connectionError = humanError(error);
+  } finally {
+    connectionBusy = false;
+    renderConnectionWizard();
+  }
 }
 
 async function repairConnectionWebhook() {
@@ -1483,6 +1538,7 @@ async function advanceConnectionWizard() {
     return;
   }
   if (connectionBusy || connectionLoading) return;
+  if (connectionResetTarget) { await confirmConnectionReset(); return; }
   if (connectionLoadFailed || !state.onboarding) { await refreshConnectionWizard(); return; }
   const modal = document.querySelector('.connect-modal');
   const planRequired = state.onboarding?.state === 'plan_required';
@@ -1643,6 +1699,9 @@ function bindInteractions() {
     }
     if (event.target.closest('[data-connect-return]')) { connectionStep = 1; connectionError = ''; renderConnectionWizard(); return; }
     if (event.target.closest('[data-connect-repair]')) { repairConnectionWebhook(); return; }
+    const editConnection = event.target.closest('[data-connect-edit]');
+    if (editConnection) { beginConnectionReset(editConnection.dataset.connectEdit); return; }
+    if (event.target.closest('[data-connect-reset]')) { beginConnectionReset('all'); return; }
 
     const guideTab = event.target.closest('[data-guide-target]');
     if (guideTab) {
