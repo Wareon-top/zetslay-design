@@ -11,8 +11,10 @@ const state = {
     { id: 'planned.quiet-hours', icon: 'clock', name: 'Quiet Hours', vendor: 'Планируется', category: 'chat', price: 'от 190 ₽', description: 'Меняет сценарии ответов в заданное владельцем время.', permissions: ['Расписание'], planned: true },
     { id: 'planned.order-notes', icon: 'file-text', name: 'Order Notes', vendor: 'Планируется', category: 'sales', price: 'от 390 ₽', description: 'Добавляет внутренние заметки к покупателям и заказам.', permissions: ['Заказы'], planned: true },
   ],
-  pluginFilter: { cat: 'all', query: '' },
+  pluginFilter: { cat: 'all', query: '', sort: 'default' },
   pluginCoverAdmin: false,
+  pluginCanManage: false,
+  pluginCatalogRevision: 0,
   pluginAudit: [],
   storeFleet: { selectedStoreId: null, capacity: { used: 0, limit: 1 }, liveActionsEnabled: false, stores: [] },
   finance: { stores: [], withdrawalIntents: [], liveWithdrawalEnabled: false },
@@ -565,27 +567,31 @@ async function createWithdrawalIntent(form) {
 }
 
 function resetPluginCatalog() {
-  state.plugins = state.plugins.map((plugin) => plugin.planned ? plugin : { ...plugin, installed: false, active: false });
+  state.pluginCatalogRevision++;
+  state.pluginCanManage = false;
+  state.pluginCoverAdmin = false;
+  closePluginDialog();
+  state.plugins = state.plugins.filter(plugin => plugin.published !== false).map((plugin) => plugin.planned ? plugin : { ...plugin, installed: false, active: false });
   renderPlugins();
 }
 
 async function loadPluginCatalog() {
   if (!authState.token || !API_BASE_URL) return;
   const token = authState.token;
-  const catalog = await apiRequest('/api/v1/plugins', { authenticated: true });
-  if (token !== authState.token) return;
-  const byPluginId = new Map(catalog.map((plugin) => [plugin.id, plugin]));
-  state.plugins = state.plugins.map((plugin) => {
-    const backend = byPluginId.get(plugin.id);
-    if (!backend) return plugin;
-    return {
-      ...plugin,
-      permissionsRaw: backend.permissions,
-      installed: Boolean(backend.installation),
-      active: Boolean(backend.installation?.enabled),
-      config: backend.installation?.config || plugin.config
-    };
-  });
+  const revision = ++state.pluginCatalogRevision;
+  const catalog = await apiRequest('/api/v1/plugin-catalog', { authenticated: true });
+  if (token !== authState.token || revision !== state.pluginCatalogRevision) return;
+  const old = new Map(state.plugins.map(plugin => [plugin.id, plugin]));
+  state.pluginCanManage = catalog.canManage === true;
+  state.plugins = catalog.entries.map(backend => ({
+    ...old.get(backend.id), ...backend,
+    price: backend.priceRub ? `от ${backend.priceRub.toLocaleString('ru-RU')} ₽` : 'Бесплатно',
+    permissionsRaw: backend.permissions,
+    permissions: backend.permissions,
+    installed: Boolean(backend.installation),
+    active: Boolean(backend.installation?.enabled),
+    config: backend.installation?.config || old.get(backend.id)?.config || {}
+  }));
   renderPlugins();
   const autoReplyForm = document.querySelector('[data-plugin-settings]');
   const autoReply = state.plugins.find((plugin) => plugin.id === 'zetslay.auto-reply');
@@ -1066,6 +1072,9 @@ function renderAutomations() {
 function renderPlugins() {
   const target = byId('plugin-grid');
   if (!target) return;
+  document.querySelectorAll('[data-plugin-cover-admin], [data-plugin-publish]').forEach(button => { button.hidden = !state.pluginCanManage; });
+  const categorySelect = document.querySelector('[data-plugin-category]');
+  if (categorySelect) categorySelect.value = state.pluginFilter.cat;
   const colors = ['249,179,46', '167,139,250', '96,165,250', '52,211,153', '248,113,113', '203,128,255'];
   const installed = state.plugins.filter((plugin) => plugin.installed).length;
   const total = state.plugins.filter((plugin) => !plugin.planned).length;
@@ -1077,14 +1086,9 @@ function renderPlugins() {
   if (catLabel) catLabel.textContent = state.pluginFilter.cat === 'all' ? `Все категории (${state.plugins.length})` : (catNames[state.pluginFilter.cat] || 'Все категории');
   document.querySelectorAll('[data-plugin-cat]').forEach((button) => button.classList.toggle('is-active', button.dataset.pluginCat === state.pluginFilter.cat));
 
-  const query = state.pluginFilter.query.trim().toLowerCase();
-  const list = state.plugins.filter((plugin) => {
-    if (state.pluginFilter.cat !== 'all' && plugin.category !== state.pluginFilter.cat) return false;
-    if (query && !`${plugin.name} ${plugin.description}`.toLowerCase().includes(query)) return false;
-    return true;
-  });
-
+  const list = filterPluginCatalog(state.plugins, state.pluginFilter);
   const badgeOf = (plugin) => {
+    if (plugin.published === false) return { cls: 'plugin-card__badge--soon', label: 'Черновик' };
     if (plugin.active) return { cls: 'plugin-card__badge--work', label: 'Работает' };
     if (plugin.installed) return { cls: 'plugin-card__badge--pause', label: 'На паузе' };
     if (plugin.planned) return { cls: 'plugin-card__badge--soon', label: 'Скоро' };
@@ -1096,20 +1100,20 @@ function renderPlugins() {
   target.innerHTML = list.length ? list.map((plugin) => {
     const index = state.plugins.indexOf(plugin);
     const badge = badgeOf(plugin);
-    const cover = plugin.cover ? `<img src="${plugin.cover}" alt="${plugin.name}" loading="lazy">` : `<span class="plugin-cover__placeholder"><svg><use href="#i-puzzle"/></svg></span>`;
-    const adminMark = state.pluginCoverAdmin ? `<button class="plugin-cover__edit" type="button" data-cover-plugin="${plugin.id}" aria-label="Загрузить обложку для ${plugin.name}"><svg><use href="#i-plus"/></svg></button>` : '';
+    const cover = plugin.cover ? `<img src="${escapeHtml(plugin.cover)}" alt="${escapeHtml(plugin.name)}" loading="lazy">` : `<span class="plugin-cover__placeholder"><svg><use href="#i-puzzle"/></svg></span>`;
+    const adminMark = state.pluginCanManage && state.pluginCoverAdmin ? `<button class="plugin-cover__edit" type="button" data-cover-plugin="${plugin.id}" aria-label="Загрузить обложку для ${escapeHtml(plugin.name)}"><svg><use href="#i-plus"/></svg></button>` : '';
     return `
-    <article class="plugin-card" style="--plugin-rgb:${colors[index % colors.length]}">
+    <article class="plugin-card" data-plugin-details="${escapeHtml(plugin.id)}" style="--plugin-rgb:${colors[index % colors.length]}">
       <div class="plugin-card__cover">${cover}${adminMark}<span class="plugin-card__badge ${badge.cls}">${badge.label}</span></div>
       <div class="plugin-card__body">
-        <h3>${plugin.name}</h3>
-        <p>${plugin.description}</p>
-        <div class="plugin-permissions">${plugin.permissions.map((permission) => `<span>${permission}</span>`).join('')}</div>
+        <h3><button type="button" class="plugin-card__title" data-plugin-details="${escapeHtml(plugin.id)}">${escapeHtml(plugin.name)}</button></h3>
+        <p>${escapeHtml(plugin.description.replace(/^>\s?/gm, "").replace(/\*\*/g, ""))}</p>
+        <div class="plugin-permissions">${plugin.permissions.map((permission) => `<span>${escapeHtml(permission)}</span>`).join('')}</div>
         <div class="plugin-card__bottom">
-          <div class="plugin-card__price"><small>Цена</small><strong>${plugin.price}</strong></div>
+          <div class="plugin-card__price"><small>Цена</small><strong>${escapeHtml(plugin.price)}</strong></div>
           <div class="plugin-card__actions">
             <span class="plugin-card__status">${statusOf(plugin)}</span>
-            <button type="button" data-plugin-id="${plugin.id}" ${plugin.planned ? 'disabled' : ''} aria-label="${actionOf(plugin)} ${plugin.name}">${actionOf(plugin)}<svg><use href="#i-chevron"/></svg></button>
+            <button type="button" data-plugin-id="${plugin.id}" ${plugin.planned ? 'disabled' : ''} aria-label="${actionOf(plugin)} ${escapeHtml(plugin.name)}">${actionOf(plugin)}<svg><use href="#i-chevron"/></svg></button>
           </div>
         </div>
       </div>
@@ -1743,13 +1747,19 @@ function bindInteractions() {
       return;
     }
 
+    if (event.target.closest('[data-plugin-dialog-close]')) { closePluginDialog(); return; }
+    const editor = event.target.closest('[data-plugin-edit]');
+    if (editor) { openPluginEditor(editor.dataset.pluginEdit); return; }
+    if (event.target.closest('[data-plugin-publish]')) { openPluginEditor(); return; }
     const coverEdit = event.target.closest('[data-cover-plugin]');
     if (coverEdit) {
+      if (!state.pluginCanManage) return;
       const input = document.querySelector('[data-plugin-cover-input]');
       if (input) { input.dataset.coverFor = coverEdit.dataset.coverPlugin; input.click(); }
       return;
     }
     if (event.target.closest('[data-plugin-cover-admin]')) {
+      if (!state.pluginCanManage) return;
       state.pluginCoverAdmin = !state.pluginCoverAdmin;
       renderPlugins();
       showToast(state.pluginCoverAdmin ? 'Режим обложек: нажмите + на карточке, чтобы загрузить изображение' : 'Режим обложек выключен', state.pluginCoverAdmin ? 'success' : 'default');
@@ -1761,6 +1771,9 @@ function bindInteractions() {
       renderPlugins();
       return;
     }
+
+    const details = event.target.closest('[data-plugin-details]');
+    if (details) { openPluginDetails(details.dataset.pluginDetails); return; }
 
     const quickReply = event.target.closest('[data-quick-reply]');
     if (quickReply) {
@@ -1801,22 +1814,36 @@ function bindInteractions() {
     state.pluginFilter.query = event.target.value || '';
     renderPlugins();
   });
-  document.querySelector('[data-plugin-cover-input]')?.addEventListener('change', (event) => {
+  document.querySelector('[data-plugin-category]')?.addEventListener('change', event => {
+    state.pluginFilter.cat = event.target.value; renderPlugins();
+  });
+  document.querySelector('[data-plugin-sort]')?.addEventListener('change', event => {
+    state.pluginFilter.sort = event.target.value; renderPlugins();
+  });
+  document.addEventListener('input', event => {
+    if (event.target.matches('[data-plugin-description-input]')) {
+      const preview = document.querySelector('[data-plugin-preview]');
+      if (preview) preview.innerHTML = formatPluginDescription(event.target.value);
+    }
+  });
+  document.addEventListener('submit', event => {
+    if (event.target.matches('[data-plugin-editor]')) { event.preventDefault(); savePluginEditor(event.target); }
+  });
+  document.querySelector('[data-plugin-cover-input]')?.addEventListener('change', async event => {
     const file = event.target.files?.[0];
     const pluginId = event.target.dataset.coverFor;
-    if (!file || !pluginId) return;
-    if (file.size > 2 * 1024 * 1024) { showToast('Обложка должна быть легче 2 МБ', 'error'); event.target.value = ''; return; }
-    const reader = new FileReader();
-    reader.onload = () => {
-      const plugin = state.plugins.find((item) => item.id === pluginId);
-      if (plugin) {
-        plugin.cover = String(reader.result);
-        renderPlugins();
-        showToast(`Обложка «${plugin.name}» обновлена (в браузере, до backend)`, 'success');
-      }
-    };
-    reader.readAsDataURL(file);
     event.target.value = '';
+    if (!state.pluginCanManage || !file || !pluginId) return;
+    const token = authState.token;
+    try {
+      const cover = await compressPluginCover(file);
+      if (token !== authState.token || !state.pluginCanManage) return;
+      const plugin = state.plugins.find(item => item.id === pluginId);
+      await saveCatalogEntry({ ...plugin, cover });
+      if (token !== authState.token) return;
+      await loadPluginCatalog();
+      showToast('Обложка сохранена', 'success');
+    } catch (error) { showToast(humanError(error), 'error'); }
   });
 
   byId('send-message')?.addEventListener('click', () => {
@@ -1893,6 +1920,123 @@ function init() {
   updateClock();
   window.setInterval(updateClock, 1000);
   window.addEventListener('hashchange', () => setView(location.hash.slice(1), false));
+}
+
+function filterPluginCatalog(plugins, filter) {
+  const query = (filter.query || '').trim().toLocaleLowerCase('ru-RU');
+  const list = plugins.filter(p => (filter.cat === 'all' || p.category === filter.cat) &&
+    (!query || `${p.name} ${p.description}`.toLocaleLowerCase('ru-RU').includes(query)));
+  const price = p => Number.isInteger(p.priceRub) ? p.priceRub : Number(String(p.price).replace(/\D/g, '')) || 0;
+  if (filter.sort === 'price-asc') list.sort((a, b) => price(a) - price(b));
+  if (filter.sort === 'price-desc') list.sort((a, b) => price(b) - price(a));
+  if (filter.sort === 'name') list.sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+  if (filter.sort === 'installed') list.sort((a, b) => Number(Boolean(b.installed)) - Number(Boolean(a.installed)));
+  return list;
+}
+
+function formatPluginDescription(text) {
+  const inline = value => escapeHtml(value).replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
+  return String(text || '').split(/\r?\n/).map(line =>
+    line.startsWith('>') ? `<blockquote>${inline(line.slice(1).trimStart())}</blockquote>`
+      : line.trim() ? `<p>${inline(line)}</p>` : '<br>').join('');
+}
+
+function closePluginDialog() {
+  const dialog = document.querySelector('[data-plugin-dialog]');
+  if (dialog?.open) dialog.close();
+}
+
+function showPluginDialog(html) {
+  const dialog = document.querySelector('[data-plugin-dialog]');
+  if (!dialog) return;
+  dialog.querySelector('[data-plugin-dialog-body]').innerHTML = html;
+  if (!dialog.open) dialog.showModal();
+}
+
+function openPluginDetails(id) {
+  const p = state.plugins.find(item => item.id === id);
+  if (!p) return;
+  showPluginDialog(`<header class="plugin-dialog__header"><div><span class="panel-label">Плагин ZetSlay</span><h2 id="plugin-dialog-title">${escapeHtml(p.name)}</h2></div><button class="icon-button" type="button" data-plugin-dialog-close aria-label="Закрыть">×</button></header>
+    ${p.cover ? `<img class="plugin-dialog__cover" src="${escapeHtml(p.cover)}" alt="">` : ''}
+    <div class="plugin-dialog__meta"><span>${escapeHtml(p.price)}</span><span>${p.published === false ? 'Черновик' : p.planned ? 'Скоро · модуль ещё не доступен' : p.active ? 'Включён' : p.installed ? 'Установлен' : 'Доступен'}</span></div>
+    <div class="plugin-description">${formatPluginDescription(p.description)}</div>
+    <h3>Разрешения</h3><div class="plugin-permissions">${p.permissions.map(permission => `<span>${escapeHtml(permission)}</span>`).join('') || '<span>Модуль ещё не зарегистрирован</span>'}</div>
+    ${p.events?.length ? `<p class="plugin-dialog__hint">События: ${p.events.map(escapeHtml).join(', ')}</p>` : ''}
+    <p class="plugin-dialog__hint">Ответы плагинов поступают в очередь. Live-действия на FunPay сейчас отключены.</p>
+    <footer class="plugin-dialog__footer">${state.pluginCanManage ? `<button class="button button--ghost" type="button" data-plugin-edit="${escapeHtml(p.id)}">Редактировать</button>` : ''}<button class="button button--primary" type="button" data-plugin-dialog-close>Закрыть</button></footer>`);
+}
+
+function openPluginEditor(id = '') {
+  if (!state.pluginCanManage) return;
+  const p = state.plugins.find(item => item.id === id) || {
+    id: '', name: '', category: 'control', priceRub: 0, description: '', published: false
+  };
+  showPluginDialog(`<header class="plugin-dialog__header"><h2 id="plugin-dialog-title">${id ? 'Редактировать плагин' : 'Новый плагин'}</h2><button class="icon-button" type="button" data-plugin-dialog-close aria-label="Закрыть">×</button></header>
+    <form class="plugin-editor" data-plugin-editor>
+      <label>ID плагина<input name="id" value="${escapeHtml(p.id)}" ${id ? 'readonly' : ''} required maxlength="100" pattern="[a-z][a-z0-9]*([.][a-z0-9]+|-[a-z0-9]+)*" placeholder="zetslay.review-reminder"></label>
+      <small>ID должен совпадать с manifest.id рабочего модуля. Без модуля в runtime карточка будет отмечена «Скоро».</small>
+      <label>Название<input name="name" value="${escapeHtml(p.name)}" required maxlength="100"></label>
+      <div class="plugin-editor__row"><label>Категория<select name="category">${[['sales','Продажи'],['chat','Общение'],['analytics','Аналитика'],['control','Контроль']].map(([v,l]) => `<option value="${v}" ${p.category === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+      <label>Цена от, ₽<input name="priceRub" type="number" min="0" max="1000000" step="1" value="${p.priceRub || 0}" required></label></div>
+      <small>Цена отображается в каталоге. Оплата покупки плагинов пока не реализована.</small>
+      <label>Описание<textarea name="description" rows="8" required maxlength="8000" data-plugin-description-input>${escapeHtml(p.description)}</textarea></label>
+      <small>**Жирный текст** · &gt; Цитата на отдельной строке. HTML не выполняется.</small>
+      <div class="plugin-description plugin-editor__preview" data-plugin-preview>${formatPluginDescription(p.description)}</div>
+      <label class="plugin-editor__checkbox"><input name="published" type="checkbox" ${p.published ? 'checked' : ''}> Опубликовать в каталоге</label>
+      <p role="alert" class="plugin-editor__error" data-plugin-editor-error></p>
+      <footer class="plugin-dialog__footer"><button class="button button--ghost" type="button" data-plugin-dialog-close>Отмена</button><button class="button button--primary" type="submit">Сохранить</button></footer>
+    </form>`);
+}
+
+async function saveCatalogEntry(entry) {
+  if (!state.pluginCanManage) throw new Error('Публикация доступна только администратору');
+  const { id, name, category, priceRub, description, cover = '', published = true } = entry;
+  return apiRequest('/api/v1/plugin-catalog', { method: 'POST', authenticated: true,
+    body: { id, name, category, priceRub, description, cover, published } });
+}
+
+async function savePluginEditor(form) {
+  if (!state.pluginCanManage || form.dataset.busy === 'true') return;
+  const token = authState.token;
+  const fields = form.elements;
+  const button = form.querySelector('[type="submit"]');
+  const error = form.querySelector('[data-plugin-editor-error]');
+  form.dataset.busy = 'true'; button.disabled = true; error.textContent = '';
+  try {
+    const previous = state.plugins.find(p => p.id === fields.id.value);
+    await saveCatalogEntry({ id: fields.id.value, name: fields.name.value, category: fields.category.value,
+      priceRub: Number(fields.priceRub.value), description: fields.description.value,
+      cover: previous?.cover || '', published: fields.published.checked });
+    if (token !== authState.token) return;
+    closePluginDialog();
+    showToast('Карточка сохранена', 'success');
+    try { await loadPluginCatalog(); }
+    catch { showToast('Карточка сохранена. Обновите страницу, чтобы загрузить каталог.', 'error'); }
+  } catch (failure) {
+    if (token === authState.token) error.textContent = humanError(failure);
+  } finally { form.dataset.busy = 'false'; button.disabled = false; }
+}
+
+async function compressPluginCover(file) {
+  if (!['image/png','image/jpeg','image/webp'].includes(file.type) || file.size > 2 * 1024 * 1024) {
+    throw new Error('Выберите PNG, JPEG или WebP до 2 МБ');
+  }
+  const bitmap = await createImageBitmap(file);
+  try {
+    const canvas = document.createElement('canvas');
+    let width = Math.min(640, bitmap.width);
+    for (let attempt = 0; attempt < 5; attempt++) {
+      canvas.width = Math.max(1, Math.round(width));
+      canvas.height = Math.max(1, Math.round(width * bitmap.height / bitmap.width));
+      const context = canvas.getContext('2d');
+      context.fillStyle = '#12141a'; context.fillRect(0,0,canvas.width,canvas.height);
+      context.drawImage(bitmap,0,0,canvas.width,canvas.height);
+      const encoded = canvas.toDataURL('image/jpeg',0.65);
+      if (encoded.length <= 18000) return encoded;
+      width *= 0.7;
+    }
+    throw new Error('Изображение слишком сложное. Выберите другую обложку.');
+  } finally { bitmap.close(); }
 }
 
 init();
