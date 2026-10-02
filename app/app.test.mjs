@@ -368,3 +368,49 @@ test('latest catalog request wins when responses arrive out of order', async () 
   assert.equal(app.run('state.plugins[0].id'), 'new');
   assert.equal(app.run('state.pluginCanManage'), false);
 });
+
+test('proxy diagnostics shows stages without claiming the store is authenticated', () => {
+  const app = cabinet();
+  const html = app.run(`formatProxyDiagnostics({endpoint:'proxy.test:8000',results:[
+    {protocol:'http',target:'funpay.com',ok:false,stage:'proxy_connect',code:'TIMEOUT'},
+    {protocol:'https',target:'example.com',ok:true,targetStatus:200}
+  ]})`);
+  assert.match(html, /Туннель CONNECT: таймаут/);
+  assert.match(html, /HTTP 200/);
+  assert.match(html, /ещё не означает, что магазин привязан/);
+  assert.match(html, /без Golden Key/);
+});
+
+test('proxy diagnostics cannot mutate onboarding and suppresses duplicate requests', async () => {
+  const modal = fakeModal();
+  const app = cabinet({ token: 'session', modal });
+  app.run(`authState.user = {}; state.onboarding = {state:'verifying_read_only',funPay:{proxyConfigured:true,credentialConfigured:true},telegram:{linked:true}}; connectionStep = 4;
+    apiRequest = (path, options) => { calls.push({path,options}); return new Promise(resolve=>{globalThis.resolveProbe=resolve;}); };`);
+  const pending = app.run('diagnoseConnectionProxy()');
+  await app.run('diagnoseConnectionProxy()');
+  assert.equal(app.calls.length, 1);
+  assert.equal(app.calls[0].path, '/api/v1/onboarding/proxy-diagnostics');
+  app.run(`resolveProbe({endpoint:'proxy.test:8000',results:[{protocol:'http',target:'funpay.com',ok:false,stage:'proxy_connect',code:'TIMEOUT'}]})`);
+  await pending;
+  assert.equal(app.run('state.onboarding.state'), 'verifying_read_only');
+  assert.equal(app.run('connectionBusy'), false);
+  assert.match(modal.body.innerHTML, /Диагностика прокси/);
+  assert.match(modal.body.innerHTML, /Туннель CONNECT: таймаут/);
+});
+
+test('proxy diagnostic errors stay inside the wizard and release the busy state', async () => {
+  const app = cabinet({ token: 'session', modal: fakeModal() });
+  app.run(`authState.user={}; state.onboarding={funPay:{proxyConfigured:true}}; apiRequest=async()=>{throw new Error('Проверка временно недоступна');};`);
+  await app.run('diagnoseConnectionProxy()');
+  assert.equal(app.run('connectionBusy'), false);
+  assert.equal(app.run('connectionError'), 'Проверка временно недоступна');
+});
+
+test('late proxy diagnostic response is ignored after account change', async () => {
+  const app = cabinet({ token: 'session', modal: fakeModal() });
+  app.run(`authState.user={}; state.onboarding={funPay:{proxyConfigured:true}}; apiRequest=()=>new Promise(resolve=>{globalThis.resolveProbe=resolve;});`);
+  const pending = app.run('diagnoseConnectionProxy()');
+  app.run(`authState.token='other-session'; state.proxyDiagnostics=null; resolveProbe({endpoint:'old-proxy:8000',results:[]});`);
+  await pending;
+  assert.equal(app.run('state.proxyDiagnostics'), null);
+});
