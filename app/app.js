@@ -15,6 +15,7 @@ const state = {
   pluginCoverAdmin: false,
   pluginCanManage: false,
   pluginCatalogRevision: 0,
+  proxyDiagnostics: null,
   pluginAudit: [],
   storeFleet: { selectedStoreId: null, capacity: { used: 0, limit: 1 }, liveActionsEnabled: false, stores: [] },
   finance: { stores: [], withdrawalIntents: [], liveWithdrawalEnabled: false },
@@ -66,7 +67,12 @@ const errorMessages = {
   PLAN_REQUIRED: 'Для этого действия нужен активный тариф.',
   INVALID_STATE: 'Действие недоступно в текущем состоянии магазина.',
   AUTH_REJECTED: 'Golden Key отклонён или устарел. Получите новый ключ и повторите подключение.',
-  PROXY_UNAVAILABLE: 'Прокси недоступен. Проверьте адрес, порт и данные авторизации.',
+  PROXY_UNAVAILABLE: 'Не удалось выполнить запрос через прокси. Нажмите «Диагностика прокси».',
+  PROXY_TIMEOUT: 'Истекло время ожидания при соединении через прокси. Диагностика покажет этап остановки.',
+  PROXY_AUTH_REJECTED: 'Прокси отклонил авторизацию (HTTP 407). Проверьте логин, пароль и режим доступа.',
+  PROXY_TLS_REJECTED: 'Ошибка TLS при подключении через прокси. Проверка сертификатов остаётся включённой.',
+  PROXY_CONNECTION_REFUSED: 'Соединение отклонено. Проверьте адрес и порт прокси.',
+  PROXY_DNS_FAILED: 'Не удалось разрешить сетевой адрес при подключении через прокси.',
   CAPTCHA_REQUIRED: 'FunPay запросил CAPTCHA. ZetSlay остановил подключение — подтвердите вход вручную.',
   RATE_LIMITED: 'Слишком много запросов. Подождите и повторите попытку.',
   TELEGRAM_BOT_REJECTED: 'Bot Token не прошёл проверку Telegram.',
@@ -177,6 +183,9 @@ function setAuthModal(open) {
 }
 
 function resetAccountData() {
+  connectionBusy = false;
+  connectionError = '';
+  connectionResetTarget = null;
   state.orders = [];
   state.conversations = [];
   state.lots = [];
@@ -187,6 +196,7 @@ function resetAccountData() {
   state.storeFleet = { selectedStoreId: null, capacity: { used: 0, limit: 1 }, liveActionsEnabled: false, stores: [] };
   state.finance = { stores: [], withdrawalIntents: [], liveWithdrawalEnabled: false };
   state.onboarding = null;
+  state.proxyDiagnostics = null;
   state.pluginAudit = [];
   resetPluginCatalog();
   renderStoreFleet();
@@ -1420,6 +1430,10 @@ function renderConnectionWizard() {
     if (onboarding?.funPay?.credentialConfigured && connectionStep >= 2) edits.push('<button type="button" data-connect-edit="key">Изменить Golden Key</button>');
     if (edits.length) body.innerHTML += `<div class="connect-helper">${edits.join('')}</div>`;
   }
+  if (body && onboarding?.funPay?.proxyConfigured && connectionStep >= 3) {
+    body.innerHTML += `<div class="connect-helper"><button type="button" data-connect-proxy-diagnostics ${connectionBusy ? 'disabled' : ''}>Диагностика прокси</button></div>`;
+    if (state.proxyDiagnostics) body.innerHTML += formatProxyDiagnostics(state.proxyDiagnostics);
+  }
   if (action) {
     const labels = planRequired ? [onboarding?.demoPlanAvailable ? 'Активировать демо-тариф' : 'Тариф не активен'] : [configuredBot && !linkedBot ? 'Заменить бота' : 'Сохранить Bot Token', linkedBot ? 'Продолжить' : linkCode ? 'Проверить привязку' : 'Проверить бота и получить код', 'Сохранить Golden Key', 'Закрепить прокси', 'Запустить read-only проверку'];
     action.disabled = connectionBusy || (planRequired && !onboarding?.demoPlanAvailable);
@@ -1483,6 +1497,36 @@ function backConnectionWizard() {
   renderConnectionWizard();
 }
 
+function formatProxyDiagnostics(report) {
+  const stages = { tcp: 'TCP', proxy_tls: 'TLS к прокси', socks_greeting: 'Ответ SOCKS5',
+    proxy_auth: 'Авторизация прокси', proxy_connect: 'Туннель CONNECT', target_tls: 'TLS к сайту', target_http: 'Ответ сайта' };
+  const codes = { TIMEOUT: 'таймаут', CLOSED: 'соединение закрыто', AUTH_REJECTED: 'авторизация отклонена',
+    METHOD_REJECTED: 'способ авторизации отклонён', TUNNEL_REJECTED: 'туннель отклонён',
+    BAD_RESPONSE: 'неожиданный ответ', ECONNREFUSED: 'соединение отклонено' };
+  const rows = (report.results || []).map(result => {
+    const value = result.ok ? `HTTP ${result.targetStatus}`
+      : `${stages[result.stage] || result.stage}: ${codes[result.code] || result.code}`;
+    return `<span>${escapeHtml(result.protocol.toUpperCase())} · ${escapeHtml(result.target)}<b>${escapeHtml(value)}</b></span>`;
+  }).join('');
+  return `<div data-proxy-diagnostics-result><p>Сохранённый адрес: ${escapeHtml(report.endpoint)}. Диагностика проверяет соединение без Golden Key. Успешный ответ сайта ещё не означает, что магазин привязан.</p><div class="connection-checks">${rows}</div></div>`;
+}
+
+async function diagnoseConnectionProxy() {
+  if (connectionBusy || !authState.token || !state.onboarding?.funPay?.proxyConfigured) return;
+  const token = authState.token;
+  connectionBusy = true; connectionError = ''; state.proxyDiagnostics = null;
+  renderConnectionWizard();
+  try {
+    const report = await apiRequest('/api/v1/onboarding/proxy-diagnostics', { method: 'POST', authenticated: true, body: {} });
+    if (token !== authState.token) return;
+    state.proxyDiagnostics = report;
+  } catch (error) {
+    if (token === authState.token) connectionError = humanError(error);
+  } finally {
+    if (token === authState.token) { connectionBusy = false; renderConnectionWizard(); }
+  }
+}
+
 function beginConnectionReset(target) {
   if (connectionBusy || connectionLoading || state.onboarding?.funPay?.store || !['all', 'key', 'proxy'].includes(target)) return;
   connectionResetTarget = target;
@@ -1501,6 +1545,7 @@ async function confirmConnectionReset() {
     const updated = await apiRequest('/api/v1/onboarding/reset', { method: 'POST', authenticated: true, body: { target, confirmed: true } });
     onboardingRevision += 1;
     state.onboarding = updated;
+    state.proxyDiagnostics = null;
     connectionStatus = null;
     connectionResetTarget = null;
     connectionStep = wizardInitialStep();
@@ -1616,6 +1661,7 @@ async function advanceConnectionWizard() {
       submittedValue = null;
       const field = modal.querySelector('input[name="proxyUrl"]');
       if (field) field.value = '';
+      state.proxyDiagnostics = null;
       showToast('Прокси закреплён', 'success');
     } else if (connectionStep === 4) {
       state.onboarding = await apiRequest('/api/v1/onboarding/funpay/preflight', { method: 'POST', authenticated: true, body: {} });
@@ -1702,6 +1748,7 @@ function bindInteractions() {
       return;
     }
     if (event.target.closest('[data-connect-return]')) { connectionStep = 1; connectionError = ''; renderConnectionWizard(); return; }
+    if (event.target.closest('[data-connect-proxy-diagnostics]')) { diagnoseConnectionProxy(); return; }
     if (event.target.closest('[data-connect-repair]')) { repairConnectionWebhook(); return; }
     const editConnection = event.target.closest('[data-connect-edit]');
     if (editConnection) { beginConnectionReset(editConnection.dataset.connectEdit); return; }
