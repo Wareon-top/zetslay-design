@@ -1499,20 +1499,23 @@ function backConnectionWizard() {
 
 function formatProxyDiagnostics(report) {
   const stages = { tcp: 'TCP', proxy_tls: 'TLS к прокси', socks_greeting: 'Ответ SOCKS5',
-    proxy_auth: 'Авторизация прокси', proxy_connect: 'Туннель CONNECT', target_tls: 'TLS к сайту', target_http: 'Ответ сайта' };
+    proxy_auth: 'Авторизация прокси', proxy_connect: 'Туннель CONNECT', target_tls: 'TLS к сайту', target_http: 'Ответ сайта',
+    proxy_dns: 'DNS прокси', curl_request: 'Запрос через curl (этап не подтверждён)' };
   const codes = { TIMEOUT: 'таймаут', CLOSED: 'соединение закрыто', AUTH_REJECTED: 'авторизация отклонена',
     METHOD_REJECTED: 'способ авторизации отклонён', TUNNEL_REJECTED: 'туннель отклонён',
-    BAD_RESPONSE: 'неожиданный ответ', ECONNREFUSED: 'соединение отклонено' };
+    BAD_RESPONSE: 'неожиданный ответ', ECONNREFUSED: 'соединение отклонено',
+    DNS_FAILED: 'адрес не разрешён', TLS_REJECTED: 'сертификат или TLS отклонён', UNAVAILABLE: 'запрос не выполнен' };
   const rows = (report.results || []).map(result => {
     const value = result.ok ? `HTTP ${result.targetStatus}`
-      : `${stages[result.stage] || result.stage}: ${codes[result.code] || result.code}`;
-    return `<span>${escapeHtml(result.protocol.toUpperCase())} · ${escapeHtml(result.target)}<b>${escapeHtml(value)}</b></span>`;
+      : `${stages[result.stage] || result.stage}: ${result.code === 'HTTP_STATUS' ? `HTTP ${result.targetStatus}` : codes[result.code] || result.code}`;
+    return `<span>${escapeHtml(result.protocol.toUpperCase())}${result.client === 'curl' ? ' · curl' : ''} · ${escapeHtml(result.target)}<b>${escapeHtml(value)}</b></span>`;
   }).join('');
   const configuredWorks = (report.results || []).some(result => result.protocol === report.configuredProtocol && result.target === 'funpay.com' && result.ok);
   const socksWorks = (report.results || []).some(result => result.protocol === 'socks5' && result.target === 'funpay.com' && result.ok);
   const hint = socksWorks && !configuredWorks && report.configuredProtocol !== 'socks5'
     ? '<p>SOCKS5 отвечает. Если HTTP/HTTPS не работает, нажмите «Изменить прокси» и введите тот же адрес, логин и пароль со схемой socks5://. Затем запустите read-only проверку магазина.</p>' : '';
-  return `${hint}<div data-proxy-diagnostics-result><p>Сохранённый адрес: ${escapeHtml(report.endpoint)}. Сохранённый протокол: ${escapeHtml((report.configuredProtocol || 'не указан').toUpperCase())}. Диагностика проверяет соединение без Golden Key. Успешный ответ сайта ещё не означает, что магазин привязан.</p><div class="connection-checks">${rows}</div></div>`;
+  const client = report.client === 'curl' ? 'Клиент коннектора: curl. Проверяется только сохранённый протокол. ' : report.client === 'node-probe' ? 'Проверка протоколов: Node. ' : '';
+  return `${hint}<div data-proxy-diagnostics-result><p>Сохранённый адрес: ${escapeHtml(report.endpoint)}. Сохранённый протокол: ${escapeHtml((report.configuredProtocol || 'не указан').toUpperCase())}. ${client}Диагностика проверяет соединение без Golden Key. Успешный ответ сайта ещё не означает, что магазин привязан.</p><div class="connection-checks">${rows}</div></div>`;
 }
 
 async function diagnoseConnectionProxy() {

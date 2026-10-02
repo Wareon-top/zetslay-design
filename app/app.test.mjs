@@ -5,6 +5,24 @@ import vm from 'node:vm';
 
 const source = readFileSync(new URL('./app.js', import.meta.url), 'utf8').replace(/\ninit\(\);\s*$/, '');
 
+test('curl diagnostics names the connector client and does not invent a CONNECT stage', () => {
+  const app = cabinet();
+  const html = app.run(`formatProxyDiagnostics({endpoint:'proxy.test:8000',configuredProtocol:'http',client:'curl',results:[{protocol:'http',client:'curl',target:'funpay.com',ok:false,stage:'curl_request',code:'TIMEOUT'}]})`);
+  assert.match(html, /Клиент коннектора: curl/);
+  assert.match(html, /HTTP · curl · funpay.com/);
+  assert.match(html, /этап не подтверждён/);
+  assert.ok(!html.includes('Туннель CONNECT'));
+  assert.ok(!html.includes('SOCKS5 отвечает'));
+});
+
+test('curl diagnostic preserves non-success HTTP status and escapes diagnostic text', () => {
+  const app = cabinet();
+  const html = app.run(`formatProxyDiagnostics({endpoint:'<private>',configuredProtocol:'https',client:'curl',results:[{protocol:'https',client:'curl',target:'funpay.com',ok:false,stage:'target_http',code:'HTTP_STATUS',targetStatus:403}]})`);
+  assert.match(html, /Ответ сайта: HTTP 403/);
+  assert.match(html, /&lt;private&gt;/);
+  assert.ok(!html.includes('<private>'));
+});
+
 function cabinet({ search = '', token = '', modal = null } = {}) {
   const calls = [];
   const history = [];
