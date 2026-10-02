@@ -418,10 +418,20 @@ test('late proxy diagnostic response is ignored after account change', async () 
 
 test('diagnostics suggests explicit SOCKS5 selection without changing saved credentials or scheme', () => {
   const app = cabinet();
-  const html = app.run(`formatProxyDiagnostics({endpoint:'proxy.test:8000',configuredProtocol:'http',results:[{protocol:'socks5',target:'example.com',ok:true,targetStatus:200}]})`);
+  const html = app.run(`formatProxyDiagnostics({endpoint:'proxy.test:8000',configuredProtocol:'http',results:[{protocol:'socks5',target:'funpay.com',ok:true,targetStatus:200}]})`);
   assert.match(html, /SOCKS5 отвечает/);
   assert.match(html, /Изменить прокси/);
   assert.match(html, /socks5:\/\//);
-  const alreadySelected = app.run(`formatProxyDiagnostics({endpoint:'proxy.test:8000',configuredProtocol:'socks5',results:[{protocol:'socks5',target:'example.com',ok:true,targetStatus:200}]})`);
+  const alreadySelected = app.run(`formatProxyDiagnostics({endpoint:'proxy.test:8000',configuredProtocol:'socks5',results:[{protocol:'socks5',target:'funpay.com',ok:true,targetStatus:200}]})`);
   assert.ok(!alreadySelected.includes('SOCKS5 отвечает'));
+});
+
+
+test('diagnostics keeps a working saved protocol and does not recommend SOCKS solely from example.com', () => {
+  const app=cabinet();
+  const working=app.run(`formatProxyDiagnostics({endpoint:'proxy.test:8000',configuredProtocol:'http',results:[{protocol:'http',target:'funpay.com',ok:true,targetStatus:200},{protocol:'socks5',target:'funpay.com',ok:true,targetStatus:200}]})`);
+  assert.match(working,/Сохранённый протокол: HTTP/);
+  assert.ok(!working.includes('SOCKS5 отвечает'));
+  const partial=app.run(`formatProxyDiagnostics({endpoint:'proxy.test:8000',configuredProtocol:'http',results:[{protocol:'socks5',target:'example.com',ok:true,targetStatus:200}]})`);
+  assert.ok(!partial.includes('SOCKS5 отвечает'));
 });
