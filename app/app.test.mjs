@@ -414,3 +414,14 @@ test('late proxy diagnostic response is ignored after account change', async () 
   await pending;
   assert.equal(app.run('state.proxyDiagnostics'), null);
 });
+
+
+test('diagnostics suggests explicit SOCKS5 selection without changing saved credentials or scheme', () => {
+  const app = cabinet();
+  const html = app.run(`formatProxyDiagnostics({endpoint:'proxy.test:8000',configuredProtocol:'http',results:[{protocol:'socks5',target:'example.com',ok:true,targetStatus:200}]})`);
+  assert.match(html, /SOCKS5 отвечает/);
+  assert.match(html, /Изменить прокси/);
+  assert.match(html, /socks5:\/\//);
+  const alreadySelected = app.run(`formatProxyDiagnostics({endpoint:'proxy.test:8000',configuredProtocol:'socks5',results:[{protocol:'socks5',target:'example.com',ok:true,targetStatus:200}]})`);
+  assert.ok(!alreadySelected.includes('SOCKS5 отвечает'));
+});
