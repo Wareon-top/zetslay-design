@@ -13,6 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css?v=20261003-overview">
     <link rel="stylesheet" href="overview.css?v=20261003-overview">
+    <link rel="stylesheet" href="orders.css?v=20261003-orders">
   </head>
   <body>
     <svg class="icon-sprite" aria-hidden="true">
@@ -162,15 +163,39 @@
             <p class="overview-scope"><svg><use href="#i-shield"/></svg>Показатели рассчитаны по загруженному снимку, а не по всей истории магазина. Данные FunPay не изменяются.</p>
           </section>
 
-          <section class="view" data-view="orders" aria-labelledby="orders-title">
-            <div class="view-heading view-heading--compact"><div><span class="eyebrow">Commerce / Orders</span><h1 id="orders-title">Заказы</h1><p>Актуальные заказы вашего магазина FunPay через закреплённый read-only worker.</p></div><button class="button button--primary" type="button" data-sync-content><svg><use href="#i-bolt"/></svg> Синхронизировать</button></div>
-            <div class="stat-grid">
-              <article class="stat-card"><small>Получено заказов</small><span class="stat-card__icon stat-card__icon--amber"><svg><use href="#i-bag"/></svg></span><strong data-orders-total>—</strong><span class="stat-card__hint">за всё время наблюдения</span></article>
-              <article class="stat-card"><small>В работе</small><span class="stat-card__icon stat-card__icon--violet"><svg><use href="#i-bolt"/></svg></span><strong data-orders-active>—</strong><span class="stat-card__hint">требуют действий</span></article>
-              <article class="stat-card"><small>Завершено</small><span class="stat-card__icon stat-card__icon--green"><svg><use href="#i-check"/></svg></span><strong data-orders-done>—</strong><span class="stat-card__hint">успешно выдано</span></article>
-              <article class="stat-card"><small>Обновлено</small><span class="stat-card__icon stat-card__icon--blue"><svg><use href="#i-clock"/></svg></span><strong data-orders-updated>—</strong><span class="stat-card__hint">read-only режим</span></article>
+          <section class="view orders-page" data-view="orders" data-orders-workspace aria-labelledby="orders-title">
+            <header class="orders-page-heading">
+              <div><span class="orders-page-eyebrow">ZETSLAY / МАГАЗИН</span><h1 id="orders-title">Заказы</h1><p>Статусы, суммы и покупатели вашего магазина.</p></div>
+              <div class="orders-page-heading__actions"><button class="button button--ghost" type="button" data-orders-refresh disabled><svg><use href="#i-clock"/></svg><span data-orders-refresh-label>Обновить заказы</span></button><button class="button button--primary" type="button" data-orders-connect data-open-connect><svg><use href="#i-plus"/></svg>Подключить FunPay</button></div>
+            </header>
+            <div class="orders-page-context"><span class="orders-page-source" data-orders-source>Магазин не подключён</span><span data-orders-snapshot-time>Ожидает синхронизации</span><span class="orders-page-context__scope">Текущий снимок FunPay</span></div>
+            <p class="orders-page-notice" data-orders-notice role="status" aria-live="polite" hidden></p>
+
+            <div class="orders-page-stats">
+              <article class="orders-page-stat"><div><h2>Всего заказов</h2><span class="orders-page-icon orders-page-icon--amber"><svg><use href="#i-bag"/></svg></span></div><strong data-orders-total>—</strong><p>В загруженном снимке</p></article>
+              <article class="orders-page-stat"><div><h2>В работе</h2><span class="orders-page-icon orders-page-icon--blue"><svg><use href="#i-clock"/></svg></span></div><strong data-orders-active>—</strong><p>Оплачены, в работе или выданы</p></article>
+              <article class="orders-page-stat"><div><h2>Завершено</h2><span class="orders-page-icon orders-page-icon--green"><svg><use href="#i-check"/></svg></span></div><strong data-orders-done>—</strong><p>Со статусом «Завершён»</p></article>
+              <article class="orders-page-stat"><div><h2>Возвраты</h2><span class="orders-page-icon orders-page-icon--red"><svg><use href="#i-card"/></svg></span></div><strong data-orders-refunded>—</strong><p>Со статусом «Возвращён»</p></article>
             </div>
-            <section class="panel content-panel"><div class="content-toolbar"><div class="search-field"><svg><use href="#i-search"/></svg><input type="search" placeholder="Найти заказ, товар или покупателя" aria-label="Поиск заказов"></div><div class="toolbar-actions"><div class="segmented"><button class="is-active" type="button">Все</button><button type="button" data-toast="Фильтрация включится после живой синхронизации">Новые</button><button type="button" data-toast="Фильтрация включится после живой синхронизации">В работе</button><button type="button" data-toast="Фильтрация включится после живой синхронизации">Завершённые</button></div><button class="filter-button" type="button" data-toast="Сортировка включится после живой синхронизации"><svg><use href="#i-clock"/></svg> Сначала новые</button></div></div><div class="data-table-wrap"><table class="data-table data-table--large"><thead><tr><th>Заказ</th><th>Товар</th><th>Покупатель</th><th class="cell-right">Сумма</th><th>Источник</th><th>Статус</th><th>Создан</th><th></th></tr></thead><tbody id="orders-table-body"></tbody></table></div><div class="table-footer"><span data-orders-count>Нет синхронизированных заказов</span></div></section>
+
+            <section class="orders-page-panel" aria-labelledby="orders-list-title">
+              <header class="orders-page-panel__heading"><div><h2 id="orders-list-title">Список заказов</h2><span data-orders-list-total>Данные магазина</span></div><button class="orders-page-reset" type="button" data-orders-reset-filters hidden>Сбросить фильтры <svg><use href="#i-close"/></svg></button></header>
+              <div class="orders-page-toolbar">
+                <label class="orders-page-search"><svg aria-hidden="true"><use href="#i-search"/></svg><input type="search" data-orders-search placeholder="Заказ, товар или покупатель" aria-label="Поиск заказов" autocomplete="off" maxlength="256"></label>
+                <div class="orders-page-controls"><label class="orders-page-select"><span>Валюта</span><select data-orders-currency aria-label="Валюта заказов"><option value="all">Все валюты</option></select></label><label class="orders-page-select"><span>Сортировка</span><select data-orders-sort aria-label="Сортировка заказов"><option value="source">Порядок FunPay</option><option value="newest">Сначала новые</option><option value="oldest">Сначала старые</option><option value="amount-desc">Сумма: по убыванию</option><option value="amount-asc">Сумма: по возрастанию</option></select></label></div>
+              </div>
+              <div class="orders-page-tabs" role="group" aria-label="Фильтр по статусу">
+                <button type="button" data-orders-filter="all" aria-pressed="true">Все <span data-orders-filter-count="all">—</span></button>
+                <button type="button" data-orders-filter="active" aria-pressed="false">В работе <span data-orders-filter-count="active">—</span></button>
+                <button type="button" data-orders-filter="completed" aria-pressed="false">Завершённые <span data-orders-filter-count="completed">—</span></button>
+                <button type="button" data-orders-filter="refunded" aria-pressed="false">Возвраты <span data-orders-filter-count="refunded">—</span></button>
+              </div>
+              <p class="orders-page-filter-hint" data-orders-filter-hint id="orders-filter-hint" hidden></p>
+              <div class="orders-page-table-wrap"><table class="orders-page-table" aria-describedby="orders-filter-hint"><caption class="orders-page-sr-only">Заказы из read-only снимка FunPay</caption><thead><tr><th scope="col">Заказ / товар</th><th scope="col">Покупатель</th><th scope="col">Статус</th><th scope="col" class="orders-page-amount">Сумма</th><th scope="col">Создан</th><th scope="col" class="orders-page-row-arrow"><span class="orders-page-sr-only">Подробнее</span></th></tr></thead><tbody id="orders-table-body"></tbody></table></div>
+              <footer class="orders-page-footer"><span data-orders-count role="status" aria-live="polite">Нет синхронизированных заказов</span><div class="orders-page-pagination"><label>По <select data-orders-page-size aria-label="Заказов на странице"><option value="10">10</option><option value="20">20</option><option value="50">50</option></select></label><button type="button" data-orders-page="prev" aria-label="Предыдущая страница" disabled><svg><use href="#i-chevron"/></svg></button><span data-orders-page-label>1 / 1</span><button type="button" data-orders-page="next" aria-label="Следующая страница" disabled><svg><use href="#i-chevron"/></svg></button></div></footer>
+            </section>
+            <p class="orders-page-scope"><svg><use href="#i-shield"/></svg>Отображаются заказы из загруженного снимка. Просмотр и фильтры не меняют данные на FunPay.</p>
+            <dialog class="orders-page-dialog" data-order-dialog aria-labelledby="order-detail-title"><header><div><span class="orders-page-eyebrow">FUNPAY / ЗАКАЗ</span><h2 id="order-detail-title" data-order-detail-title>Заказ</h2></div><button type="button" data-order-close aria-label="Закрыть карточку заказа"><svg><use href="#i-close"/></svg></button></header><div data-order-detail-body></div><footer><span>Данные текущего снимка</span><button type="button" data-order-close>Закрыть</button></footer></dialog>
           </section>
 
           <section class="view" data-view="messages" aria-labelledby="messages-title">
@@ -414,6 +439,7 @@
 
     <div class="toast-region" aria-live="polite" aria-atomic="true"></div>
     <script src="overview.js?v=20261003-overview" defer></script>
-    <script src="app.js?v=20261003-overview" defer></script>
+    <script src="orders.js?v=20261003-orders" defer></script>
+    <script src="app.js?v=20261003-orders" defer></script>
   </body>
 </html>

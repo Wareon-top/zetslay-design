@@ -768,6 +768,7 @@ const avatarTone = (name) => {
 };
 
 function renderOrders() {
+  if (typeof renderOrderWorkspace === 'function' && renderOrderWorkspace()) { renderDashboard(); return; }
   const target = byId('orders-table-body');
   if (!target) return;
   target.innerHTML = state.orders.length ? state.orders.map((order) => `
@@ -859,7 +860,20 @@ function normalizeStoreContent(content) {
   renderAnalytics();
 }
 
-async function syncStoreContent({ silent = false } = {}) {
+// Share one read request between cabinet views within the same account session.
+let storeContentSyncFlight = null;
+function syncStoreContent(options = {}) {
+  const generation = sessionGeneration;
+  if (storeContentSyncFlight?.generation === generation) return storeContentSyncFlight.promise;
+  const promise = readStoreContent(options);
+  const flight = { generation, promise };
+  storeContentSyncFlight = flight;
+  const release = () => { if (storeContentSyncFlight === flight) storeContentSyncFlight = null; };
+  promise.then(release, release);
+  return promise;
+}
+
+async function readStoreContent({ silent = false } = {}) {
   const store = selectedStore();
   if (!authState.user) { setAuthModal(true); return; }
   if (!store || store.status !== 'connected_read_only') {
