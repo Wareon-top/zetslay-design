@@ -5,12 +5,18 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="theme-color" content="#08090d">
     <meta name="robots" content="noindex,nofollow">
+    <meta name="referrer" content="no-referrer">
     <meta name="zetslay-api-base-url" content="https://api.zetslay.pro">
     <title>ZetSlay Control — личный кабинет</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=20261003-overview">
+    <link rel="stylesheet" href="overview.css?v=20261003-overview">
+    <link rel="stylesheet" href="orders.css?v=20261003-orders">
+    <link rel="stylesheet" href="plugin-page.css?v=20261003-plugin-page">
+    <link rel="stylesheet" href="messages.css?v=20261003-message-sync">
+    <link rel="stylesheet" href="plugin-cover.css?v=20261003-cover-quality">
   </head>
   <body>
     <svg class="icon-sprite" aria-hidden="true">
@@ -38,13 +44,14 @@
       <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
       <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
       <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
+      <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.5 12s3.5-5.5 9.5-5.5 9.5 5.5 9.5 5.5-3.5 5.5-9.5 5.5S2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.5"/></symbol>
       <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></symbol>
       <symbol id="i-filter" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></symbol>
       <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v2.5M12 19.5V22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M2 12h2.5M19.5 12H22M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></symbol>
       <symbol id="i-gift" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="9" rx="1.5"/><path d="M12 11v9M4 15h16M12 11s-4 .2-5.5-1.2C5.2 8.6 6 6.5 8 6.5c2.2 0 3.3 2.3 4 4.5Zm0 0s4 .2 5.5-1.2C18.8 8.6 18 6.5 16 6.5c-2.2 0-3.3 2.3-4 4.5Z"/></symbol>
     </svg>
 
-    <div class="app-shell">
+    <div class="app-shell" hidden>
       <div class="sidebar-backdrop" data-sidebar-close></div>
       <aside class="sidebar" aria-label="Основная навигация">
         <div class="sidebar__top">
@@ -63,31 +70,28 @@
         <nav class="sidebar-nav">
           <span class="sidebar-nav__label">Обзор</span>
           <button class="nav-item is-active" type="button" data-view-target="dashboard"><svg><use href="#i-grid"/></svg><span>Главная</span></button>
-          <button class="nav-item" type="button" data-view-target="orders"><svg><use href="#i-bag"/></svg><span>Заказы</span><b>6</b></button>
-          <button class="nav-item" type="button" data-view-target="messages"><svg><use href="#i-chat"/></svg><span>Сообщения</span><b>3</b></button>
+          <button class="nav-item" type="button" data-view-target="orders"><svg><use href="#i-bag"/></svg><span>Заказы</span><b data-nav-orders>0</b></button>
+          <button class="nav-item" type="button" data-view-target="messages"><svg><use href="#i-chat"/></svg><span>Сообщения</span><b data-nav-messages>0</b></button>
           <span class="sidebar-nav__label">Магазин</span>
           <button class="nav-item" type="button" data-view-target="lots"><svg><use href="#i-box"/></svg><span>Лоты и товары</span></button>
-          <button class="nav-item" type="button" data-view-target="automations"><svg><use href="#i-bolt"/></svg><span>Автоматизация</span><i></i></button>
           <button class="nav-item" type="button" data-view-target="plugins"><svg><use href="#i-puzzle"/></svg><span>Плагины</span></button>
-          <button class="nav-item" type="button" data-view-target="analytics"><svg><use href="#i-chart"/></svg><span>Аналитика</span></button>
           <span class="sidebar-nav__label">Сервисы и настройки</span>
           <button class="nav-item" type="button" data-view-target="billing"><svg><use href="#i-card"/></svg><span>Финансы</span></button>
           <button class="nav-item" type="button" data-view-target="telegram"><svg><use href="#i-send"/></svg><span>Telegram</span></button>
           <button class="nav-item" type="button" data-view-target="security"><svg><use href="#i-shield"/></svg><span>Безопасность</span></button>
-          <button class="nav-item" type="button" data-view-target="events"><svg><use href="#i-list"/></svg><span>Журнал событий</span></button>
           <button class="nav-item" type="button" data-view-target="guide"><svg><use href="#i-help"/></svg><span>База знаний</span></button>
         </nav>
 
         <div class="sidebar__bottom">
           <div class="support-card">
             <span class="support-card__icon"><svg><use href="#i-help"/></svg></span>
-            <div><strong>Поддержка 24/7</strong><small>Онлайн · ответим в течение часа</small></div>
+            <div><strong>Поддержка</strong><small>Обратная связь пока не подключена</small></div>
             <button class="support-card__button" type="button" data-toast="Центр поддержки будет подключён перед закрытой beta">Написать в поддержку</button>
           </div>
           <div class="user-card" data-auth-open>
             <span class="user-card__avatar">WA</span>
-            <span><strong>Wareon</strong><small>Тариф Про · Demo</small></span>
-            <button class="icon-button" type="button" aria-label="Меню профиля" data-toast="Настройки профиля"><svg><use href="#i-more"/></svg></button>
+            <span><strong>Войти</strong><small>Войти в ZetSlay</small></span>
+            
           </div>
         </div>
       </aside>
@@ -100,140 +104,131 @@
             <span class="prototype-chip" data-system-health><i></i> Гостевой режим</span>
             <span class="balance-chip"><svg><use href="#i-card"/></svg><span><small>Баланс</small><strong data-topbar-balance>—</strong></span></span>
             <button class="button button--light" type="button" data-open-connect><svg><use href="#i-plus"/></svg> Подключить FunPay</button>
-            <span class="lang-switch"><button class="is-active" type="button">RU</button><button type="button" data-toast="Английская версия появится после beta">EN</button></span>
-            <button class="icon-button notification-button" type="button" aria-label="Уведомления" data-toast="3 демонстрационных уведомления"><svg><use href="#i-bell"/></svg><b>3</b></button>
+            
+            <button class="icon-button notification-button" type="button" aria-label="Уведомления" data-toast="Уведомления появятся после настройки Telegram"><svg><use href="#i-bell"/></svg></button>
             <button class="icon-button" type="button" aria-label="Безопасность" data-view-link="security"><svg><use href="#i-gear"/></svg></button>
-            <button class="topbar-profile" type="button" data-auth-open><span data-auth-avatar>WA</span><span class="topbar-profile__meta"><strong data-auth-name>Войти</strong><small>Free</small></span><svg><use href="#i-chevron"/></svg></button>
+            <button class="topbar-profile" type="button" data-auth-open><span data-auth-avatar>WA</span><span class="topbar-profile__meta"><strong data-auth-name>Войти</strong><small>Аккаунт ZetSlay</small></span><svg><use href="#i-chevron"/></svg></button>
           </div>
         </header>
 
         <div class="view-stack">
-          <section class="view is-active" data-view="dashboard" aria-labelledby="dashboard-title">
-            <div class="dash-notices">
-              <section class="notice-banner notice-banner--neutral">
-                <span class="notice-banner__icon"><svg><use href="#i-shield"/></svg></span>
-                <div>
-                  <strong>Рекомендация по безопасности <b class="notice-tag">2FA</b></strong>
-                  <p>Включите второй фактор входа: он закроет посторонним доступ к балансу, Golden Key и журналу автоматизаций.</p>
-                </div>
-                <div class="notice-banner__actions">
-                  <button class="button button--primary" type="button" data-view-link="security">Включить 2FA <svg><use href="#i-chevron"/></svg></button>
-                  <button class="notice-dismiss" type="button" data-notice-dismiss>Позже</button>
-                </div>
-              </section>
-              <section class="notice-banner notice-banner--gift">
-                <span class="notice-banner__icon"><svg><use href="#i-gift"/></svg></span>
-                <div>
-                  <strong>7 дней тарифа «Максимум» без оплаты <b class="notice-tag">Подарок</b></strong>
-                  <p>Весь каталог плагинов, расширенная аналитика и приоритетные лимиты автоматизации. Автопродления нет.</p>
-                </div>
-                <div class="notice-banner__actions">
-                  <button class="button button--primary" type="button" data-toast="Подарочный период включится вместе с платёжным контуром">Забрать 7 дней <svg><use href="#i-chevron"/></svg></button>
-                  <button class="notice-dismiss notice-dismiss--icon" type="button" data-notice-dismiss aria-label="Скрыть предложение"><svg><use href="#i-close"/></svg></button>
-                </div>
-              </section>
-            </div>
-
-            <section class="dash-hero panel">
-              <div>
-                <span class="eyebrow">ZetSlay · кабинет продавца</span>
-                <h1 id="dashboard-title">Панель управления</h1>
-                <p>Статистика магазина, сообщения и автоматизации — в одном спокойном окне. FunPay подключается в read-only режиме через закреплённый proxy.</p>
+          <section class="view is-active overview" data-view="dashboard" data-overview aria-labelledby="dashboard-title">
+            <header class="overview-heading">
+              <div><span class="overview-eyebrow">ZETSLAY / ОБЗОР</span><h1 id="dashboard-title">Ваш магазин в цифрах</h1><p>Продажи, заказы и диалоги — в одном месте.</p></div>
+              <div class="overview-heading__actions">
+                <button class="button button--ghost" type="button" data-overview-refresh hidden><svg><use href="#i-clock"/></svg><span data-overview-refresh-label>Обновить данные</span></button>
+                <button class="button button--primary" type="button" data-overview-connect data-open-connect><svg><use href="#i-plus"/></svg><span data-overview-connect-label>Подключить FunPay</span></button>
               </div>
-              <button class="button button--primary" type="button" data-open-connect><svg><use href="#i-plus"/></svg> Подключить FunPay</button>
-            </section>
+            </header>
+            <div class="overview-context"><span class="overview-source" data-overview-source>Магазин не подключён</span><span data-overview-updated>Ожидает синхронизации</span><span class="overview-plan" data-overview-plan></span></div>
+            <p class="overview-notice" data-overview-notice role="status" aria-live="polite" hidden></p>
 
-            <div class="quick-grid">
-              <button class="quick-tile" type="button" data-view-link="orders"><span class="quick-tile__icon quick-tile__icon--amber"><svg><use href="#i-bag"/></svg></span><span>Заказы</span><svg class="quick-tile__arrow"><use href="#i-external"/></svg></button>
-              <button class="quick-tile" type="button" data-view-link="messages"><span class="quick-tile__icon quick-tile__icon--blue"><svg><use href="#i-chat"/></svg></span><span>Сообщения</span><svg class="quick-tile__arrow"><use href="#i-external"/></svg></button>
-              <button class="quick-tile" type="button" data-view-link="plugins"><span class="quick-tile__icon quick-tile__icon--violet"><svg><use href="#i-puzzle"/></svg></span><span>Плагины</span><svg class="quick-tile__arrow"><use href="#i-external"/></svg></button>
-              <button class="quick-tile" type="button" data-view-link="analytics"><span class="quick-tile__icon quick-tile__icon--green"><svg><use href="#i-chart"/></svg></span><span>Аналитика</span><svg class="quick-tile__arrow"><use href="#i-external"/></svg></button>
-            </div>
+            <div class="overview-grid">
+              <article class="overview-card overview-stat"><div class="overview-stat__label"><h2>Сумма продаж</h2><span class="overview-icon overview-icon--amber"><svg><use href="#i-card"/></svg></span></div><strong data-overview-sales>—</strong><p data-overview-sales-note>После синхронизации магазина</p></article>
+              <article class="overview-card overview-stat"><div class="overview-stat__label"><h2>Заказы</h2><span class="overview-icon overview-icon--blue"><svg><use href="#i-bag"/></svg></span></div><strong data-overview-orders>—</strong><p data-overview-orders-note>В текущем снимке FunPay</p></article>
+              <article class="overview-card overview-stat"><div class="overview-stat__label"><h2>Средний заказ</h2><span class="overview-icon overview-icon--green"><svg><use href="#i-chart"/></svg></span></div><strong data-overview-average>—</strong><p data-overview-average-note>Без возвращённых заказов</p></article>
+              <article class="overview-card overview-stat"><div class="overview-stat__label"><h2>Диалоги</h2><span class="overview-icon overview-icon--violet"><svg><use href="#i-chat"/></svg></span></div><strong data-overview-dialogs>—</strong><p>В синхронизированных сообщениях</p></article>
 
-            <div class="stat-grid">
-              <article class="stat-card"><small>Доступный баланс</small><span class="stat-card__icon stat-card__icon--amber"><svg><use href="#i-card"/></svg></span><strong data-dash-balance>—</strong><span class="stat-card__hint">FunPay · read-only</span></article>
-              <article class="stat-card"><small>Заказов за период</small><span class="stat-card__icon stat-card__icon--blue"><svg><use href="#i-bag"/></svg></span><strong data-dash-orders>—</strong><span class="stat-card__hint">синхронизировано</span></article>
-              <article class="stat-card"><small>Новых сообщений</small><span class="stat-card__icon stat-card__icon--violet"><svg><use href="#i-chat"/></svg></span><strong data-dash-unread>—</strong><span class="stat-card__hint">требуют ответа</span></article>
-              <article class="stat-card"><small>Тарифный план</small><span class="stat-card__icon stat-card__icon--green"><svg><use href="#i-shield"/></svg></span><strong data-dash-plan>—</strong><span class="stat-card__hint">автопродление под контролем</span></article>
-            </div>
-
-            <div class="dash-panels dash-panels--charts">
-              <section class="panel dash-panel dash-panel--chart" aria-label="Динамика заказов">
-                <header><span class="dash-panel__icon"><svg><use href="#i-chart"/></svg></span><div><h2>Динамика заказов</h2><small>Оборот и отгрузка по дням недели</small></div><button class="panel-link" type="button" data-view-link="analytics">Вся аналитика <svg><use href="#i-chevron"/></svg></button></header>
-                <div class="dash-chart" id="dash-chart"></div>
-                <div class="dash-chart__days" id="dash-chart-days"></div>
+              <section class="overview-card overview-revenue" aria-labelledby="overview-revenue-title">
+                <header class="overview-card__heading"><div><h2 id="overview-revenue-title">Продажи</h2><p data-overview-chart-subtitle>Суммы заказов из текущего снимка</p></div><div class="overview-chart-controls"><label class="overview-currency" data-overview-currency-label hidden>Валюта<select data-overview-currency aria-label="Валюта продаж"></select></label><div class="overview-segmented" role="group" aria-label="Группировка графика"><button type="button" data-overview-mode="orders" aria-pressed="true">По заказам</button><button type="button" data-overview-mode="days" aria-pressed="false">По дням</button></div></div></header>
+                <div class="overview-chart" data-overview-chart></div>
+                <footer class="overview-chart-footer"><p data-overview-chart-note>График появится после синхронизации.</p><button class="overview-link" type="button" data-view-link="orders">Все заказы <svg><use href="#i-chevron"/></svg></button></footer>
+                <details class="overview-chart-data" data-overview-chart-data hidden><summary>Данные графика</summary><div data-overview-chart-table></div></details>
               </section>
-              <section class="panel dash-panel dash-panel--donut" aria-label="Структура заказов">
-                <header><span class="dash-panel__icon"><svg><use href="#i-list"/></svg></span><div><h2>Структура заказов</h2><small>Распределение по статусам</small></div></header>
-                <div class="dash-donut">
-                  <svg viewBox="0 0 132 132" id="dash-donut-svg" role="img" aria-label="Диаграмма структуры заказов"></svg>
-                  <span class="dash-donut__center"><strong id="dash-donut-total">0</strong><small>Всего заказов</small></span>
+
+              <section class="overview-card overview-refunds" aria-labelledby="overview-refunds-title">
+                <header class="overview-card__heading"><div><h2 id="overview-refunds-title">Возвраты</h2><p>Доля заказов в текущем снимке</p></div><div class="overview-refunds__rate"><strong data-overview-refund-rate>—</strong><span data-overview-refund-count>Нет данных</span></div></header>
+                <div class="overview-refunds__amount"><span>Сумма возвратов <small data-overview-refund-currency></small></span><strong data-overview-refund-amount>—</strong></div>
+                <div class="overview-refund-track" data-overview-refund-track aria-hidden="true"></div>
+                <div class="overview-refund-key"><span><i></i>Остальные заказы</span><span><i></i>Возвращено</span></div>
+                <p class="overview-footnote" data-overview-refund-note>Статусы появятся после синхронизации.</p>
+              </section>
+
+              <section class="overview-card overview-structure" aria-labelledby="overview-structure-title">
+                <header class="overview-card__heading"><div><h2 id="overview-structure-title">Структура заказов</h2><p>По статусам FunPay</p></div></header>
+                <div class="overview-donut"><svg viewBox="0 0 160 160" data-overview-donut role="img" aria-label="Статусы заказов"></svg><span><strong data-overview-donut-total>—</strong><small>заказов</small></span></div>
+                <div class="overview-legend" data-overview-legend></div>
+              </section>
+
+              <section class="overview-card overview-actions" aria-labelledby="overview-actions-title">
+                <header class="overview-card__heading"><div><h2 id="overview-actions-title">Быстрые действия</h2><p>Всё нужное под рукой</p></div></header>
+                <div class="overview-action-list">
+                  <button type="button" data-view-link="orders"><span class="overview-icon overview-icon--amber"><svg><use href="#i-bag"/></svg></span><span><strong>Заказы</strong><small>Статусы и покупатели</small></span><svg><use href="#i-chevron"/></svg></button>
+                  <button type="button" data-view-link="messages"><span class="overview-icon overview-icon--blue"><svg><use href="#i-chat"/></svg></span><span><strong>Сообщения</strong><small>Диалоги магазина</small></span><svg><use href="#i-chevron"/></svg></button>
+                  <button type="button" data-view-link="plugins"><span class="overview-icon overview-icon--violet"><svg><use href="#i-puzzle"/></svg></span><span><strong>Плагины</strong><small>Настройки автоматизации</small></span><svg><use href="#i-chevron"/></svg></button>
+                  <button type="button" data-view-link="billing"><span class="overview-icon overview-icon--green"><svg><use href="#i-card"/></svg></span><span><strong>Финансы</strong><small>Баланс и операции</small></span><svg><use href="#i-chevron"/></svg></button>
                 </div>
-                <div class="dash-status-legend" id="dash-status-legend"></div>
               </section>
-            </div>
 
-            <div class="dash-panels">
-              <section class="panel dash-panel" aria-label="Последние заказы">
-                <header><span class="dash-panel__icon"><svg><use href="#i-bag"/></svg></span><h2>Последние заказы</h2><button class="panel-link" type="button" data-view-link="orders">Все заказы <svg><use href="#i-chevron"/></svg></button></header>
-                <div class="dash-list" id="dash-orders-list"></div>
-              </section>
-              <section class="panel dash-panel" aria-label="Движение средств">
-                <header><span class="dash-panel__icon"><svg><use href="#i-chart"/></svg></span><h2>Движение средств</h2><button class="panel-link" type="button" data-view-link="billing">Все операции <svg><use href="#i-chevron"/></svg></button></header>
-                <div class="dash-list" id="dash-finance-list"></div>
-              </section>
+              <section class="overview-card overview-orders" aria-labelledby="overview-orders-title"><header class="overview-card__heading"><div><h2 id="overview-orders-title">Заказы из снимка</h2><p>В порядке списка FunPay</p></div><button class="overview-link" type="button" data-view-link="orders">Все заказы <svg><use href="#i-chevron"/></svg></button></header><div class="dash-list" id="dash-orders-list"></div></section>
+              <section class="overview-card overview-finance" aria-labelledby="overview-finance-title"><header class="overview-card__heading"><div><h2 id="overview-finance-title">Баланс магазина</h2><p>Данные FunPay</p></div><button class="overview-link" type="button" data-view-link="billing">Финансы <svg><use href="#i-chevron"/></svg></button></header><div class="dash-list" id="dash-finance-list"></div></section>
             </div>
+            <p class="overview-scope"><svg><use href="#i-shield"/></svg>Показатели рассчитаны по загруженному снимку, а не по всей истории магазина. Данные FunPay не изменяются.</p>
           </section>
 
-          <section class="view" data-view="orders" aria-labelledby="orders-title">
-            <div class="view-heading view-heading--compact"><div><span class="eyebrow">Commerce / Orders</span><h1 id="orders-title">Заказы</h1><p>Актуальные заказы вашего магазина FunPay через закреплённый read-only worker.</p></div><button class="button button--primary" type="button" data-sync-content><svg><use href="#i-bolt"/></svg> Синхронизировать</button></div>
-            <div class="stat-grid">
-              <article class="stat-card"><small>Получено заказов</small><span class="stat-card__icon stat-card__icon--amber"><svg><use href="#i-bag"/></svg></span><strong data-orders-total>—</strong><span class="stat-card__hint">за всё время наблюдения</span></article>
-              <article class="stat-card"><small>В работе</small><span class="stat-card__icon stat-card__icon--violet"><svg><use href="#i-bolt"/></svg></span><strong data-orders-active>—</strong><span class="stat-card__hint">требуют действий</span></article>
-              <article class="stat-card"><small>Завершено</small><span class="stat-card__icon stat-card__icon--green"><svg><use href="#i-check"/></svg></span><strong data-orders-done>—</strong><span class="stat-card__hint">успешно выдано</span></article>
-              <article class="stat-card"><small>Обновлено</small><span class="stat-card__icon stat-card__icon--blue"><svg><use href="#i-clock"/></svg></span><strong data-orders-updated>—</strong><span class="stat-card__hint">read-only режим</span></article>
+          <section class="view orders-page" data-view="orders" data-orders-workspace aria-labelledby="orders-title">
+            <header class="orders-page-heading">
+              <div><span class="orders-page-eyebrow">ZETSLAY / МАГАЗИН</span><h1 id="orders-title">Заказы</h1><p>Статусы, суммы и покупатели вашего магазина.</p></div>
+              <div class="orders-page-heading__actions"><button class="button button--ghost" type="button" data-orders-refresh disabled><svg><use href="#i-clock"/></svg><span data-orders-refresh-label>Обновить заказы</span></button><button class="button button--primary" type="button" data-orders-connect data-open-connect><svg><use href="#i-plus"/></svg>Подключить FunPay</button></div>
+            </header>
+            <div class="orders-page-context"><span class="orders-page-source" data-orders-source>Магазин не подключён</span><span data-orders-snapshot-time>Ожидает синхронизации</span><span class="orders-page-context__scope">Текущий снимок FunPay</span></div>
+            <p class="orders-page-notice" data-orders-notice role="status" aria-live="polite" hidden></p>
+
+            <div class="orders-page-stats">
+              <article class="orders-page-stat"><div><h2>Всего заказов</h2><span class="orders-page-icon orders-page-icon--amber"><svg><use href="#i-bag"/></svg></span></div><strong data-orders-total>—</strong><p>В загруженном снимке</p></article>
+              <article class="orders-page-stat"><div><h2>В работе</h2><span class="orders-page-icon orders-page-icon--blue"><svg><use href="#i-clock"/></svg></span></div><strong data-orders-active>—</strong><p>Оплачены, в работе или выданы</p></article>
+              <article class="orders-page-stat"><div><h2>Завершено</h2><span class="orders-page-icon orders-page-icon--green"><svg><use href="#i-check"/></svg></span></div><strong data-orders-done>—</strong><p>Со статусом «Завершён»</p></article>
+              <article class="orders-page-stat"><div><h2>Возвраты</h2><span class="orders-page-icon orders-page-icon--red"><svg><use href="#i-card"/></svg></span></div><strong data-orders-refunded>—</strong><p>Со статусом «Возвращён»</p></article>
             </div>
-            <section class="panel content-panel"><div class="content-toolbar"><div class="search-field"><svg><use href="#i-search"/></svg><input type="search" placeholder="Найти заказ, товар или покупателя" aria-label="Поиск заказов"></div><div class="toolbar-actions"><div class="segmented"><button class="is-active" type="button">Все</button><button type="button" data-toast="Фильтрация включится после живой синхронизации">Новые</button><button type="button" data-toast="Фильтрация включится после живой синхронизации">В работе</button><button type="button" data-toast="Фильтрация включится после живой синхронизации">Завершённые</button></div><button class="filter-button" type="button" data-toast="Сортировка включится после живой синхронизации"><svg><use href="#i-clock"/></svg> Сначала новые</button></div></div><div class="data-table-wrap"><table class="data-table data-table--large"><thead><tr><th>Заказ</th><th>Товар</th><th>Покупатель</th><th class="cell-right">Сумма</th><th>Источник</th><th>Статус</th><th>Создан</th><th></th></tr></thead><tbody id="orders-table-body"></tbody></table></div><div class="table-footer"><span data-orders-count>Нет синхронизированных заказов</span></div></section>
+
+            <section class="orders-page-panel" aria-labelledby="orders-list-title">
+              <header class="orders-page-panel__heading"><div><h2 id="orders-list-title">Список заказов</h2><span data-orders-list-total>Данные магазина</span></div><button class="orders-page-reset" type="button" data-orders-reset-filters hidden>Сбросить фильтры <svg><use href="#i-close"/></svg></button></header>
+              <div class="orders-page-toolbar">
+                <label class="orders-page-search"><svg aria-hidden="true"><use href="#i-search"/></svg><input type="search" data-orders-search placeholder="Заказ, товар или покупатель" aria-label="Поиск заказов" autocomplete="off" maxlength="256"></label>
+                <div class="orders-page-controls"><label class="orders-page-select"><span>Валюта</span><select data-orders-currency aria-label="Валюта заказов"><option value="all">Все валюты</option></select></label><label class="orders-page-select"><span>Сортировка</span><select data-orders-sort aria-label="Сортировка заказов"><option value="source">Порядок FunPay</option><option value="newest">Сначала новые</option><option value="oldest">Сначала старые</option><option value="amount-desc">Сумма: по убыванию</option><option value="amount-asc">Сумма: по возрастанию</option></select></label></div>
+              </div>
+              <div class="orders-page-tabs" role="group" aria-label="Фильтр по статусу">
+                <button type="button" data-orders-filter="all" aria-pressed="true">Все <span data-orders-filter-count="all">—</span></button>
+                <button type="button" data-orders-filter="active" aria-pressed="false">В работе <span data-orders-filter-count="active">—</span></button>
+                <button type="button" data-orders-filter="completed" aria-pressed="false">Завершённые <span data-orders-filter-count="completed">—</span></button>
+                <button type="button" data-orders-filter="refunded" aria-pressed="false">Возвраты <span data-orders-filter-count="refunded">—</span></button>
+              </div>
+              <p class="orders-page-filter-hint" data-orders-filter-hint id="orders-filter-hint" hidden></p>
+              <div class="orders-page-table-wrap"><table class="orders-page-table" aria-describedby="orders-filter-hint"><caption class="orders-page-sr-only">Заказы из read-only снимка FunPay</caption><thead><tr><th scope="col">Заказ / товар</th><th scope="col">Покупатель</th><th scope="col">Статус</th><th scope="col" class="orders-page-amount">Сумма</th><th scope="col">Создан</th><th scope="col" class="orders-page-row-arrow"><span class="orders-page-sr-only">Подробнее</span></th></tr></thead><tbody id="orders-table-body"></tbody></table></div>
+              <footer class="orders-page-footer"><span data-orders-count role="status" aria-live="polite">Нет синхронизированных заказов</span><div class="orders-page-pagination"><label>По <select data-orders-page-size aria-label="Заказов на странице"><option value="10">10</option><option value="20">20</option><option value="50">50</option></select></label><button type="button" data-orders-page="prev" aria-label="Предыдущая страница" disabled><svg><use href="#i-chevron"/></svg></button><span data-orders-page-label>1 / 1</span><button type="button" data-orders-page="next" aria-label="Следующая страница" disabled><svg><use href="#i-chevron"/></svg></button></div></footer>
+            </section>
+            <p class="orders-page-scope"><svg><use href="#i-shield"/></svg>Отображаются заказы из загруженного снимка. Просмотр и фильтры не меняют данные на FunPay.</p>
+            <dialog class="orders-page-dialog" data-order-dialog aria-labelledby="order-detail-title"><header><div><span class="orders-page-eyebrow">FUNPAY / ЗАКАЗ</span><h2 id="order-detail-title" data-order-detail-title>Заказ</h2></div><button type="button" data-order-close aria-label="Закрыть карточку заказа"><svg><use href="#i-close"/></svg></button></header><div data-order-detail-body></div><footer><span>Данные текущего снимка</span><button type="button" data-order-close>Закрыть</button></footer></dialog>
           </section>
 
-          <section class="view" data-view="messages" aria-labelledby="messages-title">
-            <div class="view-heading view-heading--compact"><div><span class="eyebrow">Inbox / Buyers</span><h1 id="messages-title">Сообщения</h1><p>Диалоги FunPay вашего магазина — в безопасном read-only режиме.</p></div><div class="view-heading__actions"><span class="health-pill health-pill--waiting" data-messages-health><i></i> Ожидает синхронизации</span><button class="button button--ghost" type="button" data-sync-content><svg><use href="#i-bolt"/></svg> Обновить</button></div></div>
-            <section class="messenger panel">
-              <aside class="conversation-list">
-                <div class="conversation-list__top"><div class="search-field"><svg><use href="#i-search"/></svg><input type="search" placeholder="Поиск диалогов" aria-label="Поиск диалогов"></div></div>
-                <div class="conversation-list__tabs"><button class="is-active" type="button">Все</button><button type="button">Новые <b data-message-count>0</b></button><button type="button">Read-only</button></div>
-                <div id="conversation-items"></div>
+          <section class="view messages-page" data-view="messages" data-messages-workspace aria-labelledby="messages-title" data-chat-selected="false">
+            <header class="messages-page-heading"><div><span class="messages-page-eyebrow">ZETSLAY / ПЕРЕПИСКА</span><h1 id="messages-title">Сообщения</h1><p>Все загруженные диалоги магазина — в одном месте.</p></div><button class="button button--ghost" type="button" data-messages-refresh disabled><svg aria-hidden="true"><use href="#i-bolt"/></svg>Обновить переписку</button></header>
+            <div class="messages-page-summary"><div><span>Диалоги <strong data-messages-total>—</strong></span><span>Сообщения <strong data-messages-count>—</strong></span></div><div><span>Снимок <strong data-messages-updated>Ещё не загружен</strong></span><span class="messages-page-readonly"><svg aria-hidden="true"><use href="#i-shield"/></svg><span data-messages-source>Магазин не подключён</span></span></div></div>
+            <p class="messages-page-auto" data-messages-auto>Автообновление приостановлено</p>
+            <p class="messages-page-notice" data-messages-notice role="status" aria-live="polite" hidden></p>
+            <div class="messages-page-inbox">
+              <aside class="messages-page-sidebar" aria-label="Диалоги FunPay">
+                <div class="messages-page-sidebar-top"><h2>Диалоги</h2><label class="messages-page-search"><svg aria-hidden="true"><use href="#i-search"/></svg><input type="search" data-messages-search maxlength="160" placeholder="Имя, ID или текст сообщения" aria-label="Поиск диалогов по имени, ID и тексту"></label><span class="messages-page-filter-label">По последнему сообщению</span><div class="messages-page-filters" aria-label="Последний отправитель"><button type="button" data-messages-filter="all" class="is-active" aria-pressed="true">Все <span data-messages-filter-count="all">0</span></button><button type="button" data-messages-filter="buyer" aria-pressed="false">Покупатель <span data-messages-filter-count="buyer">0</span></button><button type="button" data-messages-filter="seller" aria-pressed="false">Магазин <span data-messages-filter-count="seller">0</span></button></div></div>
+                <div class="messages-page-list" data-messages-list></div>
+                <footer class="messages-page-sidebar-footer"><button type="button" data-messages-archive>Открыть сохранённую переписку</button><span data-messages-archive-note>Поиск работает по загруженной переписке</span></footer>
               </aside>
-              <div class="chat-window">
-                <header class="chat-header"><div><span class="chat-avatar chat-avatar--header" data-chat-avatar>—</span><span><strong data-chat-name>Выберите диалог</strong><small><i></i> <span data-chat-status>Read-only просмотр</span></small></span></div><div><button class="icon-button" type="button" aria-label="Поиск по диалогу" data-toast="Поиск по диалогу появится после живой синхронизации"><svg><use href="#i-search"/></svg></button><button class="icon-button" type="button" aria-label="Информация о покупателе" data-toast="Карточка покупателя справа"><svg><use href="#i-user"/></svg></button></div></header>
-                <div class="chat-body" data-chat-body><div class="chat-empty"><span class="chat-empty__icon"><svg><use href="#i-chat"/></svg></span><strong>Диалог не выбран</strong><p>Запустите магазин и синхронизируйте сообщения — здесь появится переписка.</p></div></div>
-                <div class="quick-replies"><button type="button">Заказ обрабатывается</button><button type="button">Товар уже выдан</button><button type="button">Проверяю оплату</button></div>
-                <footer class="composer"><button class="icon-button" type="button" aria-label="Вложения" disabled><svg><use href="#i-plus"/></svg></button><textarea rows="1" placeholder="Отправка появится после безопасного write-коннектора" aria-label="Сообщение" disabled></textarea><button class="ai-compose" type="button" disabled><span>AI</span> Подсказать</button><button class="send-button" type="button" aria-label="Отправить" disabled><svg><use href="#i-send"/></svg></button></footer>
-              </div>
-              <aside class="buyer-panel">
-                <span class="panel-label">Карточка покупателя</span>
-                <div class="buyer-profile"><span class="chat-avatar chat-avatar--large avatar--blue">D1</span><strong>demo_buyer_01</strong><small>Демонстрационный профиль</small></div>
-                <div class="buyer-stats"><span><small>Заказов</small><strong>8</strong></span><span><small>Сумма покупок</small><strong>9 840 ₽</strong></span></div>
-                <div class="current-order"><small>Текущий заказ</small><strong>#DEMO-001 · Демо-товар</strong><span>1 290 ₽</span><div><i></i> Обрабатывается</div></div>
-                <button class="full-width-link" type="button" data-toast="Демо-заказ открыт в read-only режиме">Открыть заказ <svg><use href="#i-chevron"/></svg></button>
-              </aside>
-            </section>
+              <section class="messages-page-chat" aria-label="Переписка выбранного диалога">
+                <header class="messages-page-chat-header"><button class="messages-page-icon-button messages-page-back" type="button" data-messages-back aria-label="Назад к диалогам"><svg aria-hidden="true"><use href="#i-chevron"/></svg></button><span data-messages-avatar><span class="messages-page-avatar">—</span></span><div class="messages-page-chat-identity"><h2 data-messages-name>Ваши диалоги</h2><p data-messages-meta>Выберите диалог из списка</p></div><div class="messages-page-chat-tools"><button class="messages-page-icon-button" type="button" data-messages-find-toggle aria-label="Найти текст в диалоге" aria-expanded="false" aria-controls="messages-findbar" disabled><svg aria-hidden="true"><use href="#i-search"/></svg></button><button class="messages-page-icon-button" type="button" data-messages-info aria-label="Информация о диалоге" disabled><svg aria-hidden="true"><use href="#i-user"/></svg></button></div></header>
+                <div class="messages-page-findbar" id="messages-findbar" data-messages-findbar hidden><label><svg aria-hidden="true"><use href="#i-search"/></svg><input type="search" data-messages-find maxlength="160" placeholder="Найти в этом диалоге" aria-label="Текст для поиска в диалоге"></label><span data-messages-matches role="status" aria-live="polite">Поиск в снимке</span><button class="messages-page-icon-button messages-page-find-prev" type="button" data-messages-match="prev" aria-label="Предыдущее совпадение" disabled><svg aria-hidden="true"><use href="#i-chevron"/></svg></button><button class="messages-page-icon-button" type="button" data-messages-match="next" aria-label="Следующее совпадение" disabled><svg aria-hidden="true"><use href="#i-chevron"/></svg></button><button class="messages-page-icon-button" type="button" data-messages-find-close aria-label="Закрыть поиск"><svg aria-hidden="true"><use href="#i-close"/></svg></button></div>
+                <div class="messages-page-body" data-messages-body tabindex="0" aria-label="Загруженные сообщения"></div>
+                <footer class="messages-page-chat-footer"><p class="messages-page-date-note" data-messages-date-note>Показана переписка из последнего снимка.</p><div class="messages-page-composer"><textarea rows="2" aria-label="Отправка сообщений отключена" placeholder="Отправка сообщений на FunPay сейчас отключена" disabled></textarea><div><span><svg aria-hidden="true"><use href="#i-lock"/></svg>Только просмотр</span><button type="button" aria-label="Отправка недоступна в read-only режиме" disabled><svg aria-hidden="true"><use href="#i-send"/></svg></button></div></div></footer>
+              </section>
+            </div>
+            <dialog class="messages-page-dialog" data-messages-dialog aria-labelledby="messages-info-title"><header><div><span class="messages-page-eyebrow">FUNPAY / ДИАЛОГ</span><h2 id="messages-info-title">Информация о диалоге</h2></div><button class="messages-page-icon-button" type="button" data-messages-info-close aria-label="Закрыть информацию"><svg aria-hidden="true"><use href="#i-close"/></svg></button></header><div data-messages-info-body></div><footer><button class="button button--ghost" type="button" data-messages-info-close>Закрыть</button></footer></dialog>
           </section>
 
           <section class="view" data-view="lots" aria-labelledby="lots-title">
-            <div class="view-heading view-heading--compact"><div><span class="eyebrow">Inventory / Offers</span><h1 id="lots-title">Лоты и товары</h1><p>Цены, остатки, видимость и автоматическое продвижение.</p></div><button class="button button--primary" type="button" data-toast="Создание лота будет доступно после FunPay Connector"><svg><use href="#i-plus"/></svg> Добавить товар</button></div>
-            <div class="summary-row"><article><span>Активные лоты</span><strong>24</strong><small>из 26</small></article><article><span>Товаров на складе</span><strong>148</strong><small>единиц</small></article><article><span>Мало на складе</span><strong class="text-yellow">3</strong><small>позиции</small></article><article><span>Поднятие</span><strong>18</strong><small>лотов включено</small></article></div>
+            <div class="view-heading view-heading--compact"><div><span class="eyebrow">Inventory / Offers</span><h1 id="lots-title">Лоты и товары</h1><p>Фактические лоты, цены и остатки из read-only снимка FunPay.</p></div><button class="button button--ghost" type="button" data-sync-content>Синхронизировать</button></div>
             <section class="panel content-panel"><div class="content-toolbar"><div class="search-field"><svg><use href="#i-search"/></svg><input type="search" placeholder="Найти лот или товар" aria-label="Поиск лотов"></div><div class="toolbar-actions"><button class="filter-button" type="button">Все категории</button><button class="filter-button" type="button">Все состояния</button></div></div><div class="lot-grid" id="lot-grid"></div></section>
           </section>
 
-          <section class="view" data-view="automations" aria-labelledby="automations-title">
-            <div class="view-heading view-heading--compact"><div><span class="eyebrow">Autopilot / Rules</span><h1 id="automations-title">Автоматизации</h1><p>Настраивай правила, проверяй выполнение и останавливай процессы в один клик.</p></div><div class="view-heading__actions"><button class="button button--danger" type="button" data-toast="Все автоматизации поставлены на паузу"><svg><use href="#i-pause"/></svg> Пауза всего</button><button class="button button--primary" type="button" data-toast="Конструктор сценариев появится на этапе модулей"><svg><use href="#i-plus"/></svg> Новое правило</button></div></div>
-            <div class="automation-hero panel"><div><span class="automation-orbit"><i></i><b>ZL</b></span><span><small>Статус автопилота</small><strong>Система работает стабильно</strong><p>4 активных модуля · последняя проверка только что</p></span></div><div><span><small>Действий сегодня</small><strong>48</strong></span><span><small>Успешность</small><strong>99.8%</strong></span><span><small>Сэкономлено</small><strong>2ч 14м</strong></span></div></div>
-            <div class="automation-cards" id="automation-cards"></div>
-          </section>
-
-          <section class="view" data-view="plugins" aria-labelledby="plugins-title">
-            <div class="view-heading view-heading--compact"><div><span class="eyebrow">Маркетплейс</span><h1 id="plugins-title">Каталог плагинов</h1><p>Расширения с явными разрешениями, безопасным отключением и журналом действий.</p></div><div class="view-heading__actions"><span class="catalog-count"><span id="plugin-total">2 доступно</span><strong id="plugin-installed">0 установлено</strong></span><button class="button button--ghost" type="button" data-plugin-cover-admin><svg><use href="#i-external"/></svg> Загрузить обложки</button><input type="file" accept="image/png,image/jpeg,image/webp" hidden data-plugin-cover-input></div></div>
+          <section class="view plugin-catalog" data-view="plugins" aria-labelledby="plugins-title">
+            <div class="view-heading view-heading--compact"><div><span class="eyebrow">Маркетплейс</span><h1 id="plugins-title">Каталог плагинов</h1><p>Расширения с явными разрешениями, безопасным отключением и журналом действий.</p></div><div class="view-heading__actions"><span class="catalog-count"><span id="plugin-total">2 доступно</span><strong id="plugin-installed">0 установлено</strong></span><div class="plugin-admin-controls" hidden data-plugin-admin-controls></div><input type="file" accept="image/png,image/jpeg,image/webp" hidden data-plugin-cover-input></div></div>
             <div class="cat-pills" id="plugin-categories">
               <button class="is-active" type="button" data-plugin-cat="all"><svg><use href="#i-grid"/></svg> Все</button>
               <button type="button" data-plugin-cat="sales"><svg><use href="#i-bag"/></svg> Продажи</button>
@@ -244,7 +239,7 @@
             <section class="panel catalog-hero"><h2>Плагины ZetSlay</h2><p>Каталог расширений с прозрачными разрешениями и безопасной песочницей.</p></section>
             <section class="panel catalog-search">
               <div><span class="panel-label">Поиск</span><div class="search-field search-field--wide"><svg><use href="#i-search"/></svg><input type="search" placeholder="Поиск плагинов и модулей..." aria-label="Поиск плагинов" data-plugin-search></div></div>
-              <div><span class="panel-label">Категории</span><div class="catalog-select"><span id="plugin-cat-label">Все категории</span><svg><use href="#i-chevron"/></svg></div></div>
+              <label class="catalog-filter"><span class="panel-label">Категории</span><select class="catalog-select" data-plugin-category><option value="all">Все категории</option><option value="sales">Продажи</option><option value="chat">Общение</option><option value="analytics">Аналитика</option><option value="control">Контроль</option></select></label><label class="catalog-filter"><span class="panel-label">Сортировка</span><select class="catalog-select" data-plugin-sort><option value="default">По умолчанию</option><option value="price-asc">С низкой цены</option><option value="price-desc">С высокой цены</option><option value="name">По названию</option><option value="installed">Сначала установленные</option></select></label>
             </section>
             <div class="plugin-grid" id="plugin-grid"></div>
             <section class="plugin-lab panel" aria-labelledby="plugin-lab-title">
@@ -288,6 +283,8 @@
             </section>
           </section>
 
+          <section class="view plugin-page" data-view="plugin" data-plugin-page aria-label="Подробности плагина"></section>
+
           <section class="view" data-view="telegram" aria-labelledby="telegram-title">
             <div class="view-heading view-heading--compact"><div><span class="eyebrow">Remote control / Telegram</span><h1 id="telegram-title">Telegram</h1><p>Рабочий бот вашего магазина: уведомления о заказах, сообщениях и статус подключения в реальном времени.</p></div><span class="health-pill health-pill--waiting" data-telegram-health><i></i> Не подключён</span></div>
             <div class="telegram-layout">
@@ -325,10 +322,10 @@
                 <div class="tg-link" data-telegram-link-code hidden>
                   <span class="panel-label">Одноразовый код</span>
                   <div class="tg-link__code">
-                    <strong>/start <span data-tg-code>000000</span></strong>
+                    <strong>/start <span data-tg-code>——</span></strong>
                     <button class="tg-copy" type="button" data-tg-copy title="Скопировать код"><svg><use href="#i-plus"/></svg></button>
                   </div>
-                  <p>Откройте бота ZetSlay и отправьте команду /start с кодом. Он действует 10 минут и виден один раз.</p>
+                  <p>Получите код и отправьте команду своему рабочему боту. Код действует 10 минут.</p>
                   <a class="button button--telegram button--wide" href="#" target="_blank" rel="noopener" data-tg-deep-link><svg><use href="#i-send"/></svg> Открыть бота и отправить код</a>
                   <div class="tg-waiting" data-tg-waiting><i></i> Ждём подтверждения…</div>
                   <button class="tg-new-code" type="button" data-telegram-issue-code>Получить новый код</button>
@@ -342,17 +339,6 @@
                 <div class="inline-status" data-telegram-message></div>
               </section>
             </div>
-          </section>
-
-          <section class="view" data-view="analytics" aria-labelledby="analytics-title">
-            <div class="view-heading view-heading--compact"><div><span class="eyebrow">Insights / Performance</span><h1 id="analytics-title">Аналитика</h1><p>Понимай, какие товары, каналы и автоматизации приносят результат.</p></div><div class="view-heading__actions"><button class="button button--ghost" type="button">Последние 30 дней <svg><use href="#i-chevron"/></svg></button><button class="button button--primary" type="button" data-toast="Экспорт подготовлен в демо-режиме">Экспорт <svg><use href="#i-external"/></svg></button></div></div>
-            <div class="metric-grid metric-grid--analytics"><article class="metric-card"><div class="metric-card__top"><span>Выручка</span><b>+18.4%</b></div><strong>124 680 <small>₽</small></strong><div class="metric-card__footer"><span>Прошлый период: 105 280 ₽</span></div></article><article class="metric-card"><div class="metric-card__top"><span>Чистая прибыль</span><b>+21.7%</b></div><strong>86 240 <small>₽</small></strong><div class="metric-card__footer"><span>Маржа 69.2%</span></div></article><article class="metric-card"><div class="metric-card__top"><span>Заказы</span><b>+12.1%</b></div><strong>186</strong><div class="metric-card__footer"><span>Средний чек 670 ₽</span></div></article><article class="metric-card"><div class="metric-card__top"><span>Повторные покупки</span><b>+4.6%</b></div><strong>28.4%</strong><div class="metric-card__footer"><span>53 постоянных покупателя</span></div></article></div>
-            <div class="analytics-grid"><section class="panel analytics-chart"><div class="panel-head"><div><span class="panel-label">Revenue & profit</span><h2>Финансовая динамика</h2></div><div class="chart-legend"><span><i></i>Выручка</span><span><i></i>Прибыль</span></div></div><div class="bar-chart" id="bar-chart"></div></section><section class="panel top-products"><div class="panel-head"><div><span class="panel-label">Product performance</span><h2>Лучшие товары</h2></div></div><div id="top-products-list"></div></section></div>
-          </section>
-
-          <section class="view" data-view="events" aria-labelledby="events-title">
-            <div class="view-heading view-heading--compact"><div><span class="eyebrow">Audit / Event stream</span><h1 id="events-title">Журнал событий</h1><p>Единая история действий сайта, Telegram и автоматизаций.</p></div><button class="button button--ghost" type="button" data-toast="Журнал экспортирован в демо-режиме">Экспорт журнала <svg><use href="#i-external"/></svg></button></div>
-            <section class="panel content-panel"><div class="event-filters"><div class="search-field"><svg><use href="#i-search"/></svg><input type="search" placeholder="Найти событие или объект" aria-label="Поиск событий"></div><div class="segmented"><button class="is-active" type="button">Все</button><button type="button">Web</button><button type="button">Telegram</button><button type="button">Automation</button><button type="button">System</button></div></div><div class="event-log" id="event-log"></div></section>
           </section>
 
           <section class="view" data-view="guide" aria-labelledby="guide-title">
@@ -382,40 +368,32 @@
           </section>
 
           <section class="view" data-view="billing" aria-labelledby="billing-title">
-            <div class="view-heading view-heading--compact"><div><span class="eyebrow">Балансы магазинов и подписка</span><h1 id="billing-title">Финансы</h1><p>Каждый баланс читается worker’ом магазина через его закреплённый прокси.</p></div><button class="button button--ghost" type="button" data-finance-refresh>Обновить балансы <svg><use href="#i-bolt"/></svg></button></div>
+            <div class="view-heading view-heading--compact"><div><span class="eyebrow">Балансы магазинов и подписка</span><h1 id="billing-title">Финансы</h1><p>Баланс появится после поддержки этого источника read-only коннектором.</p></div><button class="button button--ghost" type="button" disabled title="Источник баланса ещё не поддерживается коннектором">Обновить балансы <svg><use href="#i-bolt"/></svg></button></div>
             <section class="finance-overview panel">
               <div class="panel-head"><div><span class="panel-label">FunPay / Read only</span><h2>Балансы магазинов</h2></div><span class="health-pill health-pill--waiting"><i></i> Вывод отключён</span></div>
               <div class="finance-store-list" id="finance-store-list"></div>
-              <div class="finance-action-grid">
-                <form class="withdrawal-intent-form" data-withdrawal-intent-form hidden>
-                  <div><span class="panel-label">Безопасная симуляция</span><h3>Намерение на вывод</h3><p>Запись помогает проверить интерфейс и лимиты. Запрос в FunPay не отправляется.</p></div>
-                  <label>Магазин<select name="storeId"></select></label>
-                  <label>Сумма<input name="amount" inputmode="decimal" placeholder="500.00" autocomplete="off"></label>
-                  <button class="button button--primary" type="submit">Создать симуляцию</button>
-                </form>
-                <div class="withdrawal-intent-log"><span class="panel-label">Audit / Simulated only</span><h3>Журнал намерений</h3><div id="withdrawal-intent-list"></div></div>
-              </div>
               <p class="finance-guardrail"><strong>Важно:</strong> массового вывода и доступа плагинов к деньгам нет. Реальная операция появится только после официального разрешения и отдельного подтверждения владельца.</p>
             </section>
-            <section class="current-plan panel"><div><span class="plan-orb">PRO</span><span><span class="panel-label">Current plan</span><h2>Тариф «Про»</h2><p>Один магазин и до 10 активных модулей.</p></span></div><div class="current-plan__price"><strong>349 ₽</strong><span>следующее списание<br><b>14 сентября 2026</b></span></div><button class="button button--primary" type="button" data-toast="Смена тарифа будет подключена вместе с оплатой">Изменить тариф</button></section>
-            <div class="billing-grid"><section class="panel usage-panel"><div class="panel-head"><div><span class="panel-label">Plan usage</span><h2>Использование</h2></div><span>Обновится через 30 дней</span></div><div class="usage-list"><article><div><span>Активные магазины</span><b>1 из 1</b></div><i><b style="width:100%"></b></i></article><article><div><span>Подключённые модули</span><b>4 из 10</b></div><i><b style="width:40%"></b></i></article><article><div><span>AI-ответы</span><b>238 из 1 000</b></div><i><b style="width:23.8%"></b></i></article><article><div><span>История событий</span><b>30 дней</b></div><i><b style="width:60%"></b></i></article></div></section><section class="panel payment-method"><div class="panel-head"><div><span class="panel-label">Payment method</span><h2>Способ оплаты</h2></div></div><div class="bank-card"><span>VISA</span><strong>•••• 4821</strong><small>09 / 29</small></div><button class="full-width-link" type="button">Изменить способ оплаты <svg><use href="#i-chevron"/></svg></button></section></div>
           </section>
 
           <section class="view" data-view="security" aria-labelledby="security-title">
-            <div class="view-heading view-heading--compact"><div><span class="eyebrow">Access / Connections</span><h1 id="security-title">Безопасность</h1><p>Доступ к аккаунту, подключения и критические действия.</p></div><span class="health-pill health-pill--active"><i></i> Защита активна</span></div>
-            <div class="security-grid"><section class="panel security-card"><div class="security-card__icon"><svg><use href="#i-lock"/></svg></div><div><span class="panel-label">Account access</span><h2>Вход и сессии</h2><p>Пароль обновлён 12 дней назад. Активна одна сессия.</p></div><div class="security-row"><span><strong>Двухфакторная защита</strong><small>Дополнительное подтверждение входа</small></span><button class="toggle" type="button" role="switch" aria-checked="false" aria-label="Двухфакторная защита"></button></div><div class="security-row"><span><strong>Текущая сессия</strong><small>Chrome · Алматы · сейчас</small></span><span class="table-status table-status--success">Активна</span></div><button class="full-width-link" type="button">Управление сессиями <svg><use href="#i-chevron"/></svg></button></section><section class="panel security-card"><div class="security-card__icon security-card__icon--violet"><svg><use href="#i-shield"/></svg></div><div><span class="panel-label">Secret vault</span><h2>Подключения</h2><p>Секреты не добавлены. Они будут зашифрованы и доступны только Connector Worker.</p></div><div class="connection-secret"><span><i class="node"></i><strong>FunPay Golden Key</strong></span><b>Не добавлен</b></div><div class="connection-secret"><span><i class="node"></i><strong>Закреплённый прокси</strong></span><b>Не добавлен</b></div><div class="connection-secret"><span><i class="node"></i><strong>Telegram Bot Token</strong></span><b>Не добавлен</b></div><button class="button button--primary button--wide" type="button" data-open-connect>Настроить подключения</button></section></div>
-            <section class="danger-zone panel"><div><span class="panel-label">Danger zone</span><h2>Критические действия</h2><p>Эти операции останавливают работу магазина и требуют повторного подтверждения.</p></div><div><button type="button" data-toast="Демо: все автоматизации остановлены">Остановить автопилот</button><button type="button" data-toast="Отключение магазина будет доступно после реального подключения">Отключить магазин</button><button type="button" data-toast="Удаление аккаунта требует отдельного защищённого процесса">Удалить аккаунт</button></div></section>
+            <div class="view-heading view-heading--compact"><div><span class="eyebrow">Access / Connections</span><h1 id="security-title">Безопасность</h1><p>Доступ к аккаунту, подключения и критические действия.</p></div><span class="health-pill health-pill--waiting"><i></i> Read-only</span></div>
+            <div class="security-grid">
+              <section class="panel security-card"><div class="security-card__icon"><svg><use href="#i-lock"/></svg></div><div><span class="panel-label">Доступ к кабинету</span><h2>Текущая сессия</h2><p data-security-account>Загрузка…</p></div><button class="button button--ghost" type="button" data-auth-logout>Выйти из кабинета</button></section>
+              <section class="panel security-card"><div class="security-card__icon security-card__icon--violet"><svg><use href="#i-shield"/></svg></div><div><span class="panel-label">Vault</span><h2>Подключения</h2><p data-security-connections>Статус загрузится из API.</p></div><button class="button button--primary button--wide" type="button" data-open-connect>Открыть мастер подключения</button></section>
+            </div>
           </section>
         </div>
       </main>
     </div>
 
+    <dialog class="plugin-dialog" data-plugin-dialog aria-labelledby="plugin-dialog-title"><div data-plugin-dialog-body></div></dialog>
     <div class="modal-backdrop" data-modal-backdrop></div>
     <section class="connect-modal" role="dialog" aria-modal="true" aria-labelledby="connect-modal-title" hidden>
       <header><div><span class="panel-label" data-connection-mode>Per-store connection</span><h2 id="connect-modal-title">Подключение магазина</h2></div><button class="icon-button" type="button" aria-label="Закрыть" data-close-connect><svg><use href="#i-close"/></svg></button></header>
       <div class="connect-progress"><span class="is-active"><b>01</b><small>Бот</small></span><i></i><span><b>02</b><small>Код</small></span><i></i><span><b>03</b><small>Golden Key</small></span><i></i><span><b>04</b><small>Прокси</small></span><i></i><span><b>05</b><small>Проверка</small></span></div>
       <div class="connect-modal__body"><span class="connect-illustration"><svg><use href="#i-lock"/></svg><i></i></span><h3>Безопасное подключение</h3><p>ZetSlay сначала проверит подписку и Telegram, затем предложит защищённые поля для Golden Key и прокси. Секреты никогда не отправляются сообщениями.</p><ul><li><svg><use href="#i-check"/></svg> Тариф «Про» активен</li><li><svg><use href="#i-check"/></svg> Одноразовая привязка Telegram</li><li><svg><use href="#i-check"/></svg> Read-only проверка перед автоматизацией</li></ul></div>
-      <footer><span class="connect-safe-note">Секреты не отображаются повторно</span><button class="button button--ghost" type="button" data-close-connect>Отмена</button><button class="button button--primary" type="button" data-connect-next>Начать подключение <svg><use href="#i-chevron"/></svg></button></footer>
+      <footer><p class="connect-error" data-connect-error role="alert" hidden></p><span class="connect-safe-note">Секреты не отображаются повторно</span><button class="button button--ghost" type="button" data-connect-reset hidden>Начать заново</button><button class="button button--ghost" type="button" data-connect-back hidden>Назад</button><button class="button button--ghost" type="button" data-close-connect>Закрыть</button><button class="button button--primary" type="button" data-connect-next>Начать подключение <svg><use href="#i-chevron"/></svg></button></footer>
     </section>
 
     <div class="auth-backdrop"></div>
@@ -423,33 +401,36 @@
       <aside class="auth-promo">
         <a class="auth-modal__brand" href="../"><span class="brand__mark"></span><strong>ZetSlay</strong></a>
         <div class="auth-promo__copy">
-          <span>Единое рабочее пространство</span>
-          <h2>Ваш магазин остаётся под контролем.</h2>
-          <p>Заказы, сообщения, лоты и автоматизация в одной спокойной панели.</p>
+          <span class="auth-promo__eyebrow"><i></i> Кабинет продавца</span>
+          <h2>Начните работу<br>с ZetSlay.</h2>
+          <p>Подключите свой магазин и следите за заказами и сообщениями в одном спокойном пространстве.</p>
         </div>
-        <div class="auth-promo__points">
-          <span><i>✓</i> Один аккаунт FunPay на ZetSlay</span>
-          <span><i>✓</i> Секреты не отображаются повторно</span>
-          <span><i>✓</i> Прозрачный журнал действий</span>
+        <div class="auth-promo__journey" aria-label="Путь подключения">
+          <div class="auth-promo__step auth-promo__step--current"><span>01</span><strong>Создайте<br>аккаунт</strong></div>
+          <div class="auth-promo__step"><span>02</span><strong>Привяжите<br>Telegram</strong></div>
+          <div class="auth-promo__step"><span>03</span><strong>Подключите<br>FunPay</strong></div>
         </div>
       </aside>
       <div class="auth-content">
         <a class="auth-modal__close" href="../" aria-label="Вернуться на главную"><svg><use href="#i-close"/></svg></a>
-        <span class="panel-label">Защищённый доступ</span>
+        <span class="auth-content__eyebrow"><i></i> Защищённый доступ</span>
         <h2 id="auth-modal-title">Вход в кабинет</h2>
-        <p class="auth-intro">Войдите, чтобы продолжить работу с магазинами ZetSlay.</p>
-        <div class="auth-tabs" role="tablist">
-          <button class="is-active" type="button" role="tab" data-auth-mode="login">Вход</button>
-          <button type="button" role="tab" data-auth-mode="register">Регистрация</button>
-        </div>
-        <form class="auth-form" data-auth-form novalidate>
-          <label>Email<input name="email" type="email" autocomplete="email" required placeholder="you@example.com"></label>
-          <label>Пароль<input name="password" type="password" autocomplete="current-password" minlength="12" maxlength="256" required placeholder="Не менее 12 символов"></label>
+        <p class="auth-intro">Войдите, чтобы продолжить работу с вашим магазином.</p>
+        <button class="button button--telegram button--wide" type="button" data-telegram-login data-auth-only><span class="auth-telegram-icon" aria-hidden="true"></span> Продолжить через Telegram</button>
+        <div class="auth-divider" data-auth-only><span>или через email</span></div>
+        <form class="auth-form" data-auth-form>
+          <label>Email<input name="email" type="email" autocomplete="email" required placeholder="name@example.com"></label>
+          <label>Пароль
+            <span class="auth-password-field">
+              <input name="password" type="password" autocomplete="current-password" minlength="12" maxlength="256" required placeholder="Не менее 12 символов">
+              <button type="button" data-password-toggle aria-label="Показать пароль" aria-pressed="false"><svg><use href="#i-eye"/></svg></button>
+            </span>
+          </label>
           <div class="auth-message" data-auth-message aria-live="polite"></div>
+          <button class="auth-resend" type="button" data-auth-resend hidden>Отправить письмо подтверждения повторно</button>
           <button class="button button--primary button--wide" type="submit" data-auth-submit>Войти</button>
         </form>
-        <div class="auth-divider"><span>или</span></div>
-        <button class="button button--telegram button--wide" type="button" data-telegram-login><svg><use href="#i-send"/></svg> Войти через Telegram</button>
+        <p class="auth-switch" data-auth-only><span data-auth-switch-copy>Ещё нет аккаунта?</span> <button type="button" data-auth-mode="register" data-auth-switch>Создать аккаунт</button></p>
         <div class="telegram-login-status" data-telegram-login-status hidden>
           <strong>Почти готово</strong>
           <p>Открылся чат с ботом ZetSlay — нажмите «Начать». Вход завершится автоматически.</p>
@@ -460,12 +441,16 @@
           <div><strong data-auth-session-email></strong><small>Защищённая сессия активна</small></div>
           <button class="button button--ghost" type="button" data-auth-logout>Выйти</button>
         </div>
-        <p class="auth-legal">Продолжая, вы принимаете условия использования и политику конфиденциальности.</p>
-        <small class="auth-api-state">API: <b data-api-state>локальный контур</b></small>
+        <p class="auth-legal">Секреты FunPay вводятся только после входа в защищённом мастере подключения.</p>
       </div>
     </section>
 
     <div class="toast-region" aria-live="polite" aria-atomic="true"></div>
-    <script src="app.js" defer></script>
+    <script src="overview.js?v=20261003-overview" defer></script>
+    <script src="orders.js?v=20261003-orders" defer></script>
+    <script src="plugin-cover.js?v=20261003-cover-quality" defer></script>
+    <script src="plugin-page.js?v=20261003-cover-quality" defer></script>
+    <script src="messages.js?v=20261003-message-sync" defer></script>
+    <script src="app.js?v=20261003-cover-quality" defer></script>
   </body>
 </html>
