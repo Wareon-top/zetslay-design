@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="overview.css?v=20261003-overview">
     <link rel="stylesheet" href="orders.css?v=20261003-orders">
     <link rel="stylesheet" href="plugin-page.css?v=20261003-plugin-page">
-    <link rel="stylesheet" href="messages.css?v=20261003-messages">
+    <link rel="stylesheet" href="messages.css?v=20261003-message-sync">
     <link rel="stylesheet" href="plugin-cover.css?v=20261003-cover-quality">
   </head>
   <body>
@@ -204,12 +204,13 @@
           <section class="view messages-page" data-view="messages" data-messages-workspace aria-labelledby="messages-title" data-chat-selected="false">
             <header class="messages-page-heading"><div><span class="messages-page-eyebrow">ZETSLAY / ПЕРЕПИСКА</span><h1 id="messages-title">Сообщения</h1><p>Все загруженные диалоги магазина — в одном месте.</p></div><button class="button button--ghost" type="button" data-messages-refresh disabled><svg aria-hidden="true"><use href="#i-bolt"/></svg>Обновить переписку</button></header>
             <div class="messages-page-summary"><div><span>Диалоги <strong data-messages-total>—</strong></span><span>Сообщения <strong data-messages-count>—</strong></span></div><div><span>Снимок <strong data-messages-updated>Ещё не загружен</strong></span><span class="messages-page-readonly"><svg aria-hidden="true"><use href="#i-shield"/></svg><span data-messages-source>Магазин не подключён</span></span></div></div>
+            <p class="messages-page-auto" data-messages-auto>Автообновление приостановлено</p>
             <p class="messages-page-notice" data-messages-notice role="status" aria-live="polite" hidden></p>
             <div class="messages-page-inbox">
               <aside class="messages-page-sidebar" aria-label="Диалоги FunPay">
                 <div class="messages-page-sidebar-top"><h2>Диалоги</h2><label class="messages-page-search"><svg aria-hidden="true"><use href="#i-search"/></svg><input type="search" data-messages-search maxlength="160" placeholder="Имя, ID или текст сообщения" aria-label="Поиск диалогов по имени, ID и тексту"></label><span class="messages-page-filter-label">По последнему сообщению</span><div class="messages-page-filters" aria-label="Последний отправитель"><button type="button" data-messages-filter="all" class="is-active" aria-pressed="true">Все <span data-messages-filter-count="all">0</span></button><button type="button" data-messages-filter="buyer" aria-pressed="false">Покупатель <span data-messages-filter-count="buyer">0</span></button><button type="button" data-messages-filter="seller" aria-pressed="false">Магазин <span data-messages-filter-count="seller">0</span></button></div></div>
                 <div class="messages-page-list" data-messages-list></div>
-                <footer class="messages-page-sidebar-footer">Поиск работает по загруженной переписке</footer>
+                <footer class="messages-page-sidebar-footer"><button type="button" data-messages-archive>Открыть сохранённую переписку</button><span data-messages-archive-note>Поиск работает по загруженной переписке</span></footer>
               </aside>
               <section class="messages-page-chat" aria-label="Переписка выбранного диалога">
                 <header class="messages-page-chat-header"><button class="messages-page-icon-button messages-page-back" type="button" data-messages-back aria-label="Назад к диалогам"><svg aria-hidden="true"><use href="#i-chevron"/></svg></button><span data-messages-avatar><span class="messages-page-avatar">—</span></span><div class="messages-page-chat-identity"><h2 data-messages-name>Ваши диалоги</h2><p data-messages-meta>Выберите диалог из списка</p></div><div class="messages-page-chat-tools"><button class="messages-page-icon-button" type="button" data-messages-find-toggle aria-label="Найти текст в диалоге" aria-expanded="false" aria-controls="messages-findbar" disabled><svg aria-hidden="true"><use href="#i-search"/></svg></button><button class="messages-page-icon-button" type="button" data-messages-info aria-label="Информация о диалоге" disabled><svg aria-hidden="true"><use href="#i-user"/></svg></button></div></header>
@@ -449,7 +450,7 @@
     <script src="orders.js?v=20261003-orders" defer></script>
     <script src="plugin-cover.js?v=20261003-cover-quality" defer></script>
     <script src="plugin-page.js?v=20261003-cover-quality" defer></script>
-    <script src="messages.js?v=20261003-messages" defer></script>
+    <script src="messages.js?v=20261003-message-sync" defer></script>
     <script src="app.js?v=20261003-cover-quality" defer></script>
   </body>
 </html>

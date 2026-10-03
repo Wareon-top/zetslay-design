@@ -7,7 +7,7 @@ const scripts = ['messages.js', 'app.js'].map(name => readFileSync(new URL(`./${
 const at = '2026-10-03T12:00:00Z';
 const msg = (threadId, text = 'Здравствуйте', sender = 'buyer', extra = {}) => ({ id: `${threadId}-${text}`, threadId, text, sender, buyer: `Игрок ${threadId}`, ...extra });
 
-function workspace() {
+function workspace({ polling = false } = {}) {
   const listeners = new Map(), nodes = new Map();
   const node = name => {
     if (!nodes.has(name)) nodes.set(name, { textContent: '', innerHTML: '', value: '', hidden: false, disabled: false, dataset: {}, attributes: {}, scrollTop: 0, scrollHeight: 600, clientHeight: 200, focused: false, renders: 0, classList: { toggle() {} },
@@ -17,17 +17,21 @@ function workspace() {
   const filters = ['all', 'buyer', 'seller'].map(actor => { const n = node(`filter-${actor}`); n.dataset.messagesFilter = actor; return n; });
   const counts = filters.map(button => { const n = node(`count-${button.dataset.messagesFilter}`); n.dataset.messagesFilterCount = button.dataset.messagesFilter; return n; });
   const matches = ['prev', 'next'].map(direction => { const n = node(`match-${direction}`); n.dataset.messagesMatch = direction; return n; });
-  const root = { attributes: {}, setAttribute(key, value) { this.attributes[key] = value; }, querySelector: selector => selector === '[data-messages-dialog]' ? dialog : node(selector), querySelectorAll: selector => ({ '[data-messages-filter]': filters, '[data-messages-filter-count]': counts, '[data-messages-match]': matches }[selector] || []) };
+  const root = { hidden: false, attributes: {}, setAttribute(key, value) { this.attributes[key] = value; }, querySelector: selector => selector === '[data-messages-dialog]' ? dialog : node(selector), querySelectorAll: selector => ({ '[data-messages-filter]': filters, '[data-messages-filter-count]': counts, '[data-messages-match]': matches }[selector] || []) };
   const dialog = { open: false, opens: 0, querySelector: node, showModal() { this.open = true; this.opens++; }, close() { this.open = false; } };
   const body = node('[data-messages-body]');
   let html = '';
   Object.defineProperty(body, 'innerHTML', { get: () => html, set: value => { html = value; body.renders++; } });
   const document = {
+    visibilityState: 'visible',
     querySelector(selector) { if (selector === '[data-messages-workspace]') return root; if (selector === '[data-messages-dialog]') return dialog; if (selector === 'meta[name="zetslay-api-base-url"]') return { content: 'https://api.zetslay.pro' }; return null; },
     querySelectorAll: () => [], getElementById: () => null,
     addEventListener(type, listener) { listeners.set(type, [...(listeners.get(type) || []), listener]); }
   };
-  const context = vm.createContext({ document, URL, URLSearchParams, location: { hostname: 'zetslay.pro', hash: '#messages', search: '' }, sessionStorage: { getItem: () => null }, localStorage: { getItem: () => null, removeItem() {} }, window: {} });
+  const timers = new Map(); let timerId = 0, clock = Date.parse(at);
+  const window = polling ? { setTimeout(callback, delay) { const id = ++timerId; timers.set(id, { callback, delay }); return id; }, clearTimeout(id) { timers.delete(id); } } : {};
+  class ClockDate extends Date { static now() { return clock; } }
+  const context = vm.createContext({ document, URL, URLSearchParams, Date: ClockDate, location: { hostname: 'zetslay.pro', hash: '#messages', search: '' }, sessionStorage: { getItem: () => null }, localStorage: { getItem: () => null, removeItem() {} }, window });
   vm.runInContext(scripts, context);
   const run = code => vm.runInContext(code, context);
   const model = (messages, filters = {}, observedAt = at) => { context.input = { observedAt, messages }; context.inputFilters = filters; return JSON.parse(JSON.stringify(run('buildMessagesWorkspace(input, inputFilters)'))); };
@@ -40,7 +44,8 @@ function workspace() {
       closest: s => s === 'button' ? target : s === '[data-messages-workspace]' ? root : s === selector ? target : null };
     for (const listener of listeners.get(type) || []) listener({ target, key });
   };
-  return { context, run, model, render, event, root, node, dialog, matches, body };
+  const tick = async () => { const [id, timer] = timers.entries().next().value; timers.delete(id); clock += timer.delay; await timer.callback(); };
+  return { context, run, model, render, event, root, node, dialog, matches, body, timers, tick };
 }
 
 test('inbox reads actual adapter fields and never fabricates unread, presence or dates', () => {
@@ -299,4 +304,78 @@ test('read-only composer has no write controls or fake AI and all new assets loa
   assert.ok(html.indexOf('src="messages.js') < html.indexOf('src="app.js'));
   assert.equal((html.match(/src="messages\.js/g) || []).length, 1);
   assert.equal((html.match(/href="messages\.css/g) || []).length, 1);
+});
+
+test('source dates stay literal, escaped and do not acquire inferred ISO timestamps; numeric IDs restore archive order', () => {
+  const app = workspace();
+  app.render([msg('91', 'New', 'buyer', { id: '10000000000000000002', sourceDateLabel: '3 октября, 20:00:01' }), msg('91', 'Old', 'buyer', { id: '10000000000000000001', sourceDateLabel: '<img onerror=x>26 мая, 11:21:41' })]);
+  assert.ok(app.body.innerHTML.indexOf('Old') < app.body.innerHTML.indexOf('New'));
+  assert.match(app.body.innerHTML, /26 мая, 11:21:41/);
+  assert.doesNotMatch(app.body.innerHTML, /datetime=|<img onerror/);
+  assert.match(app.body.innerHTML, /&lt;img/);
+  assert.match(app.node('[data-messages-date-note]').textContent, /как на FunPay/);
+  app.event('click', '[data-messages-info]');
+  assert.match(app.node('[data-messages-info-body]').innerHTML, /3 октября, 20:00:01/);
+});
+
+test('open inbox polls serially, pauses for hidden tab/view and backs off after errors', async () => {
+  const app = workspace({ polling: true });
+  app.render([msg('91')]);
+  app.run('pollCalls=0; syncStoreContent=async()=>{pollCalls++}');
+  assert.equal(app.timers.size, 1);
+  assert.equal([...app.timers.values()][0].delay, 30000);
+  await app.tick(); assert.equal(app.run('pollCalls'), 1); assert.equal(app.timers.size, 1);
+  app.context.document.visibilityState = 'hidden'; app.run('updateMessagesPolling()'); assert.equal(app.timers.size, 0);
+  app.context.document.visibilityState = 'visible'; app.run('updateMessagesPolling()'); assert.equal(app.timers.size, 1);
+  app.root.hidden = true; app.run('updateMessagesPolling()'); assert.equal(app.timers.size, 0);
+  app.root.hidden = false; app.run('updateMessagesPolling(); syncStoreContent=async()=>{throw {code:"PROXY_TIMEOUT"}}');
+  await app.tick(); assert.equal([...app.timers.values()][0].delay, 60000);
+  assert.match(app.body.innerHTML, /Здравствуйте/);
+  app.run('resetAccountData(); authState.user=null; renderMessagesWorkspace()'); assert.equal(app.timers.size, 0);
+});
+
+test('a timer from an earlier session cannot refresh a different account', async () => {
+  const app = workspace({ polling: true }); app.render([msg('91')]);
+  const callback = [...app.timers.values()][0].callback;
+  app.run('pollCalls=0; syncStoreContent=async()=>{pollCalls++}; sessionGeneration++');
+  await callback(); assert.equal(app.run('pollCalls'), 0);
+});
+
+test('archive cursor loads older messages without duplicates, exposes source dates and retains selection on refresh', async () => {
+  const app = workspace();
+  app.render([msg('91', 'Current', 'buyer', { id: '102' })]);
+  app.run('messagesPageState.archive={total:2,hasMore:true,nextCursor:"77"}');
+  app.context.page = { observedAt: at, messages: [msg('91', 'Older', 'buyer', { id: '101', sourceDateLabel: '26 мая, 11:21:41' })], messageArchive: { total: 2, hasMore: false, nextCursor: null } };
+  app.run('urls=[]; apiRequest=async(url,options)=>{urls.push([url,options]); return page}');
+  await app.run('loadMessagesArchive()');
+  assert.equal(app.run('urls[0][0]'), '/api/v1/funpay/messages?limit=100&before=77');
+  assert.equal(app.run('urls[0][1].authenticated'), true);
+  assert.match(app.body.innerHTML, /Older/);
+  assert.equal(app.node('[data-messages-count]').textContent, '2');
+  const beforeId = app.run('messagesPageState.selectedId');
+  app.render([msg('91', 'Updated current', 'buyer', { id: '102' })]);
+  assert.equal(app.run('messagesPageState.selectedId'), beforeId);
+  assert.match(app.body.innerHTML, /Older/); assert.match(app.body.innerHTML, /Updated current/);
+  assert.equal(app.node('[data-messages-archive]').hidden, true);
+});
+
+test('saved archive can be opened after a failed fresh read without changing other cabinet data', async () => {
+  const app = workspace(); app.render([], { observedAt: null, connected: false });
+  app.context.page = { observedAt: at, messages: [msg('91', 'Saved text', 'buyer', { id: '101' })], messageArchive: { total: 1, hasMore: false, nextCursor: null } };
+  app.run('apiRequest=async()=>page'); await app.run('loadMessagesArchive()');
+  assert.match(app.body.innerHTML, /Saved text/);
+  assert.equal(app.run('state.storeContent.observedAt'), null);
+  assert.equal(app.run('state.storeContent.messages.length'), 0);
+  assert.equal(app.node('[data-messages-refresh]').disabled, true);
+});
+
+test('late archive page never enters another session and failed pagination preserves existing messages', async () => {
+  const app = workspace(); app.render([msg('91')]);
+  app.run('messagesPageState.archive={total:2,hasMore:true,nextCursor:"77"}; pendingArchive={}; apiRequest=()=>new Promise((resolve,reject)=>{pendingArchive.resolve=resolve;pendingArchive.reject=reject})');
+  const pending = app.run('loadMessagesArchive()');
+  app.run('sessionGeneration++; state.storeContent={observedAt:null,messages:[]}; renderMessagesWorkspace(); pendingArchive.resolve({observedAt:"2026-10-03T12:00:00Z",messages:[{id:"101",threadId:"private",text:"PRIVATE OLD"}]})');
+  await pending; assert.doesNotMatch(app.body.innerHTML, /PRIVATE OLD/);
+  app.render([msg('91')]); app.run('messagesPageState.archive={total:2,hasMore:true,nextCursor:"77"}; apiRequest=async()=>{throw {code:"PROXY_TIMEOUT"}}');
+  await app.run('loadMessagesArchive()');
+  assert.match(app.body.innerHTML, /Здравствуйте/); assert.equal(app.run('messagesPageState.archive.nextCursor'), '77');
 });

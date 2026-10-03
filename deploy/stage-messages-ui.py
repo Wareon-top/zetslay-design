@@ -62,7 +62,7 @@ def stage(local: Path, incoming: Path, output: Path):
         require(len(re.findall(fr'<{kind}[^>]+{attr}="{re.escape(name)}', html)) <= 1, f'Дублируется {name}')
     html = re.sub(r'^[ \t]*<script src="messages\.js(?:\?v=[A-Za-z0-9_-]+)?" defer></script>\n?', '', html, flags=re.M)
     html = re.sub(r'^[ \t]*<link rel="stylesheet" href="messages\.css(?:\?v=[A-Za-z0-9_-]+)?">\n?', '', html, flags=re.M)
-    version = '20261003-messages'
+    version = '20261003-message-sync'
     html, scripts = re.subn(r'^([ \t]*)<script src="app\.js(?:\?v=[A-Za-z0-9_-]+)?" defer></script>', lambda m: f'{m[1]}<script src="messages.js?v={version}" defer></script>\n{m[1]}<script src="app.js?v={version}" defer></script>', html, flags=re.M)
     html, styles = re.subn(r'^([ \t]*)</head>', lambda m: f'{m[1]}  <link rel="stylesheet" href="messages.css?v={version}">\n{m[0]}', html, flags=re.M)
     require(scripts == styles == 1, 'Не найдены подключения JS и CSS')
