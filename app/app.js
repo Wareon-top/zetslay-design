@@ -694,8 +694,8 @@ function renderDashboard() {
       </article>`).join('') : '<div class="content-empty">Баланс пока недоступен текущему read-only коннектору.</div>';
   }
 
-  renderDashChart();
-  renderDashDonut();
+  if (typeof renderOverview === 'function') renderOverview();
+  else { renderDashChart(); renderDashDonut(); }
 }
 
 function renderDashChart() {
