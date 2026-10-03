@@ -1345,7 +1345,7 @@ const wizardInitialStep = () => {
   if (!onboarding) return 0;
   if (!onboarding.telegram?.botConfigured) return 0;
   if (!onboarding.telegram?.linked) return 1;
-  if (onboarding.state === 'blocked') return 2;
+  if (onboarding.state === 'blocked') return onboarding.funPay?.canRetryPreflight === true ? 4 : 2;
   if (!onboarding.funPay?.credentialConfigured) return 2;
   if (!onboarding.funPay?.proxyConfigured) return 3;
   return 4;

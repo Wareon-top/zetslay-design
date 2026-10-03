@@ -70,6 +70,54 @@ function fakeModal() {
     querySelector: (selector) => elements[selector] ?? fields.get(selector) ?? null, querySelectorAll: () => [] };
 }
 
+test('read-only retry opens the final check after a persisted platform block without asking for saved secrets', async () => {
+  const modal = fakeModal();
+  const app = cabinet({ token: 'session', modal });
+  app.run(`authState.user = {}; state.onboarding = {state:'blocked',blockReason:'PLATFORM_UNAVAILABLE',activePlan:true,telegram:{botConfigured:true,linked:true},funPay:{credentialConfigured:true,proxyConfigured:true,canRetryPreflight:true}};`);
+  app.context.apiRequest = async path => { assert.equal(path, '/api/v1/onboarding'); return app.run('state.onboarding'); };
+  app.context.renderTelegramOnboarding = () => {};
+  await app.run('refreshConnectionWizard()');
+  assert.equal(app.run('connectionStep'), 4);
+  assert.match(modal.action.innerHTML, /Запустить read-only проверку/);
+  assert.doesNotMatch(modal.body.innerHTML, /input[^>]+name="(?:goldenKey|proxyUrl|botToken)"/);
+  app.run('backConnectionWizard()');
+  assert.equal(app.run('connectionStep'), 3);
+  assert.doesNotMatch(modal.body.innerHTML, /input[^>]+name="proxyUrl"/);
+});
+
+test('read-only retry keeps authentication and CAPTCHA blocks at credential correction unless the API permits retry', () => {
+  const app = cabinet({ token: 'session', modal: fakeModal() });
+  for (const reason of ['AUTH_REJECTED', 'CAPTCHA_REQUIRED', 'PLATFORM_UNAVAILABLE']) {
+    for (const permission of [false, undefined, 'true']) {
+      app.context.savedStatus = { state: 'blocked', blockReason: reason, telegram: { botConfigured: true, linked: true },
+        funPay: { credentialConfigured: true, proxyConfigured: true, canRetryPreflight: permission } };
+      app.run('state.onboarding = savedStatus');
+      assert.equal(app.run('wizardInitialStep()'), 2);
+    }
+  }
+});
+
+test('read-only retry calls the existing authenticated preflight route once and applies its success state', async () => {
+  const app = cabinet({ token: 'session', modal: fakeModal() });
+  app.run(`authState.user={}; state.onboarding={state:'blocked',telegram:{botConfigured:true,linked:true},funPay:{credentialConfigured:true,proxyConfigured:true,canRetryPreflight:true}}; connectionStep=wizardInitialStep();`);
+  app.context.loadStoreFleet = async () => {};
+  app.context.syncStoreContent = async () => {};
+  app.context.setModal = () => {};
+  app.context.showToast = () => {};
+  app.context.apiRequest = async (path, options) => {
+    app.calls.push(path);
+    assert.equal(path, '/api/v1/onboarding/funpay/preflight');
+    assert.equal(options.method, 'POST');
+    assert.equal(options.authenticated, true);
+    assert.equal(JSON.stringify(options.body), '{}');
+    return { state: 'connected_read_only', telegram: { botConfigured: true, linked: true }, funPay: { credentialConfigured: true, proxyConfigured: true, store: { id: 'fixture-store' } } };
+  };
+  await app.run('advanceConnectionWizard()');
+  assert.deepEqual(app.calls, ['/api/v1/onboarding/funpay/preflight']);
+  assert.equal(app.run('state.onboarding.state'), 'connected_read_only');
+  assert.equal(app.run('connectionBusy'), false);
+});
+
 test('existing session returns from landing to cabinet without showing the sign-in panel', async () => {
   const app = cabinet({ search: '?auth=login', token: 'existing-session' });
   app.context.apiRequest = async (path) => {
