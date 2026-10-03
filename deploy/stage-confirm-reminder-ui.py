@@ -9,6 +9,15 @@ OLD_PERMISSION='Предлагать текст ответа; отправка �
 NEW_PERMISSION='Предлагать ответы. Confirm Reminder может отправлять свои напоминания после отдельного разрешения.'
 OLD_CONTEXT='Предложенные ответы поступают в очередь; отправка на FunPay сейчас отключена.'
 NEW_CONTEXT="${plugin.id === 'zetslay.confirm-reminder' ? 'Отправка включается отдельно. Перед каждым напоминанием проверяется заказ; после подтверждения или возврата сообщения прекращаются.' : 'Предложенные ответы этого модуля поступают в очередь. Автоматическая доставка доступна только для Confirm Reminder после отдельного разрешения.'}"
+REMINDER_BUTTON="${plugin.id === 'zetslay.confirm-reminder' && plugin.installed && typeof reminderSettingsMarkup === 'function' ? `<button class=\"plugin-page-settings\" type=\"button\" data-reminder-open-settings>${icon('gear')} Настройки напоминаний</button>` : ''}"
+REMINDER_JUMP="""  const reminderSettings = event.target.closest('[data-reminder-open-settings]');
+  if (reminderSettings) {
+    const panel = document.querySelector('[data-reminder-panel]');
+    panel?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    panel?.querySelector('select, input, textarea')?.focus({ preventScroll: true });
+    return;
+  }
+"""
 
 def require(condition,message):
     if not condition: raise ValueError(message+'. Кабинет не изменён.')
@@ -30,9 +39,19 @@ def stage(local,incoming,output):
             page=page.replace(old,new,1)
         else: require(new in page,'Неизвестный локальный текст разрешений')
     require(page.count(HOOK)==1,'Дублируется модуль напоминаний')
+    action="${configuration && plugin.installed ?"
+    listener="  const settings = event.target.closest('[data-plugin-open-settings]');"
+    require(page.count(action)==1 and page.count(listener)==1,'Не найдены кнопки настроек плагина')
+    if REMINDER_BUTTON not in page:
+        require('data-reminder-open-settings' not in page,'Неизвестная локальная кнопка настроек напоминаний')
+        page=page.replace(action,REMINDER_BUTTON+action,1)
+    if REMINDER_JUMP not in page:
+        require("const reminderSettings =" not in page,'Неизвестный переход к настройкам напоминаний')
+        page=page.replace(listener,REMINDER_JUMP+listener,1)
+    require(page.count(REMINDER_BUTTON)==1 and page.count(REMINDER_JUMP)==1,'Дублируется переход к настройкам')
     html=re.sub(r'^[ \t]*<script src="confirm-reminder\.js(?:\?v=[A-Za-z0-9_-]+)?" defer></script>\n?','',html,flags=re.M)
     html=re.sub(r'^[ \t]*<link rel="stylesheet" href="confirm-reminder\.css(?:\?v=[A-Za-z0-9_-]+)?">\n?','',html,flags=re.M)
-    version='20261003-confirm-reminder'
+    version='20261003-reminder-settings'
     html,count=re.subn(r'^([ \t]*)<script src="plugin-page\.js(?:\?v=[A-Za-z0-9_-]+)?" defer></script>',lambda m:f'{m[1]}<script src="confirm-reminder.js?v={version}" defer></script>\n{m[1]}<script src="plugin-page.js?v={version}" defer></script>',html,flags=re.M)
     require(count==1,'Не найдена единственная загрузка plugin-page.js')
     html,count=re.subn(r'^([ \t]*)</head>',lambda m:f'{m[1]}  <link rel="stylesheet" href="confirm-reminder.css?v={version}">\n{m[0]}',html,flags=re.M)

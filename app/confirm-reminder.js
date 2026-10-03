@@ -9,7 +9,7 @@ function reminderSettingsMarkup(plugin) {
   const c={...REMINDER_DEFAULTS,...plugin.config};
   const report=reminderUi.report;
   const time=value=>{const date=new Date(value);return value && Number.isFinite(date.getTime())?date.toLocaleString('ru-RU'):'—';};
-  return `<section class="plugin-page-panel reminder-panel" aria-labelledby="reminder-settings-title"><div class="plugin-page-section-heading"><span class="plugin-page-section-icon">${icon('clock')}</span><div><span class="plugin-page-eyebrow">Confirm Reminder</span><h2 id="reminder-settings-title">Настройки напоминаний</h2></div></div>
+  return `<section class="plugin-page-panel reminder-panel" data-reminder-panel aria-labelledby="reminder-settings-title"><div class="plugin-page-section-heading"><span class="plugin-page-section-icon">${icon('clock')}</span><div><span class="plugin-page-eyebrow">Confirm Reminder</span><h2 id="reminder-settings-title">Настройки напоминаний</h2></div></div>
     <p class="reminder-note">Оплата обнаруживается при опросе FunPay. При включении старые оплаченные заказы пропускаются. Перед каждым сообщением проверяется конкретный заказ; после подтверждения или возврата отправки прекращаются.</p>
     ${plugin.installed?`<form data-confirm-reminder-settings><label>Режим<select name="mode"><option value="approval_required" ${c.mode==='approval_required'?'selected':''}>Очередь без отправки</option><option value="automatic" ${c.mode==='automatic'?'selected':''}>Автоматическая отправка на FunPay</option></select></label>
       <label class="reminder-consent"><input type="checkbox" name="allowAutomatic" ${c.mode==='automatic'?'checked':''}>Разрешаю этому плагину отправлять напоминания покупателям на FunPay</label>

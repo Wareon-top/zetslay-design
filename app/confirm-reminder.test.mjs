@@ -9,7 +9,7 @@ function harness(){const listeners={},error={textContent:'',hidden:true},calls=[
   escapeHtml:text=>String(text??'').replace(/[<>&"']/g,value=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[value])),
   icon:()=>'',showToast:(...args)=>toasts.push(args),humanError:error=>error.message,renderPluginPage:()=>{},
   apiRequest:async(path,options)=>{calls.push({path,options});return {workerEnabled:true,deliveryEnabled:true,tasks:[]};}
-});vm.runInContext(code,context);return {context,error,calls,toasts,run:source=>vm.runInContext(source,context)};}
+});vm.runInContext(code,context);return {context,error,calls,toasts,listeners,run:source=>vm.runInContext(source,context)};}
 function form(overrides={}){const values={mode:'approval_required',firstDelayMinutes:'15',firstText:'Hello $username',secondDelayMinutes:'60',secondText:'Again #$order_id',...overrides};return {elements:{...Object.fromEntries(Object.entries(values).map(([key,value])=>[key,{value,disabled:false}])),allowAutomatic:{checked:overrides.allowAutomatic===true},secondEnabled:{checked:overrides.secondEnabled===true}},querySelectorAll:()=>[]};}
 test('page uses existing dark tokens, shows two stages, explicit consent and escaped source values',()=>{
   const app=harness();app.context.plugin={installed:true,config:{firstText:'<script>alert(1)</script>'}};const html=app.run('reminderSettingsMarkup(plugin)');assert.match(html,/firstDelayMinutes/);assert.match(html,/secondDelayMinutes/);assert.match(html,/Разрешаю этому плагину/);assert.match(html,/&lt;script&gt;/);assert.doesNotMatch(html,/<script>/);
@@ -27,4 +27,20 @@ test('status refresh is read-only and displays uncertain delivery without claimi
 });
 test('late settings response after logout cannot change the next account state',async()=>{
   const app=harness();let release;app.context.apiRequest=()=>new Promise(resolve=>release=resolve);app.context.form=form();const promise=app.run('reminderUiAction(form)');app.context.sessionGeneration=2;app.context.authState.token='other';release({});await promise;assert.equal(app.context.state.plugins[0].config.firstText,undefined);
+});
+test('installed reminder exposes a settings button and reaches the form without leaving the plugin page',()=>{
+  const app=harness();const focus=[],scroll=[];
+  app.context.canManagePluginCatalog=()=>false;
+  app.context.formatPluginDescription=()=>'';
+  app.context.location={hash:'#plugins/zetslay.confirm-reminder'};
+  const panel={scrollIntoView:options=>scroll.push(options),querySelector:()=>({focus:options=>focus.push(options)})};
+  app.context.document.querySelector=selector=>selector==='[data-reminder-panel]'?panel:null;
+  vm.runInContext(readFileSync(new URL('./plugin-page.js',import.meta.url),'utf8'),app.context);
+  const html=app.run("pluginPageMarkup({id:'zetslay.confirm-reminder',name:'Confirm Reminder',installed:true,active:true,config:{}})");
+  assert.match(html,/data-reminder-open-settings>.*Настройки напоминаний/);
+  assert.match(html,/data-reminder-panel/);
+  app.listeners.click({target:{closest:selector=>selector==='[data-reminder-open-settings]'?{}:null}});
+  assert.equal(app.context.location.hash,'#plugins/zetslay.confirm-reminder');
+  assert.equal(scroll.length,1);assert.equal(focus.length,1);assert.equal(focus[0].preventScroll,true);
+  assert.doesNotMatch(app.run("pluginPageMarkup({id:'zetslay.confirm-reminder',name:'Confirm Reminder',installed:false})"),/data-reminder-open-settings/);
 });
