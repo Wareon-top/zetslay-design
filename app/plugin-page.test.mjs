@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import vm from 'node:vm';
 
-const addon = readFileSync(new URL('./plugin-page.js', import.meta.url), 'utf8');
+const addon = ['plugin-cover.js', 'plugin-page.js'].map(name => readFileSync(new URL(`./${name}`, import.meta.url), 'utf8')).join('\n');
 const cabinet = readFileSync(new URL('./app.js', import.meta.url), 'utf8').replace(/\ninit\(\);\s*$/, '');
 const entry = (patch = {}) => ({ id: 'zetslay.auto-reply', name: 'Автоответчик', category: 'chat', price: 'от 490 ₽', priceRub: 490, published: true, description: '**Ответы**\n> Ваша очередь', permissions: ['messages:read', 'replies:queue'], events: ['message.received'], planned: false, installed: false, active: false, ...patch });
 

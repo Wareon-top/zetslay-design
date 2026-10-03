@@ -73,8 +73,8 @@ def stage(local: Path, incoming: Path, output: Path):
     for file in ['messages.js', 'messages.css', 'messages.test.mjs']:
         (output / file).write_bytes((incoming / file).read_bytes())
     (output / 'cabinet-regression.test.mjs').write_bytes((incoming / 'app.test.mjs').read_bytes())
-    for module in ['overview', 'orders', 'plugin-page']:
-        for suffix in ['.js', '.test.mjs']:
+    for module in ['overview', 'orders', 'plugin-page', 'plugin-cover']:
+        for suffix in ['.js', '.test.mjs', '.css']:
             file = module + suffix
             if (local / file).is_file():
                 (output / file).write_bytes((local / file).read_bytes())

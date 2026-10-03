@@ -5,7 +5,7 @@ import difflib
 import re
 import sys
 
-FUNCTIONS = ['resetPluginCatalog', 'loadPluginCatalog', 'renderPlugins', 'changePluginState', 'setView', 'openPluginDetails', 'openPluginEditor', 'saveCatalogEntry', 'savePluginEditor', 'bindInteractions']
+FUNCTIONS = ['resetPluginCatalog', 'loadPluginCatalog', 'renderPlugins', 'changePluginState', 'setView', 'openPluginDetails', 'openPluginEditor', 'saveCatalogEntry', 'savePluginEditor', 'bindInteractions', 'compressPluginCover']
 
 
 def require(condition, message):
@@ -72,15 +72,17 @@ def stage(local, incoming, output):
     html = html[:start] + new_html[new_start:new_end] + html[end:]
     html = re.sub(r'^[ \t]*<script src="plugin-page\.js(?:\?v=[A-Za-z0-9_-]+)?" defer></script>\n?', '', html, flags=re.M)
     html = re.sub(r'^[ \t]*<link rel="stylesheet" href="plugin-page\.css(?:\?v=[A-Za-z0-9_-]+)?">\n?', '', html, flags=re.M)
-    version = '20261003-plugin-page'
-    html, scripts = re.subn(r'^([ \t]*)<script src="app\.js(?:\?v=[A-Za-z0-9_-]+)?" defer></script>', lambda m: f'{m[1]}<script src="plugin-page.js?v={version}" defer></script>\n{m[1]}<script src="app.js?v={version}" defer></script>', html, flags=re.M)
-    html, styles = re.subn(r'^([ \t]*)</head>', lambda m: f'{m[1]}  <link rel="stylesheet" href="plugin-page.css?v={version}">\n{m[0]}', html, flags=re.M)
+    html = re.sub(r'^[ \t]*<script src="plugin-cover\.js(?:\?v=[A-Za-z0-9_-]+)?" defer></script>\n?', '', html, flags=re.M)
+    html = re.sub(r'^[ \t]*<link rel="stylesheet" href="plugin-cover\.css(?:\?v=[A-Za-z0-9_-]+)?">\n?', '', html, flags=re.M)
+    version = '20261003-cover-quality'
+    html, scripts = re.subn(r'^([ \t]*)<script src="app\.js(?:\?v=[A-Za-z0-9_-]+)?" defer></script>', lambda m: f'{m[1]}<script src="plugin-cover.js?v={version}" defer></script>\n{m[1]}<script src="plugin-page.js?v={version}" defer></script>\n{m[1]}<script src="app.js?v={version}" defer></script>', html, flags=re.M)
+    html, styles = re.subn(r'^([ \t]*)</head>', lambda m: f'{m[1]}  <link rel="stylesheet" href="plugin-page.css?v={version}">\n{m[1]}  <link rel="stylesheet" href="plugin-cover.css?v={version}">\n{m[0]}', html, flags=re.M)
     require(scripts == styles == 1, 'Не найдены подключения ассетов')
     require(len(re.findall(r'<script[^>]+src="plugin-page\.js', html)) == len(re.findall(r'<link[^>]+href="plugin-page\.css', html)) == 1, 'Дублируются ассеты страницы')
     output.mkdir(parents=True, exist_ok=True)
     (output / 'app.js').write_text(source)
     (output / 'index.html').write_text(html)
-    for file in ['plugin-page.js', 'plugin-page.css', 'plugin-page.test.mjs']:
+    for file in ['plugin-page.js', 'plugin-page.css', 'plugin-page.test.mjs', 'plugin-cover.js', 'plugin-cover.css', 'plugin-cover.test.mjs']:
         (output / file).write_bytes((incoming / file).read_bytes())
     (output / 'catalog-regression.test.mjs').write_bytes((incoming / 'app.test.mjs').read_bytes())
     if (local / 'app.test.mjs').exists():

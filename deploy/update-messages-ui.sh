@@ -20,7 +20,7 @@ python3 "$work/stage.py" "$site_dir/app" "$work/incoming" "$work/app"
 docker run --rm -v "$work/app:/work:ro" -w /work node:22-alpine node --check app.js </dev/null
 docker run --rm -v "$work/app:/work:ro" -w /work node:22-alpine node --check messages.js </dev/null
 tests=(messages.test.mjs)
-for module in overview orders plugin-page; do
+for module in overview orders plugin-page plugin-cover; do
   if [ -f "$work/app/$module.js" ] && [ -f "$work/app/$module.test.mjs" ]; then tests+=("$module.test.mjs"); fi
 done
 docker run --rm -v "$work/app:/work:ro" -w /work node:22-alpine node --test "${tests[@]}" </dev/null

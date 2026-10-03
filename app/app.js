@@ -1140,7 +1140,7 @@ function renderPlugins() {
     const busy = typeof pluginPageState !== 'undefined' && pluginPageState.busyId === plugin.id;
     const pending = typeof pluginPageState !== 'undefined' && pluginPageState.busyId !== null;
     return `<article class="plugin-card" style="--plugin-rgb:${colors[index % colors.length]}">
-      <div class="plugin-card__cover"><a href="${escapeHtml(href)}" aria-label="Подробнее о плагине ${escapeHtml(plugin.name)}">${cover ? `<img data-plugin-cover data-cover-category="${escapeHtml(plugin.category)}" src="${escapeHtml(cover)}" alt="${escapeHtml(plugin.name)}" loading="lazy">` : `<span class="plugin-cover__placeholder">${icon('puzzle')}</span>`}</a>${adminMark}<span class="plugin-card__badge ${tone === 'green' ? 'plugin-card__badge--work' : tone === 'blue' ? 'plugin-card__badge--pause' : 'plugin-card__badge--soon'}">${status}</span></div>
+      <div class="plugin-card__cover"><a href="${escapeHtml(href)}" aria-label="Подробнее о плагине ${escapeHtml(plugin.name)}">${cover ? `<img data-plugin-cover data-cover-category="${escapeHtml(plugin.category)}" src="${escapeHtml(cover)}" alt="${escapeHtml(plugin.name)}" loading="lazy">` : `<span class="plugin-cover__placeholder">${icon('puzzle')}</span>`}</a></div><div class="plugin-card__cover-meta">${adminMark}<span class="plugin-card__badge ${tone === 'green' ? 'plugin-card__badge--work' : tone === 'blue' ? 'plugin-card__badge--pause' : 'plugin-card__badge--soon'}">${status}</span></div>
       <div class="plugin-card__body"><h3><a class="plugin-card__title-link" href="${escapeHtml(href)}">${escapeHtml(plugin.name)}</a></h3><p>${escapeHtml(String(plugin.description || '').replace(/^>\s?/gm, '').replace(/\*\*/g, ''))}</p>
         <div class="plugin-permissions">${(plugin.permissions || []).map(permission => `<span>${escapeHtml(typeof PLUGIN_PERMISSION_LABELS !== 'undefined' ? PLUGIN_PERMISSION_LABELS[permission]?.[0] || permission : permission)}</span>`).join('')}</div>
         <div class="plugin-card__bottom"><div class="plugin-card__price"><small>Цена</small><strong>${escapeHtml(plugin.price)}</strong></div><span class="plugin-card__status">${status}</span></div>
@@ -2099,25 +2099,7 @@ async function savePluginEditor(form) {
 }
 
 async function compressPluginCover(file) {
-  if (!['image/png','image/jpeg','image/webp'].includes(file.type) || file.size > 2 * 1024 * 1024) {
-    throw new Error('Выберите PNG, JPEG или WebP до 2 МБ');
-  }
-  const bitmap = await createImageBitmap(file);
-  try {
-    const canvas = document.createElement('canvas');
-    let width = Math.min(640, bitmap.width);
-    for (let attempt = 0; attempt < 5; attempt++) {
-      canvas.width = Math.max(1, Math.round(width));
-      canvas.height = Math.max(1, Math.round(width * bitmap.height / bitmap.width));
-      const context = canvas.getContext('2d');
-      context.fillStyle = '#12141a'; context.fillRect(0,0,canvas.width,canvas.height);
-      context.drawImage(bitmap,0,0,canvas.width,canvas.height);
-      const encoded = canvas.toDataURL('image/jpeg',0.65);
-      if (encoded.length <= 18000) return encoded;
-      width *= 0.7;
-    }
-    throw new Error('Изображение слишком сложное. Выберите другую обложку.');
-  } finally { bitmap.close(); }
+  return preparePluginCover(file);
 }
 
 init();
