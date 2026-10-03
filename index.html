@@ -11,6 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="landing.css">
+  <link rel="stylesheet" href="landing-hero.css?v=20261003-platform-ribbon">
 </head>
 <body id="top">
   <a class="skip-link" href="#main">Перейти к содержанию</a>
@@ -26,14 +27,31 @@
   </header>
 
   <main id="main">
-    <section class="hero" id="landing" aria-labelledby="hero-title">
+    <section class="hero hero--platforms" id="landing" data-landing-hero="platforms" aria-labelledby="hero-title">
       <div class="shell hero-inner">
-        <span class="hero-badge"><i aria-hidden="true"></i> ZetSlay для продавцов FunPay <span aria-hidden="true">↗</span></span>
-        <h1 id="hero-title">Единая панель<br>для селлеров<br><span>цифровых товаров</span></h1>
-        <p class="hero-lead">Заказы, сообщения и состояние подключения — в одном спокойном интерфейсе. Начните с проверки в режиме чтения и смотрите на фактический статус.</p>
-        <div class="hero-actions"><a class="button button--black" href="app/?auth=register">Создать аккаунт <span aria-hidden="true">↗</span></a><a class="button button--white" href="#steps">Как подключить магазин <span aria-hidden="true">↓</span></a></div>
+        <h1 id="hero-title"><span class="hero-heading__line">Единая панель для селлеров</span> <span class="hero-heading__line hero-heading__line--accent">цифровых товаров</span></h1>
+        <p class="hero-lead">Управляйте заказами и сообщениями. Подключайте плагины и держите работу магазина под контролем — в одном кабинете.</p>
+        <div class="hero-actions"><a class="button hero-start" href="app/?auth=register">Начать работу <span class="hero-start__arrow" aria-hidden="true">↗</span></a><a class="hero-guide" href="#steps"><span>Как подключить магазин</span><span aria-hidden="true">↗</span></a></div>
         <a class="hero-login" href="app/?auth=login">Уже есть аккаунт? Войти</a>
       </div>
+    </section>
+
+    <section class="platform-ribbon" data-platform-ribbon data-paused="false" aria-labelledby="platform-ribbon-title">
+      <div class="shell"><div class="platform-ribbon__heading"><h2 id="platform-ribbon-title">Платформы ZetSlay</h2><button class="platform-ribbon__pause" type="button" data-platform-ribbon-pause aria-label="Пауза движения платформ" aria-pressed="false"><svg viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><rect x="2" y="1" width="3" height="10" rx="1"/><rect x="7" y="1" width="3" height="10" rx="1"/></svg></button></div></div>
+      <div class="platform-ribbon__window"><div class="platform-ribbon__track">
+        <ul class="platform-ribbon__group">
+          <li class="platform-ribbon__item platform-ribbon__item--available"><span class="platform-ribbon__mark"><img src="assets/platforms/funpay.svg" alt="" width="36" height="36" decoding="async"></span><span class="platform-ribbon__wordmark"><strong>FunPay</strong><small>Доступен</small></span></li>
+          <li class="platform-ribbon__item"><span class="platform-ribbon__mark"><img src="assets/platforms/ggsel.svg" alt="" width="36" height="36" decoding="async"></span><span class="platform-ribbon__wordmark"><strong>GGsel</strong><small>В планах</small></span></li>
+          <li class="platform-ribbon__item"><span class="platform-ribbon__mark"><img src="assets/platforms/plati-market.svg" alt="" width="36" height="36" decoding="async"></span><span class="platform-ribbon__wordmark"><strong>Plati.Market</strong><small>В планах</small></span></li>
+          <li class="platform-ribbon__item"><span class="platform-ribbon__mark"><img src="assets/platforms/starvell.svg" alt="" width="36" height="36" decoding="async"></span><span class="platform-ribbon__wordmark"><strong>Starvell</strong><small>В планах</small></span></li>
+        </ul>
+        <ul class="platform-ribbon__group" aria-hidden="true">
+          <li class="platform-ribbon__item platform-ribbon__item--available"><span class="platform-ribbon__mark"><img src="assets/platforms/funpay.svg" alt="" width="36" height="36" decoding="async"></span><span class="platform-ribbon__wordmark"><strong>FunPay</strong><small>Доступен</small></span></li>
+          <li class="platform-ribbon__item"><span class="platform-ribbon__mark"><img src="assets/platforms/ggsel.svg" alt="" width="36" height="36" decoding="async"></span><span class="platform-ribbon__wordmark"><strong>GGsel</strong><small>В планах</small></span></li>
+          <li class="platform-ribbon__item"><span class="platform-ribbon__mark"><img src="assets/platforms/plati-market.svg" alt="" width="36" height="36" decoding="async"></span><span class="platform-ribbon__wordmark"><strong>Plati.Market</strong><small>В планах</small></span></li>
+          <li class="platform-ribbon__item"><span class="platform-ribbon__mark"><img src="assets/platforms/starvell.svg" alt="" width="36" height="36" decoding="async"></span><span class="platform-ribbon__wordmark"><strong>Starvell</strong><small>В планах</small></span></li>
+        </ul>
+      </div></div>
     </section>
 
     <section class="section section--surface" id="features" data-section="features" aria-labelledby="features-title">
@@ -99,5 +117,7 @@
   </main>
   <footer class="site-footer"><div class="shell footer-top"><a class="brand" href="#top"><span class="brand-mark" aria-hidden="true"></span>ZetSlay</a><nav aria-label="Разделы сайта"><a href="#features">О платформе</a><a href="#comparison">Возможности</a><a href="#steps">Как начать</a><a href="#plugins">Плагины</a><a href="#faq">FAQ</a></nav><a href="app/?auth=login">Войти ↗</a></div><div class="shell footer-bottom"><span>© 2026 ZetSlay. Независимый сервис для продавцов FunPay.</span><a href="#top">Наверх ↑</a></div></footer>
   <script>document.querySelectorAll('.mobile-menu a').forEach(link => link.addEventListener('click', () => { link.closest('details').open = false; }));</script>
+  <script src="landing-hero.js?v=20261003-platform-ribbon" defer></script>
 </body>
 </html>
+
