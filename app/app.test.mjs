@@ -417,7 +417,7 @@ test('admin controls are hidden for users and names remain escaped in card HTML'
   assert.equal(app.run('controls.every(button=>button.hidden)'), true);
   assert.ok(app.run('grid.innerHTML').includes('&lt;img src=x&gt;'));
   assert.ok(!app.run('grid.innerHTML').includes('<img src=x>'));
-  app.run('state.pluginCanManage = true; renderPlugins()');
+  app.run("authState.token='admin-session'; authState.user={}; state.pluginCanManage = true; renderPlugins()");
   assert.equal(app.run('controls.every(button=>!button.hidden)'), true);
 });
 

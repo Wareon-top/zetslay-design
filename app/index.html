@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="styles.css?v=20261003-overview">
     <link rel="stylesheet" href="overview.css?v=20261003-overview">
     <link rel="stylesheet" href="orders.css?v=20261003-orders">
+    <link rel="stylesheet" href="plugin-page.css?v=20261003-plugin-page">
   </head>
   <body>
     <svg class="icon-sprite" aria-hidden="true">
@@ -221,8 +222,8 @@
             <section class="panel content-panel"><div class="content-toolbar"><div class="search-field"><svg><use href="#i-search"/></svg><input type="search" placeholder="Найти лот или товар" aria-label="Поиск лотов"></div><div class="toolbar-actions"><button class="filter-button" type="button">Все категории</button><button class="filter-button" type="button">Все состояния</button></div></div><div class="lot-grid" id="lot-grid"></div></section>
           </section>
 
-          <section class="view" data-view="plugins" aria-labelledby="plugins-title">
-            <div class="view-heading view-heading--compact"><div><span class="eyebrow">Маркетплейс</span><h1 id="plugins-title">Каталог плагинов</h1><p>Расширения с явными разрешениями, безопасным отключением и журналом действий.</p></div><div class="view-heading__actions"><span class="catalog-count"><span id="plugin-total">2 доступно</span><strong id="plugin-installed">0 установлено</strong></span><button class="button button--ghost" type="button" hidden data-plugin-cover-admin><svg><use href="#i-external"/></svg> Загрузить обложки</button><button class="button button--primary" type="button" hidden data-plugin-publish>Добавить плагин</button><input type="file" accept="image/png,image/jpeg,image/webp" hidden data-plugin-cover-input></div></div>
+          <section class="view plugin-catalog" data-view="plugins" aria-labelledby="plugins-title">
+            <div class="view-heading view-heading--compact"><div><span class="eyebrow">Маркетплейс</span><h1 id="plugins-title">Каталог плагинов</h1><p>Расширения с явными разрешениями, безопасным отключением и журналом действий.</p></div><div class="view-heading__actions"><span class="catalog-count"><span id="plugin-total">2 доступно</span><strong id="plugin-installed">0 установлено</strong></span><div class="plugin-admin-controls" hidden data-plugin-admin-controls></div><input type="file" accept="image/png,image/jpeg,image/webp" hidden data-plugin-cover-input></div></div>
             <div class="cat-pills" id="plugin-categories">
               <button class="is-active" type="button" data-plugin-cat="all"><svg><use href="#i-grid"/></svg> Все</button>
               <button type="button" data-plugin-cat="sales"><svg><use href="#i-bag"/></svg> Продажи</button>
@@ -276,6 +277,8 @@
               <div class="plugin-audit__list" id="plugin-audit-list">Войдите, чтобы увидеть журнал текущего магазина.</div>
             </section>
           </section>
+
+          <section class="view plugin-page" data-view="plugin" data-plugin-page aria-label="Подробности плагина"></section>
 
           <section class="view" data-view="telegram" aria-labelledby="telegram-title">
             <div class="view-heading view-heading--compact"><div><span class="eyebrow">Remote control / Telegram</span><h1 id="telegram-title">Telegram</h1><p>Рабочий бот вашего магазина: уведомления о заказах, сообщениях и статус подключения в реальном времени.</p></div><span class="health-pill health-pill--waiting" data-telegram-health><i></i> Не подключён</span></div>
@@ -440,6 +443,7 @@
     <div class="toast-region" aria-live="polite" aria-atomic="true"></div>
     <script src="overview.js?v=20261003-overview" defer></script>
     <script src="orders.js?v=20261003-orders" defer></script>
-    <script src="app.js?v=20261003-orders" defer></script>
+    <script src="plugin-page.js?v=20261003-plugin-page" defer></script>
+    <script src="app.js?v=20261003-plugin-page" defer></script>
   </body>
 </html>

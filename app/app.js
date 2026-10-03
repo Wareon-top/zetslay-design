@@ -28,7 +28,7 @@ const state = {
 
 const viewTitles = {
   dashboard: 'Обзор', orders: 'Заказы', messages: 'Сообщения', lots: 'Лоты',
-  plugins: 'Плагины', telegram: 'Telegram', billing: 'Финансы', security: 'Безопасность',
+  plugins: 'Плагины', plugin: 'Плагин', telegram: 'Telegram', billing: 'Финансы', security: 'Безопасность',
   guide: 'База знаний',
 };
 
@@ -576,7 +576,12 @@ async function createWithdrawalIntent(form) {
   }
 }
 
+function canManagePluginCatalog() {
+  return Boolean(authState.token && authState.user && state.pluginCanManage === true);
+}
+
 function resetPluginCatalog() {
+  if (typeof resetPluginPageState === 'function') resetPluginPageState();
   state.pluginCatalogRevision++;
   state.pluginCanManage = false;
   state.pluginCoverAdmin = false;
@@ -589,10 +594,22 @@ async function loadPluginCatalog() {
   if (!authState.token || !API_BASE_URL) return;
   const token = authState.token;
   const revision = ++state.pluginCatalogRevision;
-  const catalog = await apiRequest('/api/v1/plugin-catalog', { authenticated: true });
+  let catalog;
+  try { catalog = await apiRequest('/api/v1/plugin-catalog', { authenticated: true }); }
+  catch (error) {
+    if (token === authState.token && revision === state.pluginCatalogRevision) {
+      state.pluginCanManage = false;
+      state.pluginCoverAdmin = false;
+      if (typeof pluginCatalogFailed === 'function') pluginCatalogFailed(error);
+      renderPlugins();
+    }
+    throw error;
+  }
   if (token !== authState.token || revision !== state.pluginCatalogRevision) return;
   const old = new Map(state.plugins.map(plugin => [plugin.id, plugin]));
   state.pluginCanManage = catalog.canManage === true;
+  state.pluginCoverAdmin = state.pluginCanManage && state.pluginCoverAdmin;
+  if (typeof pluginCatalogLoaded === 'function') pluginCatalogLoaded();
   state.plugins = catalog.entries.map(backend => ({
     ...old.get(backend.id), ...backend,
     price: backend.priceRub ? `от ${backend.priceRub.toLocaleString('ru-RU')} ₽` : 'Бесплатно',
@@ -1094,83 +1111,82 @@ function renderAutomations() {
 }
 
 function renderPlugins() {
+  if (typeof renderPluginAdminControls === 'function') renderPluginAdminControls();
   const target = byId('plugin-grid');
-  if (!target) return;
-  document.querySelectorAll('[data-plugin-cover-admin], [data-plugin-publish]').forEach(button => { button.hidden = !state.pluginCanManage; });
+  if (!target) { if (typeof renderPluginPage === 'function') renderPluginPage(); return; }
+  document.querySelectorAll('[data-plugin-cover-admin], [data-plugin-publish]').forEach(button => { button.hidden = !canManagePluginCatalog(); });
   const categorySelect = document.querySelector('[data-plugin-category]');
   if (categorySelect) categorySelect.value = state.pluginFilter.cat;
   const colors = ['249,179,46', '167,139,250', '96,165,250', '52,211,153', '248,113,113', '203,128,255'];
-  const installed = state.plugins.filter((plugin) => plugin.installed).length;
-  const total = state.plugins.filter((plugin) => !plugin.planned).length;
+  const visible = state.plugins.filter(plugin => plugin.published !== false || canManagePluginCatalog());
+  const installed = visible.filter(plugin => plugin.installed).length;
+  const total = visible.filter(plugin => !plugin.planned).length;
   if (byId('plugin-total')) byId('plugin-total').textContent = `${total} доступно`;
   if (byId('plugin-installed')) byId('plugin-installed').textContent = `${installed} установлено`;
-
   const catNames = { sales: 'Продажи', chat: 'Общение', analytics: 'Аналитика', control: 'Контроль' };
   const catLabel = byId('plugin-cat-label');
-  if (catLabel) catLabel.textContent = state.pluginFilter.cat === 'all' ? `Все категории (${state.plugins.length})` : (catNames[state.pluginFilter.cat] || 'Все категории');
-  document.querySelectorAll('[data-plugin-cat]').forEach((button) => button.classList.toggle('is-active', button.dataset.pluginCat === state.pluginFilter.cat));
-
-  const list = filterPluginCatalog(state.plugins, state.pluginFilter);
-  const badgeOf = (plugin) => {
-    if (plugin.published === false) return { cls: 'plugin-card__badge--soon', label: 'Черновик' };
-    if (plugin.active) return { cls: 'plugin-card__badge--work', label: 'Работает' };
-    if (plugin.installed) return { cls: 'plugin-card__badge--pause', label: 'На паузе' };
-    if (plugin.planned) return { cls: 'plugin-card__badge--soon', label: 'Скоро' };
-    return { cls: 'plugin-card__badge--idle', label: 'Не установлен' };
-  };
-  const statusOf = (plugin) => (plugin.planned ? 'Следующий этап' : plugin.active ? 'Работает' : plugin.installed ? 'На паузе' : 'Не установлен');
-  const actionOf = (plugin) => (plugin.planned ? 'Скоро' : plugin.active ? 'Отключить' : plugin.installed ? 'Включить' : 'Установить');
-
-  target.innerHTML = list.length ? list.map((plugin) => {
+  if (catLabel) catLabel.textContent = state.pluginFilter.cat === 'all' ? `Все категории (${visible.length})` : (catNames[state.pluginFilter.cat] || 'Все категории');
+  document.querySelectorAll('[data-plugin-cat]').forEach(button => button.classList.toggle('is-active', button.dataset.pluginCat === state.pluginFilter.cat));
+  const list = filterPluginCatalog(visible, state.pluginFilter);
+  const actionOf = plugin => plugin.planned || plugin.published === false ? 'Скоро' : plugin.active ? 'Отключить' : plugin.installed ? 'Включить' : 'Установить';
+  target.innerHTML = list.length ? list.map(plugin => {
     const index = state.plugins.indexOf(plugin);
-    const badge = badgeOf(plugin);
-    const cover = plugin.cover ? `<img src="${escapeHtml(plugin.cover)}" alt="${escapeHtml(plugin.name)}" loading="lazy">` : `<span class="plugin-cover__placeholder"><svg><use href="#i-puzzle"/></svg></span>`;
-    const adminMark = state.pluginCanManage && state.pluginCoverAdmin ? `<button class="plugin-cover__edit" type="button" data-cover-plugin="${plugin.id}" aria-label="Загрузить обложку для ${escapeHtml(plugin.name)}"><svg><use href="#i-plus"/></svg></button>` : '';
-    return `
-    <article class="plugin-card" data-plugin-details="${escapeHtml(plugin.id)}" style="--plugin-rgb:${colors[index % colors.length]}">
-      <div class="plugin-card__cover">${cover}${adminMark}<span class="plugin-card__badge ${badge.cls}">${badge.label}</span></div>
-      <div class="plugin-card__body">
-        <h3><button type="button" class="plugin-card__title" data-plugin-details="${escapeHtml(plugin.id)}">${escapeHtml(plugin.name)}</button></h3>
-        <p>${escapeHtml(plugin.description.replace(/^>\s?/gm, "").replace(/\*\*/g, ""))}</p>
-        <div class="plugin-permissions">${plugin.permissions.map((permission) => `<span>${escapeHtml(permission)}</span>`).join('')}</div>
-        <div class="plugin-card__bottom">
-          <div class="plugin-card__price"><small>Цена</small><strong>${escapeHtml(plugin.price)}</strong></div>
-          <div class="plugin-card__actions">
-            <span class="plugin-card__status">${statusOf(plugin)}</span>
-            <button type="button" data-plugin-id="${plugin.id}" ${plugin.planned ? 'disabled' : ''} aria-label="${actionOf(plugin)} ${escapeHtml(plugin.name)}">${actionOf(plugin)}<svg><use href="#i-chevron"/></svg></button>
-          </div>
-        </div>
-      </div>
-    </article>`;
+    const href = typeof pluginPageHref === 'function' ? pluginPageHref(plugin.id) : `#plugins/${encodeURIComponent(plugin.id)}`;
+    const cover = typeof pluginCoverSource === 'function' ? pluginCoverSource(plugin) : plugin.cover;
+    const [status, tone] = typeof pluginDisplayStatus === 'function' ? pluginDisplayStatus(plugin) : [plugin.planned ? 'Скоро' : plugin.active ? 'Включён' : plugin.installed ? 'На паузе' : 'Не установлен', 'muted'];
+    const adminMark = canManagePluginCatalog() && state.pluginCoverAdmin ? `<button class="plugin-cover__edit" type="button" data-cover-plugin="${escapeHtml(plugin.id)}" aria-label="Загрузить обложку для ${escapeHtml(plugin.name)}">${icon('plus')}</button>` : '';
+    const busy = typeof pluginPageState !== 'undefined' && pluginPageState.busyId === plugin.id;
+    const pending = typeof pluginPageState !== 'undefined' && pluginPageState.busyId !== null;
+    return `<article class="plugin-card" style="--plugin-rgb:${colors[index % colors.length]}">
+      <div class="plugin-card__cover"><a href="${escapeHtml(href)}" aria-label="Подробнее о плагине ${escapeHtml(plugin.name)}">${cover ? `<img data-plugin-cover data-cover-category="${escapeHtml(plugin.category)}" src="${escapeHtml(cover)}" alt="${escapeHtml(plugin.name)}" loading="lazy">` : `<span class="plugin-cover__placeholder">${icon('puzzle')}</span>`}</a>${adminMark}<span class="plugin-card__badge ${tone === 'green' ? 'plugin-card__badge--work' : tone === 'blue' ? 'plugin-card__badge--pause' : 'plugin-card__badge--soon'}">${status}</span></div>
+      <div class="plugin-card__body"><h3><a class="plugin-card__title-link" href="${escapeHtml(href)}">${escapeHtml(plugin.name)}</a></h3><p>${escapeHtml(String(plugin.description || '').replace(/^>\s?/gm, '').replace(/\*\*/g, ''))}</p>
+        <div class="plugin-permissions">${(plugin.permissions || []).map(permission => `<span>${escapeHtml(typeof PLUGIN_PERMISSION_LABELS !== 'undefined' ? PLUGIN_PERMISSION_LABELS[permission]?.[0] || permission : permission)}</span>`).join('')}</div>
+        <div class="plugin-card__bottom"><div class="plugin-card__price"><small>Цена</small><strong>${escapeHtml(plugin.price)}</strong></div><span class="plugin-card__status">${status}</span></div>
+        <div class="plugin-card__navigation"><a href="${escapeHtml(href)}" data-plugin-page-link>Подробнее ${icon('chevron-right')}</a><button type="button" data-plugin-id="${escapeHtml(plugin.id)}" ${plugin.planned || plugin.published === false || pending ? 'disabled' : ''} aria-busy="${busy}" aria-label="${actionOf(plugin)} ${escapeHtml(plugin.name)}">${busy ? 'Сохраняем…' : actionOf(plugin)}</button></div>
+      </div></article>`;
   }).join('') : '<div class="content-empty" style="grid-column:1/-1"><span class="chat-empty__icon"><svg><use href="#i-puzzle"/></svg></span><strong>Ничего не найдено</strong><p>Попробуйте другой запрос или категорию.</p></div>';
+  if (typeof renderPluginPage === 'function') renderPluginPage();
 }
 
 async function changePluginState(pluginId) {
-  const plugin = state.plugins.find((item) => item.id === pluginId);
-  if (!plugin || plugin.planned) return;
+  const plugin = state.plugins.find(item => item.id === pluginId);
+  if (!plugin || plugin.planned || plugin.published === false) return;
   if (!authState.token) {
     setAuthModal(true);
     showToast('Войдите, чтобы управлять плагинами');
     return;
   }
+  if (typeof claimPluginAction === 'function' && !claimPluginAction(pluginId)) return;
+  const token = authState.token;
+  const generation = sessionGeneration;
+  const current = () => token === authState.token && generation === sessionGeneration;
   try {
     if (!plugin.installed) {
       await apiRequest(`/api/v1/plugins/${encodeURIComponent(plugin.id)}/install`, {
         method: 'POST', authenticated: true, body: { permissions: plugin.permissionsRaw || (plugin.id === 'zetslay.auto-reply' ? ['messages:read', 'replies:queue'] : ['messages:read', 'orders:read', 'telegram:send']), config: {} }
       });
+      if (!current()) return;
       await apiRequest(`/api/v1/plugins/${encodeURIComponent(plugin.id)}/enable`, { method: 'POST', authenticated: true });
+      if (!current()) return;
       showToast(`${plugin.name} установлен и включён`, 'success');
     } else if (plugin.active) {
       await apiRequest(`/api/v1/plugins/${encodeURIComponent(plugin.id)}/disable`, { method: 'POST', authenticated: true });
+      if (!current()) return;
       showToast(`${plugin.name} остановлен`);
     } else {
       await apiRequest(`/api/v1/plugins/${encodeURIComponent(plugin.id)}/enable`, { method: 'POST', authenticated: true });
+      if (!current()) return;
       showToast(`${plugin.name} включён`, 'success');
     }
     await loadPluginCatalog();
-    await loadPluginAudit().catch(() => {});
+    if (current()) await loadPluginAudit().catch(() => {});
   } catch (error) {
-    showToast(humanError(error), 'error');
+    if (current()) {
+      if (typeof pluginPageState !== 'undefined') pluginPageState.actionError = humanError(error);
+      showToast(humanError(error), 'error');
+    }
+  } finally {
+    if (current() && typeof releasePluginAction === 'function') releasePluginAction(pluginId);
   }
 }
 
@@ -1267,23 +1283,25 @@ function renderEvents() {
 }
 
 function setView(viewName, updateHash = true) {
-  const resolvedView = viewTitles[viewName] ? viewName : 'dashboard';
-  document.querySelectorAll('[data-view]').forEach((view) => {
+  const route = typeof parsePluginPageRoute === 'function' ? parsePluginPageRoute(viewName) : null;
+  const resolvedView = route ? 'plugin' : viewTitles[viewName] ? viewName : 'dashboard';
+  document.querySelectorAll('[data-view]').forEach(view => {
     const active = view.dataset.view === resolvedView;
     view.hidden = !active;
     view.classList.toggle('is-active', active);
   });
-  document.querySelectorAll('[data-view-target]').forEach((item) => {
-    const active = item.dataset.viewTarget === resolvedView;
+  document.querySelectorAll('[data-view-target]').forEach(item => {
+    const active = item.dataset.viewTarget === (resolvedView === 'plugin' ? 'plugins' : resolvedView);
     item.classList.toggle('is-active', active);
     item.setAttribute('aria-current', active ? 'page' : 'false');
     if (active) item.closest('.nav-group')?.setAttribute('open', '');
   });
   const label = byId('current-view-label');
-  if (label) label.textContent = viewTitles[resolvedView];
+  if (label) label.textContent = resolvedView === 'plugin' ? 'Плагины / Подробнее' : viewTitles[resolvedView];
   document.title = `${viewTitles[resolvedView]} — ZetSlay Control`;
   setSidebar(false);
-  if (updateHash) history.replaceState(null, '', `#${resolvedView}`);
+  if (updateHash) history.replaceState(null, '', `#${route ? viewName : resolvedView}`);
+  if (typeof renderPluginPage === 'function') renderPluginPage();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -1821,13 +1839,13 @@ function bindInteractions() {
     if (event.target.closest('[data-plugin-publish]')) { openPluginEditor(); return; }
     const coverEdit = event.target.closest('[data-cover-plugin]');
     if (coverEdit) {
-      if (!state.pluginCanManage) return;
+      if (!canManagePluginCatalog()) return;
       const input = document.querySelector('[data-plugin-cover-input]');
       if (input) { input.dataset.coverFor = coverEdit.dataset.coverPlugin; input.click(); }
       return;
     }
     if (event.target.closest('[data-plugin-cover-admin]')) {
-      if (!state.pluginCanManage) return;
+      if (!canManagePluginCatalog()) return;
       state.pluginCoverAdmin = !state.pluginCoverAdmin;
       renderPlugins();
       showToast(state.pluginCoverAdmin ? 'Режим обложек: нажмите + на карточке, чтобы загрузить изображение' : 'Режим обложек выключен', state.pluginCoverAdmin ? 'success' : 'default');
@@ -1901,11 +1919,11 @@ function bindInteractions() {
     const file = event.target.files?.[0];
     const pluginId = event.target.dataset.coverFor;
     event.target.value = '';
-    if (!state.pluginCanManage || !file || !pluginId) return;
+    if (!canManagePluginCatalog() || !file || !pluginId) return;
     const token = authState.token;
     try {
       const cover = await compressPluginCover(file);
-      if (token !== authState.token || !state.pluginCanManage) return;
+      if (token !== authState.token || !canManagePluginCatalog()) return;
       const plugin = state.plugins.find(item => item.id === pluginId);
       await saveCatalogEntry({ ...plugin, cover });
       if (token !== authState.token) return;
@@ -2022,20 +2040,13 @@ function showPluginDialog(html) {
 }
 
 function openPluginDetails(id) {
-  const p = state.plugins.find(item => item.id === id);
-  if (!p) return;
-  showPluginDialog(`<header class="plugin-dialog__header"><div><span class="panel-label">Плагин ZetSlay</span><h2 id="plugin-dialog-title">${escapeHtml(p.name)}</h2></div><button class="icon-button" type="button" data-plugin-dialog-close aria-label="Закрыть">×</button></header>
-    ${p.cover ? `<img class="plugin-dialog__cover" src="${escapeHtml(p.cover)}" alt="">` : ''}
-    <div class="plugin-dialog__meta"><span>${escapeHtml(p.price)}</span><span>${p.published === false ? 'Черновик' : p.planned ? 'Скоро · модуль ещё не доступен' : p.active ? 'Включён' : p.installed ? 'Установлен' : 'Доступен'}</span></div>
-    <div class="plugin-description">${formatPluginDescription(p.description)}</div>
-    <h3>Разрешения</h3><div class="plugin-permissions">${p.permissions.map(permission => `<span>${escapeHtml(permission)}</span>`).join('') || '<span>Модуль ещё не зарегистрирован</span>'}</div>
-    ${p.events?.length ? `<p class="plugin-dialog__hint">События: ${p.events.map(escapeHtml).join(', ')}</p>` : ''}
-    <p class="plugin-dialog__hint">Ответы плагинов поступают в очередь. Live-действия на FunPay сейчас отключены.</p>
-    <footer class="plugin-dialog__footer">${state.pluginCanManage ? `<button class="button button--ghost" type="button" data-plugin-edit="${escapeHtml(p.id)}">Редактировать</button>` : ''}<button class="button button--primary" type="button" data-plugin-dialog-close>Закрыть</button></footer>`);
+  const plugin = state.plugins.find(item => item.id === id);
+  if (!plugin || (plugin.published === false && !canManagePluginCatalog())) return;
+  location.hash = `#plugins/${encodeURIComponent(id)}`;
 }
 
 function openPluginEditor(id = '') {
-  if (!state.pluginCanManage) return;
+  if (!canManagePluginCatalog()) return;
   const p = state.plugins.find(item => item.id === id) || {
     id: '', name: '', category: 'control', priceRub: 0, description: '', published: false
   };
@@ -2057,14 +2068,14 @@ function openPluginEditor(id = '') {
 }
 
 async function saveCatalogEntry(entry) {
-  if (!state.pluginCanManage) throw new Error('Публикация доступна только администратору');
+  if (!canManagePluginCatalog()) throw new Error('Публикация доступна только администратору');
   const { id, name, category, priceRub, description, cover = '', published = true } = entry;
   return apiRequest('/api/v1/plugin-catalog', { method: 'POST', authenticated: true,
     body: { id, name, category, priceRub, description, cover, published } });
 }
 
 async function savePluginEditor(form) {
-  if (!state.pluginCanManage || form.dataset.busy === 'true') return;
+  if (!canManagePluginCatalog() || form.dataset.busy === 'true') return;
   const token = authState.token;
   const fields = form.elements;
   const button = form.querySelector('[type="submit"]');
