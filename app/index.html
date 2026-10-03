@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="overview.css?v=20261003-overview">
     <link rel="stylesheet" href="orders.css?v=20261003-orders">
     <link rel="stylesheet" href="plugin-page.css?v=20261003-plugin-page">
+    <link rel="stylesheet" href="messages.css?v=20261003-messages">
   </head>
   <body>
     <svg class="icon-sprite" aria-hidden="true">
@@ -199,22 +200,24 @@
             <dialog class="orders-page-dialog" data-order-dialog aria-labelledby="order-detail-title"><header><div><span class="orders-page-eyebrow">FUNPAY / ЗАКАЗ</span><h2 id="order-detail-title" data-order-detail-title>Заказ</h2></div><button type="button" data-order-close aria-label="Закрыть карточку заказа"><svg><use href="#i-close"/></svg></button></header><div data-order-detail-body></div><footer><span>Данные текущего снимка</span><button type="button" data-order-close>Закрыть</button></footer></dialog>
           </section>
 
-          <section class="view" data-view="messages" aria-labelledby="messages-title">
-            <div class="view-heading view-heading--compact"><div><span class="eyebrow">Inbox / Buyers</span><h1 id="messages-title">Сообщения</h1><p>Диалоги FunPay вашего магазина — в безопасном read-only режиме.</p></div><div class="view-heading__actions"><span class="health-pill health-pill--waiting" data-messages-health><i></i> Ожидает синхронизации</span><button class="button button--ghost" type="button" data-sync-content><svg><use href="#i-bolt"/></svg> Обновить</button></div></div>
-            <section class="messenger panel">
-              <aside class="conversation-list">
-                <div class="conversation-list__top"><div class="search-field"><svg><use href="#i-search"/></svg><input type="search" placeholder="Поиск диалогов" aria-label="Поиск диалогов"></div></div>
-                <div class="conversation-list__tabs"><button class="is-active" type="button">Все</button><button type="button">Новые <b data-message-count>0</b></button><button type="button">Read-only</button></div>
-                <div id="conversation-items"></div>
+          <section class="view messages-page" data-view="messages" data-messages-workspace aria-labelledby="messages-title" data-chat-selected="false">
+            <header class="messages-page-heading"><div><span class="messages-page-eyebrow">ZETSLAY / ПЕРЕПИСКА</span><h1 id="messages-title">Сообщения</h1><p>Все загруженные диалоги магазина — в одном месте.</p></div><button class="button button--ghost" type="button" data-messages-refresh disabled><svg aria-hidden="true"><use href="#i-bolt"/></svg>Обновить переписку</button></header>
+            <div class="messages-page-summary"><div><span>Диалоги <strong data-messages-total>—</strong></span><span>Сообщения <strong data-messages-count>—</strong></span></div><div><span>Снимок <strong data-messages-updated>Ещё не загружен</strong></span><span class="messages-page-readonly"><svg aria-hidden="true"><use href="#i-shield"/></svg><span data-messages-source>Магазин не подключён</span></span></div></div>
+            <p class="messages-page-notice" data-messages-notice role="status" aria-live="polite" hidden></p>
+            <div class="messages-page-inbox">
+              <aside class="messages-page-sidebar" aria-label="Диалоги FunPay">
+                <div class="messages-page-sidebar-top"><h2>Диалоги</h2><label class="messages-page-search"><svg aria-hidden="true"><use href="#i-search"/></svg><input type="search" data-messages-search maxlength="160" placeholder="Имя, ID или текст сообщения" aria-label="Поиск диалогов по имени, ID и тексту"></label><span class="messages-page-filter-label">По последнему сообщению</span><div class="messages-page-filters" aria-label="Последний отправитель"><button type="button" data-messages-filter="all" class="is-active" aria-pressed="true">Все <span data-messages-filter-count="all">0</span></button><button type="button" data-messages-filter="buyer" aria-pressed="false">Покупатель <span data-messages-filter-count="buyer">0</span></button><button type="button" data-messages-filter="seller" aria-pressed="false">Магазин <span data-messages-filter-count="seller">0</span></button></div></div>
+                <div class="messages-page-list" data-messages-list></div>
+                <footer class="messages-page-sidebar-footer">Поиск работает по загруженной переписке</footer>
               </aside>
-              <div class="chat-window">
-                <header class="chat-header"><div><span class="chat-avatar chat-avatar--header" data-chat-avatar>—</span><span><strong data-chat-name>Выберите диалог</strong><small><i></i> <span data-chat-status>Read-only просмотр</span></small></span></div><div><button class="icon-button" type="button" aria-label="Поиск по диалогу" data-toast="Поиск по диалогу появится после живой синхронизации"><svg><use href="#i-search"/></svg></button><button class="icon-button" type="button" aria-label="Информация о покупателе" data-toast="Карточка покупателя справа"><svg><use href="#i-user"/></svg></button></div></header>
-                <div class="chat-body" data-chat-body><div class="chat-empty"><span class="chat-empty__icon"><svg><use href="#i-chat"/></svg></span><strong>Диалог не выбран</strong><p>Запустите магазин и синхронизируйте сообщения — здесь появится переписка.</p></div></div>
-                <div class="quick-replies"><button type="button">Заказ обрабатывается</button><button type="button">Товар уже выдан</button><button type="button">Проверяю оплату</button></div>
-                <footer class="composer"><button class="icon-button" type="button" aria-label="Вложения" disabled><svg><use href="#i-plus"/></svg></button><textarea rows="1" placeholder="Отправка появится после безопасного write-коннектора" aria-label="Сообщение" disabled></textarea><button class="ai-compose" type="button" disabled><span>AI</span> Подсказать</button><button class="send-button" type="button" aria-label="Отправить" disabled><svg><use href="#i-send"/></svg></button></footer>
-              </div>
-
-            </section>
+              <section class="messages-page-chat" aria-label="Переписка выбранного диалога">
+                <header class="messages-page-chat-header"><button class="messages-page-icon-button messages-page-back" type="button" data-messages-back aria-label="Назад к диалогам"><svg aria-hidden="true"><use href="#i-chevron"/></svg></button><span data-messages-avatar><span class="messages-page-avatar">—</span></span><div class="messages-page-chat-identity"><h2 data-messages-name>Ваши диалоги</h2><p data-messages-meta>Выберите диалог из списка</p></div><div class="messages-page-chat-tools"><button class="messages-page-icon-button" type="button" data-messages-find-toggle aria-label="Найти текст в диалоге" aria-expanded="false" aria-controls="messages-findbar" disabled><svg aria-hidden="true"><use href="#i-search"/></svg></button><button class="messages-page-icon-button" type="button" data-messages-info aria-label="Информация о диалоге" disabled><svg aria-hidden="true"><use href="#i-user"/></svg></button></div></header>
+                <div class="messages-page-findbar" id="messages-findbar" data-messages-findbar hidden><label><svg aria-hidden="true"><use href="#i-search"/></svg><input type="search" data-messages-find maxlength="160" placeholder="Найти в этом диалоге" aria-label="Текст для поиска в диалоге"></label><span data-messages-matches role="status" aria-live="polite">Поиск в снимке</span><button class="messages-page-icon-button messages-page-find-prev" type="button" data-messages-match="prev" aria-label="Предыдущее совпадение" disabled><svg aria-hidden="true"><use href="#i-chevron"/></svg></button><button class="messages-page-icon-button" type="button" data-messages-match="next" aria-label="Следующее совпадение" disabled><svg aria-hidden="true"><use href="#i-chevron"/></svg></button><button class="messages-page-icon-button" type="button" data-messages-find-close aria-label="Закрыть поиск"><svg aria-hidden="true"><use href="#i-close"/></svg></button></div>
+                <div class="messages-page-body" data-messages-body tabindex="0" aria-label="Загруженные сообщения"></div>
+                <footer class="messages-page-chat-footer"><p class="messages-page-date-note" data-messages-date-note>Показана переписка из последнего снимка.</p><div class="messages-page-composer"><textarea rows="2" aria-label="Отправка сообщений отключена" placeholder="Отправка сообщений на FunPay сейчас отключена" disabled></textarea><div><span><svg aria-hidden="true"><use href="#i-lock"/></svg>Только просмотр</span><button type="button" aria-label="Отправка недоступна в read-only режиме" disabled><svg aria-hidden="true"><use href="#i-send"/></svg></button></div></div></footer>
+              </section>
+            </div>
+            <dialog class="messages-page-dialog" data-messages-dialog aria-labelledby="messages-info-title"><header><div><span class="messages-page-eyebrow">FUNPAY / ДИАЛОГ</span><h2 id="messages-info-title">Информация о диалоге</h2></div><button class="messages-page-icon-button" type="button" data-messages-info-close aria-label="Закрыть информацию"><svg aria-hidden="true"><use href="#i-close"/></svg></button></header><div data-messages-info-body></div><footer><button class="button button--ghost" type="button" data-messages-info-close>Закрыть</button></footer></dialog>
           </section>
 
           <section class="view" data-view="lots" aria-labelledby="lots-title">
@@ -444,6 +447,7 @@
     <script src="overview.js?v=20261003-overview" defer></script>
     <script src="orders.js?v=20261003-orders" defer></script>
     <script src="plugin-page.js?v=20261003-plugin-page" defer></script>
-    <script src="app.js?v=20261003-plugin-page" defer></script>
+    <script src="messages.js?v=20261003-messages" defer></script>
+    <script src="app.js?v=20261003-messages" defer></script>
   </body>
 </html>

@@ -810,6 +810,7 @@ function renderOrders() {
 }
 
 function renderConversations() {
+  if (typeof renderMessagesWorkspace === 'function' && renderMessagesWorkspace()) return;
   const target = byId('conversation-items');
   if (!target) return;
   target.innerHTML = state.conversations.length ? state.conversations.map((chat) => `
@@ -823,6 +824,7 @@ function renderConversations() {
 }
 
 function renderActiveConversation() {
+  if (typeof renderMessagesWorkspace === 'function' && renderMessagesWorkspace()) return;
   const chat = state.conversations.find((item) => item.active) || state.conversations[0];
   const body = document.querySelector('[data-chat-body]');
   const name = document.querySelector('[data-chat-name]');
