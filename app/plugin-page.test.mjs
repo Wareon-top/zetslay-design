@@ -266,20 +266,36 @@ test('rarity labels cover all four built-in levels and ignore arbitrary metadata
   }
 });
 
-test('focused rarity deployment preserves local account and plugin changes and remains repeatable',async()=>{
-  const {mkdtempSync,mkdirSync,writeFileSync,rmSync}=await import('node:fs');const {join}=await import('node:path');const {spawnSync}=await import('node:child_process');
+for (const layout of ['separate', 'inline', 'unknown']) test(`focused rarity deployment handles ${layout} VPS cover layout without losing local changes`,async()=>{
+  const {mkdtempSync,mkdirSync,writeFileSync,rmSync,existsSync}=await import('node:fs');const {join}=await import('node:path');const {spawnSync}=await import('node:child_process');
   const root=mkdtempSync(new URL('./rarity-stage-',import.meta.url).pathname);
   try{
     const local=join(root,'local'),out=join(root,'out');mkdirSync(local);
     const oldFragment=`</a></div><div class="plugin-card__cover-meta">\$\{adminMark\}<span class="plugin-card__badge \$\{tone === 'green' ? 'plugin-card__badge--work' : tone === 'blue' ? 'plugin-card__badge--pause' : 'plugin-card__badge--soon'\}">\$\{status\}</span></div>`;
+    const inlineFragment=oldFragment.replace('</a></div><div class="plugin-card__cover-meta">','</a>');
     const newFragment=`</a>\$\{typeof pluginRarityMarkup === 'function' ? pluginRarityMarkup(plugin) : ''\}</div>\$\{adminMark ? \`<div class="plugin-card__cover-meta">\$\{adminMark\}</div>\` : ''\}`;
-    writeFileSync(join(local,'app.js'),cabinet.replace(newFragment,oldFragment)+'\n// LOCAL_AUTH_AND_PROXY_CHANGES\n');
+    const beforeApp=cabinet.replace(newFragment,layout==='unknown'?inlineFragment.replace('plugin-card__badge ','plugin-card__badge custom-layout '):layout==='inline'?inlineFragment:oldFragment)+'\n// LOCAL_AUTH_AND_PROXY_CHANGES\n';
+    assert.notEqual(beforeApp,cabinet+'\n// LOCAL_AUTH_AND_PROXY_CHANGES\n');
+    writeFileSync(join(local,'app.js'),beforeApp);
     const source=readFileSync(new URL('./plugin-page.js',import.meta.url),'utf8');
-    writeFileSync(join(local,'plugin-page.js'),source.replace('<div class="plugin-page-layout"><div class="plugin-page-main">','<div class="plugin-page-layout"><div class="plugin-page-main">\n<figure class="plugin-page-cover"><img src="cover.png"></figure>')+'\n// LOCAL_PLUGIN_GUIDE\n');
+    const cover=`<figure class="plugin-page-cover"><div class="plugin-page-cover__frame"><img data-plugin-cover data-plugin-cover-detail data-cover-category="\$\{escapeHtml(plugin.category)\}" src="\$\{escapeHtml(pluginCoverSource(plugin))\}" alt="Обложка плагина \$\{escapeHtml(plugin.name)\}" decoding="async"></div><figcaption><span>Модуль ZetSlay</span>\$\{manage ? \`<button type="button" data-cover-plugin="\$\{escapeHtml(plugin.id)\}">\$\{icon('external')\} Изменить обложку</button>\` : ''\}</figcaption></figure>`;
+    let beforePage=source.replace('<div class="plugin-page-layout"><div class="plugin-page-main">','<div class="plugin-page-layout"><div class="plugin-page-main">\n'+cover)+'\n// LOCAL_PLUGIN_GUIDE\n';
+    // The inline VPS still has cover editing in the figure, rather than sidebar.
+    if(layout==='inline') beforePage=beforePage.replace(/<button class="button button--ghost button--wide" type="button" data-cover-plugin=.*?Изменить обложку в каталоге<\/button>/,'');
+    writeFileSync(join(local,'plugin-page.js'),beforePage);
     writeFileSync(join(local,'index.html'),'<head><meta name="zetslay-api-base-url" content="https://api.zetslay.pro"></head><script src="plugin-page.js?v=old" defer></script><script src="app.js?v=old" defer></script>');
     const stage=new URL('../deploy/stage-plugin-rarity-ui.py',import.meta.url).pathname,incoming=new URL('./',import.meta.url).pathname;
-    let r=spawnSync('python3',[stage,local,incoming,out],{encoding:'utf8'});assert.equal(r.status,0,r.stderr);
+    let r=spawnSync('python3',[stage,local,incoming,out],{encoding:'utf8'});
+    if(layout==='unknown'){
+      assert.notEqual(r.status,0);assert.match(r.stderr,/Неизвестная разметка карточки/);assert.ok(!existsSync(out));
+      assert.equal(readFileSync(join(local,'app.js'),'utf8'),beforeApp);assert.equal(readFileSync(join(local,'plugin-page.js'),'utf8'),beforePage);return;
+    }
+    assert.equal(r.status,0,r.stderr);
     const app=readFileSync(join(out,'app.js'),'utf8'),page=readFileSync(join(out,'plugin-page.js'),'utf8');assert.match(app,/LOCAL_AUTH_AND_PROXY_CHANGES/);assert.match(app,/zetslay\.auto-reply.*zetslay\.telegram-notifications/);assert.match(page,/LOCAL_PLUGIN_GUIDE/);assert.match(page,/massPriceGuideMarkup/);assert.doesNotMatch(page,/<figure class="plugin-page-cover"/);
+    assert.equal(app,beforeApp.replace(layout==='inline'?inlineFragment:oldFragment,newFragment));assert.doesNotMatch(app,/plugin-card__badge/);
+    assert.equal(page.split('Изменить обложку в каталоге').length,2);assert.match(page,/manage \? `<div class="plugin-page-admin">/);
+    for(const name of ['app.js','plugin-page.js','plugin-rarity.js']){const check=spawnSync(process.execPath,['--check',join(out,name)],{encoding:'utf8'});assert.equal(check.status,0,check.stderr);}
+    assert.equal(readFileSync(join(local,'app.js'),'utf8'),beforeApp);assert.equal(readFileSync(join(local,'plugin-page.js'),'utf8'),beforePage);
     r=spawnSync('python3',[stage,out,incoming,out],{encoding:'utf8'});assert.equal(r.status,0,r.stderr);assert.equal(readFileSync(join(out,'app.js'),'utf8'),app);assert.equal(readFileSync(join(out,'plugin-page.js'),'utf8'),page);
     const html=readFileSync(join(out,'index.html'),'utf8');assert.equal(html.split('src="plugin-rarity.js').length,2);assert.equal(html.split('href="plugin-rarity.css').length,2);assert.ok(html.indexOf('plugin-rarity.js')<html.indexOf('plugin-page.js'));assert.match(html,/https:\/\/api.zetslay.pro/);
   }finally{rmSync(root,{recursive:true,force:true});}

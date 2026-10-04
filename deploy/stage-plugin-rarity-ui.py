@@ -4,10 +4,12 @@ local,incoming,out=map(Path,sys.argv[1:])
 app=(local/'app.js').read_text();page=(local/'plugin-page.js').read_text();html=(local/'index.html').read_text()
 if re.search(r'^(<<<<<<<|=======|>>>>>>>)',app+'\n'+page+'\n'+html,re.M):raise SystemExit('Маркеры конфликтов; кабинет не изменён.')
 old='''</a></div><div class="plugin-card__cover-meta">${adminMark}<span class="plugin-card__badge ${tone === 'green' ? 'plugin-card__badge--work' : tone === 'blue' ? 'plugin-card__badge--pause' : 'plugin-card__badge--soon'}">${status}</span></div>'''
+inline='''</a>${adminMark}<span class="plugin-card__badge ${tone === 'green' ? 'plugin-card__badge--work' : tone === 'blue' ? 'plugin-card__badge--pause' : 'plugin-card__badge--soon'}">${status}</span></div>'''
 new='''</a>${typeof pluginRarityMarkup === 'function' ? pluginRarityMarkup(plugin) : ''}</div>${adminMark ? `<div class="plugin-card__cover-meta">${adminMark}</div>` : ''}'''
+# Recognize both shipped cover layouts. Do not overwrite the catalog function.
 if new not in app:
-    if app.count(old)!=1:raise SystemExit('Неизвестная разметка карточки; кабинет не изменён.')
-    app=app.replace(old,new,1)
+    if app.count(old)+app.count(inline)!=1:raise SystemExit('Неизвестная разметка карточки; кабинет не изменён.')
+    app=app.replace(old if old in app else inline,new,1)
 if 'plugin-card__badge' in app:raise SystemExit('Старая плашка осталась в разметке; кабинет не изменён.')
 page,n=re.subn(r'^\s*<figure class="plugin-page-cover">.*?</figure>\n','',page,flags=re.M|re.S)
 if n>1 or '<figure class="plugin-page-cover"' in page:raise SystemExit('Неизвестная разметка баннера.')
