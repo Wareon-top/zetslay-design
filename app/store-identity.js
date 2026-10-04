@@ -2,7 +2,7 @@
 function safeStoreAvatar(value) {
   try {
     const url = new URL(value);
-    return url.protocol === 'https:' && ['funpay.com', 's.funpay.com'].includes(url.hostname) && !url.username && !url.password && !url.port && !url.hash ? url.href : '';
+    return url.protocol === 'https:' && ['funpay.com', 's.funpay.com', 'sfunpay.com'].includes(url.hostname) && !url.username && !url.password && !url.port && !url.hash ? url.href : '';
   } catch { return ''; }
 }
 function storeIdentityModel(store, content, plugins = [], signedIn = false) {

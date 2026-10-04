@@ -21,3 +21,8 @@ test('green status requires verified connection, optional image preserves safe i
  const html=run("storeIdentityAvatar({connected:false,initials:'<S',name:'Seller',avatar:''})");assert.ok(!html.includes('is-connected'));assert.match(html,/&lt;S/);assert.match(html,/store-portrait__fallback/);
  assert.equal(run("storeIdentityModel({id:'42'},null,[{installed:true,active:true},{installed:true,active:false},{planned:true,installed:true,active:true}],true).active"),1);
 });
+
+test('FunPay current avatar CDN is accepted without trusting lookalike domains',()=>{
+ assert.equal(run("safeStoreAvatar('https://sfunpay.com/s/avatar/gx/lc/avatar.jpg')"),'https://sfunpay.com/s/avatar/gx/lc/avatar.jpg');
+ for(const value of ['https://sfunpay.com.evil.test/a','https://evil.sfunpay.com/a','https://user:pass@sfunpay.com/a','http://sfunpay.com/a'])assert.equal(run(`safeStoreAvatar(${JSON.stringify(value)})`),'');
+});
