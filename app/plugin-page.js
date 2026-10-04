@@ -90,7 +90,7 @@ function pluginPageMarkup(plugin) {
       ${plugin.id === 'zetslay.auto-review-bonus' && typeof bonusSettingsMarkup === 'function' ? bonusSettingsMarkup(plugin) : ''}
       ${plugin.id === 'zetslay.lot-cloner' ? lotClonerGuideMarkup(plugin) : ''}
     </div><aside class="plugin-page-sidebar" aria-label="Плагин в вашем кабинете"><section class="plugin-page-panel plugin-page-action"><span class="plugin-page-eyebrow">В вашем кабинете</span><div class="plugin-page-price">${escapeHtml(plugin.price || 'Цена не указана')}</div><p class="plugin-page-price-note">Цена из каталога. Покупка плагинов пока не подключена.</p><div class="plugin-page-action-status"><span>Состояние</span><strong class="plugin-page-status plugin-page-status--${tone}"><i></i>${status}</strong></div><button class="button ${plugin.active ? 'button--ghost' : 'button--primary'} button--wide" type="button" data-plugin-id="${escapeHtml(plugin.id)}" ${!available || pending ? 'disabled' : ''} aria-busy="${busy}">${action}${icon(plugin.active ? 'pause' : 'plus')}</button>${plugin.id === 'zetslay.confirm-reminder' && plugin.installed && typeof reminderSettingsMarkup === 'function' ? `<button class="plugin-page-settings" type="button" data-reminder-open-settings>${icon('gear')} Настройки напоминаний</button>` : ''}${plugin.id === 'zetslay.review-reminder' && plugin.installed && typeof reviewSettingsMarkup === 'function' ? `<button class="plugin-page-settings" type="button" data-review-open-settings>${icon('gear')} Настройки отзывов</button>` : ''}${configuration && plugin.installed ? `<button class="plugin-page-settings" type="button" data-plugin-open-settings="${escapeHtml(configuration)}">${icon('gear')} Настройки плагина</button>` : ''}<p class="plugin-page-action-error" role="alert" ${actionError ? '' : 'hidden'}>${escapeHtml(actionError)}</p>${plugin.planned ? '<p class="plugin-page-note">Модуль ещё в разработке. Установка станет доступна после его выпуска.</p>' : ''}${manage ? `<div class="plugin-page-admin"><span>Управление карточкой</span><button class="button button--ghost button--wide" type="button" data-plugin-edit="${escapeHtml(plugin.id)}">${icon('list')} Редактировать описание</button></div>` : ''}</section>
-      <section class="plugin-page-panel plugin-page-context"><span class="plugin-page-section-icon plugin-page-section-icon--green">${icon('shield')}</span><h2>Контроль остаётся у вас</h2><p>Вы можете остановить модуль в кабинете. ${plugin.id === 'zetslay.lot-cloner' ? 'Создание запускается вручную в вашем боте после подтверждения. Копия выключена; исходный лот не меняется. При неизвестном результате автоматический повтор запрещён.' : plugin.id === 'zetslay.review-reminder' ? 'Перед каждым напоминанием проверяется отзыв и статус заказа. Отзыв или возврат отменяет оставшиеся отправки.' : plugin.id === 'zetslay.confirm-reminder' ? 'Отправка включается отдельно. Перед каждым напоминанием проверяется заказ; после подтверждения или возврата сообщения прекращаются.' : 'Предложенные ответы этого модуля поступают в очередь. Автоматическая доставка доступна для Confirm Reminder и Review Reminder после отдельного разрешения.'}</p><a href="#plugins">Настройки и журнал ${icon('chevron-right')}</a></section>
+      <section class="plugin-page-panel plugin-page-context"><span class="plugin-page-section-icon plugin-page-section-icon--green">${icon('shield')}</span><h2>Контроль остаётся у вас</h2><p>Вы можете остановить модуль в кабинете. ${plugin.id === 'zetslay.lot-cloner' ? 'Создание запускается вручную в вашем боте после подтверждения. Копия выключена; исходный лот не меняется. При неизвестном результате автоматический повтор запрещён.' : plugin.id === 'zetslay.review-reminder' ? 'Перед каждым напоминанием проверяется отзыв и статус заказа. Отзыв или возврат отменяет оставшиеся отправки.' : plugin.id === 'zetslay.confirm-reminder' ? 'Отправка включается отдельно. Перед каждым напоминанием проверяется заказ; после подтверждения или возврата сообщения прекращаются.' : 'Предложенные ответы этого модуля поступают в очередь. Автоматическая доставка доступна для Confirm Reminder и Review Reminder после отдельного разрешения.'}</p><a href="#plugins">Каталог плагинов ${icon('chevron-right')}</a></section>
       <div class="plugin-page-id"><span>ID модуля</span><code>${escapeHtml(plugin.id)}</code></div>
     </aside></div>`;
 }
@@ -104,7 +104,7 @@ function renderPluginPage() {
   if (!authState.user) { root.innerHTML = pluginPageEmpty('Войдите в кабинет', 'Страница плагина станет доступна после входа.'); return; }
   if (pluginPageState.error) { root.innerHTML = pluginPageEmpty('Каталог не загрузился', pluginPageState.error, true); return; }
   if (!pluginPageState.loaded) { root.innerHTML = pluginPageEmpty('Загружаем плагин', 'Получаем актуальное описание и состояние из каталога.'); return; }
-  const plugin = state.plugins.find(item => item.id === route.id && (item.published !== false || canManagePluginCatalog()));
+  const plugin = state.plugins.find(item => item.id === route.id && !item.planned && !String(item.id).startsWith('planned.') && (item.published !== false || canManagePluginCatalog()));
   if (!plugin) { root.innerHTML = pluginPageEmpty('Плагин не найден', 'Карточка могла быть снята с публикации. Выберите другой модуль в каталоге.'); return; }
   document.title = `${plugin.name} — Плагины ZetSlay`;
   root.innerHTML = pluginPageMarkup(plugin);
@@ -146,12 +146,23 @@ document.addEventListener('click', event => {
     panel?.querySelector('input, select, textarea')?.focus({ preventScroll: true });
     return;
   }
+  // CATALOG_CLEANUP_SETTINGS
+  const closeSettings = event.target.closest('[data-plugin-settings-close]');
+  if (closeSettings) {
+    document.querySelector('[data-plugin-settings-dialog]')?.close();
+    return;
+  }
   const settings = event.target.closest('[data-plugin-open-settings]');
   if (settings) {
-    location.hash = '#plugins';
     const selector = settings.dataset.pluginOpenSettings;
     if (!['[data-plugin-settings]', '[data-telegram-settings]'].includes(selector)) return;
-    window.setTimeout(() => { const form = document.querySelector(selector); form?.scrollIntoView({ behavior: 'smooth', block: 'center' }); form?.querySelector('textarea, input')?.focus({ preventScroll: true }); }, 0);
+    const dialog = document.querySelector('[data-plugin-settings-dialog]');
+    const form = dialog?.querySelector(selector);
+    if (!form || !authState.user) return;
+    dialog.querySelectorAll('form').forEach(item => { item.hidden = item !== form; });
+    dialog.querySelector('[data-plugin-settings-title]').textContent = selector === '[data-plugin-settings]' ? 'Настройки автоответчика' : 'Настройки Telegram-уведомлений';
+    if (!dialog.open) dialog.showModal();
+    form.querySelector('textarea, input, select')?.focus({ preventScroll: true });
   }
 });
 document.addEventListener('error', event => {

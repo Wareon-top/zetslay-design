@@ -6,10 +6,6 @@ const state = {
   plugins: [
     { id: 'zetslay.auto-reply', icon: 'zap', name: 'Автоответчик', vendor: 'ZetSlay Core', category: 'chat', price: 'от 490 ₽', description: 'Безопасно ставит ответ покупателю в очередь и защищён от циклических сообщений.', permissions: ['Сообщения', 'Очередь ответов'], installed: false, active: false, config: { text: 'Здравствуйте! Сообщение получено — скоро вернёмся с ответом.', scenario: 'all', keywords: [], excludeKeywords: [], quietHours: { enabled: false, start: '22:00', end: '08:00', timeZone: 'Asia/Almaty', behavior: 'pause', text: 'Сейчас мы офлайн. Ответим утром.' } } },
     { id: 'zetslay.telegram-notifications', icon: 'send', name: 'Telegram-уведомления', vendor: 'ZetSlay Core', category: 'control', price: 'от 290 ₽', description: 'Сообщает владельцу о новых сообщениях и оплаченных заказах.', permissions: ['Сообщения', 'Заказы', 'Telegram'], installed: false, active: false, config: { messages: true, paidOrders: true } },
-    { id: 'planned.fraud-watch', icon: 'shield', name: 'Fraud Watch', vendor: 'Планируется', category: 'control', price: 'от 690 ₽', description: 'Отмечает подозрительные заказы до автоматической выдачи.', permissions: ['Заказы'], planned: true },
-    { id: 'planned.price-pilot', icon: 'trending-up', name: 'Price Pilot', vendor: 'Планируется', category: 'sales', price: 'от 590 ₽', description: 'Помогает сравнивать цену и позицию активного лота.', permissions: ['Лоты', 'Аналитика'], planned: true },
-    { id: 'planned.quiet-hours', icon: 'clock', name: 'Quiet Hours', vendor: 'Планируется', category: 'chat', price: 'от 190 ₽', description: 'Меняет сценарии ответов в заданное владельцем время.', permissions: ['Расписание'], planned: true },
-    { id: 'planned.order-notes', icon: 'file-text', name: 'Order Notes', vendor: 'Планируется', category: 'sales', price: 'от 390 ₽', description: 'Добавляет внутренние заметки к покупателям и заказам.', permissions: ['Заказы'], planned: true },
   ],
   pluginFilter: { cat: 'all', query: '', sort: 'default' },
   pluginCoverAdmin: false,
@@ -612,6 +608,7 @@ function resetPluginCatalog() {
   state.pluginCanManage = false;
   state.pluginCoverAdmin = false;
   closePluginDialog();
+  document.querySelector('[data-plugin-settings-dialog]')?.close();
   state.plugins = state.plugins.filter(plugin => plugin.published !== false).map((plugin) => plugin.planned ? plugin : { ...plugin, installed: false, active: false, config: {} });
   renderPlugins();
 }
@@ -687,6 +684,7 @@ function renderPluginAudit() {
 }
 
 async function loadPluginAudit() {
+  if (!byId('plugin-audit-list')) return;
   if (!authState.token || !API_BASE_URL) { renderPluginAudit(); return; }
   const token = authState.token;
   const audit = await apiRequest('/api/v1/plugins/audit?limit=30', { authenticated: true });
@@ -1147,7 +1145,7 @@ function renderPlugins() {
   const categorySelect = document.querySelector('[data-plugin-category]');
   if (categorySelect) categorySelect.value = state.pluginFilter.cat;
   const colors = ['249,179,46', '167,139,250', '96,165,250', '52,211,153', '248,113,113', '203,128,255'];
-  const visible = state.plugins.filter(plugin => plugin.published !== false || canManagePluginCatalog());
+  const visible = state.plugins.filter(plugin => !plugin.planned && !String(plugin.id).startsWith('planned.') && (plugin.published !== false || canManagePluginCatalog()));
   const installed = visible.filter(plugin => plugin.installed).length;
   const total = visible.filter(plugin => !plugin.planned).length;
   if (byId('plugin-total')) byId('plugin-total').textContent = `${total} доступно`;

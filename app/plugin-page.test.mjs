@@ -221,10 +221,36 @@ test('switching accounts during install prevents enabling in another account and
   assert.equal(app.run('pluginPageState.busyId'), null);
 });
 
-test('planned plugins have disabled actions and never call install API', async () => {
+test('planned plugins stay out of the catalog and direct pages for every role and never call install API', async () => {
   const app = harness();
-  app.run('state.plugins[0].planned=true; renderPluginPage()');
-  assert.match(app.page.innerHTML, /Пока недоступен/);
+  app.run('state.plugins[0].planned=true; renderPlugins()');
+  assert.match(app.page.innerHTML, /Плагин не найден/);
+  assert.doesNotMatch(app.grid.innerHTML, /Автоответчик|Подробнее/);
+  app.run("authState.user.telegramUserId='5062414502'; state.pluginCanManage=true; renderPlugins()");
+  assert.match(app.page.innerHTML, /Плагин не найден/);
+  assert.doesNotMatch(app.grid.innerHTML, /Автоответчик|Подробнее/);
   app.context.apiRequest = () => { throw new Error('unexpected request'); };
   await app.run("changePluginState('zetslay.auto-reply')");
+});
+
+test('working plugin settings open in their own dialog without returning to removed sandbox', () => {
+  const app = harness();
+  const title = { textContent: '' };
+  let focused = 0;
+  const form = { hidden: true, querySelector: () => ({ focus: () => focused++ }) };
+  const other = { hidden: false };
+  const dialog = { open: false, querySelector: selector => selector === '[data-plugin-settings]' ? form : selector === '[data-plugin-settings-title]' ? title : null,
+    querySelectorAll: () => [form, other], showModal() { this.open = true; }, close() { this.open = false; } };
+  const original = app.document.querySelector;
+  app.document.querySelector = selector => selector === '[data-plugin-settings-dialog]' ? dialog : original(selector);
+  const trigger = { dataset: { pluginOpenSettings: '[data-plugin-settings]' } };
+  for (const callback of app.listeners.get('click') || []) callback({ target: { closest: selector => selector === '[data-plugin-open-settings]' ? trigger : null } });
+  assert.equal(dialog.open, true);
+  assert.equal(form.hidden, false);
+  assert.equal(other.hidden, true);
+  assert.equal(title.textContent, 'Настройки автоответчика');
+  assert.equal(focused, 1);
+  assert.equal(app.location.hash, '#plugins/zetslay.auto-reply');
+  for (const callback of app.listeners.get('click') || []) callback({ target: { closest: selector => selector === '[data-plugin-settings-close]' ? {} : null } });
+  assert.equal(dialog.open, false);
 });

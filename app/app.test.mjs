@@ -421,7 +421,7 @@ test('admin controls are hidden for users and names remain escaped in card HTML'
   app.run(`globalThis.grid = {innerHTML:''}; globalThis.controls = [{hidden:false},{hidden:false}];
     document.getElementById = id => id === 'plugin-grid' ? grid : null;
     document.querySelectorAll = selector => selector.includes('data-plugin-cover-admin') ? controls : [];
-    state.plugins = [{id:'test',name:'<img src=x>',description:'**Текст**',permissions:[],category:'chat',price:'Бесплатно',planned:true}];
+    state.plugins = [{id:'test',name:'<img src=x>',description:'**Текст**',permissions:[],category:'chat',price:'Бесплатно',planned:false}];
     state.pluginCanManage = false; renderPlugins();`);
   assert.equal(app.run('controls.every(button=>button.hidden)'), true);
   assert.ok(app.run('grid.innerHTML').includes('&lt;img src=x&gt;'));
