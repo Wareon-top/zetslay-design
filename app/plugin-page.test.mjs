@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import vm from 'node:vm';
 
-const addon = ['plugin-cover.js', 'plugin-page.js'].map(name => readFileSync(new URL(`./${name}`, import.meta.url), 'utf8')).join('\n');
+const addon = ['plugin-cover.js', 'plugin-rarity.js', 'plugin-page.js'].map(name => readFileSync(new URL(`./${name}`, import.meta.url), 'utf8')).join('\n');
 const cabinet = readFileSync(new URL('./app.js', import.meta.url), 'utf8').replace(/\ninit\(\);\s*$/, '');
 const entry = (patch = {}) => ({ id: 'zetslay.test-plugin', name: 'Тестовый модуль', category: 'chat', price: 'от 490 ₽', priceRub: 490, published: true, description: '**Ответы**\n> Ваша очередь', permissions: ['messages:read', 'replies:queue'], permissionsRaw: ['messages:read', 'replies:queue'], events: ['message.received'], planned: false, installed: false, active: false, ...patch });
 
@@ -125,7 +125,9 @@ test('all pages get a safe image; SVG, external and script covers use the catego
   app.context.cover = raster;
   assert.equal(app.run("pluginCoverSource({cover,category:'chat'})"), raster);
   app.run('renderPluginPage()');
-  assert.match(app.page.innerHTML, /<img data-plugin-cover.*assets\/plugin-covers\/chat.svg/);
+  assert.doesNotMatch(app.page.innerHTML, /<img data-plugin-cover|plugin-page-cover/);
+  app.run('renderPlugins()');
+  assert.match(app.grid.innerHTML, /<img data-plugin-cover.*assets\/plugin-covers\/chat.svg/);
   assert.equal(app.run("pluginCoverSource({category:'../../../secret'})"), 'assets/plugin-covers/control.svg');
 });
 
@@ -248,4 +250,37 @@ test('unavailable legacy plugins are hidden for users and admins, including dire
       await app.run(`changePluginState('${id}')`);
     }
   }
+});
+
+test('rarity on cards remains stable when enabling, pausing or changing price and the detail has no banner',()=>{
+  const app=harness();app.context.input=entry({id:'zetslay.mass-price-editor'});app.location.hash='#plugins/zetslay.mass-price-editor';
+  app.run('state.plugins=[input];renderPlugins()');assert.match(app.grid.innerHTML,/data-plugin-rarity="ultra"/);assert.doesNotMatch(app.grid.innerHTML,/plugin-card__badge/);assert.doesNotMatch(app.page.innerHTML,/<figure|<img|plugin-page-cover/);
+  app.run('state.plugins[0].active=true;state.plugins[0].installed=true;state.plugins[0].price="999 ₽";renderPlugins()');assert.match(app.grid.innerHTML,/data-plugin-rarity="ultra"/);assert.match(app.grid.innerHTML,/Отключить/);assert.match(app.page.innerHTML,/Контроль остаётся у вас/);
+});
+
+test('rarity labels cover all four built-in levels and ignore arbitrary metadata',()=>{
+  const app=harness();
+  for(const [id,key,label] of [['zetslay.confirm-reminder','common','Обычный'],['zetslay.review-reminder','advanced','Продвинутый'],['zetslay.mass-price-editor','ultra','Ультра'],['zetslay.auto-review-bonus','legendary','Легендарный'],['__proto__','common','Обычный']]){
+    app.context.rarityInput={id,rarity:'<img onerror=x>',active:true,priceRub:10000};
+    const html=app.run('pluginRarityMarkup(rarityInput)');assert.ok(html.includes(`data-plugin-rarity="${key}"`));assert.ok(html.includes(label));assert.ok(!html.includes('<img'));
+  }
+});
+
+test('focused rarity deployment preserves local account and plugin changes and remains repeatable',async()=>{
+  const {mkdtempSync,mkdirSync,writeFileSync,rmSync}=await import('node:fs');const {join}=await import('node:path');const {spawnSync}=await import('node:child_process');
+  const root=mkdtempSync(new URL('./rarity-stage-',import.meta.url).pathname);
+  try{
+    const local=join(root,'local'),out=join(root,'out');mkdirSync(local);
+    const oldFragment=`</a></div><div class="plugin-card__cover-meta">\$\{adminMark\}<span class="plugin-card__badge \$\{tone === 'green' ? 'plugin-card__badge--work' : tone === 'blue' ? 'plugin-card__badge--pause' : 'plugin-card__badge--soon'\}">\$\{status\}</span></div>`;
+    const newFragment=`</a>\$\{typeof pluginRarityMarkup === 'function' ? pluginRarityMarkup(plugin) : ''\}</div>\$\{adminMark ? \`<div class="plugin-card__cover-meta">\$\{adminMark\}</div>\` : ''\}`;
+    writeFileSync(join(local,'app.js'),cabinet.replace(newFragment,oldFragment)+'\n// LOCAL_AUTH_AND_PROXY_CHANGES\n');
+    const source=readFileSync(new URL('./plugin-page.js',import.meta.url),'utf8');
+    writeFileSync(join(local,'plugin-page.js'),source.replace('<div class="plugin-page-layout"><div class="plugin-page-main">','<div class="plugin-page-layout"><div class="plugin-page-main">\n<figure class="plugin-page-cover"><img src="cover.png"></figure>')+'\n// LOCAL_PLUGIN_GUIDE\n');
+    writeFileSync(join(local,'index.html'),'<head><meta name="zetslay-api-base-url" content="https://api.zetslay.pro"></head><script src="plugin-page.js?v=old" defer></script><script src="app.js?v=old" defer></script>');
+    const stage=new URL('../deploy/stage-plugin-rarity-ui.py',import.meta.url).pathname,incoming=new URL('./',import.meta.url).pathname;
+    let r=spawnSync('python3',[stage,local,incoming,out],{encoding:'utf8'});assert.equal(r.status,0,r.stderr);
+    const app=readFileSync(join(out,'app.js'),'utf8'),page=readFileSync(join(out,'plugin-page.js'),'utf8');assert.match(app,/LOCAL_AUTH_AND_PROXY_CHANGES/);assert.match(app,/zetslay\.auto-reply.*zetslay\.telegram-notifications/);assert.match(page,/LOCAL_PLUGIN_GUIDE/);assert.match(page,/massPriceGuideMarkup/);assert.doesNotMatch(page,/<figure class="plugin-page-cover"/);
+    r=spawnSync('python3',[stage,out,incoming,out],{encoding:'utf8'});assert.equal(r.status,0,r.stderr);assert.equal(readFileSync(join(out,'app.js'),'utf8'),app);assert.equal(readFileSync(join(out,'plugin-page.js'),'utf8'),page);
+    const html=readFileSync(join(out,'index.html'),'utf8');assert.equal(html.split('src="plugin-rarity.js').length,2);assert.equal(html.split('href="plugin-rarity.css').length,2);assert.ok(html.indexOf('plugin-rarity.js')<html.indexOf('plugin-page.js'));assert.match(html,/https:\/\/api.zetslay.pro/);
+  }finally{rmSync(root,{recursive:true,force:true});}
 });

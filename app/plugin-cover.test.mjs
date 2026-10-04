@@ -107,15 +107,15 @@ test('catalog and detail use the same bounded raster contract, including covers 
   }
 });
 
-test('all banner frames use 16:9 and contain; editing and status badges sit outside the image', () => {
+test('catalog covers keep 16:9 without cropping and cover editing stays separate from the rarity label', () => {
   const css = readFileSync(new URL('./plugin-cover.css', import.meta.url), 'utf8');
   assert.match(css, /\.plugin-catalog \.plugin-card__cover \{[^}]*aspect-ratio: 16 \/ 9/);
   assert.match(css, /\.plugin-page \.plugin-page-cover__frame \{[^}]*aspect-ratio: 16 \/ 9/);
   assert.match(css, /\.plugin-catalog \.plugin-card__cover img \{[^}]*object-fit: contain/);
   assert.match(css, /\.plugin-page \.plugin-page-cover__frame img \{[^}]*object-fit: contain/);
-  assert.match(cabinet, /<\/a><\/div><div class="plugin-card__cover-meta">\$\{adminMark\}/);
+  assert.match(cabinet, /adminMark \? `<div class="plugin-card__cover-meta">\$\{adminMark\}/);
   assert.doesNotMatch(cabinet, /<\/a>\$\{adminMark\}/);
-  assert.match(page, /decoding="async"><\/div><figcaption>/);
+  assert.doesNotMatch(page, /<figure class="plugin-page-cover"/);
   const html = readFileSync(new URL('./index.html', import.meta.url), 'utf8');
   assert.ok(html.indexOf('src="plugin-cover.js') < html.indexOf('src="plugin-page.js'));
   assert.ok(html.indexOf('href="plugin-cover.css') > html.indexOf('href="plugin-page.css'));
