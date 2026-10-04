@@ -6,7 +6,7 @@
 .plugin-catalog .plugin-card__cover-meta .plugin-card__badge { position: static; backdrop-filter: none; background: var(--surface-2); border: 1px solid var(--line); font-size: 8px; }
 .plugin-catalog .plugin-card__cover-meta .plugin-cover__edit { position: static; width: 28px; height: 28px; margin-right: auto; border-radius: 8px; box-shadow: none; }
 .plugin-catalog .plugin-card__body { padding-top: 10px; }
-.plugin-page .plugin-page-cover__frame { position: relative; width: 100%; aspect-ratio: 16 / 9; background: var(--bg); }
-.plugin-page .plugin-page-cover__frame img { position: absolute; inset: 0; width: 100%; height: 100%; aspect-ratio: auto; object-fit: contain; object-position: center; background: transparent; }
+.plugin-page .plugin-page-cover__frame { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; aspect-ratio: 16 / 9; background: var(--bg); }
+.plugin-page .plugin-page-cover__frame img { position: static; inset: auto; width: auto; height: auto; max-width: min(100%, var(--plugin-cover-native-width, 100%)); max-height: min(100%, var(--plugin-cover-native-height, 100%)); aspect-ratio: auto; object-fit: contain; object-position: center; background: transparent; }
 .plugin-catalog .plugin-admin-controls { max-width: 360px; }
 .plugin-cover-guidance { width: 100%; max-width: 360px; margin: 2px 0 0; color: var(--muted-2); font-size: 10px; font-weight: 400; line-height: 1.6; }

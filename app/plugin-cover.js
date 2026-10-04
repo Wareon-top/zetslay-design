@@ -1,4 +1,4 @@
-/* Raster covers: preserve small originals, resize large files without cropping. */
+/* Raster covers: preserve originals and lossless PNGs before bounded resizing. */
 const PLUGIN_COVER_LIMITS = Object.freeze({ inputBytes: 10 * 1024 * 1024, outputBytes: 2 * 1024 * 1024, originalSide: 4096, renderSide: 2560, pixels: 40_000_000, quality: 0.92 });
 const PLUGIN_COVER_DATA_URL_LIMIT = 4 * Math.ceil(PLUGIN_COVER_LIMITS.outputBytes / 3) + 32;
 
@@ -33,6 +33,15 @@ async function preparePluginCover(file) {
     if (!context) throw new Error('Браузер не смог обработать изображение');
     context.imageSmoothingEnabled = true;
     context.imageSmoothingQuality = 'high';
+    // Banners often contain lettering: try full-resolution, lossless PNG first.
+    if (file.type === 'image/png' && Math.max(width, height) <= PLUGIN_COVER_LIMITS.originalSide) {
+      canvas.width = width;
+      canvas.height = height;
+      context.clearRect(0, 0, width, height);
+      context.drawImage(bitmap, 0, 0, width, height);
+      const lossless = await new Promise((resolve, reject) => canvas.toBlob(value => value ? resolve(value) : reject(new Error('Браузер не смог сохранить изображение')), 'image/png'));
+      if (lossless.size <= PLUGIN_COVER_LIMITS.outputBytes) return await readPluginCoverBlob(lossless);
+    }
     let scale = Math.min(1, PLUGIN_COVER_LIMITS.renderSide / width, PLUGIN_COVER_LIMITS.renderSide / height);
     for (let attempt = 0; attempt < 5; attempt++) {
       canvas.width = Math.max(1, Math.round(width * scale));
@@ -49,3 +58,20 @@ async function preparePluginCover(file) {
     throw new Error('Не удалось сохранить обложку до 2 МБ с высоким качеством. Уменьшите исходный файл.');
   } finally { bitmap.close(); }
 }
+
+// Show detail banners without enlarging source pixels, including Retina displays.
+function fitPluginDetailCover(image) {
+  if (!image?.matches?.('img[data-plugin-cover-detail]') || !image.complete || !image.naturalWidth || !image.naturalHeight) return;
+  if (!/^data:image\/(?:png|jpeg|webp);base64,/i.test(image.currentSrc || image.src || '')) {
+    image.style.removeProperty('--plugin-cover-native-width');
+    image.style.removeProperty('--plugin-cover-native-height');
+    return;
+  }
+  const ratio = Number.isFinite(window.devicePixelRatio) ? Math.max(1, window.devicePixelRatio) : 1;
+  image.style.setProperty('--plugin-cover-native-width', `${image.naturalWidth / ratio}px`);
+  image.style.setProperty('--plugin-cover-native-height', `${image.naturalHeight / ratio}px`);
+}
+document.addEventListener('load', event => fitPluginDetailCover(event.target), true);
+window.addEventListener?.('resize', () => {
+  document.querySelectorAll('img[data-plugin-cover-detail]').forEach(fitPluginDetailCover);
+});

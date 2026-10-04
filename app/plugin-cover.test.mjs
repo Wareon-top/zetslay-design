@@ -65,12 +65,12 @@ test('portrait and panoramic images use the same full-image resize without disto
 
 test('large output has bounded resize retries while retaining encoding quality', async () => {
   const app = harness({ width: 3000, height: 1500, sizes: [max + 1, 1000] });
-  await app.prepare(file('image/png', max + 1));
+  await app.prepare(file('image/jpeg', max + 1));
   assert.equal(app.encodes.length, 2);
   assert.equal(app.encodes[1].width, 2176);
   assert.ok(app.encodes.every(encode => encode.quality === 0.92));
   const oversized = harness({ width: 3000, height: 1500, sizes: [max + 1] });
-  await assert.rejects(oversized.prepare(file('image/png', max + 1)), /высоким качеством/);
+  await assert.rejects(oversized.prepare(file('image/jpeg', max + 1)), /высоким качеством/);
   assert.equal(oversized.encodes.length, 5);
   assert.equal(oversized.bitmap.closed, 1);
 });
@@ -119,4 +119,39 @@ test('all banner frames use 16:9 and contain; editing and status badges sit outs
   const html = readFileSync(new URL('./index.html', import.meta.url), 'utf8');
   assert.ok(html.indexOf('src="plugin-cover.js') < html.indexOf('src="plugin-page.js'));
   assert.ok(html.indexOf('href="plugin-cover.css') > html.indexOf('href="plugin-page.css'));
+});
+
+test('PNG lettering can retain full decoded resolution through lossless encoding under the API limit', async () => {
+  const app = harness({ width: 3000, height: 1500 });
+  const result = await app.prepare(file('image/png', 3 * 1024 * 1024));
+  assert.match(result, /^data:image\/png;base64,/);
+  assert.equal(app.encodes.length, 1);
+  assert.equal(app.encodes[0].type, 'image/png');
+  assert.equal(app.encodes[0].width, 3000);
+  assert.deepEqual(app.draws[0], [0, 0, 3000, 1500]);
+});
+
+test('detail sizing caps source pixels at device density and leaves catalog and unloaded images alone', () => {
+  const app = harness();
+  const properties = {};
+  app.context.window.devicePixelRatio = 2;
+  app.context.image = { src: 'data:image/png;base64,AA==', complete: true, naturalWidth: 720, naturalHeight: 405, matches: () => true, style: { setProperty: (key, value) => { properties[key] = value; }, removeProperty: key => { delete properties[key]; } } };
+  app.run('fitPluginDetailCover(image)');
+  assert.equal(properties['--plugin-cover-native-width'], '360px');
+  assert.equal(properties['--plugin-cover-native-height'], '202.5px');
+  app.context.window.devicePixelRatio = 1;
+  app.run('fitPluginDetailCover(image)');
+  assert.equal(properties['--plugin-cover-native-width'], '720px');
+  app.context.image.matches = () => false;
+  app.context.window.devicePixelRatio = 3;
+  app.run('fitPluginDetailCover(image)');
+  assert.equal(properties['--plugin-cover-native-width'], '720px');
+  app.context.image.matches = () => true;
+  app.context.image.complete = false;
+  app.run('fitPluginDetailCover(image)');
+  assert.equal(properties['--plugin-cover-native-width'], '720px');
+  app.context.image.complete = true;
+  app.context.image.src = 'assets/plugin-covers/chat.svg';
+  app.run('fitPluginDetailCover(image)');
+  assert.equal(properties['--plugin-cover-native-width'], undefined);
 });
