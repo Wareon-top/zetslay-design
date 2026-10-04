@@ -78,7 +78,7 @@ function pluginPageMarkup(plugin) {
   const permissions = Array.isArray(plugin.permissionsRaw || plugin.permissions) ? (plugin.permissionsRaw || plugin.permissions) : [];
   const events = Array.isArray(plugin.events) ? plugin.events : [];
   const manage = canManagePluginCatalog();
-  const configuration = plugin.id === 'zetslay.auto-reply' ? '[data-plugin-settings]' : plugin.id === 'zetslay.telegram-notifications' ? '[data-telegram-settings]' : '';
+  const configuration = '';
   return `<a class="plugin-page-back" href="#plugins">${icon('chevron-right')} Назад в каталог</a>
     <header class="plugin-page-heading"><div><div class="plugin-page-tags"><span>${escapeHtml(PLUGIN_CATEGORIES[plugin.category] || 'Плагин')}</span><span class="plugin-page-status plugin-page-status--${tone}"><i></i>${status}</span></div><h1 id="plugin-page-title">${escapeHtml(plugin.name)}</h1><p>${escapeHtml(summary)}</p></div><span class="plugin-page-brand" aria-hidden="true">${icon('puzzle')}</span></header>
     <div class="plugin-page-layout"><div class="plugin-page-main">
@@ -104,7 +104,7 @@ function renderPluginPage() {
   if (!authState.user) { root.innerHTML = pluginPageEmpty('Войдите в кабинет', 'Страница плагина станет доступна после входа.'); return; }
   if (pluginPageState.error) { root.innerHTML = pluginPageEmpty('Каталог не загрузился', pluginPageState.error, true); return; }
   if (!pluginPageState.loaded) { root.innerHTML = pluginPageEmpty('Загружаем плагин', 'Получаем актуальное описание и состояние из каталога.'); return; }
-  const plugin = state.plugins.find(item => item.id === route.id && !item.planned && !String(item.id).startsWith('planned.') && (item.published !== false || canManagePluginCatalog()));
+  const plugin = state.plugins.find(item => item.id === route.id && !item.planned && !String(item.id).startsWith('planned.') && !['zetslay.auto-reply', 'zetslay.telegram-notifications'].includes(item.id) && (item.published !== false || canManagePluginCatalog()));
   if (!plugin) { root.innerHTML = pluginPageEmpty('Плагин не найден', 'Карточка могла быть снята с публикации. Выберите другой модуль в каталоге.'); return; }
   document.title = `${plugin.name} — Плагины ZetSlay`;
   root.innerHTML = pluginPageMarkup(plugin);
@@ -145,24 +145,6 @@ document.addEventListener('click', event => {
     panel?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     panel?.querySelector('input, select, textarea')?.focus({ preventScroll: true });
     return;
-  }
-  // CATALOG_CLEANUP_SETTINGS
-  const closeSettings = event.target.closest('[data-plugin-settings-close]');
-  if (closeSettings) {
-    document.querySelector('[data-plugin-settings-dialog]')?.close();
-    return;
-  }
-  const settings = event.target.closest('[data-plugin-open-settings]');
-  if (settings) {
-    const selector = settings.dataset.pluginOpenSettings;
-    if (!['[data-plugin-settings]', '[data-telegram-settings]'].includes(selector)) return;
-    const dialog = document.querySelector('[data-plugin-settings-dialog]');
-    const form = dialog?.querySelector(selector);
-    if (!form || !authState.user) return;
-    dialog.querySelectorAll('form').forEach(item => { item.hidden = item !== form; });
-    dialog.querySelector('[data-plugin-settings-title]').textContent = selector === '[data-plugin-settings]' ? 'Настройки автоответчика' : 'Настройки Telegram-уведомлений';
-    if (!dialog.open) dialog.showModal();
-    form.querySelector('textarea, input, select')?.focus({ preventScroll: true });
   }
 });
 document.addEventListener('error', event => {

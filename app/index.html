@@ -231,7 +231,7 @@
           </section>
 
           <section class="view plugin-catalog" data-view="plugins" aria-labelledby="plugins-title">
-            <div class="view-heading view-heading--compact"><div><span class="eyebrow">Маркетплейс</span><h1 id="plugins-title">Каталог плагинов</h1><p>Рабочие модули для автоматизации вашего магазина.</p></div><div class="view-heading__actions"><span class="catalog-count"><span id="plugin-total">2 доступно</span><strong id="plugin-installed">0 установлено</strong></span><div class="plugin-admin-controls" hidden data-plugin-admin-controls></div><input type="file" accept="image/png,image/jpeg,image/webp" hidden data-plugin-cover-input></div></div>
+            <div class="view-heading view-heading--compact"><div><span class="eyebrow">Маркетплейс</span><h1 id="plugins-title">Каталог плагинов</h1><p>Рабочие модули для автоматизации вашего магазина.</p></div><div class="view-heading__actions"><span class="catalog-count"><span id="plugin-total">0 доступно</span><strong id="plugin-installed">0 установлено</strong></span><div class="plugin-admin-controls" hidden data-plugin-admin-controls></div><input type="file" accept="image/png,image/jpeg,image/webp" hidden data-plugin-cover-input></div></div>
             <div class="cat-pills" id="plugin-categories">
               <button class="is-active" type="button" data-plugin-cat="all"><svg><use href="#i-grid"/></svg> Все</button>
               <button type="button" data-plugin-cat="sales"><svg><use href="#i-bag"/></svg> Продажи</button>
@@ -350,31 +350,6 @@
         </div>
       </main>
     </div>
-
-    <dialog class="plugin-dialog plugin-settings-dialog" data-plugin-settings-dialog aria-labelledby="plugin-settings-title">
-      <header class="plugin-dialog__header"><h2 id="plugin-settings-title" data-plugin-settings-title>Настройки плагина</h2><button class="icon-button" type="button" data-plugin-settings-close aria-label="Закрыть настройки"><svg><use href="#i-close"/></svg></button></header>
-      <form class="plugin-form" data-plugin-settings>
-                  <div><span class="panel-label">Автоответчик</span><h3>Сценарий ответа</h3><p>Условия проверяются до постановки ответа в безопасную очередь.</p></div>
-                  <label>Когда отвечать<select name="scenario"><option value="all">На каждое входящее сообщение</option><option value="keywords">Только по ключевым словам</option><option value="first_message">Только на первое сообщение</option></select></label>
-                  <label>Ключевые слова<input name="keywords" maxlength="500" placeholder="в наличии, цена, доставка"></label>
-                  <label>Не отвечать, если есть<input name="excludeKeywords" maxlength="500" placeholder="оператор, не отвечать"></label>
-                  <label>Шаблон ответа<textarea name="replyText" maxlength="1000" placeholder="Здравствуйте! Сообщение получено — скоро вернёмся с ответом."></textarea></label>
-                  <fieldset class="quiet-hours"><legend>Тихие часы</legend>
-                    <label class="plugin-check"><input type="checkbox" name="quietEnabled"> Использовать расписание</label>
-                    <div class="plugin-time-grid"><label>Начало<input type="time" name="quietStart" value="22:00"></label><label>Окончание<input type="time" name="quietEnd" value="08:00"></label></div>
-                    <label>Часовой пояс<select name="timeZone"><option value="Asia/Almaty">Алматы (UTC+5)</option><option value="Europe/Moscow">Москва (UTC+3)</option><option value="Europe/Helsinki">Хельсинки</option><option value="Europe/Berlin">Берлин</option><option value="UTC">UTC</option></select></label>
-                    <label>В тихие часы<select name="quietBehavior"><option value="pause">Не отвечать</option><option value="alternate">Отправлять отдельный текст</option></select></label>
-                    <label>Ночной ответ<textarea name="quietText" maxlength="1000" placeholder="Сейчас мы офлайн. Ответим утром."></textarea></label>
-                  </fieldset>
-                  <button class="button button--primary" type="submit">Сохранить настройки</button>
-                </form>
-      <form class="plugin-form" data-telegram-settings>
-                  <div><span class="panel-label">Telegram-уведомления</span><h3>Какие события присылать</h3><p>Bot Token остаётся в защищённом backend и никогда не показывается в плагине.</p></div>
-                  <label class="plugin-check"><input type="checkbox" name="messages" checked> Новые сообщения покупателей</label>
-                  <label class="plugin-check"><input type="checkbox" name="paidOrders" checked> Оплаченные заказы</label>
-                  <button class="button button--primary" type="submit">Сохранить уведомления</button>
-                </form>
-    </dialog>
     <dialog class="plugin-dialog" data-plugin-dialog aria-labelledby="plugin-dialog-title"><div data-plugin-dialog-body></div></dialog>
     <div class="modal-backdrop" data-modal-backdrop></div>
     <section class="connect-modal" role="dialog" aria-modal="true" aria-labelledby="connect-modal-title" hidden>
@@ -441,8 +416,8 @@
     <script src="confirm-reminder.js?v=20261003-reminder-settings" defer></script>
     <script src="review-reminder.js?v=20261004-review-reminder" defer></script>
     <script src="review-bonus.js?v=20261004-review-bonus" defer></script>
-    <script src="plugin-page.js?v=20261004-catalog-cleanup" defer></script>
+    <script src="plugin-page.js?v=20261004-catalog-cleanup-v2" defer></script>
     <script src="messages.js?v=20261003-message-sync" defer></script>
-    <script src="app.js?v=20261004-catalog-cleanup" defer></script>
+    <script src="app.js?v=20261004-catalog-cleanup-v2" defer></script>
   </body>
 </html>

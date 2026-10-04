@@ -5,9 +5,9 @@ import vm from 'node:vm';
 
 const addon = ['plugin-cover.js', 'plugin-page.js'].map(name => readFileSync(new URL(`./${name}`, import.meta.url), 'utf8')).join('\n');
 const cabinet = readFileSync(new URL('./app.js', import.meta.url), 'utf8').replace(/\ninit\(\);\s*$/, '');
-const entry = (patch = {}) => ({ id: 'zetslay.auto-reply', name: 'Автоответчик', category: 'chat', price: 'от 490 ₽', priceRub: 490, published: true, description: '**Ответы**\n> Ваша очередь', permissions: ['messages:read', 'replies:queue'], events: ['message.received'], planned: false, installed: false, active: false, ...patch });
+const entry = (patch = {}) => ({ id: 'zetslay.test-plugin', name: 'Тестовый модуль', category: 'chat', price: 'от 490 ₽', priceRub: 490, published: true, description: '**Ответы**\n> Ваша очередь', permissions: ['messages:read', 'replies:queue'], permissionsRaw: ['messages:read', 'replies:queue'], events: ['message.received'], planned: false, installed: false, active: false, ...patch });
 
-function harness({ admin = false, hash = '#plugins/zetslay.auto-reply', loaded = true } = {}) {
+function harness({ admin = false, hash = '#plugins/zetslay.test-plugin', loaded = true } = {}) {
   const listeners = new Map();
   const node = (dataset = {}) => ({ dataset, innerHTML: '', textContent: '', hidden: false, disabled: false, classList: { toggle() {} }, setAttribute() {}, closest: () => null });
   const page = node(), grid = node(), controls = node();
@@ -45,7 +45,7 @@ test('dedicated route opens the page on a direct URL and retains normal catalog 
   assert.equal(app.views[1].hidden, false);
   assert.equal(app.views[0].hidden, true);
   assert.match(app.page.innerHTML, /Возможности плагина/);
-  assert.match(app.document.title, /Автоответчик/);
+  assert.match(app.document.title, /Тестовый модуль/);
   assert.match(app.page.innerHTML, /href="#plugins"/);
   app.location.hash = '#plugins';
   app.run("setView('plugins',false)");
@@ -57,10 +57,10 @@ test('dedicated route opens the page on a direct URL and retains normal catalog 
 test('Details is a native page link and no detail modal or whole-card click hijacks it', () => {
   const app = harness();
   app.run('renderPlugins()');
-  assert.match(app.grid.innerHTML, /href="#plugins\/zetslay.auto-reply" data-plugin-page-link>Подробнее/);
+  assert.match(app.grid.innerHTML, /href="#plugins\/zetslay.test-plugin" data-plugin-page-link>Подробнее/);
   assert.doesNotMatch(app.grid.innerHTML, /data-plugin-details=/);
-  app.run("showPluginDialog=()=>{throw Error('unexpected modal')}; openPluginDetails('zetslay.auto-reply')");
-  assert.equal(app.location.hash, '#plugins/zetslay.auto-reply');
+  app.run("showPluginDialog=()=>{throw Error('unexpected modal')}; openPluginDetails('zetslay.test-plugin')");
+  assert.equal(app.location.hash, '#plugins/zetslay.test-plugin');
 });
 
 test('route parsing rejects malformed encoding, selectors and non-manifest IDs', () => {
@@ -98,8 +98,8 @@ test('verified admins can edit metadata and covers; revocation clears those cont
   const app = harness({ admin: true });
   app.run('renderPlugins()');
   assert.match(app.controls.innerHTML, /data-plugin-publish/);
-  assert.match(app.page.innerHTML, /data-plugin-edit="zetslay.auto-reply"/);
-  assert.match(app.page.innerHTML, /data-cover-plugin="zetslay.auto-reply"/);
+  assert.match(app.page.innerHTML, /data-plugin-edit="zetslay.test-plugin"/);
+  assert.match(app.page.innerHTML, /data-cover-plugin="zetslay.test-plugin"/);
   app.run('state.pluginCanManage=false; renderPlugins()');
   assert.equal(app.controls.innerHTML, '');
   assert.doesNotMatch(app.page.innerHTML, /data-plugin-edit|data-cover-plugin/);
@@ -112,7 +112,7 @@ test('drafts cannot be opened by a user even if stale entries remain in memory',
   assert.match(app.page.innerHTML, /Плагин не найден/);
   app.run("authState.user.telegramUserId='5062414502'; state.pluginCanManage=true; renderPlugins()");
   assert.match(app.page.innerHTML, /Черновик/);
-  assert.match(app.page.innerHTML, /data-plugin-id="zetslay.auto-reply" disabled/);
+  assert.match(app.page.innerHTML, /data-plugin-id="zetslay.test-plugin" disabled/);
 });
 
 test('all pages get a safe image; SVG, external and script covers use the category fallback', () => {
@@ -181,28 +181,28 @@ test('plugin actions use existing API permissions and suppress repeated clicks u
   };
   app.context.loadPluginCatalog = async () => {};
   app.context.loadPluginAudit = async () => {};
-  const first = app.run("changePluginState('zetslay.auto-reply')");
-  await app.run("changePluginState('zetslay.auto-reply')");
+  const first = app.run("changePluginState('zetslay.test-plugin')");
+  await app.run("changePluginState('zetslay.test-plugin')");
   assert.equal(calls.length, 1);
   assert.match(app.page.innerHTML, /Сохраняем…/);
   assert.equal(calls[0].options.authenticated, true);
   assert.equal(calls[0].options.method, 'POST');
   assert.deepEqual(JSON.parse(JSON.stringify(calls[0].options.body.permissions)), ['messages:read', 'replies:queue']);
   finishInstall(); await first;
-  assert.equal(calls[1].path, '/api/v1/plugins/zetslay.auto-reply/enable');
+  assert.equal(calls[1].path, '/api/v1/plugins/zetslay.test-plugin/enable');
   assert.equal(app.run('pluginPageState.busyId'), null);
 });
 
 test('action failures are visible and permit retry without changing the plugin state', async () => {
   const app = harness();
   app.context.apiRequest = async () => { throw new Error('Нужен тариф'); };
-  await app.run("changePluginState('zetslay.auto-reply')");
+  await app.run("changePluginState('zetslay.test-plugin')");
   assert.match(app.page.innerHTML, /Нужен тариф/);
   assert.equal(app.run('state.plugins[0].installed'), false);
   assert.equal(app.run('pluginPageState.busyId'), null);
-  app.context.nextPlugin = entry({ id: 'zetslay.telegram-notifications', name: 'Уведомления' });
+  app.context.nextPlugin = entry({ id: 'zetslay.second-test-plugin', name: 'Уведомления' });
   app.run('state.plugins.push(nextPlugin)');
-  app.location.hash = '#plugins/zetslay.telegram-notifications';
+  app.location.hash = '#plugins/zetslay.second-test-plugin';
   app.run('renderPluginPage()');
   assert.doesNotMatch(app.page.innerHTML, /Нужен тариф/);
 });
@@ -212,7 +212,7 @@ test('switching accounts during install prevents enabling in another account and
   const calls = [];
   let finish;
   app.context.apiRequest = path => { calls.push(path); return new Promise(resolve => { finish = resolve; }); };
-  const first = app.run("changePluginState('zetslay.auto-reply')");
+  const first = app.run("changePluginState('zetslay.test-plugin')");
   app.run("sessionGeneration++; authState.token='another-session'; state.pluginCanManage=false; resetPluginPageState(); renderPlugins()");
   assert.match(app.page.innerHTML, /Загружаем плагин/);
   assert.equal(app.controls.innerHTML, '');
@@ -225,32 +225,27 @@ test('planned plugins stay out of the catalog and direct pages for every role an
   const app = harness();
   app.run('state.plugins[0].planned=true; renderPlugins()');
   assert.match(app.page.innerHTML, /Плагин не найден/);
-  assert.doesNotMatch(app.grid.innerHTML, /Автоответчик|Подробнее/);
+  assert.doesNotMatch(app.grid.innerHTML, /Тестовый модуль|Подробнее/);
   app.run("authState.user.telegramUserId='5062414502'; state.pluginCanManage=true; renderPlugins()");
   assert.match(app.page.innerHTML, /Плагин не найден/);
-  assert.doesNotMatch(app.grid.innerHTML, /Автоответчик|Подробнее/);
+  assert.doesNotMatch(app.grid.innerHTML, /Тестовый модуль|Подробнее/);
   app.context.apiRequest = () => { throw new Error('unexpected request'); };
-  await app.run("changePluginState('zetslay.auto-reply')");
+  await app.run("changePluginState('zetslay.test-plugin')");
 });
 
-test('working plugin settings open in their own dialog without returning to removed sandbox', () => {
-  const app = harness();
-  const title = { textContent: '' };
-  let focused = 0;
-  const form = { hidden: true, querySelector: () => ({ focus: () => focused++ }) };
-  const other = { hidden: false };
-  const dialog = { open: false, querySelector: selector => selector === '[data-plugin-settings]' ? form : selector === '[data-plugin-settings-title]' ? title : null,
-    querySelectorAll: () => [form, other], showModal() { this.open = true; }, close() { this.open = false; } };
-  const original = app.document.querySelector;
-  app.document.querySelector = selector => selector === '[data-plugin-settings-dialog]' ? dialog : original(selector);
-  const trigger = { dataset: { pluginOpenSettings: '[data-plugin-settings]' } };
-  for (const callback of app.listeners.get('click') || []) callback({ target: { closest: selector => selector === '[data-plugin-open-settings]' ? trigger : null } });
-  assert.equal(dialog.open, true);
-  assert.equal(form.hidden, false);
-  assert.equal(other.hidden, true);
-  assert.equal(title.textContent, 'Настройки автоответчика');
-  assert.equal(focused, 1);
-  assert.equal(app.location.hash, '#plugins/zetslay.auto-reply');
-  for (const callback of app.listeners.get('click') || []) callback({ target: { closest: selector => selector === '[data-plugin-settings-close]' ? {} : null } });
-  assert.equal(dialog.open, false);
+test('unavailable legacy plugins are hidden for users and admins, including direct links and stale install controls', async () => {
+  for (const admin of [false, true]) {
+    const app = harness({ admin });
+    app.context.blocked = [entry({ id: 'zetslay.auto-reply', name: 'Автоответчик', installed: true }), entry({ id: 'zetslay.telegram-notifications', name: 'Telegram-уведомления', installed: true })];
+    app.run('state.plugins.push(...blocked); renderPlugins()');
+    assert.match(app.grid.innerHTML, /Тестовый модуль/);
+    assert.doesNotMatch(app.grid.innerHTML, /Автоответчик|Telegram-уведомления/);
+    app.context.apiRequest = () => { throw Error('unexpected install request'); };
+    for (const id of ['zetslay.auto-reply', 'zetslay.telegram-notifications']) {
+      app.location.hash = `#plugins/${id}`;
+      app.run('renderPluginPage()');
+      assert.match(app.page.innerHTML, /Плагин не найден/);
+      await app.run(`changePluginState('${id}')`);
+    }
+  }
 });

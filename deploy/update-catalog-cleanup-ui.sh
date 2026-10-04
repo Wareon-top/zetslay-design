@@ -24,5 +24,5 @@ for file in app.js index.html plugin-page.js; do
     exit 1
   fi
 done
-echo "Каталог очищен. Резервная копия: $backup"
+echo "Каталог очищен: Автоответчик и Telegram-уведомления также убраны. Резервная копия: $backup"
 echo 'Обновите кабинет с Ctrl+F5. Перезапуск Docker Compose не требуется.'

@@ -4,8 +4,6 @@ const state = {
   lots: [],
   automations: [],
   plugins: [
-    { id: 'zetslay.auto-reply', icon: 'zap', name: 'Автоответчик', vendor: 'ZetSlay Core', category: 'chat', price: 'от 490 ₽', description: 'Безопасно ставит ответ покупателю в очередь и защищён от циклических сообщений.', permissions: ['Сообщения', 'Очередь ответов'], installed: false, active: false, config: { text: 'Здравствуйте! Сообщение получено — скоро вернёмся с ответом.', scenario: 'all', keywords: [], excludeKeywords: [], quietHours: { enabled: false, start: '22:00', end: '08:00', timeZone: 'Asia/Almaty', behavior: 'pause', text: 'Сейчас мы офлайн. Ответим утром.' } } },
-    { id: 'zetslay.telegram-notifications', icon: 'send', name: 'Telegram-уведомления', vendor: 'ZetSlay Core', category: 'control', price: 'от 290 ₽', description: 'Сообщает владельцу о новых сообщениях и оплаченных заказах.', permissions: ['Сообщения', 'Заказы', 'Telegram'], installed: false, active: false, config: { messages: true, paidOrders: true } },
   ],
   pluginFilter: { cat: 'all', query: '', sort: 'default' },
   pluginCoverAdmin: false,
@@ -608,7 +606,6 @@ function resetPluginCatalog() {
   state.pluginCanManage = false;
   state.pluginCoverAdmin = false;
   closePluginDialog();
-  document.querySelector('[data-plugin-settings-dialog]')?.close();
   state.plugins = state.plugins.filter(plugin => plugin.published !== false).map((plugin) => plugin.planned ? plugin : { ...plugin, installed: false, active: false, config: {} });
   renderPlugins();
 }
@@ -1145,7 +1142,7 @@ function renderPlugins() {
   const categorySelect = document.querySelector('[data-plugin-category]');
   if (categorySelect) categorySelect.value = state.pluginFilter.cat;
   const colors = ['249,179,46', '167,139,250', '96,165,250', '52,211,153', '248,113,113', '203,128,255'];
-  const visible = state.plugins.filter(plugin => !plugin.planned && !String(plugin.id).startsWith('planned.') && (plugin.published !== false || canManagePluginCatalog()));
+  const visible = state.plugins.filter(plugin => !plugin.planned && !String(plugin.id).startsWith('planned.') && !['zetslay.auto-reply', 'zetslay.telegram-notifications'].includes(plugin.id) && (plugin.published !== false || canManagePluginCatalog()));
   const installed = visible.filter(plugin => plugin.installed).length;
   const total = visible.filter(plugin => !plugin.planned).length;
   if (byId('plugin-total')) byId('plugin-total').textContent = `${total} доступно`;
@@ -1177,7 +1174,7 @@ function renderPlugins() {
 
 async function changePluginState(pluginId) {
   const plugin = state.plugins.find(item => item.id === pluginId);
-  if (!plugin || plugin.planned || plugin.published === false) return;
+  if (!plugin || plugin.planned || ['zetslay.auto-reply', 'zetslay.telegram-notifications'].includes(plugin.id) || plugin.published === false) return;
   if (!authState.token) {
     setAuthModal(true);
     showToast('Войдите, чтобы управлять плагинами');
