@@ -15,7 +15,7 @@ page=page.replace('Разрешения появятся после регист
 page=page.replace('${events.length ?',"${plugin.id !== 'zetslay.lot-cloner' && events.length ?")
 start="${plugin.id === 'zetslay.review-reminder' ? 'Перед каждым"
 new="${plugin.id === 'zetslay.lot-cloner' ? 'Создание запускается вручную в вашем боте после подтверждения. Копия выключена; исходный лот не меняется. При неизвестном результате автоматический повтор запрещён.' : plugin.id === 'zetslay.review-reminder' ? 'Перед каждым"
-if new not in page:
+if 'Создание запускается вручную в вашем боте после подтверждения.' not in page:
     if page.count(start)!=1:raise SystemExit('Неизвестный блок разрешений. Кабинет не изменён.')
     page=page.replace(start,new,1)
 html,count=re.subn(r'(<script src="plugin-page\.js)(?:\?v=[A-Za-z0-9_-]+)?(" defer></script>)',r'\1?v=20261004-lot-cloner\2',html)
