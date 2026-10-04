@@ -6,7 +6,7 @@ import sys
 from xml.etree import ElementTree
 
 FILES = ['landing-hero.css', 'landing-hero.js'] + [f'assets/platforms/{name}.svg' for name in ['funpay', 'ggsel', 'plati-market', 'starvell']]
-VERSION = '20261003-platform-ribbon'
+VERSION = '20261004-hero-cleanup'
 
 def require(condition, message):
     if not condition:

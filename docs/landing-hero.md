@@ -7,9 +7,11 @@ spacing only. Other landing sections, header, brand and native auth links remain
 The ribbon lists FunPay as available; GGsel, Plati.Market and Starvell are marked
 as planned integrations. There are no invented API connections or customer counts.
 Its two identical groups form a continuous CSS loop. The duplicate is hidden from
-screen readers. A pause toggle, hover over the ribbon, hidden-tab suspension and
-`prefers-reduced-motion` control movement. With reduced motion the four platforms
-are displayed as a static wrapping list.
+screen readers. The centered caption is «Поддерживаемые площадки», without
+side dividers or a pause button. Hover over the ribbon, hidden-tab suspension
+and `prefers-reduced-motion` control movement. With reduced motion the four
+platforms are displayed as a static wrapping list. The start button uses a
+centered inline SVG arrow, independent of the installed font.
 
 Marks are hosted locally and do not fetch third-party images at runtime:
 

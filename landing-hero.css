@@ -43,13 +43,18 @@
 .hero-start__arrow {
   display: grid;
   place-items: center;
+  flex-shrink: 0;
   width: 38px;
   height: 38px;
   border-radius: 50%;
   background: var(--black);
   color: #fff8ee;
-  font-size: 23px;
-  font-weight: 400;
+  line-height: 0;
+}
+.hero-start__arrow svg {
+  display: block;
+  width: 20px;
+  height: 20px;
 }
 .hero-guide {
   display: inline-flex;
@@ -91,16 +96,10 @@
 .platform-ribbon__heading {
   display: flex;
   align-items: center;
-  gap: 20px;
+  justify-content: center;
+  min-height: 30px;
   max-width: 940px;
   margin: 0 auto 31px;
-}
-.platform-ribbon__heading::before,
-.platform-ribbon__heading::after {
-  flex: 1;
-  height: 1px;
-  background: var(--line-dark);
-  content: '';
 }
 .platform-ribbon__heading h2 {
   margin: 0;
@@ -110,28 +109,6 @@
   font-weight: 500;
   letter-spacing: .01em;
   white-space: nowrap;
-}
-.platform-ribbon__pause {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 30px;
-  height: 30px;
-  padding: 0;
-  border: 1px solid var(--line-dark);
-  border-radius: 50%;
-  background: transparent;
-  color: var(--muted);
-  cursor: pointer;
-}
-.platform-ribbon__pause:hover,
-.platform-ribbon__pause[aria-pressed="true"] {
-  border-color: #635134;
-  color: var(--amber);
-}
-.platform-ribbon__pause svg {
-  width: 12px;
-  height: 12px;
 }
 .platform-ribbon__window {
   overflow: hidden;
@@ -194,7 +171,6 @@
   color: #a5b0a3;
 }
 .platform-ribbon__window:hover .platform-ribbon__track,
-.platform-ribbon[data-paused="true"] .platform-ribbon__track,
 .platform-ribbon[data-suspended="true"] .platform-ribbon__track {
   animation-play-state: paused;
 }
@@ -208,7 +184,7 @@
   .hero--platforms .hero-inner { padding: 76px 0 54px; }
   .hero--platforms h1 { font-size: clamp(42px, 7.3vw, 60px); }
   .hero--platforms .hero-lead { max-width: 520px; font-size: 16px; }
-  .platform-ribbon__heading { gap: 14px; margin-bottom: 23px; }
+  .platform-ribbon__heading { margin-bottom: 23px; }
   .platform-ribbon__group { gap: 60px; padding-inline: 30px; }
   .platform-ribbon__wordmark strong { font-size: 21px; }
 }
@@ -220,7 +196,7 @@
   .hero--platforms .hero-start { width: auto; }
   .hero--platforms .hero-login { margin-top: 10px; }
   .platform-ribbon { padding: 15px 0 29px; }
-  .platform-ribbon__heading { gap: 12px; margin-bottom: 20px; }
+  .platform-ribbon__heading { margin-bottom: 20px; }
   .platform-ribbon__heading h2 { font-size: 11px; }
   .platform-ribbon__group { gap: 46px; padding-inline: 23px; }
   .platform-ribbon__mark { width: 30px; height: 30px; }
@@ -230,6 +206,6 @@
 @media (prefers-reduced-motion: reduce) {
   .platform-ribbon__track { width: 100%; animation: none; transform: none; }
   .platform-ribbon__group { justify-content: center; flex-wrap: wrap; gap: 26px 40px; min-width: 0; width: 100%; }
-  .platform-ribbon__group[aria-hidden="true"], .platform-ribbon__pause { display: none; }
+  .platform-ribbon__group[aria-hidden="true"] { display: none; }
   .platform-ribbon__window { mask-image: none; }
 }
