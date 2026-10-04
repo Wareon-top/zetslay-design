@@ -104,6 +104,7 @@ function renderOverview() {
     overviewState.snapshot = state.storeContent;
     overviewState.error = '';
   }
+  if (typeof renderStoreIdentity === 'function') renderStoreIdentity();
   const model = buildOverview(state.storeContent, overviewState.currency);
   overviewState.currency = model.currency;
   if (!model.dated) overviewState.mode = 'orders';
