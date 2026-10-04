@@ -40,8 +40,8 @@ function orderBuyerTone(name) {
   return tones[hash];
 }
 
-function orderDateMarkup(date) {
-  if (date == null) return '<span class="orders-page-date--missing">Не передана</span>';
+function orderDateMarkup(date, sourceDateLabel = '') {
+  if (date == null) return sourceDateLabel ? `<span>${overviewEscape(sourceDateLabel)}</span><small>Дата из FunPay</small>` : '<span class="orders-page-date--missing">Не передана</span>';
   const value = new Date(date);
   return `<time datetime="${value.toISOString()}"><span>${overviewEscape(value.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' }))}</span><small>${overviewEscape(value.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }))}</small></time>`;
 }
@@ -56,7 +56,7 @@ function orderRowsMarkup(rows) {
       <td class="orders-page-buyer-cell" data-label="Покупатель"><div class="orders-page-buyer"><span class="orders-page-avatar orders-page-avatar--${orderBuyerTone(order.buyer)}" aria-hidden="true">${overviewEscape(initials)}</span><span><strong title="${overviewEscape(order.buyer)}">${overviewEscape(order.buyer)}</strong><small>FunPay</small></span></div></td>
       <td data-label="Статус"><span class="orders-page-status orders-page-status--${order.status}"><i aria-hidden="true"></i>${meta.label}</span></td>
       <td class="orders-page-amount" data-label="Сумма"><strong>${overviewEscape(overviewMoney(order.amount, order.currency))}</strong></td>
-      <td class="orders-page-date" data-label="Создан">${orderDateMarkup(order.date)}</td>
+      <td class="orders-page-date" data-label="Создан">${orderDateMarkup(order.date, order.sourceDateLabel)}</td>
       <td class="orders-page-row-arrow"><button class="orders-page-detail-button" type="button" data-order-open="${overviewEscape(order.id)}" aria-label="Подробнее о заказе ${overviewEscape(id)}"><svg aria-hidden="true"><use href="#i-chevron"/></svg></button></td>
     </tr>`;
   }).join('');
@@ -86,7 +86,7 @@ function renderOrderDetail(model) {
   const title = dialog.querySelector('[data-order-detail-title]');
   const body = dialog.querySelector('[data-order-detail-body]');
   if (title) title.textContent = order.id.startsWith('#') ? order.id : `#${order.id}`;
-  if (body) body.innerHTML = `<p class="orders-page-detail-product">${overviewEscape(order.product)}</p><dl class="orders-page-detail-fields"><div><dt>Покупатель</dt><dd>${overviewEscape(order.buyer)}</dd></div><div><dt>Статус</dt><dd><span class="orders-page-status orders-page-status--${order.status}"><i aria-hidden="true"></i>${OVERVIEW_STATUSES[order.status].label}</span></dd></div><div><dt>Сумма заказа</dt><dd>${overviewEscape(overviewMoney(order.amount, order.currency))}</dd></div><div><dt>Создан</dt><dd>${order.date == null ? 'FunPay не передал дату заказа' : overviewEscape(new Date(order.date).toLocaleString('ru-RU'))}</dd></div><div><dt>Снимок получен</dt><dd>${overviewEscape(new Date(model.snapshot.observedAt).toLocaleString('ru-RU'))}</dd></div></dl><p class="orders-page-detail-note">Карточка показывает данные снимка. Изменение статуса и действия на FunPay здесь недоступны.</p>`;
+  if (body) body.innerHTML = `<p class="orders-page-detail-product">${overviewEscape(order.product)}</p><dl class="orders-page-detail-fields"><div><dt>Покупатель</dt><dd>${overviewEscape(order.buyer)}</dd></div><div><dt>Статус</dt><dd><span class="orders-page-status orders-page-status--${order.status}"><i aria-hidden="true"></i>${OVERVIEW_STATUSES[order.status].label}</span></dd></div><div><dt>Сумма заказа</dt><dd>${overviewEscape(overviewMoney(order.amount, order.currency))}</dd></div><div><dt>Создан</dt><dd>${order.date == null ? overviewEscape(order.sourceDateLabel || 'FunPay не передал дату заказа') : overviewEscape(new Date(order.date).toLocaleString('ru-RU'))}</dd></div><div><dt>Снимок получен</dt><dd>${overviewEscape(new Date(model.snapshot.observedAt).toLocaleString('ru-RU'))}</dd></div></dl><p class="orders-page-detail-note">Карточка показывает данные снимка. Изменение статуса и действия на FunPay здесь недоступны.</p>`;
 }
 
 function renderOrderWorkspace() {

@@ -16,6 +16,7 @@ function storeIdentityModel(store, content, plugins = [], signedIn = false) {
     connected: signedIn && store?.status === 'connected_read_only',
     proxy: signedIn && Boolean(store?.proxyConfigured),
     observedAt: matching && typeof content.observedAt === 'string' && Number.isFinite(Date.parse(content.observedAt)) ? content.observedAt : null,
+    balance: matching && Number.isSafeInteger(content.balance?.totalMinor) && content.balance.totalMinor >= 0 && ['RUB','USD','EUR'].includes(content.balance.currency) ? {totalMinor:content.balance.totalMinor,currency:content.balance.currency,approximate:content.balance.approximate===true} : null,
     active: signedIn ? plugins.filter(p => p.installed && p.active && !p.planned).length : 0,
     installed: signedIn ? plugins.filter(p => p.installed && !p.planned).length : 0
   };
@@ -42,8 +43,9 @@ function renderStoreIdentity() {
   let panel = document.querySelector('[data-store-identity]');
   if (!panel) { panel = document.createElement('div'); panel.dataset.storeIdentity = ''; grid.before(panel); }
   const time = model.observedAt ? new Date(model.observedAt).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Ещё не загружены';
+  const balanceText = model.balance ? `${model.balance.approximate ? '≈ ' : ''}${new Intl.NumberFormat('ru-RU',{style:'currency',currency:model.balance.currency}).format(model.balance.totalMinor/100)}` : 'Не получен';
   const symbol = id => `<svg aria-hidden="true"><use href="#i-${id}"/></svg>`;
-  panel.innerHTML = `<article class="store-banner"><div class="store-banner__identity">${avatar}<div><span class="store-kicker">ВАШ МАГАЗИН / FUNPAY</span><h2>${escape(model.name)}</h2><p>${model.id ? `ID ${escape(model.id)} · Один аккаунт` : 'Подключите аккаунт, чтобы увидеть данные магазина'}</p></div></div><span class="store-state${model.connected ? ' is-connected' : ''}">${symbol('shield')}${model.connected ? 'Подключение подтверждено' : 'Нет подтверждённого подключения'}</span></article>
+  panel.innerHTML = `<article class="store-banner"><div class="store-banner__identity">${avatar}<div><span class="store-kicker">ВАШ МАГАЗИН / FUNPAY</span><h2>${escape(model.name)}</h2><p>${model.id ? `ID ${escape(model.id)} · Один аккаунт` : 'Подключите аккаунт, чтобы увидеть данные магазина'}</p></div></div><div class="store-banner__balance"><span class="store-kicker">БАЛАНС FUNPAY</span><strong>${escape(balanceText)}</strong><small>${model.balance?.approximate ? 'По шапке FunPay · может быть округлён' : 'По последнему снимку магазина'}</small></div><span class="store-state${model.connected ? ' is-connected' : ''}">${symbol('shield')}${model.connected ? 'Подключение подтверждено' : 'Нет подтверждённого подключения'}</span></article>
   <div class="store-pulse-grid"><article class="store-pulse"><span class="store-pulse__icon">${symbol('shield')}</span><div><h3>Соединение</h3><strong>${model.connected ? 'FunPay подключён' : 'Ожидает подключения'}</strong><p>${model.proxy ? 'Прокси закреплён за магазином' : 'Прокси ещё не настроен'}</p></div></article><article class="store-pulse"><span class="store-pulse__icon store-pulse__icon--violet">${symbol('zap')}</span><div><h3>Автоматизация</h3><strong>${model.active} включено · ${model.installed} установлено</strong><button type="button" data-view-target="plugins">Настроить плагины ${symbol('chevron-right')}</button></div></article><article class="store-pulse"><span class="store-pulse__icon store-pulse__icon--blue">${symbol('clock')}</span><div><h3>Последние данные</h3><strong>${escape(time)}</strong><p>Снимок магазина · обновление вручную</p></div></article></div>`;
 }
 document.addEventListener('error', event => {

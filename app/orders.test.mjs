@@ -296,3 +296,11 @@ test('an old account request cannot block a new account sync or replace its rows
   assert.doesNotMatch(app.node('#orders-table-body').innerHTML, /old-account/);
   assert.match(app.node('#orders-table-body').innerHTML, /current-account/);
 });
+
+test('orders retain the FunPay date label when a complete timestamp is unavailable and escape it',()=>{
+ const app=workspace();
+ const html=app.run(`orderDateMarkup(null,'4 октября, 12:00 <img src=x>')`);
+ assert.match(html,/4 октября, 12:00/);assert.match(html,/&lt;img/);assert.ok(!html.includes('<img'));
+ const model=app.run(`buildOrdersWorkspace({observedAt:'2026-10-04T12:00:00Z',orders:[{id:'A',sourceDateLabel:'4 октября, 12:00',status:'paid'}]})`);
+ assert.equal(model.rows[0].sourceDateLabel,'4 октября, 12:00');assert.equal(model.rows[0].date,null);
+});

@@ -31,7 +31,7 @@ function buildOverview(content, preferredCurrency = '') {
     const currency = typeof order.currency === 'string' && /^[A-Z]{3}$/.test(order.currency) ? order.currency : null;
     const amount = Number.isSafeInteger(order.totalMinor) && order.totalMinor >= 0 && currency ? order.totalMinor : null;
     const date = overviewDate(order.createdAt);
-    return { id: String(order.id || `Заказ ${index + 1}`), product: String(order.product || order.title || 'Заказ FunPay'), buyer: String(order.buyer || order.buyerName || 'Покупатель FunPay'), status, currency, amount, date: date != null && (observedAt == null || date <= observedAt) ? date : null };
+    return { id: String(order.id || `Заказ ${index + 1}`), product: String(order.product || order.title || 'Заказ FunPay'), buyer: String(order.buyer || order.buyerName || 'Покупатель FunPay'), sourceDateLabel: typeof order.sourceDateLabel === 'string' ? order.sourceDateLabel.slice(0,240) : '', status, currency, amount, date: date != null && (observedAt == null || date <= observedAt) ? date : null };
   });
   const currencies = [...new Set(orders.filter(order => order.amount != null).map(order => order.currency))].sort();
   const currency = currencies.includes(preferredCurrency) ? preferredCurrency : currencies.includes('RUB') ? 'RUB' : currencies[0] || 'RUB';

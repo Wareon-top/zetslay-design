@@ -26,3 +26,9 @@ test('FunPay current avatar CDN is accepted without trusting lookalike domains',
  assert.equal(run("safeStoreAvatar('https://sfunpay.com/s/avatar/gx/lc/avatar.jpg')"),'https://sfunpay.com/s/avatar/gx/lc/avatar.jpg');
  for(const value of ['https://sfunpay.com.evil.test/a','https://evil.sfunpay.com/a','https://user:pass@sfunpay.com/a','http://sfunpay.com/a'])assert.equal(run(`safeStoreAvatar(${JSON.stringify(value)})`),'');
 });
+
+test('dashboard balance comes only from the selected profile snapshot and preserves zero',()=>{
+ assert.equal(run("storeIdentityModel({id:'42'},{profile:{id:'42'},balance:{totalMinor:0,currency:'RUB',approximate:true}},[],true).balance.totalMinor"),0);
+ assert.equal(run("storeIdentityModel({id:'42'},{profile:{id:'99'},balance:{totalMinor:500,currency:'RUB'}},[],true).balance"),null);
+ assert.equal(run("storeIdentityModel({id:'42'},{profile:{id:'42'},balance:{totalMinor:'500',currency:'RUB'}},[],true).balance"),null);
+});
