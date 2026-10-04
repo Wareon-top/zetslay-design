@@ -13,6 +13,10 @@ for file in review-reminder.js review-reminder.css review-reminder.test.mjs plug
 done
 git show "$revision:deploy/stage-review-reminder-ui.py" > "$work/stage.py"
 python3 "$work/stage.py" "$PWD/app" "$work/incoming" "$work/app"
+# Legacy cabinets may keep cover rendering inside app.js; this is a test-only dependency.
+if [ ! -f "$work/app/plugin-cover.js" ]; then
+  git show "$revision:app/plugin-cover.js" > "$work/app/plugin-cover.js"
+fi
 docker run --rm -v "$work/app:/work:ro" -w /work node:22-alpine node --check plugin-page.js </dev/null
 docker run --rm -v "$work/app:/work:ro" -w /work node:22-alpine node --check review-reminder.js </dev/null
 tests=(review-reminder.test.mjs plugin-page.test.mjs)
