@@ -108,6 +108,7 @@ function renderAuthState() {
   const accountName = email || (authState.user ? 'Telegram-аккаунт' : 'Войти');
   document.querySelectorAll('[data-auth-name]').forEach((node) => { node.textContent = accountName; });
   document.querySelectorAll('[data-auth-avatar]').forEach((node) => { node.textContent = accountInitials(accountName); });
+  if (typeof renderCabinetTopbar === 'function') renderCabinetTopbar();
   const sidebar = document.querySelector('.user-card');
   if (sidebar) {
     sidebar.querySelector('strong').textContent = accountName;

@@ -32,3 +32,10 @@ test('dashboard balance comes only from the selected profile snapshot and preser
  assert.equal(run("storeIdentityModel({id:'42'},{profile:{id:'99'},balance:{totalMinor:500,currency:'RUB'}},[],true).balance"),null);
  assert.equal(run("storeIdentityModel({id:'42'},{profile:{id:'42'},balance:{totalMinor:'500',currency:'RUB'}},[],true).balance"),null);
 });
+
+test('topbar uses compact Telegram identity without fake initials and keeps email accounts distinct',()=>{
+ assert.equal(run("cabinetAccountLabel({telegramUserId:'42'}).name"),'Мой аккаунт');
+ assert.equal(run("cabinetAccountLabel({telegramUserId:'42'}).telegram"),true);
+ assert.equal(run("cabinetAccountLabel({email:'seller@example.com'}).name"),'seller@example.com');
+ assert.equal(run("cabinetAccountLabel(null).name"),'Войти');
+});

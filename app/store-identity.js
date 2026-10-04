@@ -27,6 +27,7 @@ function storeIdentityAvatar(model) {
 }
 function renderStoreIdentity() {
   const model = storeIdentityModel(selectedStore(), state.storeContent, state.plugins, Boolean(authState.user));
+  renderCabinetTopbar(model);
   const escape = overviewEscape;
   const avatar = storeIdentityAvatar(model);
   document.querySelectorAll('[data-selected-store-avatar]').forEach(node => { node.innerHTML = avatar; });
@@ -51,3 +52,25 @@ function renderStoreIdentity() {
 document.addEventListener('error', event => {
   if (event.target?.matches?.('[data-store-portrait-image]')) event.target.remove();
 }, true);
+
+function cabinetAccountLabel(user) {
+  if (!user) return {name:'Войти',subtitle:'Личный кабинет',telegram:false};
+  return user.email ? {name:String(user.email),subtitle:'Аккаунт ZetSlay',telegram:false}
+    : {name:'Мой аккаунт',subtitle:'Вход через Telegram',telegram:true};
+}
+function renderCabinetTopbar(model = null) {
+  const root=document.querySelector('.topbar');
+  if(!root)return;
+  if(!model)model=storeIdentityModel(selectedStore(),state.storeContent,state.plugins,Boolean(authState.user));
+  const balance=root.querySelector('[data-topbar-balance]');
+  if(balance){balance.textContent=model.balance?`${model.balance.approximate?'≈ ':''}${new Intl.NumberFormat('ru-RU',{style:'currency',currency:model.balance.currency}).format(model.balance.totalMinor/100)}`:'—';balance.closest('.balance-chip')?.setAttribute('title',model.balance?'Баланс из последнего снимка FunPay; сумма в шапке может быть округлена':'Баланс FunPay ещё не получен. Обновите данные магазина.');}
+  const account=root.querySelector('.topbar-profile');
+  if(account){
+    const label=cabinetAccountLabel(authState.user);
+    const name=account.querySelector('[data-auth-name]');if(name){name.textContent=label.name;name.title=label.name;}
+    const subtitle=account.querySelector('.topbar-profile__meta small');if(subtitle)subtitle.textContent=label.subtitle;
+    const avatar=account.querySelector('[data-auth-avatar]');
+    if(avatar){avatar.classList.toggle('topbar-account-avatar--telegram',label.telegram);avatar.innerHTML=label.telegram?'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="m20.7 3.8-3.1 16c-.2 1.1-.9 1.3-1.8.8l-4.8-3.5-2.3 2.2c-.3.3-.5.5-1 .5l.4-4.9 8.9-8c.4-.3-.1-.5-.6-.2l-11 6.9-4.7-1.5c-1-.3-1-1 .2-1.5l18.4-7.1c.9-.3 1.6.2 1.3 1.3Z"/></svg>':overviewEscape(label.name==='Войти'?'Z':label.name.slice(0,2).toUpperCase());}
+    account.setAttribute('aria-label',authState.user?'Открыть свой аккаунт ZetSlay':'Войти в ZetSlay');
+  }
+}

@@ -21,7 +21,7 @@
     <link rel="stylesheet" href="admin-access.css?v=20261004-owner-admin">
     <link rel="stylesheet" href="review-reminder.css?v=20261004-review-reminder">
     <link rel="stylesheet" href="review-bonus.css?v=20261004-review-bonus">
-  <link rel="stylesheet" href="store-identity.css?v=20261004-store-metadata">
+  <link rel="stylesheet" href="store-identity.css?v=20261004-topbar">
 </head>
   <body>
     <svg class="icon-sprite" aria-hidden="true">
@@ -106,12 +106,10 @@
           <button class="icon-button mobile-menu" type="button" aria-label="Открыть меню" data-sidebar-open><svg><use href="#i-menu"/></svg></button>
           <div class="topbar-context"><strong id="current-view-label">Главная</strong><small>ZetSlay Control</small></div>
           <div class="topbar__actions">
-            <span class="prototype-chip" data-system-health><i></i> Гостевой режим</span>
             <span class="balance-chip"><svg><use href="#i-card"/></svg><span><small>Баланс</small><strong data-topbar-balance>—</strong></span></span>
             <button class="button button--light" type="button" data-open-connect><svg><use href="#i-plus"/></svg> Подключить FunPay</button>
             
             <button class="icon-button notification-button" type="button" aria-label="Уведомления" data-toast="Уведомления появятся после настройки Telegram"><svg><use href="#i-bell"/></svg></button>
-            <button class="icon-button" type="button" aria-label="Безопасность" data-view-link="security"><svg><use href="#i-gear"/></svg></button>
             <button class="topbar-profile" type="button" data-auth-open><span data-auth-avatar>WA</span><span class="topbar-profile__meta"><strong data-auth-name>Войти</strong><small>Аккаунт ZetSlay</small></span><svg><use href="#i-chevron"/></svg></button>
           </div>
         </header>
@@ -451,15 +449,15 @@
     </section>
 
     <div class="toast-region" aria-live="polite" aria-atomic="true"></div>
-    <script src="store-identity.js?v=20261004-store-metadata" defer></script>
-    <script src="overview.js?v=20261004-store-metadata" defer></script>
-    <script src="orders.js?v=20261004-store-metadata" defer></script>
+    <script src="store-identity.js?v=20261004-topbar" defer></script>
+    <script src="overview.js?v=20261004-topbar" defer></script>
+    <script src="orders.js?v=20261004-topbar" defer></script>
     <script src="plugin-cover.js?v=20261003-cover-quality" defer></script>
     <script src="confirm-reminder.js?v=20261003-reminder-settings" defer></script>
     <script src="review-reminder.js?v=20261004-review-reminder" defer></script>
     <script src="review-bonus.js?v=20261004-review-bonus" defer></script>
     <script src="plugin-page.js?v=20261004-review-bonus" defer></script>
     <script src="messages.js?v=20261003-message-sync" defer></script>
-    <script src="app.js?v=20261004-owner-admin" defer></script>
+    <script src="app.js?v=20261004-topbar" defer></script>
   </body>
 </html>
