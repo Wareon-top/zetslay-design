@@ -576,8 +576,33 @@ async function createWithdrawalIntent(form) {
   }
 }
 
+function isPluginCatalogOwner() {
+  return authState.user?.telegramUserId === '5062414502';
+}
+
 function canManagePluginCatalog() {
-  return Boolean(authState.token && authState.user && state.pluginCanManage === true);
+  return Boolean(authState.token && isPluginCatalogOwner() && state.pluginCanManage === true);
+}
+
+function renderPluginAdminAccess() {
+  const allowed = canManagePluginCatalog();
+  if (document.documentElement) document.documentElement.dataset.catalogAdmin = String(allowed);
+  document.querySelectorAll('[data-plugin-admin-controls]').forEach(target => {
+    target.hidden = !allowed;
+    if (!allowed) target.innerHTML = '';
+  });
+  document.querySelectorAll('[data-plugin-cover-admin], [data-plugin-publish], [data-plugin-edit], [data-cover-plugin]').forEach(button => { button.hidden = !allowed; });
+  if (!allowed) {
+    state.pluginCoverAdmin = false;
+    const upload = document.querySelector('[data-plugin-cover-input]');
+    if (upload) { upload.value = ''; delete upload.dataset.pluginId; }
+    const dialog = document.querySelector('[data-plugin-dialog]');
+    if (dialog?.querySelector('[data-plugin-editor]')) {
+      closePluginDialog();
+      const body = dialog.querySelector('[data-plugin-dialog-body]');
+      if (body) body.innerHTML = '';
+    }
+  }
 }
 
 function resetPluginCatalog() {
@@ -607,7 +632,7 @@ async function loadPluginCatalog() {
   }
   if (token !== authState.token || revision !== state.pluginCatalogRevision) return;
   const old = new Map(state.plugins.map(plugin => [plugin.id, plugin]));
-  state.pluginCanManage = catalog.canManage === true;
+  state.pluginCanManage = catalog.canManage === true && isPluginCatalogOwner();
   state.pluginCoverAdmin = state.pluginCanManage && state.pluginCoverAdmin;
   if (typeof pluginCatalogLoaded === 'function') pluginCatalogLoaded();
   state.plugins = catalog.entries.map(backend => ({
@@ -1113,6 +1138,7 @@ function renderAutomations() {
 }
 
 function renderPlugins() {
+  renderPluginAdminAccess();
   if (typeof renderPluginAdminControls === 'function') renderPluginAdminControls();
   const target = byId('plugin-grid');
   if (!target) { if (typeof renderPluginPage === 'function') renderPluginPage(); return; }

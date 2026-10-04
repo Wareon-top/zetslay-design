@@ -35,7 +35,7 @@ function harness({ admin = false, hash = '#plugins/zetslay.auto-reply', loaded =
   vm.runInContext(addon + '\n' + cabinet, context);
   const run = code => vm.runInContext(code, context);
   context.input = entry();
-  run(`authState.user={id:'user'}; state.plugins=[input]; state.pluginCanManage=${admin}; pluginPageState.loaded=${loaded}; pluginPageState.generation=sessionGeneration; showToast=()=>{};`);
+  run(`authState.user={id:'user',telegramUserId:'${admin ? '5062414502' : '123456789'}'}; state.plugins=[input]; state.pluginCanManage=${admin}; pluginPageState.loaded=${loaded}; pluginPageState.generation=sessionGeneration; showToast=()=>{};`);
   return { page, grid, controls, views, nav, label, document, location, context, run, listeners };
 }
 
@@ -110,7 +110,7 @@ test('drafts cannot be opened by a user even if stale entries remain in memory',
   app.run('state.plugins[0].published=false; renderPlugins()');
   assert.doesNotMatch(app.grid.innerHTML, /Подробнее/);
   assert.match(app.page.innerHTML, /Плагин не найден/);
-  app.run('state.pluginCanManage=true; renderPlugins()');
+  app.run("authState.user.telegramUserId='5062414502'; state.pluginCanManage=true; renderPlugins()");
   assert.match(app.page.innerHTML, /Черновик/);
   assert.match(app.page.innerHTML, /data-plugin-id="zetslay.auto-reply" disabled/);
 });

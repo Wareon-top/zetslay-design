@@ -386,7 +386,7 @@ test('non-admin cannot open publishing editor or save metadata through UI', asyn
 
 test('catalog capabilities and runtime state are loaded from the backend', async () => {
   const app = cabinet({ token: 'test-token' });
-  app.run(`renderPlugins = () => {};
+  app.run(`authState.user={telegramUserId:'5062414502'}; renderPlugins = () => {};
     apiRequest = async () => ({canManage:true,entries:[
       {id:'zetslay.test',name:'Тест',category:'chat',priceRub:99,description:'Описание',permissions:['messages:read'],planned:true,published:true,installation:null}
     ]});`);
@@ -407,6 +407,15 @@ test('late catalog response cannot restore admin capabilities after session chan
   assert.equal(app.run('state.pluginCanManage'), false);
 });
 
+test('a catalog admin flag cannot grant editing to another Telegram account', async () => {
+  const app = cabinet({token:'ordinary-session'});
+  app.run(`authState.user={telegramUserId:'123456789'}; renderPlugins=()=>{};
+    apiRequest=async()=>({canManage:true,entries:[]});`);
+  await app.run('loadPluginCatalog()');
+  assert.equal(app.run('state.pluginCanManage'),false);
+  assert.equal(app.run('canManagePluginCatalog()'),false);
+});
+
 test('admin controls are hidden for users and names remain escaped in card HTML', () => {
   const app = cabinet();
   app.run(`globalThis.grid = {innerHTML:''}; globalThis.controls = [{hidden:false},{hidden:false}];
@@ -417,7 +426,7 @@ test('admin controls are hidden for users and names remain escaped in card HTML'
   assert.equal(app.run('controls.every(button=>button.hidden)'), true);
   assert.ok(app.run('grid.innerHTML').includes('&lt;img src=x&gt;'));
   assert.ok(!app.run('grid.innerHTML').includes('<img src=x>'));
-  app.run("authState.token='admin-session'; authState.user={}; state.pluginCanManage = true; renderPlugins()");
+  app.run("authState.token='admin-session'; authState.user={telegramUserId:'5062414502'}; state.pluginCanManage = true; renderPlugins()");
   assert.equal(app.run('controls.every(button=>!button.hidden)'), true);
 });
 

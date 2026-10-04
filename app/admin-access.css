@@ -1,0 +1,12 @@
+/* Administrative catalog actions stay hidden until the authenticated owner
+   and the API both confirm access. Plugin installation/settings stay public. */
+html:not([data-catalog-admin="true"]) [data-plugin-admin-controls],
+html:not([data-catalog-admin="true"]) [data-plugin-cover-admin],
+html:not([data-catalog-admin="true"]) [data-plugin-publish],
+html:not([data-catalog-admin="true"]) [data-plugin-edit],
+html:not([data-catalog-admin="true"]) [data-cover-plugin],
+html:not([data-catalog-admin="true"]) [data-plugin-editor],
+html:not([data-catalog-admin="true"]) .plugin-page-admin,
+html:not([data-catalog-admin="true"]) .plugin-admin-label {
+  display: none !important;
+}
