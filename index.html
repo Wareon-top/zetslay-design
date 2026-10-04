@@ -12,6 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="landing.css">
   <link rel="stylesheet" href="landing-hero.css?v=20261004-hero-cleanup">
+  <link rel="stylesheet" href="landing-features.css?v=20261004-feature-cards">
 </head>
 <body id="top">
   <a class="skip-link" href="#main">Перейти к содержанию</a>
@@ -54,14 +55,78 @@
       </div></div>
     </section>
 
-    <section class="section section--surface" id="features" data-section="features" aria-labelledby="features-title">
+    <section class="section features-showcase" id="features" data-section="features" data-landing-features="bento" aria-labelledby="features-title">
       <div class="shell">
-        <div class="section-intro"><span class="section-kicker">01 / Возможности</span><h2 id="features-title">Все рабочие события<br>в одном месте.</h2><p>Кабинет показывает доступные данные магазина и состояние соединения. Если источник недоступен, вместо выдуманных цифр вы увидите причину.</p></div>
-        <div class="benefit-grid">
-          <article class="benefit-card"><div class="benefit-card__top"><span class="benefit-icon benefit-icon--amber" aria-hidden="true">▤</span><span>01 / Заказы</span></div><div><h3>Заказы и их контекст</h3><p>Статусы и история появляются после успешной проверки подключения, когда источник отдаёт данные.</p></div><span class="benefit-card__foot">Режим чтения <span aria-hidden="true">↗</span></span></article>
-          <article class="benefit-card"><div class="benefit-card__top"><span class="benefit-icon benefit-icon--blue" aria-hidden="true">◌</span><span>02 / Сообщения</span></div><div><h3>Диалоги рядом</h3><p>Входящие сообщения и контекст переписки помогают замечать обращения, которые требуют внимания.</p></div><span class="benefit-card__foot">Без автоответов в FunPay <span aria-hidden="true">↗</span></span></article>
-          <article class="benefit-card"><div class="benefit-card__top"><span class="benefit-icon benefit-icon--green" aria-hidden="true">✓</span><span>03 / Состояние</span></div><div><h3>Честный статус</h3><p>Проверка показывает результат подключения. При отказе входа, CAPTCHA или лимите запросов соединение останавливается.</p></div><span class="benefit-card__foot">Причина видна в кабинете <span aria-hidden="true">↗</span></span></article>
-          <article class="benefit-card"><div class="benefit-card__top"><span class="benefit-icon benefit-icon--violet" aria-hidden="true">⌁</span><span>04 / Доступ</span></div><div><h3>Секреты под защитой</h3><p>Golden Key и прокси вводятся только в веб-кабинете и сохраняются зашифрованно в vault.</p></div><span class="benefit-card__foot">Один аккаунт · один прокси <span aria-hidden="true">↗</span></span></article>
+        <div class="features-showcase__intro"><span class="section-kicker">01 / Возможности</span><h2 id="features-title">Меньше рутины.<br><span>Больше контроля.</span></h2><p>Заказы, диалоги и автоматизация — рядом. Всё, что нужно для ежедневной работы продавца.</p></div>
+        <div class="features-showcase__grid">
+          <article class="feature-frame" data-feature-card="orders" aria-labelledby="feature-orders-title">
+            <div class="feature-frame__art" aria-hidden="true">
+              <svg viewBox="0 0 270 142" fill="none" focusable="false">
+                <path d="M29 72h18m176 0h18M135 1v10m0 120v10" stroke="#292d35" stroke-linecap="round"/>
+                <rect x="42" y="32" width="97" height="91" rx="13" fill="#12141a" stroke="#292d35" transform="rotate(-9 42 32)"/>
+                <rect x="130" y="15" width="96" height="94" rx="13" fill="#12141a" stroke="#292d35" transform="rotate(9 130 15)"/>
+                <rect x="79" y="10" width="112" height="120" rx="15" fill="#15181f" stroke="#434650"/>
+                <path d="M98 31h74M99 83h47m-47 12h63m-63 12h34" stroke="#666e7b" stroke-width="2" stroke-linecap="round"/>
+                <rect x="99" y="46" width="72" height="22" rx="7" fill="#232018"/>
+                <path d="m109 57 4 4 8-8m11 4h29" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="189" cy="107" r="18" fill="#1b241f" stroke="#354f41"/>
+                <path d="m181 107 5 5 10-10" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="feature-frame__copy"><h3 id="feature-orders-title">Все заказы под контролем</h3><p>Статусы, история и контекст заказов — рядом, чтобы важные события не терялись.</p></div>
+            <p class="feature-frame__note feature-frame__note--available">Заказы подключённого магазина FunPay</p>
+          </article>
+          <article class="feature-frame" data-feature-card="dialogs" aria-labelledby="feature-dialogs-title">
+            <div class="feature-frame__art" aria-hidden="true">
+              <div class="feature-dialogs">
+                <svg viewBox="0 0 254 142" fill="none" focusable="false"><path d="M30 27h35q12 0 12 12v20q0 12 12 12h19m116-44h-35q-12 0-12 12v20q0 12-12 12h-19M30 115h35q12 0 12-12V83q0-12 12-12h19m116 44h-35q-12 0-12-12V83q0-12-12-12h-19" stroke="#434650" stroke-width="1.5"/><circle cx="77" cy="47" r="3" fill="#f9b32e"/><circle cx="177" cy="95" r="3" fill="#666e7b"/></svg>
+                <span class="feature-dialogs__hub"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M5 4h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-8l-6 3v-3a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/><path d="M8 9h8M8 13h5"/></svg></span>
+                <span class="feature-dialogs__platform feature-dialogs__platform--funpay"><img src="assets/platforms/funpay.svg" alt="" width="25" height="25" loading="lazy" decoding="async"></span>
+                <span class="feature-dialogs__platform feature-dialogs__platform--ggsel"><img src="assets/platforms/ggsel.svg" alt="" width="25" height="25" loading="lazy" decoding="async"></span>
+                <span class="feature-dialogs__platform feature-dialogs__platform--plati"><img src="assets/platforms/plati-market.svg" alt="" width="25" height="25" loading="lazy" decoding="async"></span>
+                <span class="feature-dialogs__platform feature-dialogs__platform--starvell"><img src="assets/platforms/starvell.svg" alt="" width="25" height="25" loading="lazy" decoding="async"></span>
+              </div>
+            </div>
+            <div class="feature-frame__copy"><h3 id="feature-dialogs-title">Диалоги со всех площадок в одном окне</h3><p>Начните с диалогов FunPay. Подключение остальных площадок — следующий этап развития.</p></div>
+            <p class="feature-frame__note feature-frame__note--available">FunPay доступен · другие площадки в планах</p>
+          </article>
+          <article class="feature-frame" data-feature-card="plugins" aria-labelledby="feature-plugins-title">
+            <div class="feature-frame__art" aria-hidden="true">
+              <div class="feature-modules">
+                <svg viewBox="0 0 250 142" fill="none" focusable="false"><rect x="18" y="17" width="31" height="31" rx="9" stroke="#434650" transform="rotate(-12 18 17)"/><rect x="202" y="15" width="29" height="29" rx="8" stroke="#434650" transform="rotate(12 202 15)"/><rect x="13" y="93" width="30" height="30" rx="9" stroke="#292d35" transform="rotate(8 13 93)"/><rect x="204" y="96" width="30" height="30" rx="9" stroke="#292d35" transform="rotate(-8 204 96)"/><path d="M33 25v12m-6-6h12m178-2v12m-6-6h12M19 106h12m187 3h12" stroke="#666e7b" stroke-width="1.5" stroke-linecap="round"/><path d="M62 14h35m56 0h35M63 130h33m58 0h33" stroke="#292d35" stroke-linecap="round"/><circle cx="126" cy="14" r="2" fill="currentColor"/><circle cx="126" cy="130" r="2" fill="#666e7b"/></svg>
+                <span class="feature-modules__count">30<span>+</span></span>
+              </div>
+            </div>
+            <div class="feature-frame__copy"><h3 id="feature-plugins-title">30+ плагинов для автоматизации бизнеса</h3><p>Развиваем каталог до 30+ сценариев. Confirm Reminder уже напоминает клиентам подтвердить заказ.</p></div>
+            <p class="feature-frame__note feature-frame__note--planned">30+ — цель каталога</p>
+          </article>
+          <article class="feature-frame feature-frame--wide" data-feature-card="products" aria-labelledby="feature-products-title">
+            <div class="feature-frame__art" aria-hidden="true">
+              <svg viewBox="0 0 270 208" fill="none" focusable="false">
+                <rect x="51" y="39" width="170" height="130" rx="20" stroke="#292d35"/>
+                <path d="m135 58 46 26v53l-46 26-46-26V84l46-26Z" fill="#1d1b17" stroke="#665231" stroke-width="1.5" stroke-linejoin="round"/>
+                <path d="m89 84 46 27 46-27m-46 27v52m-24-91 46 26v18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <rect x="15" y="48" width="81" height="38" rx="10" fill="#15181f" stroke="#434650"/><rect x="26" y="60" width="14" height="14" rx="4" fill="#292d35"/><path d="M49 62h32m-32 10h22" stroke="#666e7b" stroke-width="2" stroke-linecap="round"/>
+                <rect x="170" y="130" width="87" height="42" rx="11" fill="#15181f" stroke="#434650"/><circle cx="189" cy="151" r="7" fill="#232018" stroke="#665231"/><path d="M204 147h35m-35 9h22" stroke="#666e7b" stroke-width="2" stroke-linecap="round"/>
+                <path d="M216 34v12m-6-6h12M53 181v10m-5-5h10" stroke="#666e7b" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="feature-frame__copy"><h3 id="feature-products-title">Удобное управление товаром</h3><p>Готовим единое пространство для лотов: названия, категории и порядок в ассортименте.</p></div>
+            <p class="feature-frame__note feature-frame__note--planned">Редактирование товаров — в планах</p>
+          </article>
+          <article class="feature-frame feature-frame--wide" data-feature-card="stats-forums" aria-labelledby="feature-stats-title">
+            <div class="feature-frame__art" aria-hidden="true">
+              <svg viewBox="0 0 270 208" fill="none" focusable="false">
+                <path d="M22 52h226M22 94h226M22 136h226M22 178h226M44 41v137m50-137v137m50-137v137m50-137v137m50-137v137" stroke="#292d35" stroke-opacity=".7"/>
+                <path d="m24 151 20-14 22 6 19-39 20 12 20-27 24 11 20-32 20 12 23-27 21 6 18-27" stroke="#e7e9ee" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M44 179v-13m50 13v-28m50 28v-39m50 39v-56m50 56v-67" stroke="#665231" stroke-width="11" stroke-linecap="round"/>
+                <circle cx="149" cy="100" r="4" fill="currentColor" stroke="#12141a" stroke-width="2"/>
+                <rect x="165" y="9" width="57" height="36" rx="11" fill="#15181f" stroke="#434650"/><path d="m179 45-3 8 13-8" fill="#15181f" stroke="#434650" stroke-linejoin="round"/><circle cx="182" cy="27" r="2" fill="currentColor"/><circle cx="194" cy="27" r="2" fill="currentColor"/><circle cx="206" cy="27" r="2" fill="currentColor"/>
+              </svg>
+            </div>
+            <div class="feature-frame__copy"><h3 id="feature-stats-title">Статистика и форумы</h3><p>Следите за результатами магазина. Форумы для обмена опытом с другими продавцами — в планах.</p></div>
+            <p class="feature-frame__note feature-frame__note--available">Статистика доступна · форумы в планах</p>
+          </article>
         </div>
       </div>
     </section>
