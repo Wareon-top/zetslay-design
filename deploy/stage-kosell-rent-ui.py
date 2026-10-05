@@ -15,8 +15,9 @@ def stage(local, incoming, out):
         if page.count(marker) != 1:
             raise ValueError('Неизвестная структура страницы плагина. Кабинет не изменён.')
         page = page.replace(marker, hook+marker, 1)
-    old = "${plugin.id === 'zetslay.sales-pause' ? 'Отключение"
-    new = "${plugin.id === 'zetslay.kosell-rent' ? 'Автопокупка включается отдельно. Цена и покупатель проверяются перед выдачей. Неизвестный результат списания запрещает автоматический повтор; операции с арендой требуют подтверждения.' : plugin.id === 'zetslay.sales-pause' ? 'Отключение"
+    prefix = '<h2>Контроль остаётся у вас</h2><p>Вы можете остановить модуль в кабинете. ${'
+    old = prefix + 'plugin.id === '
+    new = prefix + "plugin.id === 'zetslay.kosell-rent' ? 'Автопокупка включается отдельно. Цена и покупатель проверяются перед выдачей. Неизвестный результат списания запрещает автоматический повтор; операции с арендой требуют подтверждения.' : plugin.id === "
     if new not in page:
         if page.count(old) != 1:
             raise ValueError('Неизвестная поясняющая панель. Кабинет не изменён.')
