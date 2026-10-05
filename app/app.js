@@ -23,7 +23,7 @@ const state = {
 const viewTitles = {
   dashboard: 'Обзор', orders: 'Заказы', messages: 'Сообщения', lots: 'Лоты',
   plugins: 'Плагины', plugin: 'Плагин', telegram: 'Telegram', billing: 'Финансы', security: 'Безопасность',
-  guide: 'База знаний',
+  guide: 'База знаний', profile: 'Профиль', author: 'Карточка автора',
 };
 
 const iconNames = {
@@ -123,6 +123,7 @@ function renderAuthState() {
   renderDashboard();
   const account = document.querySelector('[data-security-account]');
   if (account) account.textContent = authState.user ? `${accountName} · сессия активна` : 'Войдите в аккаунт.';
+  if (typeof renderProfile === 'function') renderProfile();
 }
 
 function setAuthMode(mode) {
@@ -178,6 +179,7 @@ function setAuthModal(open) {
 }
 
 function resetAccountData() {
+  if (typeof resetProfileState === 'function') resetProfileState();
   connectionBusy = false;
   connectionError = '';
   connectionResetTarget = null;
@@ -222,6 +224,7 @@ function clearSession() {
 async function loadAccountData() {
   const generation = ++sessionGeneration;
   const tasks = [loadPluginCatalog, loadPluginAudit, loadStoreFleet, loadFinance, loadOnboarding];
+  if (typeof loadProfile === 'function') tasks.push(loadProfile);
   const results = await Promise.allSettled(tasks.map((task) => task()));
   if (generation !== sessionGeneration) return;
   const errors = results.filter((result) => result.status === 'rejected');
@@ -459,6 +462,7 @@ function renderStoreFleet() {
   document.querySelector('[data-nav-orders]')?.replaceChildren(document.createTextNode(String(state.orders.length)));
   document.querySelector('[data-nav-messages]')?.replaceChildren(document.createTextNode(String(state.conversations.length)));
   renderDashboard();
+  if (typeof renderProfile === 'function') renderProfile();
 }
 
 // Maps the single FunPay connection to the fleet-shaped view state the
@@ -1006,6 +1010,7 @@ function renderTelegramOnboarding() {
 
   const message = document.querySelector('[data-telegram-message]');
   if (message) message.textContent = authState.user ? '' : 'Войдите в аккаунт, чтобы подключить бота.';
+  if (typeof renderProfile === 'function') renderProfile();
 }
 
 // Service bot username for deep links (server tells it via onboarding status or ?bot= override)
@@ -1307,8 +1312,10 @@ function renderEvents() {
 }
 
 function setView(viewName, updateHash = true) {
+  viewName = typeof normalizeProfileRoute === 'function' ? normalizeProfileRoute(viewName) : viewName;
+  const authorId = typeof parseAuthorRoute === 'function' ? parseAuthorRoute(viewName) : null;
   const route = typeof parsePluginPageRoute === 'function' ? parsePluginPageRoute(viewName) : null;
-  const resolvedView = route ? 'plugin' : viewTitles[viewName] ? viewName : 'dashboard';
+  const resolvedView = authorId ? 'author' : route ? 'plugin' : viewTitles[viewName] ? viewName : 'dashboard';
   document.querySelectorAll('[data-view]').forEach(view => {
     const active = view.dataset.view === resolvedView;
     view.hidden = !active;
@@ -1324,9 +1331,10 @@ function setView(viewName, updateHash = true) {
   if (label) label.textContent = resolvedView === 'plugin' ? 'Плагины / Подробнее' : viewTitles[resolvedView];
   document.title = `${viewTitles[resolvedView]} — ZetSlay Control`;
   setSidebar(false);
-  if (updateHash) history.replaceState(null, '', `#${route ? viewName : resolvedView}`);
+  if (updateHash) history.replaceState(null, '', `#${route || authorId ? viewName : resolvedView}`);
   if (typeof renderPluginPage === 'function') renderPluginPage();
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (typeof renderProfileRoute === 'function') renderProfileRoute(authorId ? viewName : resolvedView);
 }
 
 function setSidebar(open) {
@@ -1764,7 +1772,7 @@ function bindInteractions() {
     if (authMode) { setAuthMode(authMode.dataset.authMode); return; }
     const telegramLogin = event.target.closest('[data-telegram-login]');
     if (telegramLogin) { startTelegramLogin(telegramLogin); return; }
-    if (event.target.closest('[data-auth-open]')) { setAuthModal(true); return; }
+    if (event.target.closest('[data-auth-open]')) { if (authState.user) setView('profile'); else setAuthModal(true); return; }
     if (event.target.closest('[data-auth-close]')) { stopTelegramLoginPolling(); setAuthModal(false); return; }
     if (event.target.closest('[data-auth-logout]')) {
       apiRequest('/api/v1/auth/logout', { method: 'POST', authenticated: true }).catch(() => {});

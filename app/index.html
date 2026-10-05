@@ -24,6 +24,7 @@
   <link rel="stylesheet" href="plugin-cover.css?v=20261004-detail-cover-quality">
     <link rel="stylesheet" href="mass-price-editor.css?v=20261004-mass-price">
       <link rel="stylesheet" href="plugin-rarity.css?v=20261004-plugin-rarity">
+    <link rel="stylesheet" href="profile.css?v=20261005-profile">
   </head>
   <body>
     <svg class="icon-sprite" aria-hidden="true">
@@ -84,8 +85,7 @@
           <button class="nav-item" type="button" data-view-target="plugins"><svg><use href="#i-puzzle"/></svg><span>Плагины</span></button>
           <span class="sidebar-nav__label">Сервисы и настройки</span>
           <button class="nav-item" type="button" data-view-target="billing"><svg><use href="#i-card"/></svg><span>Финансы</span></button>
-          <button class="nav-item" type="button" data-view-target="telegram"><svg><use href="#i-send"/></svg><span>Telegram</span></button>
-          <button class="nav-item" type="button" data-view-target="security"><svg><use href="#i-shield"/></svg><span>Безопасность</span></button>
+          <button class="nav-item" type="button" data-view-target="profile"><svg><use href="#i-user"/></svg><span>Профиль</span></button>
           <button class="nav-item" type="button" data-view-target="guide"><svg><use href="#i-help"/></svg><span>База знаний</span></button>
         </nav>
 
@@ -95,7 +95,7 @@
             <div><strong>Поддержка</strong><small>Обратная связь пока не подключена</small></div>
             <button class="support-card__button" type="button" data-toast="Центр поддержки будет подключён перед закрытой beta">Написать в поддержку</button>
           </div>
-          <div class="user-card" data-auth-open>
+          <div class="user-card" data-auth-open role="button" tabindex="0">
             <span class="user-card__avatar">WA</span>
             <span><strong>Войти</strong><small>Войти в ZetSlay</small></span>
             
@@ -251,62 +251,8 @@
 
           <section class="view plugin-page" data-view="plugin" data-plugin-page aria-label="Подробности плагина"></section>
 
-          <section class="view" data-view="telegram" aria-labelledby="telegram-title">
-            <div class="view-heading view-heading--compact"><div><span class="eyebrow">Remote control / Telegram</span><h1 id="telegram-title">Telegram</h1><p>Рабочий бот вашего магазина: уведомления о заказах, сообщениях и статус подключения в реальном времени.</p></div><span class="health-pill health-pill--waiting" data-telegram-health><i></i> Не подключён</span></div>
-            <div class="telegram-layout">
-              <section class="tg-card panel tg-bot" aria-label="Бот">
-                <header class="tg-bot__head">
-                  <span class="tg-bot__avatar" data-tg-avatar>Z</span>
-                  <div>
-                    <span class="tg-bot__label">Ваш рабочий бот</span>
-                    <strong class="tg-bot__name" data-tg-name>Ещё не настроен</strong>
-                    <small class="tg-bot__meta" data-tg-meta>Создайте бота через @BotFather</small>
-                  </div>
-                  <span class="tg-bot__status" data-tg-status>…</span>
-                </header>
-                <div class="tg-progress" id="tg-progress">
-                  <span class="tg-progress__step" data-tg-step="0"><b>1</b>Токен</span>
-                  <span class="tg-progress__line"></span>
-                  <span class="tg-progress__step" data-tg-step="1"><b>2</b>Код</span>
-                  <span class="tg-progress__line"></span>
-                  <span class="tg-progress__step" data-tg-step="2"><b>3</b>Привязка</span>
-                </div>
-                <div class="tg-hint" data-tg-hint></div>
-              </section>
-
-              <section class="panel tg-connect" aria-label="Подключение">
-                <div class="panel-head"><div><span class="panel-label">Настройка</span><h2>Подключение бота</h2></div></div>
-                <form class="tg-form" data-telegram-onboarding-form>
-                  <label>Bot Token
-                    <input type="password" name="token" minlength="10" maxlength="256" autocomplete="off" spellcheck="false" placeholder="123456789:AAABBBcccDDD...">
-                  </label>
-                  <p class="tg-note">Зайдите в BotFather, создайте бота, скопируйте токен. ZetSlay проверит его через официальный API и положит в зашифрованный vault.</p>
-                  <button class="button button--primary button--wide" type="submit">Проверить и сохранить <svg><use href="#i-chevron"/></svg></button>
-                  <div class="tg-token-status" data-tg-token-status></div>
-                </form>
-
-                <div class="tg-link" data-telegram-link-code hidden>
-                  <span class="panel-label">Одноразовый код</span>
-                  <div class="tg-link__code">
-                    <strong>/start <span data-tg-code>——</span></strong>
-                    <button class="tg-copy" type="button" data-tg-copy title="Скопировать код"><svg><use href="#i-plus"/></svg></button>
-                  </div>
-                  <p>Получите код и отправьте команду своему рабочему боту. Код действует 10 минут.</p>
-                  <a class="button button--telegram button--wide" href="#" target="_blank" rel="noopener" data-tg-deep-link><svg><use href="#i-send"/></svg> Открыть бота и отправить код</a>
-                  <div class="tg-waiting" data-tg-waiting><i></i> Ждём подтверждения…</div>
-                  <button class="tg-new-code" type="button" data-telegram-issue-code>Получить новый код</button>
-                </div>
-                <div class="tg-done" data-tg-done hidden>
-                  <span class="tg-done__icon"><svg><use href="#i-check"/></svg></span>
-                  <h3>Привязано</h3>
-                  <p>Telegram подключён к этому аккаунту. Включите категории уведомлений в разделе «Плагины».</p>
-                  <a class="text-action" href="#" data-view-link="plugins">Открыть плагины <svg><use href="#i-chevron"/></svg></a>
-                </div>
-                <div class="inline-status" data-telegram-message></div>
-              </section>
-            </div>
-          </section>
-
+          <section class="view" data-view="profile" aria-label="Профиль" hidden><div data-profile></div></section>
+          <section class="view" data-view="author" aria-label="Карточка автора" hidden><div data-author-page></div></section>
           <section class="view" data-view="guide" aria-labelledby="guide-title">
             <div class="guide-heading"><span class="eyebrow">Центр подключения</span><h1 id="guide-title">База знаний</h1><p>Короткие и безопасные инструкции по настройке ZetSlay.</p></div>
             <div class="guide-tabs" role="tablist" aria-label="Разделы инструкции"><button class="is-active" type="button" data-guide-target="key"><span><svg><use href="#i-lock"/></svg></span><strong>Шаг 1. Golden Key</strong><small>Подготовка доступа FunPay</small></button><button type="button" data-guide-target="proxy"><span><svg><use href="#i-shield"/></svg></span><strong>Шаг 2. Прокси</strong><small>Закреплённое соединение</small></button></div>
@@ -342,13 +288,6 @@
             </section>
           </section>
 
-          <section class="view" data-view="security" aria-labelledby="security-title">
-            <div class="view-heading view-heading--compact"><div><span class="eyebrow">Access / Connections</span><h1 id="security-title">Безопасность</h1><p>Доступ к аккаунту, подключения и критические действия.</p></div><span class="health-pill health-pill--waiting"><i></i> Read-only</span></div>
-            <div class="security-grid">
-              <section class="panel security-card"><div class="security-card__icon"><svg><use href="#i-lock"/></svg></div><div><span class="panel-label">Доступ к кабинету</span><h2>Текущая сессия</h2><p data-security-account>Загрузка…</p></div><button class="button button--ghost" type="button" data-auth-logout>Выйти из кабинета</button></section>
-              <section class="panel security-card"><div class="security-card__icon security-card__icon--violet"><svg><use href="#i-shield"/></svg></div><div><span class="panel-label">Vault</span><h2>Подключения</h2><p data-security-connections>Статус загрузится из API.</p></div><button class="button button--primary button--wide" type="button" data-open-connect>Открыть мастер подключения</button></section>
-            </div>
-          </section>
         </div>
       </main>
     </div>
@@ -421,6 +360,7 @@
     <script src="plugin-rarity.js?v=20261004-plugin-rarity" defer></script>
     <script src="plugin-page.js?v=20261004-plugin-rarity" defer></script>
     <script src="messages.js?v=20261003-message-sync" defer></script>
-    <script src="app.js?v=20261004-plugin-rarity" defer></script>
+    <script src="profile.js?v=20261005-profile" defer></script>
+    <script src="app.js?v=20261005-profile" defer></script>
   </body>
 </html>
