@@ -1,6 +1,7 @@
 from pathlib import Path
 import importlib.util
 import shutil
+import re
 import tempfile
 import unittest
 
@@ -61,5 +62,33 @@ class StageTests(unittest.TestCase):
             with self.assertRaises(ValueError):module.stage(self.local,self.incoming,self.out)
             self.assertFalse(self.out.exists())
             self.assertEqual((self.local / 'app.js').read_text(),bad)
+
+    def test_historical_admin_toolbar_labels_and_missing_guidance_preserve_access_checks_and_buttons(self):
+        original=(self.local / 'plugin-page.js').read_text()
+        for omit in [False,True]:
+            with self.subTest(omit=omit):
+                changed=original.replace(' Обложки</button>',' Загрузить свои изображения</button>')
+                changed=changed.replace('const allowed = canManagePluginCatalog();','const allowed = canManagePluginCatalog(); // LOCAL_OWNER_CHECK')
+                changed=re.sub(r'<p class="plugin-cover-guidance">.*?</p>','' if omit else '<p class="plugin-cover-guidance">Старая инструкция 16:9</p>',changed)
+                (self.local / 'plugin-page.js').write_text(changed)
+                out=self.root / ('missing' if omit else 'historical')
+                module.stage(self.local,self.incoming,out)
+                actual=(out / 'plugin-page.js').read_text()
+                self.assertIn('LOCAL_OWNER_CHECK',actual)
+                self.assertIn('Загрузить свои изображения',actual)
+                self.assertIn('Исходная рамка 4:2,9',actual)
+                self.assertEqual(actual.count('<p class="plugin-cover-guidance">'),1)
+                strip=lambda s:re.sub(r'<p class="plugin-cover-guidance">.*?</p>','',s)
+                self.assertEqual(strip(actual),strip(changed))
+                module.stage(out,self.incoming,out)
+                self.assertEqual((out / 'plugin-page.js').read_text(),actual)
+
+    def test_duplicate_guidance_stops_without_mutating_live_files(self):
+        original=(self.local / 'plugin-page.js').read_text()
+        bad=original.replace('<p class="plugin-cover-guidance">','<p class="plugin-cover-guidance">Duplicate</p><p class="plugin-cover-guidance">')
+        (self.local / 'plugin-page.js').write_text(bad)
+        with self.assertRaisesRegex(ValueError,'Дублируются'):module.stage(self.local,self.incoming,self.out)
+        self.assertFalse(self.out.exists())
+        self.assertEqual((self.local / 'plugin-page.js').read_text(),bad)
 
 if __name__ == '__main__': unittest.main()

@@ -29,12 +29,32 @@ def patch_functions(source, base, incoming, names):
         source = source[:current.start()] + merged + source[current.end():]
     return source
 
+def patch_cover_guidance(source, incoming):
+    # The deployed owner toolbar has several historical labels/layouts. Only its
+    # descriptive paragraph needs changing; do not replace access checks/buttons.
+    current = function(source, 'renderPluginAdminControls')
+    new = function(incoming, 'renderPluginAdminControls').group()
+    paragraph = r'<p class=[\"\']plugin-cover-guidance[\"\'][^>]*>.*?</p>'
+    expected = re.findall(paragraph, new, re.S)
+    require(len(expected) == 1, 'Не найдена подсказка исходной рамки')
+    value = current.group()
+    existing = re.findall(paragraph, value, re.S)
+    require(len(existing) <= 1, 'Дублируются подсказки обложки')
+    if existing:
+        value = value.replace(existing[0], expected[0], 1)
+    else:
+        # A previous deployment may have omitted the guidance entirely.
+        toolbar = re.search(r"(^[ \t]*target\.innerHTML = allowed \? `.*)(` : '';)$", value, re.M)
+        require(toolbar is not None, 'Не найдена строка кнопок владельца')
+        value = value[:toolbar.start()] + toolbar[1] + expected[0] + toolbar[2] + value[toolbar.end():]
+    return source[:current.start()] + value + source[current.end():]
+
 def stage(local, incoming, output):
     app, page, html = [(local / file).read_text() for file in ['app.js', 'plugin-page.js', 'index.html']]
     for source in [app, page, html]:
         require(not re.search(r'^(<<<<<<<|=======|>>>>>>>)', source, re.M), 'Маркеры конфликта')
     app = patch_functions(app, (incoming / 'base-app.js').read_text(), (incoming / 'app.js').read_text(), ['renderPluginAdminAccess', 'renderPlugins', 'bindInteractions'])
-    page = patch_functions(page, (incoming / 'base-plugin-page.js').read_text(), (incoming / 'plugin-page.js').read_text(), ['renderPluginAdminControls'])
+    page = patch_cover_guidance(page, (incoming / 'plugin-page.js').read_text())
     # Older templates may still expose the retired modules. Restrict their cards and routes.
     blocked = "!['zetslay.auto-reply', 'zetslay.telegram-notifications'].includes(plugin.id)"
     if blocked not in function(app, 'renderPlugins').group():
