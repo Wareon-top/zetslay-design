@@ -49,11 +49,23 @@ def patch_cover_guidance(source, incoming):
         value = value[:toolbar.start()] + toolbar[1] + expected[0] + toolbar[2] + value[toolbar.end():]
     return source[:current.start()] + value + source[current.end():]
 
+def patch_cover_source(source):
+    current = function(source, 'pluginCoverSource')
+    value = current.group()
+    valid = "  if (typeof isPluginCoverDataUrl === 'function' && isPluginCoverDataUrl(cover)) return cover;"
+    if valid not in value:
+        guards = re.findall(r'^  if \([^\n]+\) return cover;$', value, re.M)
+        require(len(guards) == 1 and 'cover.length' in guards[0] and '^data:image\\/' in guards[0] and '.test(cover)' in guards[0], 'Неизвестная проверка формата обложки')
+        # Replace only the historical small-data guard; retain custom fallbacks.
+        value = value.replace(guards[0], valid, 1)
+    return source[:current.start()] + value + source[current.end():]
+
 def stage(local, incoming, output):
     app, page, html = [(local / file).read_text() for file in ['app.js', 'plugin-page.js', 'index.html']]
     for source in [app, page, html]:
         require(not re.search(r'^(<<<<<<<|=======|>>>>>>>)', source, re.M), 'Маркеры конфликта')
     app = patch_functions(app, (incoming / 'base-app.js').read_text(), (incoming / 'app.js').read_text(), ['renderPluginAdminAccess', 'renderPlugins', 'bindInteractions'])
+    page = patch_cover_source(page)
     page = patch_cover_guidance(page, (incoming / 'plugin-page.js').read_text())
     # Older templates may still expose the retired modules. Restrict their cards and routes.
     blocked = "!['zetslay.auto-reply', 'zetslay.telegram-notifications'].includes(plugin.id)"

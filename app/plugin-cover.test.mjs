@@ -5,7 +5,7 @@ import vm from 'node:vm';
 
 const source = readFileSync(new URL('./plugin-cover.js', import.meta.url), 'utf8');
 const page = readFileSync(new URL('./plugin-page.js', import.meta.url), 'utf8');
-const cabinet = readFileSync(new URL('./app.js', import.meta.url), 'utf8').replace(/\ninit\(\);\s*$/, '');
+const cabinet = readFileSync(new URL('./app.js', import.meta.url), 'utf8').replace(/^init\(\);[ \t]*$/m, '');
 const max = 2 * 1024 * 1024;
 const file = (type = 'image/png', size = 1000) => ({ type, size, bytes: Buffer.from('original raster bytes') });
 function harness({ width = 1920, height = 1080, sizes = [1000], decodeError = false, readError = false, contextMissing = false, nullBlob = false } = {}) {
@@ -98,7 +98,7 @@ test('decode, reading and encoding failures are readable and release decoded ima
 test('catalog and detail use the same bounded raster contract, including covers over the old 18K limit', () => {
   const app = harness();
   app.context.cover = `data:image/png;base64,${Buffer.alloc(max).toString('base64')}`;
-  assert.equal(app.run('pluginCoverSource({cover,category:"chat"})'), app.context.cover);
+  assert.ok(app.run('pluginCoverSource({cover,category:"chat"})') === app.context.cover, 'The full 2 MiB raster must be returned without substituting a fallback');
   app.context.cover = `data:image/png;base64,${Buffer.alloc(max + 1).toString('base64')}`;
   assert.equal(app.run('pluginCoverSource({cover,category:"chat"})'), 'assets/plugin-covers/chat.svg');
   for (const cover of ['data:image/svg+xml;base64,AA==', 'https://tracker.test/img', 'data:image/png;base64,AA=', 'javascript:alert(1)']) {

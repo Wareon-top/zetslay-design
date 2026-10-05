@@ -2,6 +2,7 @@ from pathlib import Path
 import importlib.util
 import shutil
 import re
+import subprocess
 import tempfile
 import unittest
 
@@ -90,5 +91,30 @@ class StageTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'Дублируются'):module.stage(self.local,self.incoming,self.out)
         self.assertFalse(self.out.exists())
         self.assertEqual((self.local / 'plugin-page.js').read_text(),bad)
+
+    def test_old_18k_guard_is_migrated_and_full_cover_tests_pass_on_staged_files(self):
+        path=self.local / 'plugin-page.js'; original=path.read_text()
+        new="  if (typeof isPluginCoverDataUrl === 'function' && isPluginCoverDataUrl(cover)) return cover;"
+        old=r"  if (cover.length <= 18000 && /^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(cover)) return cover;"
+        changed=original.replace(new,old)
+        changed=changed.replace("return plugin.id === 'zetslay.mass-price-editor'", "// LOCAL_CATEGORY_FALLBACK\n  return plugin.id === 'zetslay.mass-price-editor'")
+        path.write_text(changed)
+        module.stage(self.local,self.incoming,self.out)
+        actual=(self.out / 'plugin-page.js').read_text()
+        self.assertIn(new,actual);self.assertNotIn('cover.length <= 18000',actual)
+        self.assertIn('LOCAL_CATEGORY_FALLBACK',actual)
+        self.assertEqual(path.read_text(),changed)
+        module.stage(self.out,self.incoming,self.out)
+        self.assertEqual((self.out / 'plugin-page.js').read_text(),actual)
+        result=subprocess.run(['node','--test','plugin-cover.test.mjs'],cwd=self.out,capture_output=True,text=True)
+        self.assertEqual(result.returncode,0,(result.stdout+result.stderr)[-6000:])
+
+    def test_unknown_cover_source_guard_does_not_mutate_live_files(self):
+        path=self.local / 'plugin-page.js'
+        new="  if (typeof isPluginCoverDataUrl === 'function' && isPluginCoverDataUrl(cover)) return cover;"
+        bad=path.read_text().replace(new,'  if (customCoverValidator(cover)) return cover;')
+        path.write_text(bad)
+        with self.assertRaisesRegex(ValueError,'Неизвестная проверка'):module.stage(self.local,self.incoming,self.out)
+        self.assertFalse(self.out.exists());self.assertEqual(path.read_text(),bad)
 
 if __name__ == '__main__': unittest.main()
