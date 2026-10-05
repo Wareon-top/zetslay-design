@@ -10,6 +10,7 @@ const PLUGIN_RARITY_BY_ID = Object.freeze({
   'zetslay.review-reminder':'advanced',
   'zetslay.lot-cloner':'advanced',
   'zetslay.mass-price-editor':'ultra',
+  'zetslay.sales-pause':'ultra',
   'zetslay.auto-review-bonus':'legendary'
 });
 function pluginRarity(plugin) {

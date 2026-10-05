@@ -13,7 +13,7 @@ if not section:raise SystemExit('Не найдена инструкция Mass P
 page=re.sub(pattern,'',page,flags=re.S).rstrip()+'\n\n'+section[0]
 old="${plugin.id === 'zetslay.lot-cloner' ? 'Создание запускается"
 new="${plugin.id === 'zetslay.mass-price-editor' ? 'Переоценка запускается вручную в вашем боте после расчёта и подтверждения. Стоп прекращает следующие изменения. При неизвестном результате записи выполнение останавливается.' : plugin.id === 'zetslay.lot-cloner' ? 'Создание запускается"
-if new not in page:
+if new not in page and new.removeprefix("${") not in page:
     if page.count(old)!=1:raise SystemExit('Неизвестный блок доступа. Сначала обновите Lot Cloner.')
     page=page.replace(old,new,1)
 page=page.replace("${plugin.id !== 'zetslay.lot-cloner' && events.length ?", "${!['zetslay.lot-cloner','zetslay.mass-price-editor'].includes(plugin.id) && events.length ?")
