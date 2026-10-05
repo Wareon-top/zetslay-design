@@ -30,13 +30,13 @@ def stage(local, incoming, out):
     for asset,tag,attr in [('kosell-rent.js','script','src'),('kosell-rent.css','link','href')]:
         html = re.sub(r'^[ \t]*<'+tag+r'[^\n]*'+attr+r'="'+re.escape(asset)+r'(?:\?v=[\w-]+)?"[^\n]*>\n?', '', html, flags=re.M)
     for asset in ['plugin-page.js','plugin-rarity.js']:
-        html,count = re.subn(r'(<script src="'+re.escape(asset)+r')(?:\?v=[\w-]+)?(" defer></script>)',r'\1?v=20261005-kosell-1-1\2',html)
+        html,count = re.subn(r'(<script src="'+re.escape(asset)+r')(?:\?v=[\w-]+)?(" defer></script>)',r'\1?v=20261005-kosell-1-2\2',html)
         if count != 1:
             raise ValueError('Не найден '+asset+'. Кабинет не изменён.')
-    html,count = re.subn(r'^([ \t]*)(<script src="app\.js(?:\?v=[\w-]+)?" defer></script>)',lambda m:m[1]+'<script src="kosell-rent.js?v=20261005-kosell-1-1" defer></script>\n'+m[1]+m[2],html,flags=re.M)
+    html,count = re.subn(r'^([ \t]*)(<script src="app\.js(?:\?v=[\w-]+)?" defer></script>)',lambda m:m[1]+'<script src="kosell-rent.js?v=20261005-kosell-1-2" defer></script>\n'+m[1]+m[2],html,flags=re.M)
     if count != 1 or html.count('</head>') != 1:
         raise ValueError('Не найдена точка подключения. Кабинет не изменён.')
-    html = html.replace('  </head>','    <link rel="stylesheet" href="kosell-rent.css?v=20261005-kosell-1-1">\n  </head>',1)
+    html = html.replace('  </head>','    <link rel="stylesheet" href="kosell-rent.css?v=20261005-kosell-1-2">\n  </head>',1)
     out.mkdir(parents=True,exist_ok=True)
     for name,text in [('plugin-page.js',page),('plugin-rarity.js',rarity),('index.html',html)]:
         (out/name).write_text(text)
