@@ -21,7 +21,7 @@ const state = {
 };
 
 const viewTitles = {
-  dashboard: 'Обзор', orders: 'Заказы', messages: 'Сообщения', lots: 'Лоты',
+  dashboard: 'Обзор', orders: 'Заказы', messages: 'Сообщения', lots: 'Лоты и товары',
   plugins: 'Плагины', plugin: 'Плагин', telegram: 'Telegram', billing: 'Финансы', security: 'Безопасность',
   guide: 'База знаний', profile: 'Профиль', author: 'Карточка автора',
 };
@@ -179,6 +179,7 @@ function setAuthModal(open) {
 }
 
 function resetAccountData() {
+  if (typeof resetLotsWorkspace === 'function') resetLotsWorkspace();
   if (typeof resetProfileState === 'function') resetProfileState();
   connectionBusy = false;
   connectionError = '';
@@ -463,6 +464,7 @@ function renderStoreFleet() {
   document.querySelector('[data-nav-messages]')?.replaceChildren(document.createTextNode(String(state.conversations.length)));
   renderDashboard();
   if (typeof renderProfile === 'function') renderProfile();
+  if (typeof renderLotWorkspace === 'function') renderLotWorkspace();
 }
 
 // Maps the single FunPay connection to the fleet-shaped view state the
@@ -1108,22 +1110,9 @@ async function submitTelegramOnboarding(form) {
 }
 
 function renderLots() {
+  if (typeof renderLotWorkspace === 'function') { renderLotWorkspace(); return; }
   const target = byId('lot-grid');
-  if (!target) return;
-  target.innerHTML = state.lots.length ? state.lots.map((lot) => `
-    <article class="lot-card" style="opacity:${lot.active ? '1' : '.58'}">
-      <div class="lot-card__top"><span>${escapeHtml(lot.tag)}</span></div>
-      <h3>${escapeHtml(lot.title)}</h3>
-      <p>${escapeHtml(lot.price)} · FunPay</p>
-      <div class="lot-card__stats">
-        <span>Остаток<strong class="${lot.stock === 0 ? 'text-red' : ''}">${escapeHtml(lot.stock)}</strong></span>
-        <span>Продажи<strong>${escapeHtml(lot.sales)}</strong></span>
-        <span>Позиция<strong>${escapeHtml(lot.position)}</strong></span>
-      </div>
-      <div class="lot-card__bottom">
-        <span><i class="node"></i>${lot.active ? 'Активен' : 'На паузе'}</span>
-      </div>
-    </article>`).join('') : '<div class="content-empty">Лоты появятся после read-only синхронизации, если FunPay отдаёт их для этого магазина.</div>';
+  if (target) target.textContent = 'Обновите страницу, чтобы загрузить раздел лотов.';
 }
 
 function renderAutomations() {
@@ -1335,6 +1324,7 @@ function setView(viewName, updateHash = true) {
   if (typeof renderPluginPage === 'function') renderPluginPage();
   window.scrollTo({ top: 0, behavior: 'smooth' });
   if (typeof renderProfileRoute === 'function') renderProfileRoute(authorId ? viewName : resolvedView);
+  if (resolvedView === 'lots' && typeof renderLotWorkspace === 'function') renderLotWorkspace();
 }
 
 function setSidebar(open) {
