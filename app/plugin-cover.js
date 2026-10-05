@@ -1,6 +1,47 @@
 /* Raster covers: preserve originals and lossless PNGs before bounded resizing. */
 const PLUGIN_COVER_LIMITS = Object.freeze({ inputBytes: 10 * 1024 * 1024, outputBytes: 2 * 1024 * 1024, originalSide: 4096, renderSide: 2560, pixels: 40_000_000, quality: 0.92 });
 const PLUGIN_COVER_DATA_URL_LIMIT = 4 * Math.ceil(PLUGIN_COVER_LIMITS.outputBytes / 3) + 32;
+let pluginCoverOperation = null;
+
+function pluginCoverUploadId() {
+  return pluginCoverOperation?.id || null;
+}
+
+async function uploadPluginCover(input) {
+  const file = input?.files?.[0];
+  const id = input?.dataset?.coverFor || input?.dataset?.pluginId;
+  if (input) input.value = ''; // Allows selecting the same file after an error.
+  if (!file || !id || !canManagePluginCatalog() || pluginCoverOperation) return false;
+  const operation = { id, token: authState.token, generation: sessionGeneration };
+  const sameSession = () => operation.token === authState.token && operation.generation === sessionGeneration;
+  const current = () => sameSession() && canManagePluginCatalog();
+  pluginCoverOperation = operation;
+  let saved = false;
+  try {
+    renderPlugins();
+    showToast('Загружаем обложку…');
+    const cover = await compressPluginCover(file);
+    if (!current()) return false;
+    const plugin = state.plugins.find(item => item.id === id);
+    if (!plugin || ['zetslay.auto-reply', 'zetslay.telegram-notifications'].includes(id)) throw new Error('Плагин больше не доступен в каталоге. Обновите страницу.');
+    const response = await saveCatalogEntry({ ...plugin, cover });
+    saved = true;
+    if (!current()) return true;
+    // Apply the acknowledged image immediately without disturbing installation/config.
+    state.plugins = state.plugins.map(item => item.id === id ? { ...item, cover: response?.cover || cover } : item);
+    renderPlugins();
+    showToast('Обложка сохранена', 'success');
+    try { await loadPluginCatalog(); }
+    catch { if (sameSession()) showToast('Обложка сохранена. Каталог не обновился — повторите загрузку страницы.'); }
+    return true;
+  } catch (error) {
+    if (sameSession()) showToast(saved ? 'Обложка сохранена. Обновите страницу, чтобы увидеть изменения.' : humanError(error), saved ? 'default' : 'error');
+    return saved;
+  } finally {
+    if (pluginCoverOperation === operation) pluginCoverOperation = null;
+    if (current()) renderPlugins();
+  }
+}
 
 function isPluginCoverDataUrl(value) {
   if (typeof value !== 'string' || value.length > PLUGIN_COVER_DATA_URL_LIMIT) return false;

@@ -38,7 +38,7 @@ function renderPluginAdminControls() {
   const target = document.querySelector('[data-plugin-admin-controls]');
   if (target) {
     target.hidden = !allowed;
-    target.innerHTML = allowed ? `<span class="plugin-admin-label">Администратор</span><button class="button button--ghost" type="button" data-plugin-cover-admin aria-pressed="${state.pluginCoverAdmin}">${icon('external')} Обложки</button><button class="button button--primary" type="button" data-plugin-publish>${icon('plus')} Добавить плагин</button><p class="plugin-cover-guidance">Рамка 16:9 · изображение целиком. PNG, JPEG или WebP до 10 МБ; оригиналы до 2 МБ и 4096 px — без пересжатия.</p>` : '';
+    target.innerHTML = allowed ? `<span class="plugin-admin-label">Администратор</span><button class="button button--ghost" type="button" data-plugin-cover-admin aria-pressed="${state.pluginCoverAdmin}">${icon('external')} Обложки</button><button class="button button--primary" type="button" data-plugin-publish>${icon('plus')} Добавить плагин</button><p class="plugin-cover-guidance">Исходная рамка 4:2,9 · изображение целиком. Например, 1200 × 870 px. Кнопка + под обложкой загружает PNG, JPEG или WebP до 10 МБ; оригиналы до 2 МБ и 4096 px — без пересжатия.</p>` : '';
   }
   // Also hide any controls retained by an older VPS template.
   document.querySelectorAll('[data-plugin-cover-admin], [data-plugin-publish], [data-plugin-edit], [data-cover-plugin]').forEach(button => { button.hidden = !allowed; });

@@ -596,7 +596,7 @@ function renderPluginAdminAccess() {
   if (!allowed) {
     state.pluginCoverAdmin = false;
     const upload = document.querySelector('[data-plugin-cover-input]');
-    if (upload) { upload.value = ''; delete upload.dataset.pluginId; }
+    if (upload) { upload.value = ''; delete upload.dataset.pluginId; delete upload.dataset.coverFor; }
     const dialog = document.querySelector('[data-plugin-dialog]');
     if (dialog?.querySelector('[data-plugin-editor]')) {
       closePluginDialog();
@@ -1152,7 +1152,8 @@ function renderPlugins() {
     const href = typeof pluginPageHref === 'function' ? pluginPageHref(plugin.id) : `#plugins/${encodeURIComponent(plugin.id)}`;
     const cover = typeof pluginCoverSource === 'function' ? pluginCoverSource(plugin) : plugin.cover;
     const [status, tone] = typeof pluginDisplayStatus === 'function' ? pluginDisplayStatus(plugin) : [plugin.planned ? 'Скоро' : plugin.active ? 'Включён' : plugin.installed ? 'На паузе' : 'Не установлен', 'muted'];
-    const adminMark = canManagePluginCatalog() && state.pluginCoverAdmin ? `<button class="plugin-cover__edit" type="button" data-cover-plugin="${escapeHtml(plugin.id)}" aria-label="Загрузить обложку для ${escapeHtml(plugin.name)}">${icon('plus')}</button>` : '';
+    const uploadingCover = typeof pluginCoverUploadId === 'function' ? pluginCoverUploadId() : null;
+    const adminMark = canManagePluginCatalog() ? `<button class="plugin-cover__edit" type="button" data-cover-plugin="${escapeHtml(plugin.id)}" ${uploadingCover ? 'disabled' : ''} aria-busy="${uploadingCover === plugin.id}" aria-label="Загрузить обложку для ${escapeHtml(plugin.name)}">${icon('plus')}</button>` : '';
     const busy = typeof pluginPageState !== 'undefined' && pluginPageState.busyId === plugin.id;
     const pending = typeof pluginPageState !== 'undefined' && pluginPageState.busyId !== null;
     return `<article class="plugin-card" style="--plugin-rgb:${colors[index % colors.length]}">
@@ -1861,16 +1862,16 @@ function bindInteractions() {
     if (event.target.closest('[data-plugin-publish]')) { openPluginEditor(); return; }
     const coverEdit = event.target.closest('[data-cover-plugin]');
     if (coverEdit) {
-      if (!canManagePluginCatalog()) return;
+      if (!canManagePluginCatalog() || (typeof pluginCoverUploadId === 'function' && pluginCoverUploadId())) return;
       const input = document.querySelector('[data-plugin-cover-input]');
       if (input) { input.dataset.coverFor = coverEdit.dataset.coverPlugin; input.click(); }
       return;
     }
     if (event.target.closest('[data-plugin-cover-admin]')) {
       if (!canManagePluginCatalog()) return;
-      state.pluginCoverAdmin = !state.pluginCoverAdmin;
+      state.pluginCoverAdmin = true;
       renderPlugins();
-      showToast(state.pluginCoverAdmin ? 'Режим обложек: нажмите + на карточке, чтобы загрузить изображение' : 'Режим обложек выключен', state.pluginCoverAdmin ? 'success' : 'default');
+      showToast('Нажмите + под нужной обложкой, чтобы загрузить изображение');
       return;
     }
     const catButton = event.target.closest('[data-plugin-cat]');
@@ -1937,22 +1938,7 @@ function bindInteractions() {
   document.addEventListener('submit', event => {
     if (event.target.matches('[data-plugin-editor]')) { event.preventDefault(); savePluginEditor(event.target); }
   });
-  document.querySelector('[data-plugin-cover-input]')?.addEventListener('change', async event => {
-    const file = event.target.files?.[0];
-    const pluginId = event.target.dataset.coverFor;
-    event.target.value = '';
-    if (!canManagePluginCatalog() || !file || !pluginId) return;
-    const token = authState.token;
-    try {
-      const cover = await compressPluginCover(file);
-      if (token !== authState.token || !canManagePluginCatalog()) return;
-      const plugin = state.plugins.find(item => item.id === pluginId);
-      await saveCatalogEntry({ ...plugin, cover });
-      if (token !== authState.token) return;
-      await loadPluginCatalog();
-      showToast('Обложка сохранена', 'success');
-    } catch (error) { showToast(humanError(error), 'error'); }
-  });
+  document.querySelector('[data-plugin-cover-input]')?.addEventListener('change', event => uploadPluginCover(event.target));
 
   byId('send-message')?.addEventListener('click', () => {
     const composer = byId('message-composer');

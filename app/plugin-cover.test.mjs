@@ -107,10 +107,10 @@ test('catalog and detail use the same bounded raster contract, including covers 
   }
 });
 
-test('catalog covers keep 16:9 without cropping and cover editing stays separate from the rarity label', () => {
+test('catalog covers restore the original ratio without cropping and cover editing stays separate from the rarity label', () => {
   const css = readFileSync(new URL('./plugin-cover.css', import.meta.url), 'utf8');
-  assert.match(css, /\.plugin-catalog \.plugin-card__cover \{[^}]*aspect-ratio: 16 \/ 9/);
-  assert.match(css, /\.plugin-page \.plugin-page-cover__frame \{[^}]*aspect-ratio: 16 \/ 9/);
+  assert.match(css, /\.plugin-catalog \.plugin-card__cover \{[^}]*aspect-ratio: 4 \/ 2\.9/);
+  assert.match(css, /\.plugin-page \.plugin-page-cover__frame \{[^}]*aspect-ratio: 4 \/ 2\.9/);
   assert.match(css, /\.plugin-catalog \.plugin-card__cover img \{[^}]*object-fit: contain/);
   assert.match(css, /\.plugin-page \.plugin-page-cover__frame img \{[^}]*object-fit: contain/);
   assert.match(cabinet, /adminMark \? `<div class="plugin-card__cover-meta">\$\{adminMark\}/);
@@ -154,4 +154,63 @@ test('detail sizing caps source pixels at device density and leaves catalog and 
   app.context.image.src = 'assets/plugin-covers/chat.svg';
   app.run('fitPluginDetailCover(image)');
   assert.equal(properties['--plugin-cover-native-width'], undefined);
+});
+
+function uploadHarness() {
+  const app = harness();
+  app.context.upload = { files: [file()], dataset: { coverFor: 'zetslay.test-plugin' }, value: 'selected' };
+  app.context.saved = [];
+  app.context.toasts = [];
+  app.run(`authState.token='owner-session';authState.user={telegramUserId:'5062414502'};state.pluginCanManage=true;
+    state.plugins=[{id:'zetslay.test-plugin',name:'Test',category:'chat',priceRub:0,description:'Description',published:true,cover:'old',installed:true,config:{keep:true}}];
+    renderPlugins=()=>{};showToast=(message,tone)=>toasts.push({message,tone});
+    compressPluginCover=async()=> 'data:image/png;base64,AA==';
+    saveCatalogEntry=async entry=>{saved.push(entry);return entry};loadPluginCatalog=async()=>{};`);
+  return app;
+}
+
+test('owner upload saves the selected plugin, reflects the acknowledged cover and preserves installation/config', async () => {
+  const app = uploadHarness();
+  assert.equal(await app.run('uploadPluginCover(upload)'), true);
+  assert.equal(app.context.upload.value, '');
+  assert.equal(app.context.saved.length, 1);
+  assert.equal(app.context.saved[0].id, 'zetslay.test-plugin');
+  assert.equal(app.run('state.plugins[0].cover'), 'data:image/png;base64,AA==');
+  assert.equal(app.run('state.plugins[0].installed && state.plugins[0].config.keep'), true);
+  assert.equal(app.run('pluginCoverUploadId()'), null);
+});
+
+test('upload rejects non-admins, a removed plugin and a missing card before saving', async () => {
+  for (const setup of ["state.pluginCanManage=false", "authState.user.telegramUserId='123'", "upload.dataset.coverFor='zetslay.auto-reply'", 'state.plugins=[]']) {
+    const app = uploadHarness();app.run(setup);
+    assert.equal(await app.run('uploadPluginCover(upload)'), false);
+    assert.equal(app.context.saved.length, 0);
+  }
+});
+
+test('duplicate uploads are blocked and a switched session cannot save a decoded image', async () => {
+  const app = uploadHarness();let finish;
+  app.context.decode = () => new Promise(resolve => {finish=resolve;});
+  app.run('compressPluginCover=decode');
+  const pending = app.run('uploadPluginCover(upload)');
+  assert.equal(app.run('pluginCoverUploadId()'), 'zetslay.test-plugin');
+  assert.equal(await app.run('uploadPluginCover(upload)'), false);
+  app.run("authState.token='another-session'");finish('data:image/png;base64,AA==');
+  assert.equal(await pending, false);
+  assert.equal(app.context.saved.length, 0);
+  assert.equal(app.run('pluginCoverUploadId()'), null);
+});
+
+test('a failed refresh after save stays a saved cover; failed uploads allow selecting the same file again', async () => {
+  const app=uploadHarness();app.run("loadPluginCatalog=async()=>{state.pluginCanManage=false;throw Error('NETWORK')}");
+  assert.equal(await app.run('uploadPluginCover(upload)'),true);
+  assert.equal(app.run('state.plugins[0].cover'),'data:image/png;base64,AA==');
+  assert.ok(app.context.toasts.some(t=>t.message.includes('Каталог не обновился')));
+  assert.ok(!app.context.toasts.some(t=>t.tone==='error'));
+  const failed=uploadHarness();failed.run("saveCatalogEntry=async()=>{throw Error('SAVE_ERROR')}");
+  assert.equal(await failed.run('uploadPluginCover(upload)'),false);
+  assert.equal(failed.run('state.plugins[0].cover'),'old');
+  assert.equal(failed.context.upload.value,'');
+  failed.run('saveCatalogEntry=async entry=>entry');
+  assert.equal(await failed.run('uploadPluginCover(upload)'),true);
 });

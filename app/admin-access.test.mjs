@@ -13,7 +13,7 @@ function harness() {
   const controls = {hidden:false,innerHTML:'old administrative controls'};
   const buttons = [{hidden:false},{hidden:false}];
   const body = {innerHTML:'old editor'};
-  const upload = {value:'selected',dataset:{pluginId:'zetslay.test'}};
+  const upload = {value:'selected',dataset:{pluginId:'zetslay.test',coverFor:'zetslay.test'}};
   const root = {dataset:{}};
   const document = {documentElement:root,
     querySelectorAll:selector=>selector==='[data-plugin-admin-controls]'?[controls]:buttons,
@@ -45,6 +45,7 @@ test('revocation hides old controls and clears selected cover and editor content
   assert.equal(app.body.innerHTML,'');
   assert.equal(app.upload.value,'');
   assert.equal(app.upload.dataset.pluginId,undefined);
+  assert.equal(app.upload.dataset.coverFor,undefined);
   assert.equal(app.context.state.pluginCoverAdmin,false);
   assert.equal(app.context.closed,1);
 });
