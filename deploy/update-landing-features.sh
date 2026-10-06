@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
+# Keep subprocesses from consuming a caller's remaining pasted commands.
+exec </dev/null
 cd "${ZETSLAY_SITE_DIR:-/opt/zetslay-site}"
-git fetch origin codex/landing-light-dark-redesign
+requested=${ZETSLAY_FEATURES_DESIGN_REVISION:-codex/landing-light-dark-redesign}
+git fetch origin "$requested"
 revision=$(git rev-parse FETCH_HEAD)
 work=$(mktemp -d)
 # Share the hero installer's lock: both updates publish index.html.
@@ -27,7 +30,7 @@ cleanup() {
 }
 trap cleanup EXIT
 mkdir -p "$work/incoming" "$work/site"
-assets=(landing-features.css assets/platforms/funpay.svg assets/platforms/ggsel.svg assets/platforms/plati-market.svg assets/platforms/starvell.svg)
+assets=(landing-features.css landing-features.js)
 for file in index.html "${assets[@]}"; do
   mkdir -p "$work/incoming/$(dirname "$file")"
   git show "$revision:$file" > "$work/incoming/$file"
@@ -50,5 +53,5 @@ for file in "${files[@]}"; do
   mv -f "$candidate" "$file"
 done
 complete=true
-echo "Второй блок обновлён: пять карточек возможностей. Резервная копия: $backup"
+echo "Второй блок обновлён: девять карточек Bento по образцу. Резервная копия: $backup"
 echo 'Нажмите Ctrl+F5 на главной странице. Перезапуск API не требуется.'

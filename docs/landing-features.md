@@ -1,28 +1,39 @@
-# Landing features: five cards
+# Reference Bento landing block
 
-`index.html` replaces only `#features` with a six-column layout: three compact
-cards on the first row and two wide cards below. `landing-features.css` owns the
-new scoped classes. At tablet widths the grid uses two columns; on phones it
-uses one. The orange hero, platform ribbon, cabinet and backend are independent.
+Only `#features` changes. The orange hero, font, platform ribbon, public plugin
+catalog (including administrator-uploaded covers), login links, cabinet and API
+are preserved by the focused installer.
 
-The illustrations are decorative inline SVG and locally hosted platform marks.
-They do not impersonate live account data or introduce additional API requests.
-The cards keep the requested headings. Copy distinguishes present functionality
-from plans: FunPay orders/messages and Confirm Reminder are available; 30+
-plugins is a catalog goal, other marketplaces and product editing are planned,
-and forums are planned alongside existing statistics.
+The user-provided screenshot and component define this layout: four desktop
+columns, 24px gaps, span pattern `2,1,1 / 1,2,1 / 1,1,2`, two columns from 768px
+and one below 768px. Cards are black with a thin neutral border, 16px corners,
+monochrome interface fragments and an icon beside the bottom caption. This
+section deliberately does not use ZetSlay amber/blue styling or generated art.
+The registry was inaccessible (HTTP 403); the provided screenshot and component
+were used directly. No React/shadcn or animation dependency was added to this
+buildless landing.
 
-The section uses `data-landing-features="bento"`, with `data-feature-card`
-values `orders`, `dialogs`, `plugins`, `products`, and `stats-forums`.
-Its anchors and heading IDs remain accessible, and illustrations are hidden
-from screen readers. Panels use the existing dark CSS variables and restrained
-amber accents; no additional background gradients or glow effects are added.
+Nine cards present dialogues, analytics, plugins, Telegram notifications,
+product management, lot cloning, encrypted access, cloud operation and reminders.
+All fragments are static examples, labeled once below the grid. No account data
+is fetched and there are no fake operational controls. Decorative fragments are
+hidden from assistive technology; titles and descriptions remain semantic.
 
-`deploy/update-landing-features.sh` fetches a pinned repository revision, stages
-only this section and its five assets, validates the candidate, creates a backup
-and publishes the HTML last. It shares the hero installer's lock. Local hero,
-login links, other sections, `landing.css`, and `app/` are preserved. A failed
-installation restores the previous files. No container restart is needed.
+`landing-features.js` progressively enhances the grid with a single entrance,
+100ms staggering and a -50px viewport margin. Without JavaScript or with reduced
+motion enabled, all content remains visible. CSS is scoped to this block.
 
-Run `python3 deploy/stage-landing-features.test.py` to verify preservation,
-repeat updates, ambiguous-section rejection and missing-asset rejection.
+Run `python3 deploy/stage-landing-features.test.py`,
+`node --test deploy/landing-features.test.mjs`,
+`node --check landing-features.js`, and `bash -n deploy/update-landing-features.sh`.
+
+The updater stages only `index.html`, `landing-features.css` and
+`landing-features.js`, validates the candidate, shares the hero update lock,
+backs up existing assets and publishes HTML last with atomic file replacement.
+Rollback restores existing files and removes newly created assets. Repeat
+updates are idempotent. It closes stdin so a pasted outer heredoc is not consumed
+by child commands. Set `ZETSLAY_FEATURES_DESIGN_REVISION` to a published SHA for a
+pinned install. No container restart is needed.
+
+Browser QA was unavailable in this managed environment; preservation, markup,
+resource scoping, responsive rules and animation behavior were checked locally.

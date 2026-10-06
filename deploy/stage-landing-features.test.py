@@ -60,7 +60,7 @@ class FeaturesStageTests(unittest.TestCase):
             self.assertEqual((local / 'index.html').read_text(), text)
             self.assertFalse((root / 'out').exists())
 
-    def test_missing_mark_stops_without_touching_served_files(self):
+    def test_missing_asset_stops_without_touching_served_files(self):
         with tempfile.TemporaryDirectory(dir=REPO.parent) as tmp:
             root = Path(tmp)
             local = self.fixture(root)
@@ -73,6 +73,55 @@ class FeaturesStageTests(unittest.TestCase):
                 stage.stage(local, incoming, root / 'out')
             self.assertEqual((local / 'index.html').read_bytes(), before)
             self.assertFalse((root / 'out').exists())
+
+    def test_preserves_vps_plugin_covers_and_inserts_missing_script_once(self):
+        with tempfile.TemporaryDirectory(dir=REPO.parent) as tmp:
+            root = Path(tmp)
+            local = self.fixture(root)
+            text = (local / 'index.html').read_text()
+            import re
+            text = re.sub(r'  <script src="landing-features.js[^"\n]*" defer></script>\n', '', text)
+            text = text.replace('</body>', '<img src="assets/landing-plugins/USER-COVER.webp" alt="CUSTOM COVER">\n</body>')
+            (local / 'index.html').write_text(text)
+            stage.stage(local, REPO, root / 'out')
+            result = (root / 'out/index.html').read_text()
+            self.assertIn('USER-COVER.webp', result)
+            self.assertEqual(result.count('src="landing-features.js?'), 1)
+            self.assertEqual(sorted(p.name for p in (root / 'out').iterdir()), ['index.html', *sorted(stage.FILES)])
+            self.assertEqual((local / 'index.html').read_text(), text)
+
+    def test_duplicate_assets_stop_before_creating_candidate(self):
+        with tempfile.TemporaryDirectory(dir=REPO.parent) as tmp:
+            root = Path(tmp)
+            local = self.fixture(root)
+            text = (local / 'index.html').read_text().replace('</head>', '<link rel="stylesheet" href="landing-features.css?v=OLD"></head>')
+            (local / 'index.html').write_text(text)
+            with self.assertRaises(ValueError):
+                stage.stage(local, REPO, root / 'out')
+            self.assertFalse((root / 'out').exists())
+
+    def test_reference_grid_has_nine_semantic_cards_and_expected_spans(self):
+        from html.parser import HTMLParser
+        class Cards(HTMLParser):
+            def __init__(self):
+                super().__init__()
+                self.spans = []
+                self.headings = 0
+                self.images = 0
+                self.controls = 0
+            def handle_starttag(self, tag, attrs):
+                attrs = dict(attrs)
+                if tag == 'article':
+                    self.spans.append(2 if 'bento-card--wide' in attrs.get('class', '').split() else 1)
+                if tag == 'h3': self.headings += 1
+                if tag == 'img': self.images += 1
+                if tag in ('input', 'button', 'form'): self.controls += 1
+        parsed = Cards()
+        parsed.feed(stage.features_section((REPO / 'index.html').read_text()).group())
+        self.assertEqual(parsed.spans, [2,1,1,1,2,1,1,1,2])
+        self.assertEqual(parsed.headings, 9)
+        self.assertEqual(parsed.images, 0)
+        self.assertEqual(parsed.controls, 0)
 
 if __name__ == '__main__':
     unittest.main()
