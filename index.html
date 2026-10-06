@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="landing-hero.css?v=20261004-hero-cleanup">
   <link rel="stylesheet" href="landing-features.css?v=20261004-feature-cards">
   <link rel="stylesheet" href="landing-headings.css?v=20261004-clean-headings">
+  <link rel="stylesheet" href="landing-plugins.css?v=20261006-public-catalog">
 </head>
 <body id="top">
   <a class="skip-link" href="#main">Перейти к содержанию</a>
@@ -132,13 +133,40 @@
       </div>
     </section>
 
-    <section class="section section--ambient" id="comparison" data-section="connection" aria-labelledby="comparison-title">
-      <div class="shell">
-        <div class="section-intro"><h2 id="comparison-title">Простые условия.<br>Понятные границы.</h2><p>Для начала нужен доступ к вашему магазину. Всё, что связано с секретами, настраивается внутри защищённого кабинета.</p></div>
-        <div class="split-grid">
-          <article class="split-panel"><div class="split-panel__head"><span class="split-panel__symbol" aria-hidden="true">↗</span><span>Со стороны продавца</span></div><h3>Что потребуется</h3><ul><li>Один аккаунт продавца FunPay</li><li>Golden Key, введённый в веб-кабинете</li><li>Один закреплённый HTTP(S)-прокси</li><li>Личный Telegram-бот — для уведомлений, если он нужен</li></ul><p class="split-panel__note">Golden Key, прокси и Bot Token не передаются через чаты и Telegram.</p></article>
-          <article class="split-panel split-panel--accent"><div class="split-panel__head"><span class="split-panel__symbol" aria-hidden="true">◇</span><span>Со стороны ZetSlay</span></div><h3>Что происходит дальше</h3><ul><li>Секреты хранятся зашифрованно в vault</li><li>Коннектор начинает с проверки в режиме чтения</li><li>Результат и ограничения отображаются в кабинете</li><li>При защитном запросе соединение ставится на паузу</li></ul><p class="split-panel__note">Текущий коннектор не отправляет сообщения и не меняет данные в FunPay.</p></article>
+    <section class="section landing-plugins" id="comparison" data-landing-plugin-showcase aria-labelledby="landing-plugins-title">
+      <div class="shell" id="plugins">
+        <div class="landing-plugins__intro"><div><h2 id="landing-plugins-title">Автоматизация под<br>ваши задачи.</h2><p>Познакомьтесь с плагинами ZetSlay. Настройка и управление доступны в личном кабинете после подключения магазина.</p></div><span class="landing-plugins__count"><strong data-public-plugin-count>7</strong> плагинов для FunPay</span></div>
+        <div class="landing-plugins__grid" aria-label="Плагины ZetSlay">
+          <article class="landing-plugin-card" data-public-plugin="zetslay.confirm-reminder" aria-labelledby="showcase-confirm-reminder-title">
+            <figure class="landing-plugin-card__image"><div class="landing-plugin-card__placeholder" aria-hidden="true"><span>CR</span><small>ZetSlay Plugin</small></div></figure>
+            <div class="landing-plugin-card__body"><div class="landing-plugin-card__meta"><span>Общение</span><span class="landing-plugin-rarity landing-plugin-rarity--common">Обычный</span></div><h3 id="showcase-confirm-reminder-title">Confirm Reminder</h3><p>Напоминает покупателю подтвердить заказ. До двух сообщений с выбранными задержками и проверкой статуса.</p></div>
+          </article>
+          <article class="landing-plugin-card" data-public-plugin="zetslay.review-reminder" aria-labelledby="showcase-review-reminder-title">
+            <figure class="landing-plugin-card__image"><div class="landing-plugin-card__placeholder" aria-hidden="true"><span>RR</span><small>ZetSlay Plugin</small></div></figure>
+            <div class="landing-plugin-card__body"><div class="landing-plugin-card__meta"><span>Общение</span><span class="landing-plugin-rarity landing-plugin-rarity--advanced">Продвинутый</span></div><h3 id="showcase-review-reminder-title">Review Reminder</h3><p>Просит оставить отзыв после оплаты или подтверждения. Отзыв и возврат отменяют оставшиеся напоминания.</p></div>
+          </article>
+          <article class="landing-plugin-card" data-public-plugin="zetslay.auto-review-bonus" aria-labelledby="showcase-auto-review-bonus-title">
+            <figure class="landing-plugin-card__image"><div class="landing-plugin-card__placeholder" aria-hidden="true"><span>RB</span><small>ZetSlay Plugin</small></div></figure>
+            <div class="landing-plugin-card__body"><div class="landing-plugin-card__meta"><span>Общение</span><span class="landing-plugin-rarity landing-plugin-rarity--legendary">Легендарный</span></div><h3 id="showcase-auto-review-bonus-title">Auto Review Bonus</h3><p>Благодарит за отзыв и выдаёт подарок из пула. Проверяет заказ, оценку и повторные выдачи.</p></div>
+          </article>
+          <article class="landing-plugin-card" data-public-plugin="zetslay.lot-cloner" aria-labelledby="showcase-lot-cloner-title">
+            <figure class="landing-plugin-card__image"><div class="landing-plugin-card__placeholder" aria-hidden="true"><span>LC</span><small>ZetSlay Plugin</small></div></figure>
+            <div class="landing-plugin-card__body"><div class="landing-plugin-card__meta"><span>Товары</span><span class="landing-plugin-rarity landing-plugin-rarity--advanced">Продвинутый</span></div><h3 id="showcase-lot-cloner-title">Lot Cloner</h3><p>Создаёт выключенную копию обычного лота после подтверждения. Переносит описания, цену и изображения.</p></div>
+          </article>
+          <article class="landing-plugin-card" data-public-plugin="zetslay.mass-price-editor" aria-labelledby="showcase-mass-price-editor-title">
+            <figure class="landing-plugin-card__image"><div class="landing-plugin-card__placeholder" aria-hidden="true"><span>MP</span><small>ZetSlay Plugin</small></div></figure>
+            <div class="landing-plugin-card__body"><div class="landing-plugin-card__meta"><span>Товары</span><span class="landing-plugin-rarity landing-plugin-rarity--ultra">Ультра</span></div><h3 id="showcase-mass-price-editor-title">Mass Price Editor</h3><p>Меняет цены выбранных обычных лотов. Пять режимов, предварительный расчёт, прогресс и остановка.</p></div>
+          </article>
+          <article class="landing-plugin-card" data-public-plugin="zetslay.sales-pause" aria-labelledby="showcase-sales-pause-title">
+            <figure class="landing-plugin-card__image"><div class="landing-plugin-card__placeholder" aria-hidden="true"><span>PS</span><small>ZetSlay Plugin</small></div></figure>
+            <div class="landing-plugin-card__body"><div class="landing-plugin-card__meta"><span>Товары</span><span class="landing-plugin-rarity landing-plugin-rarity--ultra">Ультра</span></div><h3 id="showcase-sales-pause-title">Пауза продаж</h3><p>Временно отключает обычные лоты и сохраняет список для восстановления. Подходит для перерыва или ревизии.</p></div>
+          </article>
+          <article class="landing-plugin-card" data-public-plugin="zetslay.kosell-rent" aria-labelledby="showcase-kosell-rent-title">
+            <figure class="landing-plugin-card__image"><div class="landing-plugin-card__placeholder" aria-hidden="true"><span>KR</span><small>ZetSlay Plugin</small></div></figure>
+            <div class="landing-plugin-card__body"><div class="landing-plugin-card__meta"><span>Аренда</span><span class="landing-plugin-rarity landing-plugin-rarity--legendary">Легендарный</span></div><h3 id="showcase-kosell-rent-title">Kosell Rent</h3><p>Связывает аренды Kosell с заказами FunPay: игры, сроки, цены, выдача покупателю и управление арендами.</p></div>
+          </article>
         </div>
+        <p class="landing-plugins__note">Здесь — обзор возможностей. Выберите и настройте нужные модули в своём кабинете.</p>
       </div>
     </section>
 
@@ -147,18 +175,6 @@
         <div class="section-intro"><h2 id="steps-title">От регистрации<br>до проверки соединения.</h2><p>Четыре последовательных действия. Без установки программы на компьютер и без отправки секретов в переписке.</p></div>
         <ol class="step-grid"><li><span class="step-number">01</span><h3>Создайте кабинет</h3><p>Зарегистрируйте рабочее пространство для одного магазина FunPay.</p></li><li><span class="step-number">02</span><h3>Привяжите бота</h3><p>Если нужны уведомления, добавьте Bot Token в защищённом поле и подтвердите связь кодом.</p></li><li><span class="step-number">03</span><h3>Добавьте доступ</h3><p>Укажите Golden Key и закреплённый HTTP(S)-прокси в мастере подключения.</p></li><li><span class="step-number">04</span><h3>Посмотрите статус</h3><p>Запустите read-only проверку и узнайте, доступен ли источник данных.</p></li></ol>
         <div class="section-action"><a class="button button--amber" href="app/?auth=register">Открыть кабинет <span aria-hidden="true">↗</span></a></div>
-      </div>
-    </section>
-
-    <section class="section section--ambient" id="plugins" data-section="plugins" aria-labelledby="plugins-title">
-      <div class="shell">
-        <div class="section-intro"><h2 id="plugins-title">Сценарии с чёткими<br>разрешениями.</h2><p>Плагин получает событие и возвращает допустимое действие. Выполнение зависит от разрешений и доступности соединения.</p></div>
-        <div class="plugin-track">
-          <article class="plugin-tile"><div class="plugin-tile__head"><span class="plugin-glyph plugin-glyph--blue" aria-hidden="true">✉</span><span class="plugin-state">Событие</span></div><h3>Новое сообщение</h3><p>Контекст входящего сообщения доступен сценарию с разрешением на чтение.</p><span class="plugin-permission">messages:read</span></article>
-          <article class="plugin-tile"><div class="plugin-tile__head"><span class="plugin-glyph plugin-glyph--amber" aria-hidden="true">◇</span><span class="plugin-state">Событие</span></div><h3>Оплаченный заказ</h3><p>Событие оплаты можно использовать для уведомления владельца магазина.</p><span class="plugin-permission">orders:read</span></article>
-          <article class="plugin-tile"><div class="plugin-tile__head"><span class="plugin-glyph plugin-glyph--violet" aria-hidden="true">↗</span><span class="plugin-state">Действие</span></div><h3>Telegram-уведомление</h3><p>Сигнал владельцу через привязанного бота, когда обработка событий включена.</p><span class="plugin-permission">telegram:send</span></article>
-        </div>
-        <div class="plugin-boundary"><span aria-hidden="true">ⓘ</span><p>Ответы в FunPay, изменение лотов и финансовые операции текущий коннектор не выполняет.</p></div>
       </div>
     </section>
 
