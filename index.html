@@ -17,6 +17,7 @@
   <link rel="stylesheet" href="landing-plugins.css?v=20261006-public-catalog">
   <link rel="stylesheet" href="landing-steps.css?v=20261006-guided-steps">
   <link rel="stylesheet" href="landing-pricing.css?v=20261006-pricing-plans">
+  <link rel="stylesheet" href="landing-faq.css?v=20261006-faq-knowledge">
 </head>
 <body id="top">
   <a class="skip-link" href="#main">Перейти к содержанию</a>
@@ -244,14 +245,76 @@
       </div>
     </section>
 
-    <section class="section section--ambient" id="faq" data-section="faq" aria-labelledby="faq-title">
-      <div class="shell faq-layout"><div class="faq-heading"><h2 id="faq-title">Коротко<br>о важном.</h2><p>Что происходит с доступом к магазину и где проходят границы текущего режима.</p></div><div class="faq-list">
-        <details><summary>Можно подключить несколько аккаунтов FunPay?<span aria-hidden="true">+</span></summary><p>Нет. Один пользователь подключает один аккаунт FunPay через один закреплённый прокси.</p></details>
-        <details><summary>Где вводить Golden Key и данные прокси?<span aria-hidden="true">+</span></summary><p>Только в защищённом веб-кабинете. Секреты не принимаются в Telegram и сохраняются зашифрованно в vault.</p></details>
-        <details><summary>ZetSlay отвечает покупателям автоматически?<span aria-hidden="true">+</span></summary><p>Нет. Текущий коннектор работает в режиме чтения и не отправляет сообщения в FunPay.</p></details>
-        <details><summary>Что будет, если FunPay запросит подтверждение?<span aria-hidden="true">+</span></summary><p>Соединение остановится, а кабинет покажет причину. Защита площадки не обходится автоматически.</p></details>
-        <details><summary>ZetSlay — официальный сервис FunPay?<span aria-hidden="true">+</span></summary><p>Нет. ZetSlay — независимый сервис для продавцов, не связанный с FunPay официальным партнёрством.</p></details>
-      </div></div>
+    <section class="section landing-faq" id="faq" data-section="faq" data-landing-faq="knowledge-v1" aria-labelledby="faq-title">
+      <div class="landing-faq__shell">
+        <div class="landing-faq__layout">
+          <div class="landing-faq__intro">
+            <h2 id="faq-title">Ответы<br> перед стартом.</h2>
+            <p>Всё важное о подключении магазина, работе плагинов и условиях ZetSlay.</p>
+            <div class="faq-guide"><span class="faq-guide__icon" aria-hidden="true">?</span><h3>Подключаете первый магазин?</h3><p>Посмотрите, что понадобится на каждом этапе.</p><a href="#steps">Как начать <span aria-hidden="true">↗</span></a></div>
+          </div>
+          <div class="landing-faq__content">
+            <div class="faq-tools" data-faq-tools hidden>
+              <div class="faq-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><label class="faq-sr-only" for="faq-search-input">Поиск по вопросам и ответам</label><input id="faq-search-input" type="search" maxlength="120" placeholder="Найти ответ: прокси, плагины, тарифы…" autocomplete="off" data-faq-search aria-controls="landing-faq-list"><button type="button" data-faq-clear aria-label="Очистить поиск" hidden>×</button></div>
+              <div class="faq-categories" role="group" aria-label="Темы вопросов">
+                <button type="button" data-faq-filter="all" aria-pressed="true">Все вопросы</button><button type="button" data-faq-filter="connection" aria-pressed="false">Подключение</button><button type="button" data-faq-filter="plugins" aria-pressed="false">Плагины</button><button type="button" data-faq-filter="tariffs" aria-pressed="false">Тарифы</button><button type="button" data-faq-filter="security" aria-pressed="false">Доступы</button>
+              </div>
+              <p class="faq-results" data-faq-count role="status" aria-live="polite" aria-atomic="true"></p>
+            </div>
+            <div class="landing-faq__list" id="landing-faq-list">
+          <details class="faq-item" name="zetslay-landing-faq" data-faq-item data-faq-category="connection" id="faq-registration" open>
+            <summary><span>Как зарегистрироваться и войти в кабинет?</span><span class="faq-item__mark" aria-hidden="true"></span></summary>
+            <div class="faq-item__answer"><p>Создайте аккаунт по почте и паролю или войдите через Telegram. После входа подключите свой магазин в личном кабинете.</p><a href="app/?auth=register">Создать кабинет →</a></div>
+          </details>
+          <details class="faq-item" name="zetslay-landing-faq" data-faq-item data-faq-category="connection" id="faq-connection">
+            <summary><span>Что нужно для подключения магазина FunPay?</span><span class="faq-item__mark" aria-hidden="true"></span></summary>
+            <div class="faq-item__answer"><p>Нужны активный тариф, личный Telegram-бот, Golden Key аккаунта FunPay и прокси. Мастер в кабинете проведёт вас по этапам: токен бота, подтверждение связи командой /start с кодом, ключ, прокси и проверка магазина.</p><p>Поддерживаются HTTP, HTTPS и SOCKS5. Протокол, адрес и данные авторизации должны соответствовать настройкам вашего прокси.</p><a href="#steps">Посмотреть этапы подключения →</a></div>
+          </details>
+          <details class="faq-item" name="zetslay-landing-faq" data-faq-item data-faq-category="connection" id="faq-accounts">
+            <summary><span>Можно подключить несколько магазинов?</span><span class="faq-item__mark" aria-hidden="true"></span></summary>
+            <div class="faq-item__answer"><p>Сейчас один аккаунт ZetSlay рассчитан на один магазин FunPay и закреплённый за ним прокси. Тариф «Максимум» расширяет доступ к плагинам, но не увеличивает количество магазинов.</p></div>
+          </details>
+          <details class="faq-item" name="zetslay-landing-faq" data-faq-item data-faq-category="connection" id="faq-platforms">
+            <summary><span>Какие площадки уже поддерживаются?</span><span class="faq-item__mark" aria-hidden="true"></span></summary>
+            <div class="faq-item__answer"><p>Сейчас доступно подключение FunPay. Интеграции с GGsel, Plati Market и Starvell запланированы. Названия этих площадок на главной странице показывают направление развития сервиса.</p></div>
+          </details>
+          <details class="faq-item" name="zetslay-landing-faq" data-faq-item data-faq-category="plugins" id="faq-messages">
+            <summary><span>Может ли ZetSlay отправлять сообщения покупателям?</span><span class="faq-item__mark" aria-hidden="true"></span></summary>
+            <div class="faq-item__answer"><p>Да. При подключённом магазине и настроенной отправке можно отвечать покупателям из персонального Telegram-бота. Включённые плагины также могут отправлять сообщения по своим настройкам: например, напоминать о подтверждении заказа или отзыве.</p><p>В кабинете доступны диалоги и история сообщений. Подключение магазина само по себе не включает автоматические рассылки. Вы выбираете плагины и настраиваете их работу.</p></div>
+          </details>
+          <details class="faq-item" name="zetslay-landing-faq" data-faq-item data-faq-category="plugins" id="faq-plugins">
+            <summary><span>Какие плагины есть в ZetSlay?</span><span class="faq-item__mark" aria-hidden="true"></span></summary>
+            <div class="faq-item__answer"><p>В каталоге представлены Confirm Reminder, Review Reminder, Auto Review Bonus, Lot Cloner, Mass Price Editor, «Пауза продаж» и Kosell Rent.</p><p>На главной странице можно познакомиться с возможностями. Включение и настройка доступны в личном кабинете и персональном Telegram-боте.</p><a href="#plugins">Открыть каталог плагинов →</a></div>
+          </details>
+          <details class="faq-item" name="zetslay-landing-faq" data-faq-item data-faq-category="plugins" id="faq-cloud">
+            <summary><span>Нужно ли держать компьютер включённым?</span><span class="faq-item__mark" aria-hidden="true"></span></summary>
+            <div class="faq-item__answer"><p>Нет. Подключение магазина и автоматизация выполняются на сервере ZetSlay. Компьютер или телефон нужны, когда вы хотите открыть кабинет, изменить настройки или ответить покупателю.</p><p>Для работы автоматизации должны оставаться действующими доступы к магазину, прокси и настройки выбранного плагина.</p></div>
+          </details>
+          <details class="faq-item" name="zetslay-landing-faq" data-faq-item data-faq-category="tariffs" id="faq-plans">
+            <summary><span>Чем отличаются тарифы?</span><span class="faq-item__mark" aria-hidden="true"></span></summary>
+            <div class="faq-item__answer"><p>Тарифы различаются категориями собственных плагинов ZetSlay. «Старт» включает обычные, «Рост» добавляет продвинутые, «Профи» — ультра, а «Максимум» — легендарные.</p><p>В блоке тарифов указаны планируемые цены и условия. Подписки готовятся к запуску; кнопки сейчас открывают регистрацию. Доступ к будущим платным плагинам пользовательского маркетплейса будет отдельным.</p><a href="#tariffs">Сравнить тарифы →</a></div>
+          </details>
+          <details class="faq-item" name="zetslay-landing-faq" data-faq-item data-faq-category="tariffs" id="faq-external-costs">
+            <summary><span>Прокси и аренды Kosell входят в подписку?</span><span class="faq-item__mark" aria-hidden="true"></span></summary>
+            <div class="faq-item__answer"><p>Нет. Прокси и расходы на аренду аккаунтов Kosell оплачиваются отдельно. Подписка ZetSlay — это доступ к функциям сервиса и опубликованным собственным плагинам выбранных категорий.</p></div>
+          </details>
+          <details class="faq-item" name="zetslay-landing-faq" data-faq-item data-faq-category="security" id="faq-secrets">
+            <summary><span>Где вводить и хранить ключи доступа?</span><span class="faq-item__mark" aria-hidden="true"></span></summary>
+            <div class="faq-item__answer"><p>Golden Key, токен рабочего бота и данные прокси вводите только в специальных полях личного кабинета. Они сохраняются в зашифрованном хранилище и не показываются повторно в открытом виде.</p><p>Не отправляйте секреты в переписку или поддержку. Для защиты входа в ZetSlay можно включить двухфакторную аутентификацию в профиле.</p></div>
+          </details>
+          <details class="faq-item" name="zetslay-landing-faq" data-faq-item data-faq-category="connection" id="faq-errors">
+            <summary><span>Что делать, если проверка соединения не прошла?</span><span class="faq-item__mark" aria-hidden="true"></span></summary>
+            <div class="faq-item__answer"><p>Посмотрите причину в мастере подключения и запустите диагностику прокси. Ошибка соединения не всегда связана с Golden Key: проверьте адрес, протокол, порт и авторизацию прокси.</p><p>При необходимости измените данные через мастер и повторите проверку. Новый кабинет создавать не нужно. Если FunPay требует подтверждения, выполните его на самой площадке.</p></div>
+          </details>
+          <details class="faq-item" name="zetslay-landing-faq" data-faq-item data-faq-category="security" id="faq-independent">
+            <summary><span>ZetSlay — официальный сервис FunPay?</span><span class="faq-item__mark" aria-hidden="true"></span></summary>
+            <div class="faq-item__answer"><p>Нет. ZetSlay — независимый сервис для продавцов. Он не является официальным продуктом FunPay и не заявляет партнёрство с площадкой.</p></div>
+          </details>
+            </div>
+            <div class="faq-empty" data-faq-empty hidden><strong>Ответ не найден</strong><p>Попробуйте другое слово или посмотрите все вопросы.</p><button type="button" data-faq-reset>Показать все вопросы</button></div>
+          </div>
+        </div>
+      </div>
     </section>
 
     <section class="closing" id="cta" data-section="cta" aria-labelledby="cta-title"><div class="shell"><div class="closing-panel"><h2 id="cta-title">Магазин под вашим<br>контролем.</h2><p>Создайте кабинет и начните с проверки подключения. Реальный статус подскажет следующий шаг.</p><div class="closing-actions"><a class="button button--amber" href="app/?auth=register">Создать аккаунт <span aria-hidden="true">↗</span></a><a class="button button--dark-outline" href="app/?auth=login">Уже есть аккаунт? Войти</a></div></div></div></section>
@@ -261,5 +324,6 @@
   <script src="landing-hero.js?v=20261004-hero-cleanup" defer></script>
   <script src="landing-features.js?v=20261006-reference-bento" defer></script>
   <script src="landing-pricing.js?v=20261006-pricing-plans" defer></script>
+  <script src="landing-faq.js?v=20261006-faq-knowledge" defer></script>
 </body>
 </html>
