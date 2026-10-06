@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="landing-features.css?v=20261006-reference-bento">
   <link rel="stylesheet" href="landing-headings.css?v=20261004-clean-headings">
   <link rel="stylesheet" href="landing-plugins.css?v=20261006-public-catalog">
+  <link rel="stylesheet" href="landing-steps.css?v=20261006-guided-steps">
 </head>
 <body id="top">
   <a class="skip-link" href="#main">Перейти к содержанию</a>
@@ -142,11 +143,42 @@
       </div>
     </section>
 
-    <section class="section section--surface" id="steps" data-section="steps" aria-labelledby="steps-title">
-      <div class="shell">
-        <div class="section-intro"><h2 id="steps-title">От регистрации<br>до проверки соединения.</h2><p>Четыре последовательных действия. Без установки программы на компьютер и без отправки секретов в переписке.</p></div>
-        <ol class="step-grid"><li><span class="step-number">01</span><h3>Создайте кабинет</h3><p>Зарегистрируйте рабочее пространство для одного магазина FunPay.</p></li><li><span class="step-number">02</span><h3>Привяжите бота</h3><p>Если нужны уведомления, добавьте Bot Token в защищённом поле и подтвердите связь кодом.</p></li><li><span class="step-number">03</span><h3>Добавьте доступ</h3><p>Укажите Golden Key и закреплённый HTTP(S)-прокси в мастере подключения.</p></li><li><span class="step-number">04</span><h3>Посмотрите статус</h3><p>Запустите read-only проверку и узнайте, доступен ли источник данных.</p></li></ol>
-        <div class="section-action"><a class="button button--amber" href="app/?auth=register">Открыть кабинет <span aria-hidden="true">↗</span></a></div>
+    <section class="section landing-setup" id="steps" data-section="steps" data-landing-steps="guided" aria-labelledby="steps-title">
+      <div class="landing-setup__shell">
+        <div class="landing-setup__intro">
+          <div><h2 id="steps-title">От регистрации<br>до проверки соединения.</h2><p>Четыре понятных этапа. Мастер в кабинете проведёт вас через каждый — без установки программ на компьютер.</p></div>
+          <span class="landing-setup__summary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 8 3v6c0 5-8 9-8 9S4 17 4 12V6z"/><path d="m8 12 3 3 5-6"/></svg> Доступы вводятся только в кабинете</span>
+        </div>
+        <ol class="landing-setup__steps" aria-label="Как подключить магазин FunPay">
+          <li class="setup-step">
+            <div class="setup-step__top"><span class="setup-step__number" aria-hidden="true">01</span><span class="setup-step__arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></div>
+            <div class="setup-step__preview" aria-hidden="true"><div class="setup-account"><span class="setup-demo-label">Ваш аккаунт</span><div class="setup-account__methods"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m3 6 9 7 9-7"/></svg> Email</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4 20-7ZM22 2 11 13"/></svg> Telegram</span></div><div class="setup-account__field"><span>Пароль</span><i>••••••••••</i></div></div></div>
+            <div class="setup-step__caption"><span class="setup-step__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><h3>Создайте кабинет</h3></div>
+            <p>Зарегистрируйтесь по почте и паролю или войдите через Telegram.</p>
+          </li>
+          <li class="setup-step">
+            <div class="setup-step__top"><span class="setup-step__number" aria-hidden="true">02</span><span class="setup-step__arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></div>
+            <div class="setup-step__preview" aria-hidden="true"><div class="setup-bot"><div class="setup-bot__identity"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4 20-7ZM22 2 11 13"/></svg></span><div><strong>Ваш Telegram-бот</strong><small>Подтверждение связи</small></div></div><div class="setup-bot__command"><code>/start</code><span>••••••</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></div></div></div>
+            <div class="setup-step__caption"><span class="setup-step__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4 20-7ZM22 2 11 13"/></svg></span><h3>Подключите Telegram</h3></div>
+            <p>Добавьте токен своего бота и подтвердите связь командой /start с кодом из мастера.</p>
+          </li>
+          <li class="setup-step">
+            <div class="setup-step__top"><span class="setup-step__number" aria-hidden="true">03</span><span class="setup-step__arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></div>
+            <div class="setup-step__preview" aria-hidden="true"><div class="setup-vault"><div><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></svg> Golden Key</span><i>••••••••</i></div><div><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 8 3v6c0 5-8 9-8 9S4 17 4 12V6z"/><path d="m8 12 3 3 5-6"/></svg> Прокси</span><i>••••••••</i></div><small>HTTP · HTTPS · SOCKS5</small></div></div>
+            <div class="setup-step__caption"><span class="setup-step__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></svg></span><h3>Укажите ключ и прокси</h3></div>
+            <p>Введите Golden Key и адрес прокси. Данные сохранятся в зашифрованном хранилище.</p>
+          </li>
+          <li class="setup-step">
+            <div class="setup-step__top"><span class="setup-step__number" aria-hidden="true">04</span><span class="setup-step__arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></div>
+            <div class="setup-step__preview" aria-hidden="true"><div class="setup-check"><span class="setup-demo-label">Проверка соединения</span><div><span>Аккаунт</span><span class="setup-check__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></span></div><div><span>Заказы</span><span class="setup-check__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></span></div><div><span>Диалоги</span><span class="setup-check__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></span></div></div></div>
+            <div class="setup-step__caption"><span class="setup-step__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></span><h3>Проверьте магазин</h3></div>
+            <p>Проверим аккаунт, заказы и диалоги. Результат и возможные ошибки появятся в кабинете.</p>
+          </li>
+        </ol>
+        <div class="landing-setup__footer">
+          <div><p>Для подключения магазина нужен активный тариф.</p><small>Этапы показаны схематично. Реальное состояние соединения видно в кабинете.</small></div>
+          <a class="landing-setup__cta" href="app/?auth=register">Создать кабинет <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+        </div>
       </div>
     </section>
 
