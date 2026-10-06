@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="landing-headings.css?v=20261004-clean-headings">
   <link rel="stylesheet" href="landing-plugins.css?v=20261006-public-catalog">
   <link rel="stylesheet" href="landing-steps.css?v=20261006-guided-steps">
+  <link rel="stylesheet" href="landing-pricing.css?v=20261006-pricing-plans">
 </head>
 <body id="top">
   <a class="skip-link" href="#main">Перейти к содержанию</a>
@@ -182,10 +183,64 @@
       </div>
     </section>
 
-    <section class="section section--surface" id="tariffs" data-section="access" aria-labelledby="tariffs-title">
-      <div class="shell">
-        <div class="section-intro"><h2 id="tariffs-title">Условия без<br>выдуманных цифр.</h2><p>Для подключения нужен активный тариф. Коммерческие условия уточняются; тестовые возможности обозначены внутри кабинета.</p></div>
-        <div class="access-panel"><div class="access-panel__main"><h3>Начните с проверки<br>своего магазина.</h3><p>Регистрация сама по себе не означает, что данные FunPay уже доступны. Мастер покажет реальный результат и подскажет, если соединению требуется ваше участие.</p><a class="button button--amber" href="app/?auth=register">Создать аккаунт <span aria-hidden="true">↗</span></a></div><div class="access-panel__side"><span class="access-panel__label">Что видно в кабинете</span><ul><li>Статус Golden Key и прокси</li><li>Результат read-only проверки</li><li>Причина остановки соединения</li><li>Настройки личного бота</li></ul><span class="access-panel__fine">Функции доступны в рамках текущего состояния сервиса и подключения.</span></div></div>
+    <section class="section landing-pricing" id="tariffs" data-section="access" data-landing-pricing="plans-v1" aria-labelledby="tariffs-title">
+      <div class="landing-pricing__shell">
+        <div class="landing-pricing__heading">
+          <div><h2 id="tariffs-title">Ваш магазин. Ваш масштаб.</h2><p>От базовых помощников до полной автоматизации. Выберите свой набор возможностей.</p></div>
+          <div class="pricing-period" role="group" aria-label="Период подписки" data-pricing-periods hidden>
+            <button type="button" data-pricing-period="month" aria-pressed="true">Месяц</button>
+            <button type="button" data-pricing-period="quarter" aria-pressed="false">3 месяца <span>−10%</span></button>
+            <button type="button" data-pricing-period="year" aria-pressed="false">Год <span>−20%</span></button>
+          </div>
+        </div>
+        <div class="landing-pricing__grid">
+          <article class="pricing-card pricing-card--blue" data-pricing-plan="start" data-monthly-rub="149" aria-labelledby="pricing-start-title">
+            <div class="pricing-card__hero">
+              <div class="pricing-card__avatar-row"><span class="pricing-avatar" aria-hidden="true"><i></i><i></i></span></div>
+              <h3 id="pricing-start-title">Старт</h3><p class="pricing-card__description">Для первых продаж и базовой автоматизации магазина.</p>
+              <div class="pricing-card__price"><strong data-pricing-price>149 ₽</strong><del data-pricing-original hidden>149 ₽</del><span>/ месяц</span></div>
+              <p class="pricing-card__price-note" data-pricing-note>Оплата за месяц после запуска подписок</p>
+              <a class="pricing-card__cta" href="app/?auth=register" aria-label="Создать кабинет — тариф Старт">Создать кабинет</a>
+            </div>
+            <ul class="pricing-card__features" aria-label="Возможности тарифа Старт"><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Один магазин FunPay</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Заказы, диалоги и ответы покупателям</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Каталог товаров и статистика</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Персональный Telegram-бот</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Все обычные плагины</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Confirm Reminder: подтверждение заказов</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Облачная работа</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Шифрование доступов и 2FA</span></li></ul>
+            <div class="pricing-card__footer"><strong>Начните с основ</strong><p>Всё необходимое для ежедневной работы продавца.</p></div>
+          </article>
+          <article class="pricing-card pricing-card--purple" data-pricing-plan="growth" data-monthly-rub="299" aria-labelledby="pricing-growth-title">
+            <div class="pricing-card__hero">
+              <div class="pricing-card__avatar-row"><span class="pricing-avatar" aria-hidden="true"><i></i><i></i></span></div>
+              <h3 id="pricing-growth-title">Рост</h3><p class="pricing-card__description">Для регулярных заказов и развития вашего магазина.</p>
+              <div class="pricing-card__price"><strong data-pricing-price>299 ₽</strong><del data-pricing-original hidden>299 ₽</del><span>/ месяц</span></div>
+              <p class="pricing-card__price-note" data-pricing-note>Оплата за месяц после запуска подписок</p>
+              <a class="pricing-card__cta" href="app/?auth=register" aria-label="Создать кабинет — тариф Рост">Создать кабинет</a>
+            </div>
+            <ul class="pricing-card__features" aria-label="Возможности тарифа Рост"><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Все возможности «Старт»</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Все продвинутые плагины</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Review Reminder: напоминания об отзыве</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Lot Cloner: копирование лотов</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Настройка плагинов в Telegram</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Заказы и сообщения в кабинете</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Облачная работа</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Обновления собственных плагинов</span></li></ul>
+            <div class="pricing-card__footer"><strong>Меньше повторяющихся задач</strong><p>Помощники для сбора отзывов и создания предложений.</p></div>
+          </article>
+          <article class="pricing-card pricing-card--amber pricing-card--featured" data-pricing-plan="pro" data-monthly-rub="499" aria-labelledby="pricing-pro-title">
+            <div class="pricing-card__hero">
+              <div class="pricing-card__avatar-row"><span class="pricing-avatar" aria-hidden="true"><i></i><i></i></span><span class="pricing-card__featured">Оптимальный выбор</span></div>
+              <h3 id="pricing-pro-title">Профи</h3><p class="pricing-card__description">Для активных продавцов с большим ассортиментом.</p>
+              <div class="pricing-card__price"><strong data-pricing-price>499 ₽</strong><del data-pricing-original hidden>499 ₽</del><span>/ месяц</span></div>
+              <p class="pricing-card__price-note" data-pricing-note>Оплата за месяц после запуска подписок</p>
+              <a class="pricing-card__cta" href="app/?auth=register" aria-label="Создать кабинет — тариф Профи">Создать кабинет</a>
+            </div>
+            <ul class="pricing-card__features" aria-label="Возможности тарифа Профи"><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Все возможности «Рост»</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Все ультра-плагины</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Mass Price Editor: массовая переоценка</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>«Пауза продаж»: управление доступностью</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Обычные и продвинутые плагины</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Настройка плагинов в Telegram</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Облачная работа</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Обновления собственных плагинов</span></li></ul>
+            <div class="pricing-card__footer"><strong>Управляйте ассортиментом</strong><p>Цены и доступность товаров — под вашим контролем.</p></div>
+          </article>
+          <article class="pricing-card pricing-card--teal" data-pricing-plan="maximum" data-monthly-rub="799" aria-labelledby="pricing-maximum-title">
+            <div class="pricing-card__hero">
+              <div class="pricing-card__avatar-row"><span class="pricing-avatar" aria-hidden="true"><i></i><i></i></span></div>
+              <h3 id="pricing-maximum-title">Максимум</h3><p class="pricing-card__description">Для полной автоматизации и интеграций магазина.</p>
+              <div class="pricing-card__price"><strong data-pricing-price>799 ₽</strong><del data-pricing-original hidden>799 ₽</del><span>/ месяц</span></div>
+              <p class="pricing-card__price-note" data-pricing-note>Оплата за месяц после запуска подписок</p>
+              <a class="pricing-card__cta" href="app/?auth=register" aria-label="Создать кабинет — тариф Максимум">Создать кабинет</a>
+            </div>
+            <ul class="pricing-card__features" aria-label="Возможности тарифа Максимум"><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Все возможности «Профи»</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Все легендарные плагины</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Kosell Rent: автоматизация аренды</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Auto Review Bonus: подарки за отзыв</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Все категории собственных плагинов</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Настройка плагинов в Telegram</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Облачная работа</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>Обновления собственных плагинов</span></li></ul>
+            <div class="pricing-card__footer"><strong>Полный каталог ZetSlay</strong><p>Все опубликованные собственные плагины сервиса.</p></div>
+          </article>
+        </div>
+        <div class="landing-pricing__notes"><p><strong>Тарифы готовятся к запуску.</strong> Сейчас можно создать кабинет. Подписка включает опубликованные плагины выбранных категорий.</p><p>Прокси и аренды Kosell оплачиваются отдельно. Плагины пользовательского маркетплейса не входят в подписку.</p></div>
+        <p class="pricing-announcement" role="status" aria-live="polite" aria-atomic="true" data-pricing-announcement></p>
       </div>
     </section>
 
@@ -205,5 +260,6 @@
   <script>document.querySelectorAll('.mobile-menu a').forEach(link => link.addEventListener('click', () => { link.closest('details').open = false; }));</script>
   <script src="landing-hero.js?v=20261004-hero-cleanup" defer></script>
   <script src="landing-features.js?v=20261006-reference-bento" defer></script>
+  <script src="landing-pricing.js?v=20261006-pricing-plans" defer></script>
 </body>
 </html>
