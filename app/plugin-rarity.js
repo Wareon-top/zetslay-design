@@ -10,6 +10,7 @@ const PLUGIN_RARITY_BY_ID = Object.freeze({
   'zetslay.review-reminder':'advanced',
   'zetslay.lot-cloner':'advanced',
   'zetslay.mass-price-editor':'ultra',
+  'zetslay.roblox-lzt-market':'ultra',
   'zetslay.tiktok-lzt-market':'ultra',
   'zetslay.sales-pause':'ultra',
   'zetslay.kosell-rent':'legendary',
