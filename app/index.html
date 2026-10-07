@@ -8,9 +8,6 @@
     <meta name="referrer" content="no-referrer">
     <meta name="zetslay-api-base-url" content="https://api.zetslay.pro">
     <title>ZetSlay Control — личный кабинет</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css?v=20261003-overview">
     <link rel="stylesheet" href="overview.css?v=20261003-overview">
     <link rel="stylesheet" href="orders.css?v=20261003-orders">
@@ -37,7 +34,9 @@
     <link rel="stylesheet" href="cabinet-ui.css?v=20261006-cabinet">
     <link rel="stylesheet" href="billing-pricing.css?v=20261006-finances">
     <link rel="stylesheet" href="billing.css?v=20261006-finances">
-  </head>
+  <link rel="stylesheet" href="../assets/fonts/fonts.css?v=20261007-local">
+  <link rel="stylesheet" href="../legal/legal.css?v=20261007-legal">
+</head>
   <body>
     <svg class="icon-sprite" aria-hidden="true">
       <symbol id="i-grid" viewBox="0 0 24 24"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></symbol>
@@ -436,6 +435,7 @@
           <button class="button button--ghost" type="button" data-auth-logout>Выйти</button>
         </div>
         <p class="auth-legal">Секреты FunPay вводятся только после входа в защищённом мастере подключения.</p>
+        <nav class="legal-links" data-auth-legal-links aria-label="Документы аккаунта"><a href="/legal/offer.html">Оферта · проект</a><a href="/legal/privacy.html">Конфиденциальность · проект</a><a href="/legal/processing.html">Отдельное согласие · проект</a><a href="/legal/">Все документы</a></nav>
       </div>
     </section>
 
@@ -463,5 +463,7 @@
     <script src="account-security.js?v=20261006-security" defer></script>
     <script src="billing-pricing.js?v=20261006-finances" defer></script>
     <script src="billing.js?v=20261006-finances" defer></script>
-  </body>
+  <script src="../legal/privacy-controls.js?v=20261007-legal" defer></script>
+  <script src="legal-cabinet.js?v=20261007-legal" defer></script>
+</body>
 </html>
