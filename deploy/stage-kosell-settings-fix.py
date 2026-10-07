@@ -4,8 +4,8 @@ import hashlib
 import re
 import sys
 
-BASE_BLOB = '775459788ccd75857354c6a880d80e0eba116363'
-VERSION = '20261006-kosell-save-fix'
+BASE_BLOBS = ('775459788ccd75857354c6a880d80e0eba116363', '6ef816e6fcf3c3343d85b0386531e67df18d0a6c')
+VERSION = '20261007-kosell-catalog-plan'
 
 def blob(data):
     return hashlib.sha1(b'blob '+str(len(data)).encode()+b'\0'+data).hexdigest()
@@ -14,7 +14,7 @@ def stage(local, incoming, out):
     current = (local/'kosell-rent.js').read_bytes()
     replacement = (incoming/'kosell-rent.js').read_bytes()
     html = (local/'index.html').read_text()
-    if blob(current) not in (BASE_BLOB, blob(replacement)):
+    if blob(current) not in (*BASE_BLOBS, blob(replacement)):
         raise ValueError('kosell-rent.js содержит другую версию или локальные правки. Кабинет не изменён. SHA: '+blob(current))
     if re.search(r'^(<<<<<<<|=======|>>>>>>>)', html, re.M):
         raise ValueError('Конфликт в index.html. Кабинет не изменён.')

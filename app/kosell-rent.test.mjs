@@ -67,3 +67,99 @@ test('Invalid field in a collapsed settings group opens that group and reports n
  const f=app();let renders=0;f.ctx.renderPluginPage=()=>renders++;const x=settingsForm(),details={tagName:'DETAILS',open:false,parentElement:x.form};x.input.parentElement=details;x.input.name='apiKey';x.input.form=x.form;x.input.validationMessage='Проверьте поле';
  return f.handlers.invalid({target:x.input}).then(()=>{assert.equal(details.open,true);assert.equal(x.input.focused,true);assert.equal(x.feedback.textContent,'Проверьте поле');assert.equal(renders,0)});
 });
+
+function catalogForm(values={}){
+ const fieldset={disabled:false},button={textContent:'Показать план недостающих лотов'},feedback={textContent:'',attributes:{},setAttribute(k,v){this.attributes[k]=v}},plan={focused:false,scrolled:false,focus(){this.focused=true},scrollIntoView(){this.scrolled=true}},result={innerHTML:'',querySelector:()=>plan};
+ const form={values:new Map(Object.entries({templates:'1:73160726',durations:'1, 3, 24',...values})),matches:selector=>selector.includes('[data-kosell-catalog]'),attributes:{},setAttribute(k,v){this.attributes[k]=v},removeAttribute(k){delete this.attributes[k]},querySelector:selector=>({'fieldset':fieldset,'[type="submit"]':button,'[data-kosell-catalog-feedback]':feedback,'[data-kosell-catalog-result]':result})[selector]||null};
+ return {form,fieldset,button,feedback,plan,result};
+}
+const catalogPlan=patch=>({token:'plan-token',currency:'RUB',activate:false,expiresAt:Date.now()+300000,multi:true,items:[{productId:1,productName:'<img onerror=x>',hours:24,costMinor:1000,priceMinor:1200}],skipped:[],warning:'Проверьте <script>категорию</script>',...patch});
+async function catalogApp(){const f=app();f.status.config.manageOffers=true;await f.run('loadKosellStatus()');let renders=0;f.ctx.renderPluginPage=()=>renders++;f.renders=()=>renders;return f;}
+const submitCatalog=(f,x)=>f.handlers.submit({target:x.form,preventDefault(){}});
+function catalogButton(x,action){const el={dataset:{kosellCatalogAction:action},closest:()=>x.form};return {target:{closest:selector=>selector==='[data-kosell-catalog-action]'?el:null}};}
+
+test('Catalog preparation keeps live inputs, renders the plan beside its form and never starts creation',async()=>{
+ const f=await catalogApp(),x=catalogForm();f.ctx.apiRequest=async(path,options)=>{f.calls.push({path,options});return catalogPlan();};
+ await submitCatalog(f,x);assert.equal(f.renders(),0);assert.equal(x.form.values.get('templates'),'1:73160726');
+ assert.match(x.feedback.textContent,/План готов: 1/);assert.match(x.result.innerHTML,/План массовой витрины/);assert.match(x.result.innerHTML,/12.00 RUB/);assert.match(x.result.innerHTML,/data-kosell-catalog-action="confirm"/);
+ assert.doesNotMatch(x.result.innerHTML,/<img|<script>/);assert.ok(x.plan.focused);assert.ok(x.plan.scrolled);assert.equal(x.fieldset.disabled,false);
+ const req=f.calls.find(c=>c.path.endsWith('/catalog-plan'));assert.deepEqual(Array.from(req.options.body.durations),[1,3,24]);assert.equal(req.options.body.templates[0].templateLotId,'73160726');assert.equal(req.options.body.activate,false);
+ assert.ok(!f.calls.some(c=>c.path.endsWith('/offer-confirm')));
+ const html=f.run('kosellRentMarkup({installed:true})');assert.equal(html.split('План массовой витрины').length-1,1);assert.ok(html.indexOf('План массовой витрины')>html.indexOf('Массовая витрина'));assert.match(html,/value="1, 3, 24"/);
+});
+
+test('Pending catalog plan exposes loading feedback and blocks duplicate requests without rerendering',async()=>{
+ const f=await catalogApp(),x=catalogForm();let finish,count=0;f.ctx.apiRequest=()=>{count++;return new Promise(r=>finish=r)};
+ const pending=submitCatalog(f,x);await new Promise(setImmediate);assert.equal(count,1);assert.equal(x.fieldset.disabled,true);assert.equal(x.button.textContent,'Готовим план…');assert.match(x.feedback.textContent,/Лоты ещё не создаются/);
+ await submitCatalog(f,x);assert.equal(count,1);assert.equal(f.renders(),0);finish(catalogPlan());await pending;assert.equal(x.fieldset.disabled,false);assert.equal(f.run('kosellUi.busy'),false);
+});
+
+test('Catalog validation explains blank, duplicate, invalid and oversized inputs locally and preserves the draft',async()=>{
+ for(const [values,reason] of [[{templates:''},/хотя бы одну пару/],[{templates:'https://funpay.com/lots/offer?id=1'},/Строка 1/],[{templates:'1:2\n1:3'},/Каждая игра/],[{templates:'9007199254740993:2'},/Строка 1/],[{templates:Array.from({length:51},(_,i)=>(i+1)+':2').join('\n')},/до 50 игр/],[{durations:''},/до 12/],[{durations:'1,1'},/разных/],[{durations:'1.5'},/целых/],[{durations:'0,721'},/720/],[{durations:Array.from({length:13},(_,i)=>i+1).join(',')},/до 12/]]){
+  const f=await catalogApp(),x=catalogForm(values);await submitCatalog(f,x);
+  assert.match(x.feedback.textContent,reason);assert.equal(x.feedback.attributes.role,'alert');assert.equal(f.calls.filter(c=>c.options?.method==='POST').length,0);assert.equal(f.renders(),0);assert.equal(f.run('kosellUi.catalogDraft.templates'),x.form.values.get('templates'));
+ }
+ const f=await catalogApp(),x=catalogForm();f.status.config.manageOffers=false;await submitCatalog(f,x);assert.match(x.feedback.textContent,/включите управление/);assert.equal(f.calls.filter(c=>c.options?.method==='POST').length,0);
+});
+
+test('Catalog accepts blank separator lines and retains an explicit activation choice',async()=>{
+ const f=await catalogApp(),x=catalogForm({templates:'1:73160726\n\n2:73160727\n',durations:'1 12 24',activate:'on'});let payload;
+ f.ctx.apiRequest=async(path,options)=>{payload=options.body;return catalogPlan({activate:true})};await submitCatalog(f,x);
+ assert.equal(payload.templates.length,2);assert.deepEqual(Array.from(payload.durations),[1,12,24]);assert.equal(payload.activate,true);assert.match(x.result.innerHTML,/активация после проверки/);
+});
+
+test('Catalog API errors remain beside the button and allow retry without erasing input',async()=>{
+ const f=await catalogApp(),x=catalogForm();f.ctx.apiRequest=async()=>{throw Error('Валюта шаблона отличается')};await submitCatalog(f,x);
+ assert.equal(x.feedback.textContent,'Валюта шаблона отличается');assert.equal(x.feedback.attributes.role,'alert');assert.equal(x.form.values.get('templates'),'1:73160726');assert.equal(f.run('kosellUi.offerPreview'),null);assert.equal(x.fieldset.disabled,false);assert.equal(f.renders(),0);
+ f.ctx.apiRequest=async()=>catalogPlan();await submitCatalog(f,x);assert.match(x.feedback.textContent,/План готов/);assert.equal(x.feedback.attributes.role,'status');
+});
+
+test('Empty catalog plan displays skip reasons and offers no create confirmation',async()=>{
+ const f=await catalogApp(),x=catalogForm();f.ctx.apiRequest=async()=>catalogPlan({items:[],skipped:[{productId:1,hours:24,reason:'exists'},{productId:1,hours:720,reason:'duration'}]});await submitCatalog(f,x);
+ assert.match(x.result.innerHTML,/Новых лотов для создания нет/);assert.match(x.result.innerHTML,/Уже есть привязка/);assert.match(x.result.innerHTML,/Срок недоступен/);assert.doesNotMatch(x.result.innerHTML,/data-kosell-catalog-action="confirm"/);
+});
+
+test('Malformed catalog responses never enable creation or silently show an empty plan',async()=>{
+ for(const p of [undefined,{},catalogPlan({token:''}),catalogPlan({items:[{productName:'Game',hours:24,priceMinor:-1}]}),catalogPlan({skipped:null})]){
+  const f=await catalogApp(),x=catalogForm();f.ctx.apiRequest=async()=>p;await submitCatalog(f,x);assert.match(x.feedback.textContent,/не вернул полный план/);assert.equal(f.run('kosellUi.offerPreview'),null);assert.equal(x.result.innerHTML,'');
+ }
+});
+
+test('Catalog plan from a former session cannot populate a new account, even with token reuse',async()=>{
+ for(const sameToken of [false,true]){
+  const f=await catalogApp(),x=catalogForm();f.ctx.sessionGeneration=1;let finish;f.ctx.apiRequest=()=>new Promise(r=>finish=r);const pending=submitCatalog(f,x);await new Promise(setImmediate);if(!sameToken)f.authState.token='other';f.ctx.sessionGeneration=2;finish(catalogPlan());await pending;assert.equal(f.run('kosellUi.offerPreview'),null);assert.equal(x.result.innerHTML,'');
+ }
+});
+
+test('Catalog create is sent only on explicit confirmation, blocks duplicates and reports queue acceptance locally',async()=>{
+ const f=await catalogApp(),x=catalogForm();f.ctx.apiRequest=async()=>catalogPlan();await submitCatalog(f,x);let finish,count=0;
+ f.ctx.apiRequest=(path,options)=>{assert.ok(path.endsWith('/offer-confirm'));assert.equal(options.body.token,'plan-token');count++;return new Promise(r=>finish=r)};
+ const pending=f.handlers.click(catalogButton(x,'confirm'));await new Promise(setImmediate);await f.handlers.click(catalogButton(x,'confirm'));assert.equal(count,1);assert.match(x.feedback.textContent,/Подтверждаем очередь/);
+ finish({queued:1});await pending;assert.match(x.feedback.textContent,/Создание принято в очередь: 1/);assert.equal(f.run('kosellUi.offerPreview'),null);assert.equal(f.renders(),0);assert.equal(f.run('kosellUi.busy'),false);
+});
+
+test('Expired, edited or cancelled catalog plans cannot create offers',async()=>{
+ for(const mode of ['expired','edited','cancelled']){
+  const f=await catalogApp(),x=catalogForm();f.ctx.apiRequest=async()=>catalogPlan();await submitCatalog(f,x);let writes=0;f.ctx.apiRequest=async()=>{writes++;return {queued:1}};
+  if(mode==='expired')f.run('kosellUi.offerPreview.expiresAt=1');
+  if(mode==='edited'){x.form.values.set('durations','48');await f.handlers.input({target:{form:x.form,matches:()=>false}});assert.match(x.feedback.textContent,/Параметры изменены/);}
+  if(mode==='cancelled')await f.handlers.click(catalogButton(x,'cancel'));
+  await f.handlers.click(catalogButton(x,'confirm'));assert.equal(writes,0);assert.equal(f.run('kosellUi.offerPreview'),null);
+ }
+});
+
+test('Failed catalog confirmation asks to check the queue and cannot automatically replay the consumed plan',async()=>{
+ const f=await catalogApp(),x=catalogForm();f.ctx.apiRequest=async()=>catalogPlan();await submitCatalog(f,x);let writes=0;f.ctx.apiRequest=async()=>{writes++;throw Error('Соединение прервано')};
+ await f.handlers.click(catalogButton(x,'confirm'));assert.match(x.feedback.textContent,/проверьте очередь/);assert.equal(x.feedback.attributes.role,'alert');await f.handlers.click(catalogButton(x,'confirm'));assert.equal(writes,1);assert.equal(f.run('kosellUi.offerPreview'),null);
+});
+
+test('Native invalid catalog fields report next to their form without rerendering',async()=>{
+ const f=await catalogApp(),x=catalogForm();await f.handlers.invalid({target:{form:x.form,validationMessage:'Заполните пары игр и лотов'}});
+ assert.equal(x.feedback.textContent,'Заполните пары игр и лотов');assert.equal(x.feedback.attributes.role,'alert');assert.equal(f.renders(),0);
+});
+
+test('Missing queue acknowledgement does not falsely announce creation or permit a replay',async()=>{
+ const f=await catalogApp(),x=catalogForm();f.ctx.apiRequest=async()=>catalogPlan();await submitCatalog(f,x);let count=0;f.ctx.apiRequest=async()=>{count++;return {}};
+ await f.handlers.click(catalogButton(x,'confirm'));assert.match(x.feedback.textContent,/не подтвердил количество/);assert.match(x.feedback.textContent,/проверьте очередь/);assert.equal(x.feedback.attributes.role,'alert');assert.equal(x.fieldset.disabled,false);assert.equal(f.run('kosellUi.offerPreview'),null);
+ await f.handlers.click(catalogButton(x,'confirm'));assert.equal(count,1);
+});
