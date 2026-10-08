@@ -179,6 +179,7 @@ function setAuthModal(open) {
 }
 
 function resetAccountData() {
+  if (typeof resetStarsUi === 'function') resetStarsUi();
   if (typeof resetLotsWorkspace === 'function') resetLotsWorkspace();
   if (typeof resetProfileState === 'function') resetProfileState();
   connectionBusy = false;
