@@ -4,7 +4,7 @@ import shutil
 import sys
 from importlib.util import spec_from_file_location,module_from_spec
 
-VERSION='20261007-legal'
+VERSION='20261008-legal-2'
 def require(ok,message):
     if not ok:raise ValueError(message+'. Сайт не изменён.')
 

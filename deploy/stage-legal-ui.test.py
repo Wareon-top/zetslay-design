@@ -29,10 +29,19 @@ class LegalStageTest(unittest.TestCase):
    with self.assertRaises(ValueError):stage.stage(local,ROOT,tmp/'out')
    self.assertFalse((tmp/'out').exists())
  def test_documents_are_printable_separate_and_cannot_be_activated_by_config(self):
-  data=json.loads((ROOT/'legal/documents.json').read_text());self.assertEqual(len(data['documents']),7);self.assertNotEqual('processing','offer')
+  data=json.loads((ROOT/'legal/documents.json').read_text());self.assertEqual(len(data['documents']),9);self.assertNotEqual('processing','offer')
   for d in data['documents']:
    text=(ROOT/'legal'/f'{d["id"]}.html').read_text();self.assertIn('noindex,follow',text);self.assertIn('data-legal-print',text);self.assertIn('не вступили в силу',text);self.assertNotIn('mailto:',text);self.assertGreater(len(d['sections']),2)
   with tempfile.TemporaryDirectory() as t:
    tmp=Path(t);local=self.fixture(tmp);(local/'legal').mkdir();config=json.loads((ROOT/'legal/site-config.json').read_text());config['status']='active';(local/'legal/site-config.json').write_text(json.dumps(config))
    with self.assertRaises(AssertionError):stage.stage(local,ROOT,tmp/'out')
+ def test_tables_escape_content_and_malformed_rows_are_rejected(self):
+  spec=importlib.util.spec_from_file_location('legal_builder',HERE/'build-legal-pages.py');builder=importlib.util.module_from_spec(spec);spec.loader.exec_module(builder)
+  with tempfile.TemporaryDirectory() as t:
+   tmp=Path(t);shutil.copy2(ROOT/'legal/site-config.json',tmp/'site-config.json');data=json.loads((ROOT/'legal/documents.json').read_text())
+   target=data['documents'][1]['sections'][1]['table'];target['rows'][0][0]='<img src=x onerror=alert(1)>';target['headers'][0]='<script>bad</script>'
+   (tmp/'documents.json').write_text(json.dumps(data));builder.build(tmp);html=(tmp/'privacy.html').read_text()
+   self.assertIn('&lt;img',html);self.assertIn('&lt;script&gt;bad',html);self.assertNotIn('<img src=x',html);self.assertIn('scope="col"',html);self.assertIn('tabindex="0"',html)
+   target['rows'][0].append('unexpected');(tmp/'documents.json').write_text(json.dumps(data))
+   with self.assertRaises(AssertionError):builder.build(tmp)
 if __name__=='__main__':unittest.main()
