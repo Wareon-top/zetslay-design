@@ -23,6 +23,7 @@ const state = {
 const viewTitles = {
   dashboard: 'Обзор', orders: 'Заказы', messages: 'Сообщения', lots: 'Лоты и товары',
   plugins: 'Плагины', plugin: 'Плагин', telegram: 'Telegram', billing: 'Финансы', security: 'Безопасность',
+  admin: 'Админ-панель',
   guide: 'База знаний', profile: 'Профиль', author: 'Карточка автора',
 };
 
@@ -98,6 +99,7 @@ function accountInitials(email = '') {
 }
 
 function renderAuthState() {
+  if (typeof adminAccess === 'function') adminAccess();
   const email = authState.user?.email || '';
   const accountName = email || (authState.user ? 'Telegram-аккаунт' : 'Войти');
   document.querySelectorAll('[data-auth-name]').forEach((node) => { node.textContent = accountName; });
@@ -179,6 +181,7 @@ function setAuthModal(open) {
 }
 
 function resetAccountData() {
+  if (typeof adminReset === 'function') adminReset();
   if (typeof resetStarsUi === 'function') resetStarsUi();
   if (typeof resetLotsWorkspace === 'function') resetLotsWorkspace();
   if (typeof resetProfileState === 'function') resetProfileState();
@@ -1323,6 +1326,7 @@ function setView(viewName, updateHash = true) {
   document.title = `${viewTitles[resolvedView]} — ZetSlay Control`;
   setSidebar(false);
   if (updateHash) history.replaceState(null, '', `#${route || authorId ? viewName : resolvedView}`);
+  if (typeof adminRoute === 'function') adminRoute(resolvedView);
   if (typeof renderPluginPage === 'function') renderPluginPage();
   window.scrollTo({ top: 0, behavior: 'smooth' });
   if (typeof renderProfileRoute === 'function') renderProfileRoute(authorId ? viewName : resolvedView);

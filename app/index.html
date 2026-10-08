@@ -37,6 +37,7 @@
   <link rel="stylesheet" href="../assets/fonts/fonts.css?v=20261007-local">
   <link rel="stylesheet" href="../legal/legal.css?v=20261008-legal-2">
     <link rel="stylesheet" href="stars-relay.css?v=20261008-stars-relay">
+      <link rel="stylesheet" href="admin-panel.css?v=20261008-admin-panel">
   </head>
   <body>
     <svg class="icon-sprite" aria-hidden="true">
@@ -99,6 +100,7 @@
           <button class="nav-item" type="button" data-view-target="billing"><svg><use href="#i-card"/></svg><span>Финансы</span></button>
           <button class="nav-item" type="button" data-view-target="profile"><svg><use href="#i-user"/></svg><span>Профиль</span></button>
           <button class="nav-item" type="button" data-view-target="guide"><svg><use href="#i-help"/></svg><span>База знаний</span></button>
+          <button class="nav-item" type="button" data-admin-nav data-view-target="admin" hidden><svg><use href="#i-shield"/></svg><span>Админ-панель</span></button>
         </nav>
 
         <div class="sidebar__bottom">
@@ -307,6 +309,7 @@
             </section>
           </section>
 
+          <section class="view admin-page" data-view="admin" hidden><div data-admin-root></div></section>
           <section class="view billing-page" data-view="billing" data-billing aria-labelledby="billing-title">
   <header class="billing-heading"><div><h1 id="billing-title">Финансы</h1><p>Баланс магазина, доступ к сервису и тарифы — в одном месте.</p></div><div class="billing-heading-actions"><button class="button button--primary" type="button" data-billing-open="topup"><svg><use href="#i-plus"/></svg>Пополнить баланс</button><button class="button button--ghost" type="button" data-billing-open="promo"><svg><use href="#i-gift"/></svg>Ввести промокод</button></div></header>
   <div class="billing-summary">
@@ -459,7 +462,8 @@
     <script src="kosell-rent.js?v=20261007-kosell-catalog-plan" defer></script>
     <script src="store-refresh.js?v=20261007-sync" defer></script>
     <script src="stars-relay.js?v=20261008-stars-relay" defer></script>
-    <script src="app.js?v=20261008-stars-relay" defer></script>
+    <script src="admin-panel.js?v=20261008-admin-panel" defer></script>
+    <script src="app.js?v=20261008-admin-panel" defer></script>
     <script src="plugin-detail-ui.js?v=20261006-plugin-details" defer></script>
     <script src="connection-wizard-ui.js?v=20261006-guided-connect" defer></script>
     <script src="account-security.js?v=20261006-security" defer></script>
