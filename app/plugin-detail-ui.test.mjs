@@ -72,7 +72,7 @@ test('Kosell settings remain a separate unmodified operational panel', () => {
   assert.match(c.page.innerHTML, /data-kosell-settings/);
   assert.match(c.page.innerHTML, /name="apiKey"/);
   assert.match(c.page.innerHTML, /data-kosell-action="status"/);
-  assert.match(c.page.innerHTML, /Легендарный/);
+  assert.match(c.page.innerHTML, /Ультра/);
 });
 test('headings, quotes, lists, code and HTML-like strings render as safe text', () => {
   const c = cabinet();

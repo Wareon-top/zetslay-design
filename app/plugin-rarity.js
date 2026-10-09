@@ -7,15 +7,15 @@ const PLUGIN_RARITIES = Object.freeze({
 });
 const PLUGIN_RARITY_BY_ID = Object.freeze({
   'zetslay.confirm-reminder':'common',
-  'zetslay.review-reminder':'advanced',
+  'zetslay.review-reminder':'common',
   'zetslay.lot-cloner':'advanced',
-  'zetslay.mass-price-editor':'ultra',
+  'zetslay.mass-price-editor':'advanced',
   'zetslay.stars-relay':'ultra',
   'zetslay.roblox-lzt-market':'ultra',
   'zetslay.tiktok-lzt-market':'ultra',
-  'zetslay.sales-pause':'ultra',
-  'zetslay.kosell-rent':'legendary',
-  'zetslay.auto-review-bonus':'legendary'
+  'zetslay.sales-pause':'advanced',
+  'zetslay.kosell-rent':'ultra',
+  'zetslay.auto-review-bonus':'advanced'
 });
 function pluginRarity(plugin) {
   const key=Object.hasOwn(PLUGIN_RARITY_BY_ID,plugin?.id)?PLUGIN_RARITY_BY_ID[plugin.id]:'common';

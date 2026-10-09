@@ -15,18 +15,21 @@ def stage(local, incoming, out):
         if page.count(marker) != 1:
             raise ValueError('Неизвестная структура страницы плагина. Кабинет не изменён.')
         page = page.replace(marker, hook+marker, 1)
-    prefix = '<h2>Контроль остаётся у вас</h2><p>Вы можете остановить модуль в кабинете. ${'
-    old = prefix + 'plugin.id === '
-    new = prefix + "plugin.id === 'zetslay.kosell-rent' ? 'Автопокупка включается отдельно. Цена и покупатель проверяются перед выдачей. Неизвестный результат списания запрещает автоматический повтор; операции с арендой требуют подтверждения.' : plugin.id === "
-    if new not in page:
+    old = "plugin.id === 'zetslay.mass-price-editor' ? 'Переоценка"
+    new = "plugin.id === 'zetslay.kosell-rent' ? 'Автопокупка включается отдельно. Цена и покупатель проверяются перед выдачей. Неизвестный результат списания запрещает автоматический повтор; операции с арендой требуют подтверждения.' : " + old
+    if "plugin.id === 'zetslay.kosell-rent' ? 'Автопокупка" not in page:
         if page.count(old) != 1:
             raise ValueError('Неизвестная поясняющая панель. Кабинет не изменён.')
         page = page.replace(old, new, 1)
-    if "'zetslay.kosell-rent':'legendary'" not in rarity:
-        marker = "  'zetslay.auto-review-bonus':'legendary'"
-        if rarity.count(marker) != 1:
-            raise ValueError('Неизвестный каталог уровней. Кабинет не изменён.')
-        rarity = rarity.replace(marker,"  'zetslay.kosell-rent':'legendary',\n"+marker,1)
+    entry = re.compile(r"('zetslay\.kosell-rent'\s*:\s*)'(?:ultra|legendary)'")
+    if entry.search(rarity):
+        rarity,count = entry.subn(lambda m:m[1]+"'ultra'", rarity)
+        if count != 1:raise ValueError('Неоднозначная редкость Kosell')
+    else:
+        markers = list(re.finditer(r"  'zetslay\.auto-review-bonus':'(?:advanced|legendary)'", rarity))
+        if len(markers) != 1:raise ValueError('Неизвестный каталог уровней. Кабинет не изменён.')
+        marker = markers[0].group()
+        rarity = rarity.replace(marker,"  'zetslay.kosell-rent':'ultra',\n"+marker,1)
     for asset,tag,attr in [('kosell-rent.js','script','src'),('kosell-rent.css','link','href')]:
         html = re.sub(r'^[ \t]*<'+tag+r'[^\n]*'+attr+r'="'+re.escape(asset)+r'(?:\?v=[\w-]+)?"[^\n]*>\n?', '', html, flags=re.M)
     for asset in ['plugin-page.js','plugin-rarity.js']:

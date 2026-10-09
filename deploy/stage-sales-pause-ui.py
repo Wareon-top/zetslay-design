@@ -24,10 +24,18 @@ def stage(local, incoming, out):
     if hook not in page:
         page = page.replace(marker, hook + marker, 1)
     page = replace_once(page, "!['zetslay.lot-cloner','zetslay.mass-price-editor'].includes(plugin.id)", "!['zetslay.lot-cloner','zetslay.mass-price-editor','zetslay.sales-pause'].includes(plugin.id)", 'события модуля')
-    old = "${plugin.id === 'zetslay.mass-price-editor' ? 'Переоценка"
-    new = "${plugin.id === 'zetslay.sales-pause' ? 'Отключение и восстановление лотов запускаются вручную после сводки и подтверждения. Список сохраняется в базе. Неизвестный результат останавливает задачу; проверка статусов не выполняет повторную запись.' : plugin.id === 'zetslay.mass-price-editor' ? 'Переоценка"
+    old = "plugin.id === 'zetslay.mass-price-editor' ? 'Переоценка"
+    new = "plugin.id === 'zetslay.sales-pause' ? 'Отключение и восстановление лотов запускаются вручную после сводки и подтверждения. Список сохраняется в базе. Неизвестный результат останавливает задачу; проверка статусов не выполняет повторную запись.' : plugin.id === 'zetslay.mass-price-editor' ? 'Переоценка"
     page = replace_once(page, old, new, 'ручное управление')
-    rarity = replace_once(rarity, "  'zetslay.mass-price-editor':'ultra',", "  'zetslay.mass-price-editor':'ultra',\n  'zetslay.sales-pause':'ultra',", 'плашка уровня')
+    entries = list(re.finditer(r"('zetslay\.sales-pause'\s*:\s*)'(?:advanced|ultra)'", rarity))
+    require(len(entries) <= 1, 'Неоднозначная редкость паузы продаж')
+    if entries:
+        rarity = re.sub(r"('zetslay\.sales-pause'\s*:\s*)'(?:advanced|ultra)'", lambda m:m[1]+"'advanced'", rarity)
+    else:
+        markers = list(re.finditer(r"  'zetslay\.mass-price-editor':'(?:advanced|ultra)',", rarity))
+        require(len(markers) == 1, 'Неизвестный каталог уровней')
+        marker = markers[0].group()
+        rarity = rarity.replace(marker, marker+"\n  'zetslay.sales-pause':'advanced',", 1)
     for asset, tag, attr in [('sales-pause.js','script','src'),('sales-pause.css','link','href')]:
         html = re.sub(r'^[ \t]*<'+tag+r'[^\n]*'+attr+r'="'+re.escape(asset)+r'(?:\?v=[A-Za-z0-9_-]+)?"[^\n]*>\n?', '', html, flags=re.M)
     for asset in ['plugin-page.js','plugin-rarity.js']:

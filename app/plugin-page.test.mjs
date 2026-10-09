@@ -254,13 +254,13 @@ test('unavailable legacy plugins are hidden for users and admins, including dire
 
 test('rarity on cards remains stable when enabling, pausing or changing price and the detail has no banner',()=>{
   const app=harness();app.context.input=entry({id:'zetslay.mass-price-editor'});app.location.hash='#plugins/zetslay.mass-price-editor';
-  app.run('state.plugins=[input];renderPlugins()');assert.match(app.grid.innerHTML,/data-plugin-rarity="ultra"/);assert.doesNotMatch(app.grid.innerHTML,/plugin-card__badge/);assert.doesNotMatch(app.page.innerHTML,/<figure|<img|plugin-page-cover/);
-  app.run('state.plugins[0].active=true;state.plugins[0].installed=true;state.plugins[0].price="999 ₽";renderPlugins()');assert.match(app.grid.innerHTML,/data-plugin-rarity="ultra"/);assert.match(app.grid.innerHTML,/Отключить/);assert.match(app.page.innerHTML,/Контроль остаётся у вас/);
+  app.run('state.plugins=[input];renderPlugins()');assert.match(app.grid.innerHTML,/data-plugin-rarity="advanced"/);assert.doesNotMatch(app.grid.innerHTML,/plugin-card__badge/);assert.doesNotMatch(app.page.innerHTML,/<figure|<img|plugin-page-cover/);
+  app.run('state.plugins[0].active=true;state.plugins[0].installed=true;state.plugins[0].price="999 ₽";renderPlugins()');assert.match(app.grid.innerHTML,/data-plugin-rarity="advanced"/);assert.match(app.grid.innerHTML,/Отключить/);assert.match(app.page.innerHTML,/Контроль остаётся у вас/);
 });
 
-test('rarity labels cover all four built-in levels and ignore arbitrary metadata',()=>{
+test('rarity labels match the catalog levels and ignore arbitrary metadata',()=>{
   const app=harness();
-  for(const [id,key,label] of [['zetslay.confirm-reminder','common','Обычный'],['zetslay.review-reminder','advanced','Продвинутый'],['zetslay.mass-price-editor','ultra','Ультра'],['zetslay.auto-review-bonus','legendary','Легендарный'],['__proto__','common','Обычный']]){
+  for(const [id,key,label] of [['zetslay.confirm-reminder','common','Обычный'],['zetslay.review-reminder','common','Обычный'],['zetslay.mass-price-editor','advanced','Продвинутый'],['zetslay.auto-review-bonus','advanced','Продвинутый'],['zetslay.sales-pause','advanced','Продвинутый'],['zetslay.kosell-rent','ultra','Ультра'],['__proto__','common','Обычный']]){
     app.context.rarityInput={id,rarity:'<img onerror=x>',active:true,priceRub:10000};
     const html=app.run('pluginRarityMarkup(rarityInput)');assert.ok(html.includes(`data-plugin-rarity="${key}"`));assert.ok(html.includes(label));assert.ok(!html.includes('<img'));
   }
