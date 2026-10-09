@@ -4,7 +4,7 @@ import shutil
 import sys
 from importlib.util import spec_from_file_location,module_from_spec
 
-VERSION='20261008-legal-2'
+VERSION='20261009-legal-support'
 def require(ok,message):
     if not ok:raise ValueError(message+'. Сайт не изменён.')
 
@@ -45,9 +45,15 @@ def stage(local,incoming,output):
     output.mkdir(parents=True,exist_ok=True);(output/'app').mkdir(exist_ok=True)
     shutil.copytree(incoming/'legal',output/'legal',dirs_exist_ok=True);shutil.copytree(incoming/'assets/fonts',output/'assets/fonts',dirs_exist_ok=True)
     if (local/'legal/site-config.json').is_file():shutil.copy2(local/'legal/site-config.json',output/'legal/site-config.json')
-    spec=spec_from_file_location('legal_build',incoming/'deploy/build-legal-pages.py');builder=module_from_spec(spec);spec.loader.exec_module(builder);builder.build(output/'legal')
+    spec=spec_from_file_location('legal_build',incoming/'deploy/build-legal-pages.py');builder=module_from_spec(spec);spec.loader.exec_module(builder)
     import json
     operator_config=json.loads((output/'legal/site-config.json').read_text())
+    incoming_config=json.loads((incoming/'legal/site-config.json').read_text())
+    if incoming_config.get('legalTelegram'):
+        operator_config['legalTelegram']=incoming_config['legalTelegram']
+    builder.support_contact(operator_config)
+    (output/'legal/site-config.json').write_text(json.dumps(operator_config,ensure_ascii=False,indent=2)+'\n')
+    builder.build(output/'legal')
     root=builder.update_operator_footer(root,operator_config)
     shutil.copy2(incoming/'app/legal-cabinet.js',output/'app/legal-cabinet.js')
     (output/'index.html').write_text(root);(output/'app/index.html').write_text(app)

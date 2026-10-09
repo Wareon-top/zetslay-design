@@ -7,6 +7,23 @@ import unittest
 HERE=Path(__file__).resolve().parent;ROOT=HERE.parent
 spec=importlib.util.spec_from_file_location('legal_stage',HERE/'stage-legal-ui.py');stage=importlib.util.module_from_spec(spec);spec.loader.exec_module(stage)
 class LegalStageTest(unittest.TestCase):
+ def test_support_contact_updates_legacy_config_without_replacing_local_operator_facts(self):
+  with tempfile.TemporaryDirectory() as t:
+   tmp=Path(t);local=self.fixture(tmp);(local/'legal').mkdir()
+   config=json.loads((ROOT/'legal/site-config.json').read_text());config.pop('legalTelegram');config['postalAddress']='LOCAL POSTAL ADDRESS';config['providers']=['LOCAL PROVIDER']
+   (local/'legal/site-config.json').write_text(json.dumps(config))
+   stage.stage(local,ROOT,tmp/'out')
+   result=json.loads((tmp/'out/legal/site-config.json').read_text())
+   self.assertEqual(result['postalAddress'],'LOCAL POSTAL ADDRESS');self.assertEqual(result['providers'],['LOCAL PROVIDER']);self.assertEqual(result['legalTelegram'],'@zetslaysupport')
+   for path in ['index.html','landing-footer.html','legal/index.html','legal/offer.html','legal/privacy.html','legal/refunds.html','app/legal-cabinet.js']:
+    text=(tmp/'out'/path).read_text();self.assertIn('https://t.me/zetslaysupport',text)
+    self.assertNotIn('{{legalTelegram}}',text)
+   text=(tmp/'out/legal/index.html').read_text();self.assertNotIn('Внешний юридический контакт ещё не заполнен',text);self.assertNotIn('внешний контакт ещё нужно указать',text)
+ def test_support_contact_rejects_untrusted_urls_and_markup(self):
+  spec=importlib.util.spec_from_file_location('legal_builder',HERE/'build-legal-pages.py');builder=importlib.util.module_from_spec(spec);spec.loader.exec_module(builder)
+  for value in ['https://evil.test','@abc\"><script>alert(1)</script>','@a/b','@a']:
+   with self.assertRaises(ValueError):builder.support_contact({'legalTelegram':value})
+  self.assertEqual(builder.support_contact({'legalTelegram':''}),'')
  def fixture(self,tmp):
   local=tmp/'local';(local/'app').mkdir(parents=True)
   (local/'index.html').write_text((ROOT/'index.html').read_text()+'\n<!-- KEEP_LOCAL_LANDING -->')
