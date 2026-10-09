@@ -59,7 +59,7 @@ test('details and outbound links escape fields and permit only generated numeric
   a.render(snapshot([]));assert.equal(a.dialog.open,false);assert.equal(a.node('[data-lot-detail-body]').innerHTML,'');
 });
 test('refresh deduplicates clicks, retains prior snapshot on error and cannot update another session',async()=>{
-  const a=harness();a.render(snapshot([lot(1)]));let calls=0,reject;a.context.request=()=>{calls++;return new Promise((_,r)=>reject=r);};a.run('syncStoreContent=request');
+  const a=harness();a.render(snapshot([lot(1)]));let calls=0,reject;a.context.request=()=>{calls++;return new Promise((_,r)=>reject=r);};a.run('apiRequest=request');
   const pending=a.run('refreshLotsWorkspace()');await a.run('refreshLotsWorkspace()');assert.equal(calls,1);assert.equal(a.node('[data-lots-refresh]').disabled,true);
   reject({message:'Сеть недоступна'});await pending;assert.match(a.node('[data-lots-alert-copy]').textContent,/предыдущий список/);assert.match(a.node('[data-lots-rows]').innerHTML,/Товар 1/);
   const next=a.run('refreshLotsWorkspace()');a.run('sessionGeneration++;resetLotsWorkspace();authState.user=null;renderLots()');reject({message:'OLD_PRIVATE_ERROR'});await next;assert.doesNotMatch(a.node('[data-lots-alert-copy]').textContent,/OLD_PRIVATE_ERROR/);assert.doesNotMatch(a.node('[data-lots-rows]').innerHTML,/Товар 1/);
@@ -67,4 +67,25 @@ test('refresh deduplicates clicks, retains prior snapshot on error and cannot up
 test('plugin actions navigate to existing plugin pages and never call writes',()=>{
   const a=harness();let route;a.context.openRoute=r=>{route=r;};a.run('setView=openRoute');a.event('click','[data-lots-plugin]',{dataset:{lotsPlugin:'zetslay.mass-price-editor'}});assert.equal(route,'plugins/zetslay.mass-price-editor');
   assert.equal(a.model({...snapshot([lot(1)]),availableResources:{lots:false}}).loaded,false);
+});
+
+test('live inventory loads categories sequentially and survives the unrelated chat snapshot refresh',async()=>{
+ const a=harness();a.render({...snapshot(null),availableResources:{lots:false}});const calls=[];
+ a.context.inventoryRequest=async(path,options)=>{calls.push(path);assert.equal(options.authenticated,true);assert.equal(options.method,undefined);const url=new URL(path,'https://api.zetslay.pro');assert.equal(url.searchParams.get('storeId'),'123');const nodeId=url.searchParams.get('nodeId');return nodeId?{storeId:'123',nodeId,observedAt:'2026-10-09T17:00:00Z',lots:[lot(nodeId,{nodeId,category:'Игра · Аккаунты',status:nodeId==='4'?'hidden':'active'})]}:{storeId:'123',observedAt:'2026-10-09T16:59:00Z',categories:[{nodeId:'3'},{nodeId:'4'}]};};
+ a.run('apiRequest=inventoryRequest');await a.run('refreshLotsWorkspace()');
+ assert.equal(calls.length,3);assert.equal(a.node('[data-lots-all]').textContent,'2');assert.equal(a.node('[data-lots-paused]').textContent,'1');assert.match(a.node('[data-lots-rows]').innerHTML,/Скрыт на FunPay/);
+ a.render({...snapshot(null),availableResources:{lots:false}});assert.equal(a.node('[data-lots-all]').textContent,'2');assert.equal(a.run('lotsPageState.progress'),2);
+ a.event('click','[data-lot-open]',{dataset:{lotOpen:'3'}});assert.match(a.node('[data-lot-detail-body]').innerHTML,/offerEdit\?offer=3/);
+});
+test('partial, foreign or duplicate responses keep the prior complete inventory rather than publishing a misleading total',async()=>{
+ for(const mode of ['partial','foreign','duplicate']){
+  const a=harness();a.render(snapshot([lot(1)]));let calls=0;
+  a.context.inventoryRequest=async()=>{calls++;if(calls===1)return {storeId:'123',observedAt:'2026-10-09T17:00:00Z',categories:[{nodeId:'3'},{nodeId:'4'}]};if(mode==='partial'&&calls===3)throw Error('Не получена категория');if(mode==='foreign')return {storeId:'999',nodeId:'3',lots:[]};return {storeId:'123',nodeId:calls===2?'3':'4',observedAt:'2026-10-09T17:00:00Z',lots:[lot('12',{nodeId:calls===2?'3':'4'})]};};
+  a.run('apiRequest=inventoryRequest');await a.run('refreshLotsWorkspace()');assert.equal(a.node('[data-lots-all]').textContent,'1');assert.match(a.node('[data-lots-alert-copy]').textContent,/предыдущий список/);assert.equal(a.run('lotsPageState.inventory'),null);
+ }
+});
+test('first visit starts one inventory request and unknown shop identity never exposes snapshot rows',()=>{
+ const a=harness();let scheduled=0;a.context.window.setTimeout=()=>scheduled++;a.root.hidden=false;
+ a.render(snapshot([]));a.run('renderLots()');assert.equal(scheduled,1);
+ const data=snapshot([lot(1)]);delete data.storeId;assert.equal(a.model(data).loaded,false);
 });

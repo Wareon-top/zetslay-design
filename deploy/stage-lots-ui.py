@@ -39,7 +39,7 @@ def stage(local,incoming,out):
         matches=re.findall(r'<'+tag+r'[^>]*'+attribute+r'="'+re.escape(asset)+r'(?:\?[^\"]*)?"',html)
         require(len(matches)<=1,'Дублируется '+asset)
         html=re.sub(r'^[ \t]*<'+tag+r'[^\n]*'+attribute+r'="'+re.escape(asset)+r'(?:\?v=[A-Za-z0-9_-]+)?"[^\n]*>\n?','',html,flags=re.M)
-    version='20261005-lots'
+    version='20261009-inventory-live'
     html,n=re.subn(r'^[ \t]*<script src="app\.js(?:\?v=[A-Za-z0-9_-]+)?" defer></script>',lambda m:'    <script src="lots.js?v='+version+'" defer></script>\n    <script src="app.js?v='+version+'" defer></script>',html,flags=re.M)
     require(n==1 and html.count('</head>')==1,'Не найдены подключения ассетов')
     html=re.sub(r'^[ \t]*</head>',lambda m:'    <link rel="stylesheet" href="lots.css?v='+version+'">\n  </head>',html,flags=re.M)
