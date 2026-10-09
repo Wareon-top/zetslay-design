@@ -10,8 +10,9 @@ trap cleanup EXIT
 git fetch origin "${ZETSLAY_SUBSCRIPTIONS_REVISION:-codex/landing-light-dark-redesign}"
 revision=$(git rev-parse FETCH_HEAD)
 mkdir -p "$work/incoming/app" "$work/incoming/deploy"
-for file in index.html landing-pricing.js subscription-plans.json \
-  app/index.html app/billing.js app/billing-pricing.js app/billing.test.mjs app/billing-section.html \
+# CSS files are test fixtures only; the publication list below excludes them.
+for file in index.html landing-pricing.js landing-pricing.css subscription-plans.json \
+  app/index.html app/billing.js app/billing-pricing.js app/billing-pricing.css app/billing.test.mjs app/billing-section.html \
   deploy/landing-pricing.test.mjs deploy/subscription-pricing-runtime.js \
   deploy/build-subscription-pricing.py deploy/stage-subscription-pricing.py deploy/stage-subscription-pricing.test.py; do
   git show "$revision:$file" > "$work/incoming/$file"
