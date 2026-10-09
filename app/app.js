@@ -181,6 +181,7 @@ function setAuthModal(open) {
 }
 
 function resetAccountData() {
+  if (typeof resetRobuxUi === 'function') resetRobuxUi();
   if (typeof adminReset === 'function') adminReset();
   if (typeof resetStarsUi === 'function') resetStarsUi();
   if (typeof resetLotsWorkspace === 'function') resetLotsWorkspace();
