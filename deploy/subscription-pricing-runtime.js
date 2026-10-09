@@ -3,11 +3,15 @@
   const catalog = __CATALOG__;
   const periods = Object.freeze(Object.fromEntries(Object.entries(catalog.periods).map(([key,value])=>[key,Object.freeze(value)])));
   const plans = Object.freeze(catalog.plans.map(plan => Object.freeze({ ...plan, features:Object.freeze(plan.features), includes:Object.freeze(plan.includes) })));
+  function isPaymentAmountAllowed(kopecks) {
+    return Number.isSafeInteger(kopecks) && kopecks > 0 && kopecks <= catalog.maxTransactionKopecks;
+  }
   function pricingQuote(monthlyRub, periodId) {
     const period = Object.hasOwn(periods, periodId) ? periods[periodId] : null;
     if (!Number.isSafeInteger(monthlyRub) || monthlyRub <= 0 || monthlyRub > 100000 || !period) return null;
     const monthlyKopecks = monthlyRub * (100 - period.discount);
-    return { ...period, monthlyKopecks, totalKopecks:monthlyKopecks * period.months };
+    const totalKopecks = monthlyKopecks * period.months;
+    return isPaymentAmountAllowed(totalKopecks) ? { ...period, monthlyKopecks, totalKopecks } : null;
   }
   function rubles(kopecks) {
     return new Intl.NumberFormat('ru-RU', { minimumFractionDigits:kopecks % 100 ? 2 : 0, maximumFractionDigits:2 }).format(kopecks / 100) + ' ₽';
@@ -17,7 +21,7 @@
     const value = plan && pricingQuote(plan.monthlyRub, periodId);
     return value ? { ...value, planId:plan.id, name:plan.name, features:plan.features, includes:plan.includes, currency:catalog.currency } : null;
   }
-  globalThis.ZetSlayPricing = Object.freeze({ plans, periods, quote, rubles, paymentAvailable:false });
+  globalThis.ZetSlayPricing = Object.freeze({ plans, periods, quote, rubles, paymentAvailable:false, maxTransactionKopecks:catalog.maxTransactionKopecks, isPaymentAmountAllowed });
   const root = document.querySelector('[data-landing-pricing="plans-v1"]');
   if (!root) return;
   const picker=root.querySelector('[data-pricing-periods]'),buttons=Array.from(root.querySelectorAll('[data-pricing-period]'));
@@ -28,11 +32,13 @@
   }));
   if (!picker || buttons.length!==3 || cards.length!==4 || cards.some((card,index) => card.id !== plans[index].id || card.monthlyRub !== plans[index].monthlyRub || !card.price || !card.original || !card.note)) return;
   function select(periodId, announce=true) {
-    if (!Object.hasOwn(periods,periodId)) return;
+    if (!Object.hasOwn(periods,periodId)) return false;
+    const values=cards.map(card=>quote(card.id,periodId));
+    if(values.some(value=>!value))return false;
     root.dataset ||= {};
     root.dataset.pricingPeriod=periodId;
-    cards.forEach(card => {
-      const value=quote(card.id,periodId);
+    cards.forEach((card,index) => {
+      const value=values[index];
       card.price.textContent=rubles(value.monthlyKopecks);
       card.original.hidden=!value.discount;
       card.original.textContent=rubles(card.monthlyRub*100);
@@ -43,6 +49,7 @@
       const period=periods[periodId];
       announcement.textContent=`${period.label}. ${period.discount ? `Скидка ${period.discount}%. ` : ''}Показана стоимость в месяц; полная сумма указана под ценой.`;
     }
+    return true;
   }
   buttons.forEach((button,index) => {
     button.addEventListener('click',()=>select(button.dataset.pricingPeriod));
@@ -53,5 +60,5 @@
       event.preventDefault();buttons[next].focus();select(buttons[next].dataset.pricingPeriod);
     });
   });
-  select('month',false);picker.hidden=false;
+  if(select('month',false))picker.hidden=false;
 })();

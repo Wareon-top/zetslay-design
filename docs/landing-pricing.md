@@ -26,6 +26,20 @@ installed plugins are unchanged. Purchase buttons show conditions; public
 CTAs open registration. The legal documents retain their separate draft
 status until legal/payment readiness is completed.
 
+Platega review: `maxTransactionKopecks` is 1,000,000 (10,000 RUB). The build
+rejects any full-period tariff above that amount, and generated quote modules
+refuse excessive quotes. `isPaymentAmountAllowed` also rejects invalid or
+non-integer minor-unit amounts. Document links and the review-only marker
+`плаtega` appear in both tariff sections. Clear `approvalMarker` and rebuild
+after the cash register is approved; document links and the limit stay.
+
+This is a quotation guard, not server-side payment enforcement. Before
+enabling payments, apply the same bound to the backend's authoritative total
+for every top-up and purchase, before sending a request to the provider.
+Never trust a browser amount, split purchases to bypass the limit, or accept
+an invoice above the limit. The current payment/top-up endpoints do not exist.
+Public document links do not turn draft legal texts into effective documents.
+
 Build and verify:
 
 ```sh

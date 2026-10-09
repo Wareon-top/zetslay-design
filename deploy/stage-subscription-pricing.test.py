@@ -4,12 +4,24 @@ import shutil
 import tempfile
 import unittest
 import re
+import copy
+import json
 
 spec=importlib.util.spec_from_file_location('pricing_stage',Path(__file__).with_name('stage-subscription-pricing.py'))
 module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
 ROOT=Path(__file__).resolve().parent.parent
 
 class StageTests(unittest.TestCase):
+    def test_catalog_rejects_any_full_period_above_provider_limit(self):
+        catalog=json.loads((ROOT/'subscription-plans.json').read_text())
+        module.builder.validate(catalog)
+        excessive=copy.deepcopy(catalog)
+        excessive['plans'][-1]['monthlyRub']=1100
+        with self.assertRaisesRegex(AssertionError,'лимит'):
+            module.builder.validate(excessive)
+        for invalid in (1000001,0,'1000000'):
+            altered=copy.deepcopy(catalog);altered['maxTransactionKopecks']=invalid
+            with self.assertRaises(AssertionError):module.builder.validate(altered)
     def fixture(self,tmp):
         local=Path(tmp)/'live';(local/'app').mkdir(parents=True)
         for name in ('index.html','app/index.html','app/billing.js'):

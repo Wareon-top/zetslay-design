@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 import re
 
-VERSION = '20261009-subscriptions'
+VERSION = '20261009-platega-review'
 CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>'
 esc = lambda value: html.escape(str(value), quote=True)
 
@@ -21,6 +21,8 @@ def replace_section(text, identifier, markup):
 
 def validate(data):
     assert data['currency']=='RUB' and data['paymentAvailable'] is False
+    assert type(data['maxTransactionKopecks']) is int and data['maxTransactionKopecks']==1000000
+    assert data['approvalMarker'] in ('', 'плаtega')
     assert [p['id'] for p in data['plans']]==['start','growth','pro','maximum']
     amounts=[p['monthlyRub'] for p in data['plans']]
     assert all(type(price) is int and 149<=price<=100000 for price in amounts)
@@ -30,6 +32,9 @@ def validate(data):
         assert plan['includes']==levels[:index+1]
         assert plan['features'] and len(plan['features'])<=10
     assert [(p['months'],p['discount']) for p in data['periods'].values()]==[(1,0),(3,10),(12,20)]
+    for price in amounts:
+        for period in data['periods'].values():
+            assert price*(100-period['discount'])*period['months']<=data['maxTransactionKopecks'], 'Стоимость периода превышает лимит одной транзакции'
 
 def markup(data, cabinet=False):
     identifier='billing-tariffs' if cabinet else 'tariffs'
@@ -52,10 +57,11 @@ def markup(data, cabinet=False):
     picker=''.join(f'<button type="button" data-pricing-period="{key}" aria-pressed="{str(key=="month").lower()}">{esc(period["label"])}'+(f' <span>−{period["discount"]}%</span>' if period['discount'] else '')+'</button>' for key,period in data['periods'].items())
     conditions=''.join(f'<p>{esc(text)}</p>' for text in data['conditions'])
     legal='../legal/' if cabinet else 'legal/'
+    review=f'<p data-payment-review-marker>Код согласования: <strong>{esc(data["approvalMarker"])}</strong></p>' if data['approvalMarker'] else ''
     return f'''<section class="section landing-pricing" id="{identifier}" {'data-billing-pricing' if cabinet else 'data-section="access"'} data-landing-pricing="plans-v1" aria-labelledby="{identifier}-title">
   <div class="landing-pricing__shell"><div class="landing-pricing__heading"><div><h2 id="{identifier}-title">{heading}</h2><p>Выберите доступ к нужным категориям плагинов. Каждый следующий тариф включает предыдущий.</p></div><div class="pricing-period" role="group" aria-label="Период доступа" data-pricing-periods hidden>{picker}</div></div>
     <div class="landing-pricing__grid">{''.join(cards)}</div>
-    <div class="landing-pricing__notes"><p><strong>Что входит в стоимость</strong></p>{conditions}<p><strong>Оплата и запуск.</strong> {esc(data['availability'])} Автоматическое продление и регулярные списания не подключены.</p><p><a href="{legal}offer.html">Условия использования</a> · <a href="{legal}refunds.html">Оплата и возвраты</a> · <a href="{legal}privacy.html">Конфиденциальность</a></p></div>
+    <div class="landing-pricing__notes"><p><strong>Что входит в стоимость</strong></p>{conditions}<p><strong>Оплата и запуск.</strong> {esc(data['availability'])} Автоматическое продление и регулярные списания не подключены.</p><p data-payment-limit><strong>Лимит одного платежа — 10 000 ₽.</strong> Пополнение счёта ZetSlay и стоимость одной оплачиваемой покупки не должны превышать эту сумму. Лимит относится к оплате нашего сервиса, а не к балансу вашего магазина или покупкам на внешних площадках.</p><nav aria-label="Документы проекта"><a href="{legal}offer.html">Пользовательское соглашение / публичная оферта</a> · <a href="{legal}privacy.html">Политика конфиденциальности</a> · <a href="{legal}refunds.html">Оплата и возвраты</a> · <a href="{legal}">Реквизиты и все документы</a></nav>{review}</div>
     <p class="pricing-announcement" role="status" aria-live="polite" aria-atomic="true" data-pricing-announcement></p>
   </div>
 </section>'''

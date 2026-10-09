@@ -76,3 +76,33 @@ test('unknown periods and malformed prices cannot render an incorrect quote', ()
   }
   assert.doesNotThrow(()=>page({present:false}));
 });
+
+test('payment amount guard accepts the provider boundary and rejects excess, fractions and invalid amounts', () => {
+  const context={document:{querySelector:()=>null},Intl};
+  vm.runInNewContext(source,context);
+  const pricing=context.ZetSlayPricing;
+  assert.equal(pricing.maxTransactionKopecks,1000000);
+  assert.equal(pricing.paymentAvailable,false);
+  for(const value of [1,999999,1000000])assert.equal(pricing.isPaymentAmountAllowed(value),true);
+  for(const value of [0,-1,1000001,1.5,'1000000',NaN,Infinity,null,undefined])assert.equal(pricing.isPaymentAmountAllowed(value),false);
+  for(const plan of pricing.plans)for(const period of Object.keys(pricing.periods)){
+    const quote=pricing.quote(plan.id,period);
+    assert.ok(quote&&pricing.isPaymentAmountAllowed(quote.totalKopecks));
+  }
+  assert.equal(pricing.quote('maximum','year').totalKopecks,767040);
+  const tampered={document:{querySelector:()=>null},Intl};
+  vm.runInNewContext(source.replace('"monthlyRub":799','"monthlyRub":10000'),tampered);
+  assert.equal(tampered.ZetSlayPricing.quote('maximum','month').totalKopecks,1000000);
+  assert.equal(tampered.ZetSlayPricing.quote('maximum','year'),null);
+});
+
+test('public and cabinet tariffs expose permanent document links, the transaction limit and exact review marker', () => {
+  for(const [path,prefix] of [['../index.html','legal/'],['../app/billing-section.html','../legal/']]){
+    const html=readFileSync(new URL(path,import.meta.url),'utf8');
+    assert.match(html,/aria-label="Документы проекта"/);
+    for(const doc of ['offer.html','privacy.html','refunds.html'])assert.ok(html.includes(`href="${prefix}${doc}"`));
+    assert.match(html,/data-payment-limit/);
+    assert.match(html,/Лимит одного платежа — 10 000 ₽/);
+    assert.match(html,/data-payment-review-marker>Код согласования: <strong>плаtega<\/strong>/);
+  }
+});
