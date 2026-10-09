@@ -124,6 +124,20 @@ test('selected plan modal uses the current period quote, escapes content and pre
   assert.equal(app.dialogs.length,2);
 });
 
+test('commercial summary uses the exact full-period catalogue amount despite stale card text',()=>{
+  const app=harness();
+  vm.runInContext(readFileSync(new URL('./billing-pricing.js',import.meta.url),'utf8'),app.context);
+  app.node('[data-billing-pricing]').dataset={pricingPeriod:'year'};
+  app.cards[0].querySelector=()=>({textContent:'obsolete quote'});
+  app.run("openBillingDialog('start')");
+  const text=app.dialogs.at(-1).innerHTML.replace(/\s/g,'');
+  assert.match(text,/1.?430,40₽/);
+  assert.match(text,/за12месяцев/);
+  assert.match(text,/ReviewReminder/);
+  assert.equal(app.context.authState.workspace.plan.id,'pro_demo');
+  assert.ok(!text.includes('obsoletequote'));
+});
+
 test('sign-out closes open finance dialogs and clears visible account-specific data',()=>{
   const app=harness();app.run('renderBilling()');app.run("openBillingDialog('promo')");
   app.run("authState.user=null;authState.token='';authState.workspace=null;sessionGeneration++;renderBilling();");

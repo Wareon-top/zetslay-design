@@ -1,47 +1,49 @@
-# Public pricing section
+# Subscription catalogue · 2026-10-09
 
-`#tariffs` replaces the old placeholder with four plans: Start 149 RUB/month,
-Growth 299, Pro 499 and Maximum 799. The style follows the user-supplied Pricing 6
-screenshot/component: dark card bodies with thin rounded borders, blue/purple/
-amber/teal blurred headers, small CSS avatars, large prices, pill CTAs, checked
-feature lists and separated footnotes. Pro is featured. There are four desktop
-columns, two tablet columns and one mobile column.
+`subscription-plans.json` is the single source for public and cabinet tariff
+names, monthly prices, included categories, examples and period conditions.
+The published prices are Start 149 RUB, Growth 299 RUB, Pro 499 RUB, Maximum
+799 RUB per month. Each plan includes the previous plan. Categories follow
+`app/plugin-rarity.js`: common (Confirm / Review Reminder), advanced (Lot Cloner,
+Mass Price Editor, Sales Pause, Auto Review Bonus), ultra (Kosell Rent, TikTok /
+Roblox LZT Market, Stars Relay), legendary (Robux Relay).
 
-The supplied external preview URL was inaccessible; the supplied screenshot and
-component were used directly. This vanilla landing needs no React, Next, Avatar,
-Hugeicons or other dependency. CSS owns only the pricing namespaces.
+There are no promised counts for future plugins. Only published own plugins
+are included. One FunPay store, the personal bot and core shop tools are common
+benefits. Proxy, external products, rental balance, Robux, Stars and marketplace
+fees are separate. Future third-party plugin purchases are excluded.
 
-Monthly pricing is rendered serverlessly in HTML. The JS progressively enables
-month/quarter/year buttons; quarter has a 10% discount and year 20%. Integer
-kopecks are used for all calculations. Cards show the effective monthly amount,
-undiscounted monthly reference and full upfront period total. The monthly mode
-has no fabricated strike-through. Buttons support native focus, arrows, Home,
-End, aria-pressed and a dedicated live announcement. Without JS the monthly
-prices and registration links remain usable and inactive controls stay hidden.
+The existing 10% quarter and 20% twelve-month discounts are retained. Prices
+are calculated in integer kopecks. Both effective monthly price and full
+upfront total are shown. The finance dialog uses the catalogue and selected
+period instead of trusting stale card text. It lists included features and
+links to terms and refunds. Automatic recurring charges remain unavailable.
 
-This is a public pricing proposal/presentation, not a billing implementation.
-All CTAs open the existing registration URL; no checkout, plan enforcement,
-trial, payment or account state changes are made. A shared note states that the
-plans are preparing to launch. Included modules refer to published plugins,
-not the future 53+ plugin target. Start has common, Growth adds advanced, Pro
-adds ultra, Maximum adds legendary. Proxies, Kosell balance/rentals and future
-user marketplace purchases are excluded. No fake old price, trial benefit,
-priority-support SLA or multi-account allowance is claimed.
+This change publishes service prices and presentation, not a payment
+integration. Platega API, accepted orders, payments and enforcement of paid
+category entitlements are not implemented here. Existing demo access and
+installed plugins are unchanged. Purchase buttons show conditions; public
+CTAs open registration. The legal documents retain their separate draft
+status until legal/payment readiness is completed.
 
-Run:
-- `node --check landing-pricing.js`
-- `node --test deploy/landing-pricing.test.mjs`
-- `python3 deploy/stage-landing-pricing.test.py`
-- `bash -n deploy/update-landing-pricing.sh`
+Build and verify:
 
-Tests cover exact period totals for all plans, keyboard navigation, invalid
-pricing input, hidden no-JS controls, scoped staging, preserved local covers/
-auth scripts/cabinet, repeat installation and failure before publication.
-Browser QA is unavailable in this managed environment.
+```sh
+python3 deploy/build-subscription-pricing.py .
+python3 deploy/build-subscription-pricing.py . --check
+node --test app/billing.test.mjs deploy/landing-pricing.test.mjs
+python3 deploy/stage-subscription-pricing.test.py
+bash -n deploy/update-subscription-pricing.sh
+```
 
-The pinned updater uses the shared landing lock, stages the unique tariff
-section plus CSS/JS tags, makes a backup, publishes assets and HTML atomically,
-and restores existing files/removes newly created assets on failure. It never
-replaces the whole index from GitHub or updates the cabinet. Stdin is closed to
-preserve subsequent commands in an outer pasted shell heredoc. Set
-`ZETSLAY_PRICING_DESIGN_REVISION` to the published commit SHA.
+The builder updates only #tariffs, #billing-tariffs, their generated quote
+modules, three relevant FAQ answers and cache tags. `app/billing-section.html`
+is regenerated too, preserving compatibility with the prior finance updater.
+
+Use the pinned `deploy/update-subscription-pricing.sh` release on VPS. It stages
+only these tariff sections, FAQ items and the tariff branch of billing.js.
+It preserves the live hero, plugin covers, account/store controls, custom
+payment dialogs and every other section. It tests before publication, uses
+the landing update lock, backs up changed files, publishes modules before
+HTML and restores files on installation failure. It does not restart the API
+or activate/change a subscription.

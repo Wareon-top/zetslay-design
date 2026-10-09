@@ -13,9 +13,9 @@ function page({ amounts = [149,299,499,799], present = true } = {}) {
     setAttribute(name, value) { this.attributes[name] = value; },
     focus() { this.focused = true; }
   }));
-  const cards = amounts.map(amount => {
+  const cards = amounts.map((amount,index) => {
     const fields = { '[data-pricing-price]': { textContent: '' }, '[data-pricing-original]': { hidden: true, textContent: '' }, '[data-pricing-note]': { textContent: '' } };
-    return { dataset: { monthlyRub: String(amount) }, fields, querySelector: selector => fields[selector] };
+    return { dataset: { pricingPlan:['start','growth','pro','maximum'][index],monthlyRub: String(amount) }, fields, querySelector: selector => fields[selector] };
   });
   const root = {
     querySelector: selector => selector === '[data-pricing-periods]' ? picker : announcement,
