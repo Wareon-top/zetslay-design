@@ -11,7 +11,7 @@ def require(ok,message):
 def font_links(text,prefix):
     text=re.sub(r'\s*<link\b[^>]*\bhref=["\']https://fonts\.(?:googleapis|gstatic)\.com[^"\']*["\'][^>]*>', '', text)
     text=re.sub(r'\s*<link\b[^>]*\bhref=["\'](?:\.\./)?assets/fonts/fonts\.css(?:\?[^"\']*)?["\'][^>]*>', '',text)
-    return text.replace('</head>',f'  <link rel="stylesheet" href="{prefix}assets/fonts/fonts.css?v=20261007-local">\n</head>',1)
+    return re.sub(r'\s*</head>',f'\n  <link rel="stylesheet" href="{prefix}assets/fonts/fonts.css?v=20261007-local">\n</head>',text,count=1)
 
 def asset(text,name,prefix,script=False):
     attr='src' if script else 'href';tag='script' if script else 'link';end='</body>' if script else '</head>'
@@ -46,9 +46,12 @@ def stage(local,incoming,output):
     shutil.copytree(incoming/'legal',output/'legal',dirs_exist_ok=True);shutil.copytree(incoming/'assets/fonts',output/'assets/fonts',dirs_exist_ok=True)
     if (local/'legal/site-config.json').is_file():shutil.copy2(local/'legal/site-config.json',output/'legal/site-config.json')
     spec=spec_from_file_location('legal_build',incoming/'deploy/build-legal-pages.py');builder=module_from_spec(spec);spec.loader.exec_module(builder);builder.build(output/'legal')
+    import json
+    operator_config=json.loads((output/'legal/site-config.json').read_text())
+    root=builder.update_operator_footer(root,operator_config)
     shutil.copy2(incoming/'app/legal-cabinet.js',output/'app/legal-cabinet.js')
     (output/'index.html').write_text(root);(output/'app/index.html').write_text(app)
-    if (local/'landing-footer.html').is_file():(output/'landing-footer.html').write_text(footer_links((local/'landing-footer.html').read_text()))
+    if (local/'landing-footer.html').is_file():(output/'landing-footer.html').write_text(builder.update_operator_footer(footer_links((local/'landing-footer.html').read_text()),operator_config))
 
 if __name__=='__main__':
     try:stage(*sys.argv[1:])
