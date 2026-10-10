@@ -12,13 +12,13 @@ function sidebarTrialModel(data, elapsed = 0) {
   const state = data?.state || 'loading';
   if (state === 'active') {
     const remaining = Math.max(0, data.remainingSeconds - Math.max(0, Math.floor(elapsed / 1000)));
-    if (!remaining) return { title:'Пробный период завершён', description:'Настройки сохранены. Продолжите работу с подходящим тарифом.', metric:'0', label:'часов осталось', action:'Смотреть тарифы', destination:'finance' };
+    if (!remaining) return { state:'used', title:'Пробный период завершён', description:'Настройки сохранены. Продолжите работу с подходящим тарифом.', metric:'0', label:'часов осталось', action:'Смотреть тарифы', destination:'finance' };
     const hours = Math.ceil(remaining / 3600);
-    return { title:'Вы пробуете ZetSlay', description:'Бесплатный доступ активен. Исследуйте возможности своего кабинета.', metric:hours > 1 ? String(hours) : String(Math.ceil(remaining / 60)), label:hours > 1 ? 'часов осталось' : 'минут осталось', action:'Открыть кабинет', destination:'dashboard' };
+    return { state:'active', title:'Пробный доступ', description:'Выберите тариф, чтобы продолжить работу после пробного периода.', metric:hours > 1 ? String(hours) : String(Math.ceil(remaining / 60)), label:hours > 1 ? 'часов осталось' : 'минут осталось', action:'Выбрать тариф', destination:'finance' };
   }
-  if (state === 'used') return { title:'Пробный период завершён', description:'Настройки сохранены. Выберите тариф для продолжения работы.', metric:'3', label:'дня пробного доступа', action:'Смотреть тарифы', destination:'finance' };
-  if (state === 'plan_active') return { title:'Ваш доступ активен', description:'У вас уже есть активный тариф. Всё готово для работы.', metric:'✓', label:'тариф подключён', action:'Мой тариф', destination:'finance' };
-  return { title:'Попробуйте ZetSlay', description:'Познакомьтесь с сервисом бесплатно — без автосписаний.', metric:'3', label:'дня бесплатно', action:state === 'available' ? 'Начать бесплатно' : 'Проверяем…', destination:null };
+  if (state === 'used') return { state:'used', title:'Пробный период завершён', description:'Настройки сохранены. Выберите тариф для продолжения работы.', metric:'3', label:'дня пробного доступа', action:'Смотреть тарифы', destination:'finance' };
+  if (state === 'plan_active') return { state:'plan_active', hidden:true, title:'Ваш доступ активен', description:'У вас уже есть активный тариф. Всё готово для работы.', metric:'✓', label:'тариф подключён', action:'Мой тариф', destination:'finance' };
+  return { state, title:'Попробуйте ZetSlay', description:'Познакомьтесь с сервисом бесплатно — без автосписаний.', metric:'3', label:'дня бесплатно', action:state === 'available' ? 'Начать бесплатно' : 'Проверяем…', destination:null };
 }
 function renderSidebarTrial() {
   const root = document.querySelector('[data-sidebar-trial]');
@@ -29,6 +29,8 @@ function renderSidebarTrial() {
   }
   const signedIn = Boolean(authState.user && authState.token);
   const model = sidebarTrialModel(sidebarTrialUi.data, Date.now()-sidebarTrialUi.receivedAt);
+  const activePlan = authState.workspace?.plan;
+  root.hidden = signedIn && (sidebarTrialUi.data ? model.hidden === true : Boolean(activePlan?.active && ['start','growth','pro','maximum','pro_demo'].includes(activePlan.id)));
   for (const [key,value] of Object.entries(model)) root.querySelector(`[data-trial-${key}]`)?.replaceChildren(document.createTextNode(value ?? ''));
   const button = root.querySelector('[data-trial-action]');
   if (button) {
@@ -38,7 +40,7 @@ function renderSidebarTrial() {
   }
   const status = root.querySelector('[data-trial-status]');
   if (status) { status.textContent = sidebarTrialUi.error; status.hidden = !sidebarTrialUi.error; }
-  root.dataset.state = sidebarTrialUi.error ? 'error' : sidebarTrialUi.data?.state || 'loading';
+  root.dataset.state = sidebarTrialUi.error ? 'error' : model.state;
   if (signedIn && !sidebarTrialUi.pending && !sidebarTrialUi.checkedAt) void loadSidebarTrial();
 }
 async function loadSidebarTrial(activate = false) {
@@ -80,7 +82,7 @@ async function loadSidebarTrial(activate = false) {
 }
 function sidebarTrialClick() {
   if (!authState.user || !authState.token) { if (typeof setAuthModal === 'function') setAuthModal(true); return; }
-  if (sidebarTrialUi.pending) return;
+  if (sidebarTrialUi.pending || sidebarTrialUi.data?.state === 'plan_active') return;
   if (sidebarTrialUi.error || !sidebarTrialUi.data) { void loadSidebarTrial(); return; }
   const model = sidebarTrialModel(sidebarTrialUi.data, Date.now()-sidebarTrialUi.receivedAt);
   if (model.destination) { setView(model.destination); return; }

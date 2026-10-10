@@ -8,7 +8,7 @@ const active={...available,state:'active',startedAt:'2030-01-01T00:00:00Z',expir
 function harness(api=async()=>available,{signedIn=true,missing=false}={}) {
  const nodes=new Map(),calls=[],events=new Map();
  const node=key=>{if(!nodes.has(key))nodes.set(key,{textContent:'',hidden:false,disabled:false,dataset:{},attributes:{},setAttribute(k,v){this.attributes[k]=v},replaceChildren(value){this.textContent=value},addEventListener(type,fn){events.set(key+':'+type,fn)}});return nodes.get(key)};
- const root={dataset:{},querySelector:node};
+ const root={dataset:{},hidden:false,querySelector:node};
  const context=vm.createContext({Date,document:{hidden:false,querySelector:s=>missing?null:s==='[data-sidebar-trial]'?root:node(s),createTextNode:String,addEventListener(type,fn){events.set(type,fn)}},setInterval(fn){events.set('timer',fn)},authState:{user:signedIn?{id:'u'}:null,token:signedIn?'token':'',workspace:{id:'w',plan:{id:null,active:false}}},sessionGeneration:1,state:{onboarding:{state:'plan_required'}},onboardingRevision:0,apiRequest:async(path,options)=>{calls.push([path,options]);return api(path,options)},renderDashboard(){},renderTelegramOnboarding(){},renderBilling(){},setView(view){calls.push(['route',view])},setAuthModal(open){calls.push(['auth',open])},showToast(...args){calls.push(['toast',...args])}});
  const run=code=>vm.runInContext(code,context);run(source);
  return {run,context,calls,node,root,events,click:()=>run('sidebarTrialClick()'),async ready(){for(let i=0;i<10;i++)await Promise.resolve()}};
@@ -30,7 +30,7 @@ test('countdown uses server remaining time; expired and paid plans navigate with
  app.context.data=active;const model=ms=>JSON.parse(JSON.stringify(app.run(`sidebarTrialModel(data,${ms})`)));
  assert.equal(model(0).metric,'72');assert.equal(model(71*3600000+60000).label,'минут осталось');assert.equal(model(72*3600000).destination,'finance');
  const used=harness(async()=>({...available,state:'used'}));await used.ready();used.click();assert.deepEqual(used.calls.at(-1),['route','finance']);assert.equal(used.calls.filter(c=>c[1]?.method==='POST').length,0);
- const paid=harness(async()=>({...available,state:'plan_active'}));await paid.ready();paid.click();assert.deepEqual(paid.calls.at(-1),['route','finance']);
+ const paid=harness(async()=>({...available,state:'plan_active'}));await paid.ready();assert.equal(paid.root.hidden,true);paid.click();assert.equal(paid.calls.filter(c=>c[0]==='route').length,0);
 });
 test('failed activation is verified by GET before a second POST; recovery updates the workspace',async()=>{
  let bought=false;const app=harness(async(_path,options)=>{if(options.method==='POST'){bought=true;throw Error('lost response')}return bought?{...active,onboarding:{state:'telegram_bot_required'}}:available});
@@ -53,4 +53,24 @@ test('logout clears account data; a missing mount makes no requests',async()=>{
  const app=harness(async()=>active);await app.ready();app.run("authState.token='';authState.user=null;renderDashboard()");
  assert.equal(app.run('sidebarTrialUi.data'),null);assert.equal(app.node('[data-trial-action]').textContent,'Войти и попробовать');
  const absent=harness(async()=>{throw Error('must not request')},{missing:true});await absent.ready();assert.equal(absent.calls.length,0);
+});
+
+test('active trial uses a compact state and sends tariff selection to finance without purchases',async()=>{
+ const app=harness(async()=>active);await app.ready();assert.equal(app.root.hidden,false);assert.equal(app.root.dataset.state,'active');
+ assert.equal(app.node('[data-trial-action]').textContent,'Выбрать тариф');app.click();assert.deepEqual(app.calls.at(-1),['route','finance']);
+ assert.equal(app.calls.filter(c=>c[1]?.method==='POST').length,0);
+ const css=readFileSync(new URL('./sidebar-trial.css',import.meta.url),'utf8');assert.match(css,/\.sidebar-trial\[hidden\] \{ display: none !important/);assert.match(css,/data-state="active"/);
+});
+test('paid access stays hidden while loading; another account restores the promotion',async()=>{
+ let finish;const app=harness(()=>new Promise(resolve=>{finish=resolve}));
+ app.run("authState.workspace.plan={id:'maximum',active:true};renderDashboard()");assert.equal(app.root.hidden,true);
+ finish({...available,state:'plan_active'});await app.ready();assert.equal(app.root.hidden,true);
+ app.run("authState.token='new-account';authState.workspace={id:'new',plan:{active:false}};sessionGeneration++;renderDashboard()");assert.equal(app.root.hidden,false);
+ finish(available);await app.ready();assert.equal(app.root.hidden,false);assert.equal(app.node('[data-trial-action]').textContent,'Начать бесплатно');
+});
+test('expired countdown restores the full tariff offer; confirmed inactive status restores a hidden card',async()=>{
+ const app=harness(async()=>active);await app.ready();app.run('sidebarTrialUi.receivedAt=Date.now()-259200000;renderDashboard()');
+ assert.equal(app.root.dataset.state,'used');assert.equal(app.node('[data-trial-action]').textContent,'Смотреть тарифы');assert.equal(app.root.hidden,false);
+ const changed=harness(async()=>({...available,state:'used'}));changed.run("authState.workspace.plan={id:'maximum',active:true};renderDashboard()");assert.equal(changed.root.hidden,true);
+ await changed.ready();assert.equal(changed.root.hidden,false);assert.equal(changed.root.dataset.state,'used');
 });

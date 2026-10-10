@@ -4,7 +4,7 @@ import re
 import sys
 
 ASSETS=('sidebar-trial.js','sidebar-trial.css','sidebar-trial.test.mjs')
-VERSION='20261010-sidebar-trial'
+VERSION='20261010-sidebar-trial-states'
 
 def card_span(html):
     class Parser(HTMLParser):
