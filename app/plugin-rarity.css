@@ -1,0 +1,8 @@
+/* Compact collectible-style labels using the cabinet's calm palette. */
+.plugin-rarity{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:30px;padding:5px 11px;border:1px solid #414650;border-radius:10px;background:#242830;color:#d7dbe4;font:700 11px/1.4 Inter,Arial,sans-serif;letter-spacing:.01em;white-space:nowrap;box-shadow:none}
+.plugin-rarity__symbol{font-size:14px;line-height:1;font-weight:500}
+.plugin-rarity--advanced{border-color:#335987;background:#172b45;color:#b6d5ff}
+.plugin-rarity--ultra{border-color:var(--yellow);background:var(--yellow);color:#251900}
+.plugin-rarity--legendary{border-color:#5e4b83;background:#2a223d;color:#d7c6ff}
+.plugin-catalog .plugin-card__cover>.plugin-rarity{position:absolute;top:12px;right:12px;z-index:1;max-width:calc(100% - 24px);pointer-events:none}
+@media(max-width:520px){.plugin-catalog .plugin-card__cover>.plugin-rarity{top:10px;right:10px}.plugin-rarity{min-height:28px;padding:4px 9px;font-size:10px}}

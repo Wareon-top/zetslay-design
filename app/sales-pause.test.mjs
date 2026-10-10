@@ -1,0 +1,9 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import vm from 'node:vm';
+import {readFileSync} from 'node:fs';
+const guide=readFileSync(new URL('./sales-pause.js',import.meta.url),'utf8');
+const page=readFileSync(new URL('./plugin-page.js',import.meta.url),'utf8');
+function fixture(){const ctx=vm.createContext({icon:()=>'',state:{onboarding:{telegram:{bot:{username:'shop_test_bot'}}}},escapeHtml:s=>String(s).replaceAll('<','&lt;').replaceAll('>','&gt;'),canManagePluginCatalog:()=>false,formatPluginDescription:s=>s,document:{querySelector:()=>null,addEventListener(){}}});vm.runInContext(guide+'\n'+page,ctx);return ctx;}
+test('manual guide explains confirmation, restoration, uncertainty, limits and only the saved personal bot',()=>{const ctx=fixture(),html=vm.runInContext('salesPauseGuideMarkup({active:true})',ctx);for(const text of ['data-sales-pause-guide','/sales_pause','https://t.me/shop_test_bot','Список остаётся','до 500','chips','повторной записи','Стоп'])assert.ok(html.includes(text),text);ctx.state.onboarding.telegram.bot.username='evil" onclick=bad';const off=vm.runInContext('salesPauseGuideMarkup({active:false})',ctx);assert.doesNotMatch(off,/onclick|https:\/\/t.me/);assert.match(off,/Установка сама не меняет магазин/);});
+test('plugin details have the new guide, manual control copy and no banner or payment-event claims',()=>{const ctx=fixture();ctx.plugin={id:'zetslay.sales-pause',name:'Пауза продаж',description:'Описание',category:'sales',permissions:[],events:['order.paid'],active:true,installed:true};const html=vm.runInContext('pluginPageMarkup(plugin)',ctx);assert.match(html,/data-sales-pause-guide/);assert.match(html,/Список сохраняется в базе/);assert.doesNotMatch(html,/Запускается по событиям|plugin-page-cover|Изменить обложку/);});
