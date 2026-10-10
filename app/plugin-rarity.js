@@ -16,6 +16,7 @@ const PLUGIN_RARITY_BY_ID = Object.freeze({
   'zetslay.tiktok-lzt-market':'legendary',
   'zetslay.sales-pause':'advanced',
   'zetslay.kosell-rent':'legendary',
+  'zetslay.steam-rent':'legendary',
   'zetslay.auto-review-bonus':'advanced'
 });
 function pluginRarity(plugin) {
