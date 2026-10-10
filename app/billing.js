@@ -1,6 +1,6 @@
 /* Account finance presentation. Payment and promotion endpoints are not yet provided by the API. */
 const billingUi = { session:'', busy:false, error:'', request:0, dialog:null };
-const BILLING_PLAN_NAMES = Object.freeze({ start:'Старт', growth:'Рост', pro:'Профи', maximum:'Максимум', pro_demo:'Демо-тариф' });
+const BILLING_PLAN_NAMES = Object.freeze({ start:'Старт', growth:'Рост', pro:'Профи', maximum:'Максимум', pro_demo:'Демо-тариф', trial_3d:'Пробный доступ · 3 дня' });
 const billingEscape = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
 const billingMoney = (minor, currency) => new Intl.NumberFormat('ru-RU', { style:'currency', currency, maximumFractionDigits:2 }).format(minor / 100);
 
