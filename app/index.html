@@ -9,7 +9,7 @@
     <meta name="zetslay-api-base-url" content="https://api.zetslay.pro">
     <title>ZetSlay Control — личный кабинет</title>
     <link rel="stylesheet" href="styles.css?v=20261003-overview">
-    <link rel="stylesheet" href="overview.css?v=20261003-overview">
+    <link rel="stylesheet" href="overview.css?v=20261010-overview-periods">
     <link rel="stylesheet" href="orders.css?v=20261003-orders">
     <link rel="stylesheet" href="plugin-page.css?v=20261003-plugin-page">
     <link rel="stylesheet" href="messages.css?v=20261003-message-sync">
@@ -144,11 +144,21 @@
             <div class="overview-context"><span class="overview-source" data-overview-source>Магазин не подключён</span><span data-overview-updated>Ожидает синхронизации</span><span class="overview-plan" data-overview-plan></span></div>
             <p class="overview-notice" data-overview-notice role="status" aria-live="polite" hidden></p>
 
+            <div class="overview-period-toolbar" aria-label="Период статистики">
+              <div class="overview-segmented overview-period-picker" role="group" aria-label="Выбрать период">
+                <button type="button" data-overview-period="day" aria-pressed="true">Сегодня</button>
+                <button type="button" data-overview-period="week" aria-pressed="false">7 дней</button>
+                <button type="button" data-overview-period="month" aria-pressed="false">30 дней</button>
+                <button type="button" data-overview-period="all" aria-pressed="false">Все данные</button>
+              </div>
+              <span data-overview-period-label>Сегодня · МСК</span>
+            </div>
+            <p class="overview-period-note" data-overview-period-note role="status" aria-live="polite">Данные появятся после синхронизации магазина.</p>
             <div class="overview-grid">
               <article class="overview-card overview-stat"><div class="overview-stat__label"><h2>Сумма продаж</h2><span class="overview-icon overview-icon--amber"><svg><use href="#i-card"/></svg></span></div><strong data-overview-sales>—</strong><p data-overview-sales-note>После синхронизации магазина</p></article>
               <article class="overview-card overview-stat"><div class="overview-stat__label"><h2>Заказы</h2><span class="overview-icon overview-icon--blue"><svg><use href="#i-bag"/></svg></span></div><strong data-overview-orders>—</strong><p data-overview-orders-note>В текущем снимке FunPay</p></article>
               <article class="overview-card overview-stat"><div class="overview-stat__label"><h2>Средний заказ</h2><span class="overview-icon overview-icon--green"><svg><use href="#i-chart"/></svg></span></div><strong data-overview-average>—</strong><p data-overview-average-note>Без возвращённых заказов</p></article>
-              <article class="overview-card overview-stat"><div class="overview-stat__label"><h2>Диалоги</h2><span class="overview-icon overview-icon--violet"><svg><use href="#i-chat"/></svg></span></div><strong data-overview-dialogs>—</strong><p>В синхронизированных сообщениях</p></article>
+              <article class="overview-card overview-stat"><div class="overview-stat__label"><h2>Диалоги</h2><span class="overview-icon overview-icon--violet"><svg><use href="#i-chat"/></svg></span></div><strong data-overview-dialogs>—</strong><p data-overview-dialogs-note>Диалоги с сообщениями за период</p></article>
 
               <section class="overview-card overview-revenue" aria-labelledby="overview-revenue-title">
                 <header class="overview-card__heading"><div><h2 id="overview-revenue-title">Продажи</h2><p data-overview-chart-subtitle>Суммы заказов из текущего снимка</p></div><div class="overview-chart-controls"><label class="overview-currency" data-overview-currency-label hidden>Валюта<select data-overview-currency aria-label="Валюта продаж"></select></label><div class="overview-segmented" role="group" aria-label="Группировка графика"><button type="button" data-overview-mode="orders" aria-pressed="true">По заказам</button><button type="button" data-overview-mode="days" aria-pressed="false">По дням</button></div></div></header>
@@ -158,7 +168,7 @@
               </section>
 
               <section class="overview-card overview-refunds" aria-labelledby="overview-refunds-title">
-                <header class="overview-card__heading"><div><h2 id="overview-refunds-title">Возвраты</h2><p>Доля заказов в текущем снимке</p></div><div class="overview-refunds__rate"><strong data-overview-refund-rate>—</strong><span data-overview-refund-count>Нет данных</span></div></header>
+                <header class="overview-card__heading"><div><h2 id="overview-refunds-title">Возвраты</h2><p>По заказам выбранного периода</p></div><div class="overview-refunds__rate"><strong data-overview-refund-rate>—</strong><span data-overview-refund-count>Нет данных</span></div></header>
                 <div class="overview-refunds__amount"><span>Сумма возвратов <small data-overview-refund-currency></small></span><strong data-overview-refund-amount>—</strong></div>
                 <div class="overview-refund-track" data-overview-refund-track aria-hidden="true"></div>
                 <div class="overview-refund-key"><span><i></i>Остальные заказы</span><span><i></i>Возвращено</span></div>
@@ -181,7 +191,7 @@
                 </div>
               </section>
 
-              <section class="overview-card overview-orders" aria-labelledby="overview-orders-title"><header class="overview-card__heading"><div><h2 id="overview-orders-title">Заказы из снимка</h2><p>В порядке списка FunPay</p></div><button class="overview-link" type="button" data-view-link="orders">Все заказы <svg><use href="#i-chevron"/></svg></button></header><div class="dash-list" id="dash-orders-list"></div></section>
+              <section class="overview-card overview-orders" aria-labelledby="overview-orders-title"><header class="overview-card__heading"><div><h2 id="overview-orders-title">Заказы за период</h2><p>В порядке списка FunPay</p></div><button class="overview-link" type="button" data-view-link="orders">Все заказы <svg><use href="#i-chevron"/></svg></button></header><div class="dash-list" id="dash-orders-list"></div></section>
               <section class="overview-card overview-finance" aria-labelledby="overview-finance-title"><header class="overview-card__heading"><div><h2 id="overview-finance-title">Баланс магазина</h2><p>Данные FunPay</p></div><button class="overview-link" type="button" data-view-link="billing">Финансы <svg><use href="#i-chevron"/></svg></button></header><div class="dash-list" id="dash-finance-list"></div></section>
             </div>
             <p class="overview-scope"><svg><use href="#i-shield"/></svg>Показатели рассчитаны по загруженному снимку, а не по всей истории магазина. Данные FunPay не изменяются.</p>
@@ -422,7 +432,7 @@
 
     <div class="toast-region" aria-live="polite" aria-atomic="true"></div>
     <script src="store-identity.js?v=20261004-topbar" defer></script>
-    <script src="overview.js?v=20261004-topbar" defer></script>
+    <script src="overview.js?v=20261010-overview-periods" defer></script>
     <script src="orders.js?v=20261004-topbar" defer></script>
     <script src="confirm-reminder.js?v=20261003-reminder-settings" defer></script>
     <script src="review-reminder.js?v=20261004-review-reminder" defer></script>

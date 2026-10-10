@@ -1,5 +1,5 @@
 /* ZetSlay overview: derived only from the existing read-only content snapshot. */
-const overviewState = { currency: '', mode: 'orders', busy: false, error: '', snapshot: null, chartWidth: 1000, observer: null };
+const overviewState = { period: 'day', currency: '', mode: 'days', busy: false, error: '', snapshot: null, chartWidth: 1000, observer: null };
 const OVERVIEW_STATUSES = Object.freeze({
   paid: { label: 'Оплачен', color: 'var(--yellow)' },
   processing: { label: 'В работе', color: 'var(--violet)' },
@@ -15,11 +15,25 @@ const overviewDate = value => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T/
 const overviewMoney = (minor, currency) => minor == null ? '—' : new Intl.NumberFormat('ru-RU', { style: 'currency', currency, maximumFractionDigits: 2 }).format(minor / 100);
 const overviewPercent = value => value == null ? '—' : `${new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 1 }).format(value)}%`;
 
-function buildOverview(content, preferredCurrency = '') {
+const OVERVIEW_PERIODS = Object.freeze({ day: { label:'Сегодня', days:1 }, week: { label:'7 дней', days:7 }, month: { label:'30 дней', days:30 }, all: { label:'Все данные' } });
+const OVERVIEW_MOSCOW_OFFSET = 3 * 60 * 60 * 1000;
+const overviewDayKey = timestamp => new Date(timestamp + OVERVIEW_MOSCOW_OFFSET).toISOString().slice(0,10);
+function overviewPeriodRange(period, now = Date.now()) {
+  const key = Object.hasOwn(OVERVIEW_PERIODS, period) ? period : 'all';
+  if (key === 'all' || !Number.isFinite(now)) return { key:'all', start:null, end:null, label:'Все загруженные данные', days:null };
+  const days = OVERVIEW_PERIODS[key].days;
+  const midnight = Date.parse(overviewDayKey(now) + 'T00:00:00+03:00');
+  const start = midnight - (days - 1) * 86400000;
+  const format = timestamp => new Date(timestamp).toLocaleDateString('ru-RU',{timeZone:'Europe/Moscow',day:'numeric',month:'short'});
+  return { key, start, end:now, days, label:days === 1 ? format(now) + ' · с 00:00 МСК' : format(start) + ' — ' + format(now) + ' · МСК' };
+}
+
+function buildOverview(content, preferredCurrency = '', options = {}) {
   const snapshot = content || {};
   const observedAt = overviewDate(snapshot.observedAt);
+  const range = overviewPeriodRange(options.period || 'all', options.now ?? Date.now());
   const seen = new Set();
-  const orders = (Array.isArray(snapshot.orders) ? snapshot.orders : []).filter(order => {
+  const sourceOrders = (Array.isArray(snapshot.orders) ? snapshot.orders : []).filter(order => {
     if (!order || typeof order !== 'object') return false;
     const id = typeof order.id === 'string' && order.id ? order.id : null;
     if (id && seen.has(id)) return false;
@@ -33,7 +47,10 @@ function buildOverview(content, preferredCurrency = '') {
     const date = overviewDate(order.createdAt);
     return { id: String(order.id || `Заказ ${index + 1}`), product: String(order.product || order.title || 'Заказ FunPay'), buyer: String(order.buyer || order.buyerName || 'Покупатель FunPay'), sourceDateLabel: typeof order.sourceDateLabel === 'string' ? order.sourceDateLabel.slice(0,240) : '', status, currency, amount, date: date != null && (observedAt == null || date <= observedAt) ? date : null };
   });
-  const currencies = [...new Set(orders.filter(order => order.amount != null).map(order => order.currency))].sort();
+  const undatedOrders = sourceOrders.filter(order => order.date == null).length;
+  const orders = range.key === 'all' ? sourceOrders : sourceOrders.filter(order => order.date != null && order.date >= range.start && order.date <= range.end);
+  const periodUnavailable = range.key !== 'all' && orders.length === 0 && undatedOrders > 0;
+  const currencies = [...new Set(sourceOrders.filter(order => order.amount != null).map(order => order.currency))].sort();
   const currency = currencies.includes(preferredCurrency) ? preferredCurrency : currencies.includes('RUB') ? 'RUB' : currencies[0] || 'RUB';
   const sales = orders.filter(order => OVERVIEW_SALES.has(order.status));
   const moneyOrders = sales.filter(order => order.amount != null && order.currency === currency);
@@ -43,31 +60,36 @@ function buildOverview(content, preferredCurrency = '') {
     const total = list.reduce((value, order) => value + order.amount, 0);
     return Number.isSafeInteger(total) ? total : null;
   };
-  const totalMinor = moneyOrders.length ? sum(moneyOrders) : sales.length === 0 && !orders.some(order => order.status === 'unknown') ? 0 : null;
-  const refundMinor = moneyRefunds.length ? sum(moneyRefunds) : refunded.length === 0 ? 0 : null;
+  const totalMinor = periodUnavailable ? null : moneyOrders.length ? sum(moneyOrders) : sales.length === 0 && !orders.some(order => order.status === 'unknown') ? 0 : null;
+  const refundMinor = periodUnavailable ? null : moneyRefunds.length ? sum(moneyRefunds) : refunded.length === 0 ? 0 : null;
   const statuses = Object.entries(OVERVIEW_STATUSES).map(([id, meta]) => ({ id, ...meta, count: orders.filter(order => order.status === id).length })).filter(item => item.count);
   const unknownCount = orders.filter(order => order.status === 'unknown').length;
   const dated = moneyOrders.length > 0 && moneyOrders.every(order => order.date != null);
   const dayMap = new Map();
   if (dated) moneyOrders.forEach(order => {
-    const key = new Date(order.date).toISOString().slice(0, 10);
+    const key = overviewDayKey(order.date);
     const entry = dayMap.get(key) || { label: key, amount: 0, count: 0 };
     entry.amount += order.amount;
     entry.count++;
     dayMap.set(key, entry);
   });
-  const threads = new Set((Array.isArray(snapshot.messages) ? snapshot.messages : []).filter(message => message && typeof message.threadId === 'string' && message.threadId).map(message => message.threadId));
+  const messages = (Array.isArray(snapshot.messages) ? snapshot.messages : []).filter(message => message && typeof message.threadId === 'string' && message.threadId);
+  const messageDate = message => { const at = overviewDate(message.createdAt); return at != null && (observedAt == null || at <= observedAt) ? at : null; };
+  const undatedMessages = messages.filter(message => messageDate(message) == null).length;
+  const selectedMessages = range.key === 'all' ? messages : messages.filter(message => { const at = messageDate(message); return at != null && at >= range.start && at <= range.end; });
+  const threads = new Set(selectedMessages.map(message => message.threadId));
   return {
-    loaded: observedAt != null, observedAt, orders, count: orders.length, salesCount: sales.length,
+    loaded: observedAt != null, observedAt, range, undatedOrders, undatedMessages, periodUnavailable, sourceCount:sourceOrders.length, orders, count: orders.length, salesCount: sales.length,
     moneyOrders, currencies, currency, totalMinor, averageMinor: totalMinor != null && moneyOrders.length ? Math.round(totalMinor / moneyOrders.length) : null,
     refundedCount: refunded.length, refundMinor, moneyRefundCount: moneyRefunds.length,
     refundRate: orders.length && !unknownCount ? refunded.length / orders.length * 100 : null,
-    unknownCount, statuses, dialogs: threads.size, dated,
+    unknownCount, statuses, dialogs: range.key !== 'all' && threads.size === 0 && undatedMessages > 0 ? null : threads.size, dated,
     days: [...dayMap.values()].sort((a, b) => a.label.localeCompare(b.label))
   };
 }
 
 function overviewChartMarkup(model, mode, availableWidth = 1000) {
+  if (model.loaded && model.periodUnavailable) return { rows:[], html:'<div class="overview-empty"><strong>Недостаточно данных о датах</strong><p>Заказы без даты не включены в период. Выберите «Все данные», чтобы посмотреть их суммы.</p></div>' };
   const dated = mode === 'days' && model.dated;
   const rows = dated ? model.days : model.moneyOrders.map((order, index) => ({ label: order.id, amount: order.amount, count: 1, index: index + 1 }));
   if (!model.loaded || !rows.length || model.totalMinor == null) return { rows: [], html: `<div class="overview-empty"><span class="overview-icon overview-icon--amber"><svg><use href="#i-chart"/></svg></span><strong>${!model.loaded ? 'Начните с подключения магазина' : model.totalMinor == null ? 'Недостаточно данных о суммах' : 'Продаж пока нет'}</strong><p>${!model.loaded ? 'После синхронизации здесь появятся ваши продажи.' : 'Нужны заказы с суммой, валютой и статусом оплаты.'}</p></div>` };
@@ -93,7 +115,7 @@ function overviewChartMarkup(model, mode, availableWidth = 1000) {
     const barWidth = Math.min(34, plotWidth / rows.length * .58);
     plot = rows.map((row, index) => `<rect x="${x(index) - barWidth / 2}" y="${y(row.amount)}" width="${barWidth}" height="${Math.max(base - y(row.amount), 0)}" rx="${Math.min(4, barWidth / 3)}" class="overview-chart-bar"><title>${overviewEscape(describe(row))}</title></rect>`).join('');
   }
-  return { rows, html: `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${dated ? 'Суммы продаж по датам заказов, UTC' : 'Суммы продаж по заказам в порядке списка FunPay'}; ${overviewEscape(model.currency)}. Точные значения доступны под графиком.">${grid}${plot}${dates}</svg>` };
+  return { rows, html: `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${dated ? 'Суммы продаж по датам заказов, МСК' : 'Суммы продаж по заказам в порядке списка FunPay'}; ${overviewEscape(model.currency)}. Точные значения доступны под графиком.">${grid}${plot}${dates}</svg>` };
 }
 
 function renderOverview() {
@@ -105,7 +127,13 @@ function renderOverview() {
     overviewState.error = '';
   }
   if (typeof renderStoreIdentity === 'function') renderStoreIdentity();
-  const model = buildOverview(state.storeContent, overviewState.currency);
+  const model = buildOverview(state.storeContent, overviewState.currency, { period:overviewState.period });
+  const measurable = model.loaded && !model.periodUnavailable;
+  root.querySelectorAll('[data-overview-period]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.overviewPeriod === model.range.key)));
+  const periodLabel = root.querySelector('[data-overview-period-label]');
+  if (periodLabel) periodLabel.textContent = model.range.label;
+  const coverage = root.querySelector('[data-overview-period-note]');
+  if (coverage) coverage.textContent = model.loaded ? `${model.range.key === 'all' ? 'Все загруженные заказы.' : 'Заказы выбраны по дате создания, по московскому времени.'} ${model.undatedOrders && model.range.key !== 'all' ? `Заказов без достоверной даты: ${model.undatedOrders}. Они не включены в период. ` : ''}Расчёт по загруженным данным FunPay; полная история может быть недоступна.` : 'Данные появятся после синхронизации магазина.';
   overviewState.currency = model.currency;
   if (!model.dated) overviewState.mode = 'orders';
   const setText = (name, value) => { const node = root.querySelector(`[data-overview-${name}]`); if (node) node.textContent = value; };
@@ -124,11 +152,12 @@ function renderOverview() {
   const noticeText = overviewState.error || (model.loaded && !connected ? 'Подключение требует проверки. Ниже сохранён последний загруженный снимок.' : connected && !model.loaded ? 'Магазин подключён. Нажмите «Обновить данные», чтобы загрузить показатели.' : '');
   if (notice) { notice.hidden = !noticeText; notice.textContent = noticeText; }
   setText('sales', model.loaded ? overviewMoney(model.totalMinor, model.currency) : '—');
-  setText('orders', model.loaded ? String(model.count) : '—');
+  setText('orders', measurable ? String(model.count) : '—');
   setText('average', model.loaded ? overviewMoney(model.averageMinor, model.currency) : '—');
-  setText('dialogs', model.loaded ? String(model.dialogs) : '—');
+  setText('dialogs', model.loaded && model.dialogs != null ? String(model.dialogs) : '—');
+  setText('dialogs-note', model.range.key === 'all' ? 'В синхронизированных сообщениях' : model.dialogs == null ? 'Нет достоверных дат сообщений' : `Диалоги с сообщениями за период${model.undatedMessages ? ' · часть сообщений без дат' : ''}`);
   setText('sales-note', model.loaded ? `${model.moneyOrders.length} заказов · ${model.currency} · до комиссий` : 'После синхронизации магазина');
-  setText('orders-note', model.loaded ? `${model.salesCount} с оплатой · ${model.refundedCount} возвратов` : 'В текущем снимке FunPay');
+  setText('orders-note', measurable ? `${model.salesCount} с оплатой · ${model.refundedCount} возвратов` : model.periodUnavailable ? 'Нет достоверных дат для периода' : 'В текущем снимке FunPay');
   setText('average-note', model.loaded ? `По ${model.moneyOrders.length} заказам · без возвратов` : 'Без возвращённых заказов');
   const currency = root.querySelector('[data-overview-currency]');
   if (currency) {
@@ -154,16 +183,16 @@ function renderOverview() {
   }
   const chart = overviewChartMarkup(model, overviewState.mode, overviewState.chartWidth);
   if (chartNode) chartNode.innerHTML = chart.html;
-  setText('chart-subtitle', overviewState.mode === 'days' ? `Суммы по датам заказов · ${model.currency} · UTC` : `Суммы заказов · ${model.currency} · без возвратов`);
+  setText('chart-subtitle', overviewState.mode === 'days' ? `Суммы по датам заказов · ${model.currency} · МСК` : `Суммы заказов · ${model.currency} · без возвратов`);
   const partial = model.salesCount - model.moneyOrders.length;
   const note = overviewState.mode === 'days' ? 'Только дни с заказами в снимке. Дата заказа может отличаться от даты оплаты.' : 'Порядок списка FunPay, без временной шкалы.';
   setText('chart-note', model.loaded ? `${note}${partial ? ` Ещё ${partial} заказов: другая валюта или нет суммы.` : ''}` : 'График появится после синхронизации.');
   const chartData = root.querySelector('[data-overview-chart-data]');
   if (chartData) chartData.hidden = !chart.rows.length;
   const table = root.querySelector('[data-overview-chart-table]');
-  if (table) table.innerHTML = chart.rows.length ? `<table><caption>Продажи из снимка · ${overviewEscape(model.currency)}</caption><thead><tr><th scope="col">${overviewState.mode === 'days' ? 'Дата (UTC)' : 'Заказ'}</th><th scope="col">Сумма до комиссий</th></tr></thead><tbody>${chart.rows.map(row => `<tr><td>${overviewEscape(row.label)}</td><td>${overviewEscape(overviewMoney(row.amount, model.currency))}</td></tr>`).join('')}</tbody></table>` : '';
-  setText('refund-rate', model.loaded ? overviewPercent(model.refundRate) : '—');
-  setText('refund-count', model.loaded ? `${model.refundedCount} из ${model.count} заказов` : 'Нет данных');
+  if (table) table.innerHTML = chart.rows.length ? `<table><caption>Продажи из снимка · ${overviewEscape(model.currency)}</caption><thead><tr><th scope="col">${overviewState.mode === 'days' ? 'Дата (МСК)' : 'Заказ'}</th><th scope="col">Сумма до комиссий</th></tr></thead><tbody>${chart.rows.map(row => `<tr><td>${overviewEscape(row.label)}</td><td>${overviewEscape(overviewMoney(row.amount, model.currency))}</td></tr>`).join('')}</tbody></table>` : '';
+  setText('refund-rate', measurable ? overviewPercent(model.refundRate) : '—');
+  setText('refund-count', measurable ? `${model.refundedCount} из ${model.count} заказов` : 'Нет данных');
   setText('refund-amount', model.loaded ? overviewMoney(model.refundMinor, model.currency) : '—');
   setText('refund-currency', model.currency);
   setText('refund-note', model.loaded ? model.unknownCount ? `У ${model.unknownCount} заказов нет известного статуса — доля возвратов не рассчитана.` : `Учтены статусы заказов. Сумма: ${model.moneyRefundCount} возвратов в ${model.currency}.` : 'Статусы появятся после синхронизации.');
@@ -178,15 +207,15 @@ function renderOverview() {
     offset += size;
     return element;
   }).join('');
-  setText('donut-total', model.loaded ? String(model.count) : '—');
+  setText('donut-total', measurable ? String(model.count) : '—');
   const legend = root.querySelector('[data-overview-legend]');
   if (legend) legend.innerHTML = model.loaded && model.statuses.length ? model.statuses.map(item => `<div><span><i style="background:${item.color}"></i>${item.label}</span><b>${item.count}</b><small>${overviewPercent(item.count / model.count * 100)}</small></div>`).join('') : '<p class="overview-footnote">Нет синхронизированных заказов</p>';
   const orders = root.querySelector('#dash-orders-list');
   if (orders) orders.innerHTML = model.loaded && model.orders.length ? model.orders.slice(0, 4).map(order => {
     const status = OVERVIEW_STATUSES[order.status];
-    const date = order.date != null ? new Date(order.date).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Дата не передана';
+    const date = order.date != null ? new Date(order.date).toLocaleString('ru-RU', { timeZone:'Europe/Moscow', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Дата не передана';
     return `<article><span class="dash-list__icon"><svg><use href="#i-bag"/></svg></span><div><strong>${overviewEscape(order.id)} · ${overviewEscape(order.product)}</strong><small>${overviewEscape(order.buyer)} · ${date}</small></div><span class="table-status" style="color:${status.color}">${status.label}</span><b>${overviewEscape(overviewMoney(order.amount, order.currency))}</b></article>`;
-  }).join('') : '<div class="content-empty">Заказы появятся после синхронизации магазина.</div>';
+  }).join('') : `<div class="content-empty">${model.loaded ? model.periodUnavailable ? 'Заказы без даты доступны в режиме «Все данные».' : 'В загруженных данных нет заказов за этот период.' : 'Заказы появятся после синхронизации магазина.'}</div>`;
 }
 
 async function refreshOverview() {
@@ -207,6 +236,8 @@ async function refreshOverview() {
 document.addEventListener('click', event => {
   if (typeof state === 'undefined') return;
   if (event.target.closest('[data-overview-refresh]')) { refreshOverview(); return; }
+  const period = event.target.closest('[data-overview-period]');
+  if (period && Object.hasOwn(OVERVIEW_PERIODS, period.dataset.overviewPeriod)) { overviewState.period = period.dataset.overviewPeriod; overviewState.mode = 'days'; renderOverview(); return; }
   const mode = event.target.closest('[data-overview-mode]');
   if (mode && !mode.disabled && ['orders', 'days'].includes(mode.dataset.overviewMode)) { overviewState.mode = mode.dataset.overviewMode; renderOverview(); }
 });

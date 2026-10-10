@@ -155,3 +155,12 @@
   .overview-scope { justify-content:flex-start; }
 }
 @media (prefers-reduced-motion:reduce) { .overview * { transition:none!important; } }
+
+/* OVERVIEW_PERIODS_START */
+.overview-period-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 12px}
+.overview-period-toolbar>span{color:var(--muted);font-size:11px;font-variant-numeric:tabular-nums}
+.overview-period-note{margin:0 0 20px;color:var(--muted);font-size:10px;line-height:1.65}
+.overview-period-picker{flex-wrap:wrap}
+.overview-period-picker button:focus-visible{outline:2px solid var(--yellow);outline-offset:3px}
+@media(max-width:520px){.overview-period-picker{width:100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}.overview-period-picker button{padding:9px 5px;font-size:10px}}
+/* OVERVIEW_PERIODS_END */
