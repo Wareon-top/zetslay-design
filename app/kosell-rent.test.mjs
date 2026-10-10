@@ -163,3 +163,10 @@ test('Missing queue acknowledgement does not falsely announce creation or permit
  await f.handlers.click(catalogButton(x,'confirm'));assert.match(x.feedback.textContent,/не подтвердил количество/);assert.match(x.feedback.textContent,/проверьте очередь/);assert.equal(x.feedback.attributes.role,'alert');assert.equal(x.fieldset.disabled,false);assert.equal(f.run('kosellUi.offerPreview'),null);
  await f.handlers.click(catalogButton(x,'confirm'));assert.equal(count,1);
 });
+
+test('automatic flag alone cannot claim delivery readiness and pending reasons are readable',async()=>{
+ const f=app();await f.run('loadKosellStatus()');f.status.config.automatic=true;
+ f.status.automaticReadiness={ready:false,reasons:['MAPPINGS_MISSING','BASELINE_PENDING']};
+ let html=f.run('kosellRentMarkup({installed:true})');assert.match(html,/Добавьте привязку лота/);assert.match(html,/Ожидается первый успешный опрос/);assert.match(html,/Нужна проверка/);assert.doesNotMatch(html,/Готова к новым заказам/);
+ f.status.automaticReadiness={ready:true,reasons:[]};html=f.run('kosellRentMarkup({installed:true})');assert.match(html,/Готова к новым заказам/);
+});

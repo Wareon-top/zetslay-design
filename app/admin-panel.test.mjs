@@ -5,6 +5,9 @@ import {readFileSync} from 'node:fs';
 const source=readFileSync(new URL('./admin-panel.js',import.meta.url),'utf8');
 const html=readFileSync(new URL('./index.html',import.meta.url),'utf8');
 const css=readFileSync(new URL('./admin-panel.css',import.meta.url),'utf8');
+test('partial plugin failure has an explicit owner label',()=>{
+ const h=harness();assert.equal(h.run("adminLabel('partial')"),'Ошибка отдельного плагина');
+});
 function harness() {
  const root={innerHTML:''},nav={hidden:true},listeners={},calls=[];
  const c=vm.createContext({authState:{token:'owner-token',user:{telegramUserId:'5062414502'}},sessionGeneration:1,state:{plugins:[]},location:{hash:'#admin'},URLSearchParams,Intl,Date,
