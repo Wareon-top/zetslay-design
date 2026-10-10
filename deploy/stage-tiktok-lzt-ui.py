@@ -27,9 +27,11 @@ def stage(local, incoming, out):
         if len(anchors) != 1:
             raise ValueError('Не подтверждён каталог редкостей. Кабинет не изменён.')
         anchor = anchors[0].group()
-        rarity = rarity.replace(anchor, anchor+"\n  'zetslay.tiktok-lzt-market':'ultra',")
-    elif rarity.count("'zetslay.tiktok-lzt-market':'ultra'") != 1:
-        raise ValueError('TikTok имеет другую редкость. Кабинет не изменён.')
+        rarity = rarity.replace(anchor, anchor+"\n  'zetslay.tiktok-lzt-market':'legendary',")
+    else:
+        rarity, count = re.subn(r"('zetslay\.tiktok\-lzt\-market'\s*:\s*)'(?:ultra|legendary)'", lambda m:m[1]+"'legendary'", rarity)
+        if count != 1:
+            raise ValueError('TikTok имеет неизвестную редкость. Кабинет не изменён.')
     files['plugin-rarity.js'] = rarity
     html = files['index.html']
     app_pattern = r'<script\b[^>]*\bsrc=["\']app\.js(?:\?[^"\']*)?["\'][^>]*>'

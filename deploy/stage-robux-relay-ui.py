@@ -28,12 +28,15 @@ def stage(local, incoming, out):
     files['plugin-page.js'] = page
     rarity = files['plugin-rarity.js']
     if 'zetslay.robux-relay' not in rarity:
-        anchor = "  'zetslay.tiktok-lzt-market':'ultra',"
-        if rarity.count(anchor) != 1:
+        anchors = list(re.finditer(r"  'zetslay\.tiktok-lzt-market':'(?:ultra|legendary)',", rarity))
+        anchor = anchors[0].group() if len(anchors) == 1 else ''
+        if not anchor:
             raise ValueError('Не подтверждён каталог редкостей. Кабинет не изменён.')
-        rarity = rarity.replace(anchor, anchor+"\n  'zetslay.robux-relay':'legendary',")
-    elif rarity.count("'zetslay.robux-relay':'legendary'") != 1:
-        raise ValueError('Robux Relay имеет другую редкость. Кабинет не изменён.')
+        rarity = rarity.replace(anchor, anchor+"\n  'zetslay.robux-relay':'ultra',")
+    else:
+        rarity, count = re.subn(r"('zetslay\.robux\-relay'\s*:\s*)'(?:ultra|legendary)'", lambda m:m[1]+"'ultra'", rarity)
+        if count != 1:
+            raise ValueError('Robux Relay имеет неизвестную редкость. Кабинет не изменён.')
     files['plugin-rarity.js'] = rarity
     html = files['index.html']
     app_pattern = r'<script\b[^>]*\bsrc=["\']app\.js(?:\?[^"\']*)?["\'][^>]*>'

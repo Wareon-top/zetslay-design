@@ -8,7 +8,7 @@ python3 - <<'PY'
 from pathlib import Path
 import os, re, tarfile, tempfile
 
-levels = {'review-reminder': ('common', 'Обычный'), 'mass-price-editor': ('advanced', 'Продвинутый'), 'sales-pause': ('advanced', 'Продвинутый'), 'kosell-rent': ('ultra', 'Ультра'), 'auto-review-bonus': ('advanced', 'Продвинутый')}
+levels = {'review-reminder': ('common', 'Обычный'), 'mass-price-editor': ('advanced', 'Продвинутый'), 'sales-pause': ('advanced', 'Продвинутый'), 'kosell-rent': ('legendary', 'Легендарный'), 'auto-review-bonus': ('advanced', 'Продвинутый'), 'robux-relay': ('ultra', 'Ультра'), 'stars-relay': ('legendary', 'Легендарный'), 'roblox-lzt-market': ('legendary', 'Легендарный'), 'tiktok-lzt-market': ('legendary', 'Легендарный')}
 paths = ('app/plugin-rarity.js', 'app/index.html', 'index.html')
 originals = {name: Path(name).read_bytes() for name in paths}
 texts = {name: data.decode('utf-8') for name, data in originals.items()}
@@ -30,7 +30,7 @@ for ident, (key, label) in levels.items():
     if count > 1:
         raise SystemExit('Дублируется карточка витрины. Файлы не изменены.')
     # Unpublished cards may be absent from the public showcase.
-texts[paths[1]], count = re.subn(r'(src="plugin-rarity\.js)(?:\?[^"\n]*)?("\s+defer)', r'\1?v=20261009-levels\2', texts[paths[1]])
+texts[paths[1]], count = re.subn(r'(src="plugin-rarity\.js)(?:\?[^"\n]*)?("\s+defer)', r'\1?v=20261010-plugin-levels\2', texts[paths[1]])
 if count != 1:
     raise SystemExit('Не найдена единственная загрузка редкостей. Файлы не изменены.')
 changed = [name for name in paths if texts[name].encode('utf-8') != originals[name]]

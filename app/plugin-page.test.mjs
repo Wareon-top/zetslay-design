@@ -260,7 +260,7 @@ test('rarity on cards remains stable when enabling, pausing or changing price an
 
 test('rarity labels match the catalog levels and ignore arbitrary metadata',()=>{
   const app=harness();
-  for(const [id,key,label] of [['zetslay.confirm-reminder','common','Обычный'],['zetslay.review-reminder','common','Обычный'],['zetslay.mass-price-editor','advanced','Продвинутый'],['zetslay.auto-review-bonus','advanced','Продвинутый'],['zetslay.sales-pause','advanced','Продвинутый'],['zetslay.kosell-rent','ultra','Ультра'],['__proto__','common','Обычный']]){
+  for(const [id,key,label] of [['zetslay.confirm-reminder','common','Обычный'],['zetslay.review-reminder','common','Обычный'],['zetslay.mass-price-editor','advanced','Продвинутый'],['zetslay.auto-review-bonus','advanced','Продвинутый'],['zetslay.sales-pause','advanced','Продвинутый'],['zetslay.kosell-rent','legendary','Легендарный'],['zetslay.robux-relay','ultra','Ультра'],['zetslay.roblox-lzt-market','legendary','Легендарный'],['zetslay.stars-relay','legendary','Легендарный'],['zetslay.tiktok-lzt-market','legendary','Легендарный'],['__proto__','common','Обычный']]){
     app.context.rarityInput={id,rarity:'<img onerror=x>',active:true,priceRub:10000};
     const html=app.run('pluginRarityMarkup(rarityInput)');assert.ok(html.includes(`data-plugin-rarity="${key}"`));assert.ok(html.includes(label));assert.ok(!html.includes('<img'));
   }

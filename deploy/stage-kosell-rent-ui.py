@@ -23,13 +23,13 @@ def stage(local, incoming, out):
         page = page.replace(old, new, 1)
     entry = re.compile(r"('zetslay\.kosell-rent'\s*:\s*)'(?:ultra|legendary)'")
     if entry.search(rarity):
-        rarity,count = entry.subn(lambda m:m[1]+"'ultra'", rarity)
+        rarity,count = entry.subn(lambda m:m[1]+"'legendary'", rarity)
         if count != 1:raise ValueError('Неоднозначная редкость Kosell')
     else:
         markers = list(re.finditer(r"  'zetslay\.auto-review-bonus':'(?:advanced|legendary)'", rarity))
         if len(markers) != 1:raise ValueError('Неизвестный каталог уровней. Кабинет не изменён.')
         marker = markers[0].group()
-        rarity = rarity.replace(marker,"  'zetslay.kosell-rent':'ultra',\n"+marker,1)
+        rarity = rarity.replace(marker,"  'zetslay.kosell-rent':'legendary',\n"+marker,1)
     for asset,tag,attr in [('kosell-rent.js','script','src'),('kosell-rent.css','link','href')]:
         html = re.sub(r'^[ \t]*<'+tag+r'[^\n]*'+attr+r'="'+re.escape(asset)+r'(?:\?v=[\w-]+)?"[^\n]*>\n?', '', html, flags=re.M)
     for asset in ['plugin-page.js','plugin-rarity.js']:

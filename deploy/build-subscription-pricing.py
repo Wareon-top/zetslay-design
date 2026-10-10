@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 import re
 
-VERSION = '20261009-platega-review'
+VERSION = '20261010-plugin-levels'
 CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>'
 esc = lambda value: html.escape(str(value), quote=True)
 
@@ -70,7 +70,7 @@ def faq(text,data):
     content={
       'faq-plans':'<p>«Старт» — 149 ₽/месяц: обычные плагины. «Рост» — 299 ₽/месяц: обычные и продвинутые. «Профи» — 499 ₽/месяц: дополнительно ультра. «Максимум» — 799 ₽/месяц: все четыре категории, включая легендарные.</p><p>На 3 месяца действует скидка 10%, на 12 месяцев — 20%. Под ценой показана полная сумма выбранного периода. Приём платежей подключается; кнопка открывает регистрацию и не списывает деньги.</p><a href="#tariffs">Сравнить тарифы →</a>',
       'faq-external-costs':'<p>Подписка включает доступ к ZetSlay и опубликованным собственным плагинам выбранных категорий. Прокси, аренды Kosell, товары LZT Market, Robux, Stars и комиссии внешних площадок оплачиваются отдельно. Их покупка требует ваших настроек и разрешений.</p>',
-      'faq-plugins':'<p>Обычные: Confirm Reminder и Review Reminder. Продвинутые: Lot Cloner, Mass Price Editor, «Пауза продаж» и Auto Review Bonus. Ультра: Kosell Rent, TikTok LZT Market, Roblox LZT Market и Stars Relay. Легендарный: Robux Relay.</p><p>Включение и настройка доступны в кабинете и персональном Telegram-боте. Возможности конкретного модуля и его ограничения описаны на странице «Подробнее».</p><a href="#plugins">Открыть каталог плагинов →</a>'}
+      'faq-plugins':'<p>Обычные: Confirm Reminder и Review Reminder. Продвинутые: Lot Cloner, Mass Price Editor, «Пауза продаж» и Auto Review Bonus. Ультра: Robux Relay. Легендарные: Kosell Rent, Roblox LZT Market, Stars Relay и TikTok LZT Market.</p><p>Включение и настройка доступны в кабинете и персональном Telegram-боте. Возможности конкретного модуля и его ограничения описаны на странице «Подробнее».</p><a href="#plugins">Открыть каталог плагинов →</a>'}
     for identifier,body in content.items():
         pattern=r'(<details\b(?=[^>]*\bid="'+identifier+r'")[^>]*>.*?<div class="faq-item__answer">).*?(</div>\s*</details>)'
         text,count=re.subn(pattern,lambda m:m[1]+body+m[2],text,flags=re.S)

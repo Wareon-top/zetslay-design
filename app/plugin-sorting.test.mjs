@@ -34,7 +34,7 @@ const levels = [
 ];
 
 test('default order follows badge rarity and is independent of API insertion order', () => {
-  const expected = ['zetslay.confirm-reminder', 'zetslay.review-reminder', 'zetslay.mass-price-editor', 'zetslay.kosell-rent', 'zetslay.robux-relay'];
+  const expected = ['zetslay.confirm-reminder', 'zetslay.review-reminder', 'zetslay.mass-price-editor', 'zetslay.robux-relay', 'zetslay.kosell-rent'];
   assert.deepEqual(sorted(levels), expected);
   assert.deepEqual(sorted([...levels].reverse()), expected);
   assert.deepEqual(sorted(levels, 'rarity-asc'), expected);
@@ -42,7 +42,7 @@ test('default order follows badge rarity and is independent of API insertion ord
 });
 
 test('descending rarity uses actual badge levels and sorts names within a level', () => {
-  assert.deepEqual(sorted(levels, 'rarity-desc'), ['zetslay.robux-relay', 'zetslay.kosell-rent', 'zetslay.mass-price-editor', 'zetslay.confirm-reminder', 'zetslay.review-reminder']);
+  assert.deepEqual(sorted(levels, 'rarity-desc'), ['zetslay.kosell-rent', 'zetslay.robux-relay', 'zetslay.mass-price-editor', 'zetslay.confirm-reminder', 'zetslay.review-reminder']);
   const h = harness();
   for (const plugin of [...levels, { id: 'zetslay.auto-review-bonus' }, { id: 'zetslay.sales-pause' }]) {
     h.context.plugin = plugin;
@@ -110,7 +110,7 @@ test('rendered order and selected controls survive refresh while retired and pri
   assert.equal(h.sort.value, 'rarity-desc');
   assert.equal(h.category.value, 'all');
   const names = [...h.grid.innerHTML.matchAll(/class="plugin-card__title-link"[^>]*>(.*?)<\/a>/g)].map(m => m[1]);
-  assert.deepEqual(names, ['Robux Relay', 'Kosell Rent', 'Mass Price Editor', 'Confirm Reminder', 'Review Reminder']);
+  assert.deepEqual(names, ['Kosell Rent', 'Robux Relay', 'Mass Price Editor', 'Confirm Reminder', 'Review Reminder']);
   assert.doesNotMatch(h.grid.innerHTML, /Удалён|Будущий|Приватный|plugin-cover__edit/);
   h.run('state.plugins.reverse(); renderPlugins();');
   assert.equal(h.sort.value, 'rarity-desc');
