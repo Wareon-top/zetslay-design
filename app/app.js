@@ -1140,6 +1140,8 @@ function renderPlugins() {
   document.querySelectorAll('[data-plugin-cover-admin], [data-plugin-publish]').forEach(button => { button.hidden = !canManagePluginCatalog(); });
   const categorySelect = document.querySelector('[data-plugin-category]');
   if (categorySelect) categorySelect.value = state.pluginFilter.cat;
+  const sortSelect = document.querySelector('[data-plugin-sort]');
+  if (sortSelect) sortSelect.value = state.pluginFilter.sort;
   const colors = ['249,179,46', '167,139,250', '96,165,250', '52,211,153', '248,113,113', '203,128,255'];
   const visible = state.plugins.filter(plugin => !plugin.planned && !String(plugin.id).startsWith('planned.') && !['zetslay.auto-reply', 'zetslay.telegram-notifications'].includes(plugin.id) && (plugin.published !== false || canManagePluginCatalog()));
   const installed = visible.filter(plugin => plugin.installed).length;
@@ -2022,16 +2024,61 @@ function init() {
   window.addEventListener('hashchange', () => setView(location.hash.slice(1), false));
 }
 
-function filterPluginCatalog(plugins, filter) {
-  const query = (filter.query || '').trim().toLocaleLowerCase('ru-RU');
-  const list = plugins.filter(p => (filter.cat === 'all' || p.category === filter.cat) &&
-    (!query || `${p.name} ${p.description}`.toLocaleLowerCase('ru-RU').includes(query)));
-  const price = p => Number.isInteger(p.priceRub) ? p.priceRub : Number(String(p.price).replace(/\D/g, '')) || 0;
-  if (filter.sort === 'price-asc') list.sort((a, b) => price(a) - price(b));
-  if (filter.sort === 'price-desc') list.sort((a, b) => price(b) - price(a));
-  if (filter.sort === 'name') list.sort((a, b) => a.name.localeCompare(b.name, 'ru'));
-  if (filter.sort === 'installed') list.sort((a, b) => Number(Boolean(b.installed)) - Number(Boolean(a.installed)));
-  return list;
+function pluginCatalogPrice(plugin) {
+  // Use the catalogue amount, even when the formatted card text is stale.
+  if (Object.hasOwn(plugin, 'priceRub')) {
+    const value = plugin.priceRub;
+    return typeof value === 'number' && Number.isFinite(value) && value >= 0 &&
+      Number.isSafeInteger(Math.round(value * 100)) ? Math.round(value * 100) : null;
+  }
+  const text = String(plugin.price ?? '').trim();
+  if (/^бесплатно$/i.test(text)) return 0;
+  const match = /^(?:от\s+)?(\d+(?:[ \u00a0\u202f]\d{3})*(?:[.,]\d{1,2})?)\s*(?:₽|руб\.?|р\.)(?:\s*\/\s*(?:мес\.?|месяц))?$/i.exec(text);
+  if (!match) return null;
+  const value = Number(match[1].replace(/[ \u00a0\u202f]/g, '').replace(',', '.'));
+  return Number.isSafeInteger(Math.round(value * 100)) ? Math.round(value * 100) : null;
+}
+
+function pluginCatalogRarityRank(plugin) {
+  // Resolve the same level as the card badge; installation never changes rarity.
+  const key = typeof pluginRarity === 'function' ? pluginRarity(plugin).key : 'common';
+  return ({ common: 0, advanced: 1, ultra: 2, legendary: 3 })[key] ?? 0;
+}
+
+function filterPluginCatalog(plugins, filter = {}) {
+  const query = String(filter.query || '').trim().toLocaleLowerCase('ru-RU');
+  const list = plugins.filter(p => (!filter.cat || filter.cat === 'all' || p.category === filter.cat) &&
+    (!query || `${p.name || ''} ${p.description || ''}`.toLocaleLowerCase('ru-RU').includes(query)));
+  const collator = new Intl.Collator('ru', { numeric: true, sensitivity: 'base' });
+  const byName = (a, b) => collator.compare(String(a.name || ''), String(b.name || ''));
+  const byId = (a, b) => collator.compare(String(a.id || ''), String(b.id || ''));
+  const byRarity = (a, b) => pluginCatalogRarityRank(a) - pluginCatalogRarityRank(b);
+  const defaultOrder = (a, b) => byRarity(a, b) || byName(a, b) || byId(a, b);
+  const byPrice = (a, b, direction) => {
+    const first = pluginCatalogPrice(a), second = pluginCatalogPrice(b);
+    if (first === null || second === null) {
+      return first === second ? 0 : first === null ? 1 : -1;
+    }
+    return direction * (first - second);
+  };
+  return list.sort((a, b) => {
+    let result = 0;
+    switch (filter.sort) {
+      case 'rarity-desc': result = -byRarity(a, b); break;
+      case 'price-asc': result = byPrice(a, b, 1); break;
+      case 'price-desc': result = byPrice(a, b, -1); break;
+      case 'name':
+      case 'name-asc': return byName(a, b) || byId(a, b);
+      case 'name-desc': return -byName(a, b) || byId(a, b);
+      case 'installed': result = Number(Boolean(b.installed)) - Number(Boolean(a.installed)); break;
+      case 'active': result = Number(Boolean(b.active)) - Number(Boolean(a.active)); break;
+      // Default and unknown options always use a deterministic catalogue order.
+      case 'default':
+      case 'rarity-asc':
+      default: return defaultOrder(a, b);
+    }
+    return result || defaultOrder(a, b);
+  });
 }
 
 function formatPluginDescription(text) {
