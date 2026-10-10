@@ -17,8 +17,8 @@
 .landing-plugin-rarity { padding:4px 7px; border:1px solid #38414a; border-radius:5px; font-size:9px; font-weight:600; }
 .landing-plugin-rarity--common { background:#1b2525; color:#add3c8; border-color:#344841; }
 .landing-plugin-rarity--advanced { background:#192634; color:#a7c9ee; border-color:#344b64; }
-.landing-plugin-rarity--ultra { background:#292134; color:#ccb5ee; border-color:#4a3b5f; }
-.landing-plugin-rarity--legendary { background:#302616; color:#edc77f; border-color:#5d4829; }
+.landing-plugin-rarity--ultra { background:#302616; color:#edc77f; border-color:#5d4829; }
+.landing-plugin-rarity--legendary { background:#292134; color:#ccb5ee; border-color:#4a3b5f; }
 .landing-plugin-card h3 { margin:0 0 10px; color:var(--white); font:650 15px/1.4 Manrope,Inter,sans-serif; letter-spacing:-.02em; overflow-wrap:anywhere; }
 .landing-plugin-card p { margin:0; color:var(--muted); font-size:12px; line-height:1.75; overflow-wrap:anywhere; }
 .landing-plugins__note { margin:23px 0 0; padding:16px 0 0; border-top:1px solid var(--line-dark); color:var(--muted); font-size:12px; line-height:1.7; }
