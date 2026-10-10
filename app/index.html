@@ -40,6 +40,7 @@
       <link rel="stylesheet" href="admin-panel.css?v=20261008-admin-panel">
       <link rel="stylesheet" href="robux-relay.css?v=20261009-robux-relay">
     <link rel="stylesheet" href="plugin-purchase-options.css?v=20261010-plugin-purchase">
+    <link rel="stylesheet" href="knowledge-base.css?v=20261010-knowledge-base">
   </head>
   <body>
     <svg class="icon-sprite" aria-hidden="true">
@@ -295,30 +296,23 @@
 
           <section class="view" data-view="profile" aria-label="Профиль" hidden><div data-profile></div></section>
           <section class="view" data-view="author" aria-label="Карточка автора" hidden><div data-author-page></div></section>
-          <section class="view" data-view="guide" aria-labelledby="guide-title">
-            <div class="guide-heading"><span class="eyebrow">Центр подключения</span><h1 id="guide-title">База знаний</h1><p>Короткие и безопасные инструкции по настройке ZetSlay.</p></div>
-            <div class="guide-tabs" role="tablist" aria-label="Разделы инструкции"><button class="is-active" type="button" data-guide-target="key"><span><svg><use href="#i-lock"/></svg></span><strong>Шаг 1. Golden Key</strong><small>Подготовка доступа FunPay</small></button><button type="button" data-guide-target="proxy"><span><svg><use href="#i-shield"/></svg></span><strong>Шаг 2. Прокси</strong><small>Закреплённое соединение</small></button></div>
-            <section class="guide-card panel is-active" data-guide-panel="key">
-              <header><span><svg><use href="#i-lock"/></svg></span><div><h2>Подготовка Golden Key</h2><p>Используйте только свой аккаунт FunPay и выполняйте настройку на личном устройстве.</p></div></header>
-              <div class="device-tabs"><button class="is-active" type="button">Компьютер</button><button type="button">Android</button><button type="button">iPhone</button></div>
-              <ol class="instruction-list">
-                <li><b>01</b><div><strong>Войдите в свой аккаунт</strong><p>Откройте FunPay в отдельной вкладке и убедитесь, что используете нужный магазин.</p></div></li>
-                <li><b>02</b><div><strong>Получите значение golden_key</strong><p>Следуйте инструкции для своего браузера. Никому не отправляйте найденное значение и не вставляйте его в сообщения.</p></div></li>
-                <li><b>03</b><div><strong>Вернитесь в защищённый мастер ZetSlay</strong><p>Вставьте ключ только в поле кабинета. После сохранения интерфейс покажет маску, а не само значение.</p></div></li>
-              </ol>
-              <div class="guide-warning"><span><svg><use href="#i-shield"/></svg></span><div><strong>Важно</strong><p>Не публикуйте ключ в GitHub, Telegram, логах или обращениях поддержки. При потере доступа замените ключ в FunPay.</p></div></div>
-              <button class="button button--primary" type="button" data-open-connect>Открыть мастер подключения</button>
-            </section>
-            <section class="guide-card panel" data-guide-panel="proxy" hidden>
-              <header><span><svg><use href="#i-shield"/></svg></span><div><h2>Настройка закреплённого прокси</h2><p>Один магазин должен работать через стабильный адрес, выбранный при подключении.</p></div></header>
-              <ol class="instruction-list">
-                <li><b>01</b><div><strong>Подготовьте приватный прокси</strong><p>Укажите адрес, порт и данные авторизации в поддерживаемом формате.</p></div></li>
-                <li><b>02</b><div><strong>Проверьте локацию и стабильность</strong><p>ZetSlay выполнит диагностический запрос без запуска автоматических действий.</p></div></li>
-                <li><b>03</b><div><strong>Закрепите соединение</strong><p>После проверки магазин, Telegram и Connector будут использовать один согласованный маршрут.</p></div></li>
-              </ol>
-              <div class="guide-warning guide-warning--violet"><span><svg><use href="#i-help"/></svg></span><div><strong>Совет</strong><p>Не меняйте прокси во время активной сессии. Сначала остановите процессы и повторите проверку подключения.</p></div></div>
-              <button class="button button--primary" type="button" data-open-connect>Перейти к проверке</button>
-            </section>
+          <section class="view" data-view="guide" data-knowledge-base aria-labelledby="guide-title">
+            <header class="kb-heading"><div><span class="kb-kicker">База знаний</span><h1 id="guide-title">Разберёмся вместе.</h1><p>От первого подключения до автоматизации магазина.<br>Найдите ответ и вернитесь к работе.</p></div><div class="kb-heading-symbol" aria-hidden="true"><svg><use href="#i-help"/></svg></div></header>
+            <div class="kb-search"><svg aria-hidden="true"><use href="#i-search"/></svg><label class="kb-sr-only" for="kb-search">Поиск по инструкциям</label><input id="kb-search" data-kb-search type="search" maxlength="160" autocomplete="off" placeholder="Например: прокси, привязка лота, KOSELL_UNAVAILABLE"><button type="button" data-kb-clear aria-label="Очистить поиск" hidden><svg aria-hidden="true"><use href="#i-close"/></svg></button><span class="kb-search-hint">По вопросам и кодам ошибок</span></div>
+            <div data-kb-library>
+              <section class="kb-shortcuts" aria-label="Быстрый старт">
+                <button class="kb-shortcut kb-shortcut--blue" type="button" data-kb-open="connect"><span class="kb-shortcut-label">Начните здесь</span><strong>Подключить магазин</strong><span>Все шаги в одной инструкции</span><svg aria-hidden="true"><use href="#i-chevron"/></svg></button>
+                <button class="kb-shortcut kb-shortcut--amber" type="button" data-kb-open="kosell-start"><span class="kb-shortcut-label">Автоматизация</span><strong>Запустить Kosell Rent</strong><span>От привязки до первой выдачи</span><svg aria-hidden="true"><use href="#i-chevron"/></svg></button>
+                <button class="kb-shortcut kb-shortcut--purple" type="button" data-kb-open="connection-errors"><span class="kb-shortcut-label">Нужна помощь?</span><strong>Разобраться с ошибкой</strong><span>Сначала найдём этап отказа</span><svg aria-hidden="true"><use href="#i-chevron"/></svg></button>
+              </section>
+              <nav class="kb-categories" data-kb-categories aria-label="Темы базы знаний"></nav>
+              <div class="kb-results-heading"><h2 data-kb-results-title>Все инструкции</h2><span role="status" aria-live="polite"><b data-kb-count>0</b> материалов</span></div>
+              <div class="kb-grid" data-kb-results></div>
+            </div>
+            <div data-kb-reader hidden></div>
+            <footer class="kb-support"><span class="kb-icon kb-icon--purple"><svg aria-hidden="true"><use href="#i-chat"/></svg></span><div><strong>Не нашли ответ?</strong><p>Поддержка поможет проверить вашу ситуацию. Ключи и пароли отправлять не нужно.</p></div><a href="https://t.me/zetslaysupport" target="_blank" rel="noopener noreferrer">Написать поддержке <svg aria-hidden="true"><use href="#i-external"/></svg></a></footer>
+            <p class="kb-bottom-note"><span data-kb-total>0</span> инструкций · редакция от 10 октября 2026 · доступные действия зависят от состояния вашего кабинета</p>
+            <noscript><p>Для поиска и чтения инструкций включите JavaScript. Поддержка: <a href="https://t.me/zetslaysupport">@zetslaysupport</a>.</p></noscript>
           </section>
 
           <section class="view admin-page" data-view="admin" hidden><div data-admin-root></div></section>
@@ -460,5 +454,6 @@
     <script src="plugin-purchase-options.js?v=20261010-plugin-purchase" defer></script>
   <script src="../legal/privacy-controls.js?v=20261008-legal-2" defer></script>
   <script src="legal-cabinet.js?v=20261009-legal-support" defer></script>
+  <script src="knowledge-base.js?v=20261010-knowledge-base" defer></script>
 </body>
 </html>
