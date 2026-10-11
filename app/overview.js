@@ -221,14 +221,19 @@ function renderOverview() {
 async function refreshOverview() {
   if (overviewState.busy) return;
   const generation = sessionGeneration;
+  const request = {};
+  overviewState.request = request;
   overviewState.busy = true;
   overviewState.error = '';
   renderOverview();
   try { await syncStoreContent({ silent: true }); }
   catch (error) {
-    if (generation === sessionGeneration) overviewState.error = `${humanError(error)}${state.storeContent.observedAt ? ' Показан предыдущий снимок.' : ''}`;
+    if (generation === sessionGeneration && overviewState.request === request) overviewState.error = `${humanError(error)}${state.storeContent.observedAt ? ' Показан предыдущий снимок.' : ''}`;
   } finally {
-    overviewState.busy = false;
+    if (generation === sessionGeneration && overviewState.request === request) {
+      overviewState.busy = false;
+      overviewState.request = null;
+    }
     renderOverview();
   }
 }

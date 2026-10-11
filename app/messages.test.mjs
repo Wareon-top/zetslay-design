@@ -31,7 +31,7 @@ function workspace({ polling = false } = {}) {
   const timers = new Map(); let timerId = 0, clock = Date.parse(at);
   const window = polling ? { setTimeout(callback, delay) { const id = ++timerId; timers.set(id, { callback, delay }); return id; }, clearTimeout(id) { timers.delete(id); } } : {};
   class ClockDate extends Date { static now() { return clock; } }
-  const context = vm.createContext({ document, URL, URLSearchParams, Date: ClockDate, location: { hostname: 'zetslay.pro', hash: '#messages', search: '' }, sessionStorage: { getItem: () => null }, localStorage: { getItem: () => null, removeItem() {} }, window });
+  const context = vm.createContext({ document, AbortController, setTimeout, clearTimeout, URL, URLSearchParams, Date: ClockDate, location: { hostname: 'zetslay.pro', hash: '#messages', search: '' }, sessionStorage: { getItem: () => null }, localStorage: { getItem: () => null, removeItem() {} }, window });
   vm.runInContext(scripts, context);
   const run = code => vm.runInContext(code, context);
   const model = (messages, filters = {}, observedAt = at) => { context.input = { observedAt, messages }; context.inputFilters = filters; return JSON.parse(JSON.stringify(run('buildMessagesWorkspace(input, inputFilters)'))); };

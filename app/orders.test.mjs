@@ -44,7 +44,7 @@ function workspace() {
     querySelectorAll: () => [], getElementById: id => id === 'orders-table-body' ? node('#orders-table-body') : null,
     addEventListener: (type, callback) => listen(listeners, type, callback)
   };
-  const context = vm.createContext({ document, URL, URLSearchParams, location: { hostname: 'zetslay.pro', hash: '#orders', search: '' },
+  const context = vm.createContext({ document, AbortController, setTimeout, clearTimeout, URL, URLSearchParams, location: { hostname: 'zetslay.pro', hash: '#orders', search: '' },
     sessionStorage: { getItem: () => null }, localStorage: { getItem: () => null, removeItem() {} },
     window: { addEventListener: (type, callback) => listen(windowListeners, type, callback) } });
   vm.runInContext(scripts, context);

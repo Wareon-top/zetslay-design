@@ -79,12 +79,12 @@ const errorMessages = {
 const humanError = (error) => errorMessages[error?.code] || (error?.message === 'Failed to fetch' ? 'Backend ZetSlay недоступен. Проверьте адрес API и состояние сервера.' : error?.message) || 'Не удалось выполнить действие.';
 let registrationEmail = '';
 
-async function apiRequest(path, { method = 'GET', body, authenticated = false } = {}) {
+async function apiRequest(path, { method = 'GET', body, authenticated = false, signal } = {}) {
   if (!API_BASE_URL) { const error = new Error('API_URL_MISSING'); error.code = 'API_URL_MISSING'; throw error; }
   const headers = { accept: 'application/json' };
   if (body) headers['content-type'] = 'application/json';
   if (authenticated && authState.token) headers.authorization = `Bearer ${authState.token}`;
-  const response = await fetch(`${API_BASE_URL}${path}`, { method, headers, body: body ? JSON.stringify(body) : undefined });
+  const response = await fetch(`${API_BASE_URL}${path}`, { method, headers, body: body ? JSON.stringify(body) : undefined, signal });
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
     const error = new Error(payload.error?.message || 'Запрос отклонён');
@@ -181,6 +181,8 @@ function setAuthModal(open) {
 }
 
 function resetAccountData() {
+  storeContentSyncFlight?.cancel();
+  if (typeof overviewState !== 'undefined') Object.assign(overviewState, {busy:false, request:null, error:''});
   if (typeof resetRobuxUi === 'function') resetRobuxUi();
   if (typeof adminReset === 'function') adminReset();
   if (typeof resetStarsUi === 'function') resetStarsUi();
@@ -912,29 +914,45 @@ function normalizeStoreContent(content) {
 }
 
 // Share one read request between cabinet views within the same account session.
+// Bound the whole operation, including any error handling, before optional modules load.
 let storeContentSyncFlight = null;
 function syncStoreContent(options = {}) {
   const generation = sessionGeneration;
-  if (storeContentSyncFlight?.generation === generation) return storeContentSyncFlight.promise;
-  const promise = readStoreContent(options);
-  const flight = { generation, promise };
+  if (storeContentSyncFlight?.generation === generation && !storeContentSyncFlight.signal.aborted) return storeContentSyncFlight.promise;
+  const controller = new AbortController();
+  const flight = { generation, signal: controller.signal, startedAt: Date.now(), promise: null };
+  let timer, rejectDeadline;
+  const deadline = new Promise((_, reject) => { rejectDeadline = reject; });
+  flight.cancel = (error = Object.assign(new Error('Обновление отменено.'), {code:'SYNC_CANCELLED'})) => {
+    rejectDeadline(error);
+    controller.abort(error);
+  };
+  timer = setTimeout(() => flight.cancel(Object.assign(new Error('Обновление FunPay заняло слишком много времени. Последние данные сохранены. Повторите обновление.'), {code:'SYNC_TIMEOUT'})), 125_000);
   storeContentSyncFlight = flight;
-  const release = () => { if (storeContentSyncFlight === flight) storeContentSyncFlight = null; };
-  promise.then(release, release);
-  return promise;
+  const reading = readStoreContent({...options, signal:controller.signal});
+  flight.promise = Promise.race([reading, deadline]);
+  const release = () => {
+    clearTimeout(timer);
+    controller.abort();
+    if (storeContentSyncFlight === flight) storeContentSyncFlight = null;
+  };
+  flight.promise.then(release, release);
+  return flight.promise;
 }
 
-async function readStoreContent({ silent = false } = {}) {
+async function readStoreContent({ silent = false, signal } = {}) {
   const store = selectedStore();
   if (!authState.user) { setAuthModal(true); return; }
   if (!store || store.status !== 'connected_read_only') {
     if (!silent) showToast('Сначала завершите read-only подключение FunPay.');
     return;
   }
-  const generation = sessionGeneration;
+  const generation = sessionGeneration, token = authState.token;
+  const current = () => !signal?.aborted && generation === sessionGeneration && token === authState.token && selectedStore()?.id === store.id;
   try {
-    const content = await apiRequest('/api/v1/funpay/content', { authenticated: true });
-    if (generation !== sessionGeneration) return;
+    if (!current()) return;
+    const content = await apiRequest('/api/v1/funpay/content', { authenticated: true, signal });
+    if (!current()) return;
     normalizeStoreContent(content);
     store.metrics = { balance: content.balance?.availableMinor != null ? formatMinor(content.balance.availableMinor, content.balance.currency || 'RUB') : '—', lots: content.lots?.length ?? '—', unread: '—' };
     renderStoreFleet(); renderOrders(); renderConversations(); renderLots();
@@ -942,8 +960,11 @@ async function readStoreContent({ silent = false } = {}) {
     if (health) { health.className = 'health-pill health-pill--active'; health.innerHTML = '<i></i> Синхронизировано'; }
     if (!silent) showToast('Заказы и сообщения обновлены', 'success');
   } catch (error) {
-    if (['AUTH_REJECTED', 'CAPTCHA_REQUIRED', 'READ_ONLY_VIOLATION', 'PLATFORM_UNAVAILABLE'].includes(error?.code)) {
-      await Promise.allSettled([loadOnboarding(), loadStoreFleet()]);
+    if (!current()) throw error;
+    // A connection-state refresh must never keep a failed snapshot busy.
+    // Transient platform outages do not revoke the saved connection.
+    if (['AUTH_REJECTED', 'CAPTCHA_REQUIRED', 'READ_ONLY_VIOLATION'].includes(error?.code)) {
+      void Promise.allSettled([Promise.resolve().then(() => loadOnboarding()), Promise.resolve().then(() => loadStoreFleet())]);
     }
     if (!silent) showToast(humanError(error), 'error');
     throw error;

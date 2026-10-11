@@ -23,7 +23,7 @@ function harness({ now, period = 'all' } = {}) {
     querySelectorAll: () => [], getElementById: id => node(`#${id}`),
     addEventListener: (type, callback) => listeners.set(type, callback)
   };
-  const context = vm.createContext({ document, URL, URLSearchParams, location: { hostname: 'zetslay.pro', search: '' },
+  const context = vm.createContext({ document, AbortController, setTimeout, clearTimeout, URL, URLSearchParams, location: { hostname: 'zetslay.pro', search: '' },
     ...(now == null ? {} : { Date: class extends Date { static now() { return now; } } }),
     sessionStorage: { getItem: () => null }, localStorage: { getItem: () => null, removeItem() {} }, window: {} });
   vm.runInContext(overview + '\n' + cabinetSource, context);
