@@ -14,6 +14,8 @@ for file in "${assets[@]}"; do git show "$revision:app/$file" > "$work/incoming/
 git show "$revision:deploy/stage-subscription-access-ui.py" > "$work/stage.py"
 cp -p app/index.html "$work/original/index.html"
 python3 "$work/stage.py" "$work/original" "$work/incoming" "$work/out"
+# Integration-test dependency only; the existing sidebar file is not replaced.
+git show "$revision:app/sidebar-trial.js" > "$work/out/sidebar-trial.js"
 if command -v node >/dev/null 2>&1; then
   node --check "$work/out/subscription-access.js"
   node --test "$work/out/subscription-access.test.mjs"
@@ -36,5 +38,5 @@ for file in "${assets[@]}" index.html; do
     echo "Файлы восстановлены. Backup: $backup";exit 1
   fi
 done
-echo "Тарифы, админ-выдача и промокоды подключены. Backup: $backup"
-echo 'Админ-панель → карточка пользователя или блок «Промокоды». Обновите страницу через Ctrl+F5.'
+echo "Дизайн закрытых разделов, тарифы и промокоды обновлены. Backup: $backup"
+echo 'Обновите страницу через Ctrl+F5. Серверные ограничения доступа сохранены.'

@@ -4,7 +4,7 @@ import re
 import sys
 
 ASSETS = ['subscription-access.js','subscription-access.css','subscription-access.test.mjs']
-VERSION = '20261011-subscription-access'
+VERSION = '20261011-access-workspace'
 
 
 def stage(local, incoming, out):
