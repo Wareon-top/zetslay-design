@@ -4,7 +4,7 @@ import shutil
 import sys
 from importlib.util import spec_from_file_location,module_from_spec
 
-VERSION='20261009-legal-support'
+VERSION='20261012-legal-publication'
 def require(ok,message):
     if not ok:raise ValueError(message+'. Сайт не изменён.')
 
@@ -21,7 +21,7 @@ def asset(text,name,prefix,script=False):
     return text.replace(end,line+end,1)
 
 def legal_links():
-    return '<nav class="legal-links" data-legal-links aria-label="Юридические документы"><a href="/legal/">Юридическая информация</a><a href="/legal/offer.html">Оферта · проект</a><a href="/legal/privacy.html">Конфиденциальность · проект</a><a href="/legal/refunds.html">Оплата и возвраты · проект</a><button type="button" data-privacy-settings>Настройки cookies</button></nav>'
+    return '<nav class="legal-links" data-legal-links aria-label="Юридические документы"><a href="/legal/">Юридическая информация</a><a href="/legal/offer.html">Оферта</a><a href="/legal/privacy.html">Конфиденциальность</a><a href="/legal/refunds.html">Оплата и возвраты</a><button type="button" data-privacy-settings>Настройки cookies</button></nav>'
 
 def footer_links(text):
     text=re.sub(r'\s*<nav\b[^>]*\bdata-legal-links\b[^>]*>.*?</nav>','',text,flags=re.S)
@@ -38,9 +38,10 @@ def stage(local,incoming,output):
     require('data-profile' in app,'Обновите раздел Профиль перед юридическим модулем')
     root=asset(asset(font_links(footer_links(root),''),'legal/legal.css',''),'legal/privacy-controls.js','',True)
     app=font_links(app,'../');app=asset(asset(asset(app,'legal/legal.css','../'),'legal/privacy-controls.js','../',True),'legal-cabinet.js','',True)
+    app=asset(app,'legal-acceptance.js','',True)
     app=re.sub(r'\s*<nav\b[^>]*\bdata-auth-legal-links\b[^>]*>.*?</nav>','',app,flags=re.S)
     matches=list(re.finditer(r'<p\b[^>]*class="auth-legal"[^>]*>.*?</p>',app,re.S));require(len(matches)==1,'Не подтверждён блок информации формы входа')
-    mark=matches[0];links='<nav class="legal-links" data-auth-legal-links aria-label="Документы аккаунта"><a href="/legal/offer.html">Оферта · проект</a><a href="/legal/privacy.html">Конфиденциальность · проект</a><a href="/legal/processing.html">Отдельное согласие · проект</a><a href="/legal/">Все документы</a></nav>'
+    mark=matches[0];links='<nav class="legal-links" data-auth-legal-links aria-label="Документы аккаунта"><a href="/legal/offer.html">Оферта</a><a href="/legal/privacy.html">Конфиденциальность</a><a href="/legal/processing.html">Отдельное согласие</a><a href="/legal/">Все документы</a></nav>'
     app=app[:mark.end()]+'\n        '+links+app[mark.end():]
     output.mkdir(parents=True,exist_ok=True);(output/'app').mkdir(exist_ok=True)
     shutil.copytree(incoming/'legal',output/'legal',dirs_exist_ok=True);shutil.copytree(incoming/'assets/fonts',output/'assets/fonts',dirs_exist_ok=True)
@@ -49,6 +50,10 @@ def stage(local,incoming,output):
     import json
     operator_config=json.loads((output/'legal/site-config.json').read_text())
     incoming_config=json.loads((incoming/'legal/site-config.json').read_text())
+    for key in ['status','approved','approvedVersion','effectiveFrom','hostingLocation','retentionSchedule']:
+        operator_config[key]=incoming_config[key]
+    if incoming_config['status']=='active':
+        require(operator_config.get('operatorName')==incoming_config['operatorName'] and operator_config.get('inn')==incoming_config['inn'],'Реквизиты отличаются от утверждённой редакции')
     if incoming_config.get('legalTelegram'):
         operator_config['legalTelegram']=incoming_config['legalTelegram']
     builder.support_contact(operator_config)
@@ -56,6 +61,7 @@ def stage(local,incoming,output):
     builder.build(output/'legal')
     root=builder.update_operator_footer(root,operator_config)
     shutil.copy2(incoming/'app/legal-cabinet.js',output/'app/legal-cabinet.js')
+    shutil.copy2(incoming/'app/legal-acceptance.js',output/'app/legal-acceptance.js')
     (output/'index.html').write_text(root);(output/'app/index.html').write_text(app)
     if (local/'landing-footer.html').is_file():(output/'landing-footer.html').write_text(builder.update_operator_footer(footer_links((local/'landing-footer.html').read_text()),operator_config))
 

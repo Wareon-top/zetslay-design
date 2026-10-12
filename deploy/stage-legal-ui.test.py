@@ -33,11 +33,11 @@ class LegalStageTest(unittest.TestCase):
   return local
  def test_preserves_local_work_and_operator_config_and_is_idempotent(self):
   with tempfile.TemporaryDirectory() as t:
-   tmp=Path(t);local=self.fixture(tmp);before=(local/'index.html').read_bytes();(local/'legal').mkdir();config=json.loads((ROOT/'legal/site-config.json').read_text());config['operatorName']='Локальное имя оператора';(local/'legal/site-config.json').write_text(json.dumps(config,ensure_ascii=False))
+   tmp=Path(t);local=self.fixture(tmp);before=(local/'index.html').read_bytes();(local/'legal').mkdir();config=json.loads((ROOT/'legal/site-config.json').read_text());config['postalAddress']='LOCAL ADDRESS';(local/'legal/site-config.json').write_text(json.dumps(config,ensure_ascii=False))
    stage.stage(local,ROOT,tmp/'out');stage.stage(tmp/'out',ROOT,tmp/'again')
    for p in (tmp/'out').rglob('*'):
     if p.is_file():self.assertEqual(p.read_bytes(),(tmp/'again'/p.relative_to(tmp/'out')).read_bytes(),str(p))
-   self.assertEqual((local/'index.html').read_bytes(),before);self.assertFalse((tmp/'out/app/app.js').exists());self.assertIn('KEEP_LOCAL_CABINET',(tmp/'out/app/index.html').read_text());self.assertIn('Локальное имя оператора',(tmp/'out/legal/index.html').read_text());self.assertIn('Проекты документов',(tmp/'out/legal/index.html').read_text())
+   self.assertEqual((local/'index.html').read_bytes(),before);self.assertFalse((tmp/'out/app/app.js').exists());self.assertIn('KEEP_LOCAL_CABINET',(tmp/'out/app/index.html').read_text());self.assertIn('LOCAL ADDRESS',(tmp/'out/legal/index.html').read_text());self.assertIn('Действующая редакция',(tmp/'out/legal/index.html').read_text())
    for p in ['index.html','app/index.html']:
     text=(tmp/'out'/p).read_text();self.assertNotIn('fonts.googleapis.com',text);self.assertNotIn('fonts.gstatic.com',text);self.assertEqual(text.count('privacy-controls.js?v='),1);self.assertEqual(text.count('assets/fonts/fonts.css?v='),1)
  def test_unknown_markup_fails_before_output(self):
@@ -45,13 +45,15 @@ class LegalStageTest(unittest.TestCase):
    tmp=Path(t);local=self.fixture(tmp);(local/'app/index.html').write_text('unknown')
    with self.assertRaises(ValueError):stage.stage(local,ROOT,tmp/'out')
    self.assertFalse((tmp/'out').exists())
- def test_documents_are_printable_separate_and_cannot_be_activated_by_config(self):
-  data=json.loads((ROOT/'legal/documents.json').read_text());self.assertEqual(len(data['documents']),9);self.assertNotEqual('processing','offer')
+ def test_active_documents_are_printable_and_a_flag_cannot_approve_unmatched_content(self):
+  data=json.loads((ROOT/'legal/documents.json').read_text());self.assertEqual(len(data['documents']),9)
   for d in data['documents']:
-   text=(ROOT/'legal'/f'{d["id"]}.html').read_text();self.assertIn('noindex,follow',text);self.assertIn('data-legal-print',text);self.assertIn('не вступили в силу',text);self.assertNotIn('mailto:',text);self.assertGreater(len(d['sections']),2)
-  with tempfile.TemporaryDirectory() as t:
-   tmp=Path(t);local=self.fixture(tmp);(local/'legal').mkdir();config=json.loads((ROOT/'legal/site-config.json').read_text());config['status']='active';(local/'legal/site-config.json').write_text(json.dumps(config))
-   with self.assertRaises(AssertionError):stage.stage(local,ROOT,tmp/'out')
+   text=(ROOT/'legal'/f'{d["id"]}.html').read_text();self.assertIn('index,follow',text);self.assertIn('data-legal-print',text);self.assertIn('Действующая редакция',text);self.assertNotIn('ещё не вступили',text);self.assertGreater(len(d['sections']),2)
+  spec=importlib.util.spec_from_file_location('legal_builder',HERE/'build-legal-pages.py');builder=importlib.util.module_from_spec(spec);spec.loader.exec_module(builder)
+  config=json.loads((ROOT/'legal/site-config.json').read_text());config['approvedVersion']='other'
+  with self.assertRaises(AssertionError):builder.publication(data,config)
+  config['approvedVersion']=data['version'];config['approved']=False
+  with self.assertRaises(AssertionError):builder.publication(data,config)
  def test_tables_escape_content_and_malformed_rows_are_rejected(self):
   spec=importlib.util.spec_from_file_location('legal_builder',HERE/'build-legal-pages.py');builder=importlib.util.module_from_spec(spec);spec.loader.exec_module(builder)
   with tempfile.TemporaryDirectory() as t:
