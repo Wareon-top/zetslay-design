@@ -1480,7 +1480,7 @@ function renderConnectionWizard() {
     const [title, description] = descriptions[connectionResetTarget];
     if (body) body.innerHTML = `<span class="connect-illustration">${icon('help')}<i></i></span><h3>${title}</h3><p>${description}</p>`;
     if (back) { back.hidden = false; back.disabled = connectionBusy; }
-    if (action) { action.disabled = connectionBusy; action.innerHTML = connectionBusy ? 'Удаляем…' : 'Подтвердить удаление'; }
+    if (action) { action.disabled = connectionBusy; action.innerHTML = connectionBusy ? (connectionResetTarget === 'proxy' ? 'Подготавливаем замену…' : 'Удаляем…') : (connectionResetTarget === 'proxy' ? 'Подтвердить замену' : 'Подтвердить удаление'); }
     return;
   }
   const planRequired = onboarding?.state === 'plan_required' || (!onboarding && !connectionStatus);
@@ -1649,7 +1649,7 @@ async function confirmConnectionReset() {
     }
     showToast(target === 'all' ? 'Подключение сброшено. Можно начать заново.' : 'Сохранённые данные удалены. Введите новое значение.', 'success');
   } catch (error) {
-    connectionError = humanError(error);
+    connectionError = error?.code === 'INVALID_STATE' && error?.message ? error.message : humanError(error);
   } finally {
     connectionBusy = false;
     renderConnectionWizard();

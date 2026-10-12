@@ -525,3 +525,13 @@ test('connected store exposes proxy replacement without exposing key or complete
  await app.run('advanceConnectionWizard()');assert.equal(app.run('connectionStep'),3);assert.match(modal.body.innerHTML,/name="proxyUrl"/);
  assert.equal(app.run('selectedStore().status'),'attention');assert.equal(app.run('state.onboarding.funPay.store.id'),'42');
 });
+
+test('proxy reset displays the original server conflict explanation and keeps confirmation available',async()=>{
+ const modal=fakeModal(),app=cabinet({token:'session',modal});
+ app.run(`authState.user={};state.onboarding={state:'connected_read_only',telegram:{botConfigured:true,linked:true},funPay:{store:{id:'42'},credentialConfigured:true,proxyConfigured:true}};connectionStep=4;beginConnectionReset('proxy');`);
+ let reject;app.context.apiRequest=()=>new Promise((_,r)=>reject=r);const pending=app.run('advanceConnectionWizard()');
+ assert.match(modal.action.innerHTML,/Подготавливаем замену/);
+ reject(Object.assign(new Error('Дождитесь завершения проверки подключения'),{code:'INVALID_STATE'}));await pending;
+ assert.equal(app.run('connectionError'),'Дождитесь завершения проверки подключения');
+ assert.equal(app.run('connectionResetTarget'),'proxy');assert.equal(modal.action.disabled,false);assert.match(modal.action.innerHTML,/Подтвердить замену/);
+});

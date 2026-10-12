@@ -14,7 +14,7 @@ class StageTest(unittest.TestCase):
    self.assertIn('https://local-config.test',(root/'out/index.html').read_text())
    self.assertIn('// LOCAL COVER CONFIG',(root/'out/app.js').read_text())
    self.assertIn('Bound the whole operation',(root/'out/app.js').read_text())
-   self.assertIn('app.js?v=20261012-proxy-replacement',(root/'out/index.html').read_text())
+   self.assertIn('app.js?v=20261012-proxy-replacement-v2',(root/'out/index.html').read_text())
    module.stage(root/'out',ROOT/'app',root/'again')
    self.assertEqual((root/'again/app.js').read_text(),(root/'out/app.js').read_text())
  def test_unknown_functions_refuse_before_mutation(self):

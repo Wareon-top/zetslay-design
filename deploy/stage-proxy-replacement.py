@@ -1,6 +1,6 @@
 from pathlib import Path
 import re,sys
-VERSION='20261012-proxy-replacement'
+VERSION='20261012-proxy-replacement-v2'
 def stage(local,incoming,out):
  local,incoming,out=Path(local),Path(incoming),Path(out)
  html=(local/'index.html').read_text();app=(local/'app.js').read_text();new=(incoming/'app.js').read_text()
