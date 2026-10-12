@@ -41,6 +41,7 @@ const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (character) => (
 // at a running backend (stored in localStorage; use ?api=clear to reset).
 const localCabinet = ['localhost', '127.0.0.1'].includes(location.hostname);
 const apiOverrideRaw = localCabinet ? new URLSearchParams(location.search).get('api') : null;
+try {
 if (!localCabinet || apiOverrideRaw === 'clear') {
   localStorage.removeItem('zetslay_api_base_url');
 } else if (apiOverrideRaw) {
@@ -51,9 +52,11 @@ if (!localCabinet || apiOverrideRaw === 'clear') {
     }
   } catch { /* ignore malformed override */ }
 }
-const configuredApiUrl = ((localCabinet && localStorage.getItem('zetslay_api_base_url')) || document.querySelector('meta[name="zetslay-api-base-url"]')?.content || '').replace(/\/$/, '');
+} catch { /* Browser storage may be disabled. */ }
+const savedApiOverride = (() => { try { return localCabinet && localStorage.getItem('zetslay_api_base_url'); } catch { return ''; } })();
+const configuredApiUrl = (savedApiOverride || document.querySelector('meta[name="zetslay-api-base-url"]')?.content || '').replace(/\/$/, '');
 const API_BASE_URL = !['localhost', '127.0.0.1'].includes(location.hostname) && /localhost|127\.0\.0\.1/.test(configuredApiUrl) ? '' : configuredApiUrl;
-const authState = { mode: 'login', token: sessionStorage.getItem('zetslay_session') || '', user: null, workspace: null };
+const authState = { mode: 'login', token: window.ZetSlaySession?.legacyToken() || '', user: null, workspace: null };
 let sessionGeneration = 0;
 
 const errorMessages = {
@@ -81,14 +84,16 @@ let registrationEmail = '';
 
 async function apiRequest(path, { method = 'GET', body, authenticated = false, signal } = {}) {
   if (!API_BASE_URL) { const error = new Error('API_URL_MISSING'); error.code = 'API_URL_MISSING'; throw error; }
+  const requestToken = authState.token;
   const headers = { accept: 'application/json' };
   if (body) headers['content-type'] = 'application/json';
   if (authenticated && authState.token) headers.authorization = `Bearer ${authState.token}`;
-  const response = await fetch(`${API_BASE_URL}${path}`, { method, headers, body: body ? JSON.stringify(body) : undefined, signal });
+  const response = await fetch(`${API_BASE_URL}${path}`, { method, headers, body: body ? JSON.stringify(body) : undefined, signal, credentials: /^\/api\/v1\/auth\/(login|mfa|telegram\/poll|logout)(?:[?]|$)/.test(path) ? 'include' : 'omit' });
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
     const error = new Error(payload.error?.message || 'Запрос отклонён');
     error.code = payload.error?.code || `HTTP_${response.status}`;
+    if (authenticated && error.code === 'INVALID_SESSION' && requestToken === authState.token) clearSession();
     throw error;
   }
   return payload.data;
@@ -222,7 +227,7 @@ function clearSession() {
   authState.token = '';
   authState.user = null;
   authState.workspace = null;
-  sessionStorage.removeItem('zetslay_session');
+  window.ZetSlaySession?.clearLegacy();
   resetAccountData();
   renderAuthState();
   setAuthMode('login');
@@ -246,7 +251,8 @@ async function acceptSession(session) {
   authState.token = session.token;
   authState.user = session.user;
   authState.workspace = session.workspace || null;
-  sessionStorage.setItem('zetslay_session', session.token);
+  window.ZetSlaySession?.clearLegacy();
+  window.ZetSlaySession?.notify('login');
   renderAuthState();
   setAuthModal(false);
   await loadAccountData();
@@ -357,18 +363,51 @@ async function startTelegramLogin(button) {
 }
 
 async function restoreSession() {
-  if (!authState.token) { renderAuthState(); setAuthModal(true); return; }
+  const generation = ++sessionGeneration;
+  const legacyToken = authState.token;
   try {
-    const context = await apiRequest('/api/v1/me', { authenticated: true });
-    authState.user = context.user;
-    authState.workspace = context.workspace;
-  } catch {
-    clearSession();
+    const session = legacyToken
+      ? await window.ZetSlaySession.migrate(API_BASE_URL, legacyToken)
+      : await window.ZetSlaySession.restore(API_BASE_URL);
+    if (generation !== sessionGeneration) return;
+    if (!session?.token || !session?.user || !Number.isFinite(Date.parse(session.expiresAt)) || Date.parse(session.expiresAt) <= Date.now()) throw Object.assign(new Error('Сессия истекла'), { code:'INVALID_SESSION' });
+    resetAccountData();
+    authState.token = session.token;
+    authState.user = session.user;
+    authState.workspace = session.workspace || null;
+    window.ZetSlaySession.clearLegacy();
+  } catch (error) {
+    if (generation !== sessionGeneration) return;
+    if (legacyToken && error.code === 'INVALID_SESSION') {
+      // A revoked legacy tab must not hide a newer valid cookie login.
+      authState.token = ''; window.ZetSlaySession.clearLegacy();
+      return restoreSession();
+    }
+    if (error.code === 'INVALID_SESSION') clearSession();
+    else { renderAuthState(); showToast('Не удалось проверить вход. Обновите страницу — повторно вводить пароль пока не нужно.', 'error'); }
     return;
   }
   renderAuthState();
+  setAuthModal(false);
   await loadAccountData();
 }
+
+let logoutBusy = false;
+async function logoutSession(button) {
+  if (logoutBusy) return;
+  logoutBusy = true; if (button) button.disabled = true;
+  const token = authState.token;
+  try {
+    const result = await apiRequest('/api/v1/auth/logout', { method:'POST', authenticated:true, signal:AbortSignal.timeout(12000) });
+    if (token !== authState.token) return;
+    clearSession(); if (result?.browserLoggedOut !== false) window.ZetSlaySession?.notify('logout'); setView('dashboard');
+  } catch (error) { showToast('Выход не подтверждён сервером. Повторите, когда соединение восстановится.', 'error'); }
+  finally { logoutBusy = false; if (button) button.disabled = false; }
+}
+window.ZetSlaySession?.subscribe(type => {
+  if (type === 'logout') { clearSession(); setView('dashboard'); }
+  else { sessionGeneration++; resetAccountData(); authState.token = ''; authState.user = null; authState.workspace = null; restoreSession().catch(() => {}); }
+});
 
 async function initializeAuthFlow() {
   const requestedMode = new URLSearchParams(location.search).get('auth');
@@ -1801,9 +1840,7 @@ function bindInteractions() {
     if (event.target.closest('[data-auth-open]')) { if (authState.user) setView('profile'); else setAuthModal(true); return; }
     if (event.target.closest('[data-auth-close]')) { stopTelegramLoginPolling(); setAuthModal(false); return; }
     if (event.target.closest('[data-auth-logout]')) {
-      apiRequest('/api/v1/auth/logout', { method: 'POST', authenticated: true }).catch(() => {});
-      clearSession();
-      setView('dashboard');
+      logoutSession(event.target.closest('[data-auth-logout]'));
       return;
     }
     const viewButton = event.target.closest('[data-view-target], [data-view-link]');

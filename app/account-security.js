@@ -43,7 +43,7 @@ function challengeMfa(session){
   dialog.addEventListener('cancel',event=>{event.preventDefault();cancel();});dialog.querySelector('[data-mfa-cancel]').addEventListener('click',cancel);
   dialog.querySelector('form').addEventListener('submit',async event=>{event.preventDefault();if(busy||done)return;busy=true;dialog.querySelector('[type="submit"]').disabled=true;
    const field=dialog.querySelector('[name="code"]'),code=field.value;field.value='';
-   try{const result=await apiRequest('/api/v1/auth/mfa',{method:'POST',body:{challengeToken:session.challengeToken,code}});if(done){if(result.token)await fetch(`${API_BASE_URL}/api/v1/auth/logout`,{method:'POST',headers:{authorization:`Bearer ${result.token}`}}).catch(()=>{});return;}done=true;close();resolve(result);}
+   try{const result=await apiRequest('/api/v1/auth/mfa',{method:'POST',body:{challengeToken:session.challengeToken,code}});if(done){if(result.token)await fetch(`${API_BASE_URL}/api/v1/auth/logout`,{method:'POST',credentials:'include',headers:{authorization:`Bearer ${result.token}`}}).catch(()=>{});return;}done=true;close();resolve(result);}
    catch(error){if(!done){dialog.querySelector('[data-mfa-error]').textContent=humanError(error);field.focus();}}
    finally{busy=false;if(!done)dialog.querySelector('[type="submit"]').disabled=false;}
   });document.body.append(dialog);dialog.showModal();

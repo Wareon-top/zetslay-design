@@ -23,7 +23,7 @@ function cabinet({ admin = false, entry = fixture() } = {}) {
     addEventListener: (type, listener) => { (listeners[type] ||= []).push(listener); } };
   const context = vm.createContext({ document, location, URL, URLSearchParams,
     localStorage: { getItem: () => null, removeItem() {} }, sessionStorage: { getItem: () => 'session', removeItem() {} },
-    window: { setTimeout() {}, matchMedia: () => ({ matches: true }) }, history: { replaceState() {} } });
+    window: { setTimeout() {}, matchMedia: () => ({ matches: true }), ZetSlaySession: {legacyToken:()=> 'session',subscribe(){}} }, history: { replaceState() {} } });
   const run = code => vm.runInContext(code, context);
   run(addon + '\n' + source);
   context.entry = entry;

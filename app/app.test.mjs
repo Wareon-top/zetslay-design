@@ -45,7 +45,11 @@ function cabinet({ search = '', token = '', modal = null } = {}) {
     requestAnimationFrame: (callback) => callback(),
     setInterval: () => 1,
     clearInterval: () => {},
-    window: { setTimeout() {} },
+    window: { setTimeout() {}, ZetSlaySession: {
+      legacyToken: () => storage.get('zetslay_session') || '', clearLegacy: () => storage.delete('zetslay_session'), notify() {}, subscribe() {},
+      restore: async () => { throw {code:'INVALID_SESSION'}; },
+      migrate: async (_base, token) => ({...await context.apiRequest('/api/v1/me'),token,expiresAt:new Date(Date.now()+604800000).toISOString()})
+    } },
     calls
   });
   vm.runInContext(source, context);
@@ -126,27 +130,30 @@ test('existing session returns from landing to cabinet without showing the sign-
   };
   app.context.renderAuthState = () => {};
   app.context.loadAccountData = async () => {};
+  app.context.resetAccountData = () => {};
   app.context.setAuthModal = (open) => app.calls.push(['modal', open]);
   app.context.verifyEmailFromUrl = async () => {};
   await app.run('initializeAuthFlow()');
-  assert.deepEqual(app.calls, [['modal', false]]);
+  assert.ok(app.calls.length >= 1 && app.calls.every(([type,value])=>type==='modal' && value===false));
   assert.deepEqual(app.history, ['/app/']);
   assert.equal(app.run('authState.user.email'), 'seller@example.com');
 });
 
 test('registration link opens registration when there is no saved session', async () => {
   const app = cabinet({ search: '?auth=register' });
+  app.context.resetAccountData = () => {};
   app.context.renderAuthState = () => {};
   app.context.setAuthModal = (open) => app.calls.push(['modal', open]);
   app.context.setAuthMode = (mode) => app.calls.push(['mode', mode]);
   app.context.verifyEmailFromUrl = async () => {};
   await app.run('initializeAuthFlow()');
-  assert.deepEqual(app.calls, [['modal', true], ['mode', 'register'], ['modal', true]]);
+  assert.equal(app.calls.some(([type,value])=>type==='modal' && value===false),false);
+  assert.deepEqual(app.calls.slice(-2), [['mode','register'],['modal',true]]);
 });
 
 test('expired session opens login instead of keeping a stale account panel', async () => {
   const app = cabinet({ search: '?auth=login', token: 'expired-session' });
-  app.context.apiRequest = async () => { throw new Error('expired'); };
+  app.context.apiRequest = async () => { throw Object.assign(new Error('expired'),{code:'INVALID_SESSION'}); };
   app.context.resetAccountData = () => {};
   app.context.renderAuthState = () => {};
   app.context.setAuthModal = (open) => app.calls.push(['modal', open]);

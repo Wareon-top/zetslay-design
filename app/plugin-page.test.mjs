@@ -29,7 +29,7 @@ function harness({ admin = false, hash = '#plugins/zetslay.test-plugin', loaded 
   };
   const context = vm.createContext({ document, location, URL, URLSearchParams,
     sessionStorage: { getItem: () => 'session', removeItem() {} }, localStorage: { getItem: () => null, removeItem() {} },
-    window: { setTimeout: callback => callback(), scrollTo() {} },
+    window: { setTimeout: callback => callback(), scrollTo() {}, ZetSlaySession: {legacyToken:()=> 'session',subscribe(){}} },
     history: { replaceState: (_, __, hash) => { location.hash = hash; } }
   });
   vm.runInContext(addon + '\n' + cabinet, context);
