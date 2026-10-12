@@ -1,4 +1,4 @@
-.ai-reviews { --ai-accent:#a78bfa; }
+.ai-reviews { --ai-accent:var(--plugin-tier-ultra,#edc77f); }
 .ai-reviews-header { display:flex;gap:20px;justify-content:space-between;align-items:flex-start;margin-bottom:24px; }
 .ai-reviews-header h2 { margin:8px 0;font-size:clamp(21px,2vw,28px);letter-spacing:-.035em; }
 .ai-reviews-header p,.ai-reviews-caption { color:var(--muted,#9294a2);font-size:13px;line-height:1.65; }

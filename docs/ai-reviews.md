@@ -1,6 +1,6 @@
 # AI Reviews cabinet
 
-Legendary card, existing administrator cover flow and rich catalogue description.
+Ultra card (yellow accent), existing administrator cover flow and rich catalogue description.
 The module management shows provider/model selection, a masked write-only key input,
 rating thresholds, prompt, UTC generation limit, optional chat thanks and Telegram
 notifications. Public replies remain approval-required until explicitly changed.

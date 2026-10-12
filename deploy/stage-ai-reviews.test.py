@@ -8,6 +8,25 @@ module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 
 class StageTests(unittest.TestCase):
+    def test_upgrades_existing_legendary_entry_and_invalidates_old_asset_cache(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory); src = root / 'src'; src.mkdir()
+            inc = Path(__file__).resolve().parents[1] / 'app'
+            for filename in ['index.html', 'plugin-page.js', 'plugin-rarity.js', 'subscription-access.js']:
+                source = (inc / filename).read_text()
+                if filename == 'plugin-rarity.js':
+                    source = source.replace("'zetslay.ai-reviews':'ultra'", "'zetslay.ai-reviews':'legendary'")
+                if filename == 'subscription-access.js':
+                    source = source.replace("'zetslay.ai-reviews':2", "'zetslay.ai-reviews':3")
+                source = source.replace('20261012-ai-reviews-ultra', '20261012-ai-reviews')
+                (src / filename).write_text(source)
+            module.stage(src, inc, root / 'out')
+            self.assertIn("'zetslay.ai-reviews':'ultra'", (root / 'out' / 'plugin-rarity.js').read_text())
+            self.assertIn("'zetslay.ai-reviews':2", (root / 'out' / 'subscription-access.js').read_text())
+            html = (root / 'out' / 'index.html').read_text()
+            self.assertIn('ai-reviews.js?v=20261012-ai-reviews-ultra', html)
+            self.assertIn('ai-reviews.css?v=20261012-ai-reviews-ultra', html)
+
     def test_preserves_custom_content_and_is_idempotent(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

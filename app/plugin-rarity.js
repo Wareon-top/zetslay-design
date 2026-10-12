@@ -16,7 +16,7 @@ const PLUGIN_RARITY_BY_ID = Object.freeze({
   'zetslay.tiktok-lzt-market':'legendary',
   'zetslay.sales-pause':'advanced',
   'zetslay.kosell-rent':'legendary',
-  'zetslay.ai-reviews':'legendary',
+  'zetslay.ai-reviews':'ultra',
   'zetslay.steam-rent':'legendary',
   'zetslay.auto-review-bonus':'advanced'
 });
