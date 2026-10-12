@@ -510,3 +510,18 @@ test('diagnostics keeps a working saved protocol and does not recommend SOCKS so
   const partial=app.run(`formatProxyDiagnostics({endpoint:'proxy.test:8000',configuredProtocol:'http',results:[{protocol:'socks5',target:'example.com',ok:true,targetStatus:200}]})`);
   assert.ok(!partial.includes('SOCKS5 отвечает'));
 });
+
+test('connected store exposes proxy replacement without exposing key or complete reset',async()=>{
+ const modal=fakeModal(),app=cabinet({token:'session',modal});
+ app.run(`authState.user={};state.onboarding={state:'connected_read_only',telegram:{botConfigured:true,linked:true},funPay:{store:{id:'42',displayName:'Shop'},credentialConfigured:true,proxyConfigured:true}};state.storeFleet.stores=[{id:'42',status:'connected_read_only'}];state.storeFleet.selectedStoreId='42';connectionStep=4;renderConnectionWizard();`);
+ assert.match(modal.body.innerHTML,/data-connect-edit="proxy"/);assert.doesNotMatch(modal.body.innerHTML,/data-connect-edit="key"/);
+ app.run(`beginConnectionReset('key')`);assert.equal(app.run('connectionResetTarget'),null);
+ app.run(`beginConnectionReset('proxy')`);assert.equal(app.run('connectionResetTarget'),'proxy');assert.match(modal.body.innerHTML,/привязка магазина/);
+ for(const name of ['renderStoreFleet','renderTelegramOnboarding','showToast'])app.context[name]=()=>{};
+ app.context.apiRequest=async(path,options)=>{
+  assert.equal(path,'/api/v1/onboarding/reset');assert.equal(options.body.target,'proxy');assert.equal(options.body.confirmed,true);
+  return{state:'proxy_required',telegram:{botConfigured:true,linked:true},funPay:{store:{id:'42'},credentialConfigured:true,proxyConfigured:false}};
+ };
+ await app.run('advanceConnectionWizard()');assert.equal(app.run('connectionStep'),3);assert.match(modal.body.innerHTML,/name="proxyUrl"/);
+ assert.equal(app.run('selectedStore().status'),'attention');assert.equal(app.run('state.onboarding.funPay.store.id'),'42');
+});

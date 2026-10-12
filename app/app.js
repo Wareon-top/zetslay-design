@@ -1473,7 +1473,7 @@ function renderConnectionWizard() {
   const onboarding = state.onboarding;
   if (connectionResetTarget) {
     const descriptions = {
-      proxy: ['Изменить прокси?', 'Сохранённый прокси будет удалён из vault. Golden Key и привязка Telegram сохранятся. Затем введите новый адрес прокси.'],
+      proxy: ['Изменить прокси?', 'Обработка новых событий магазина приостановится до проверки нового прокси. Golden Key и привязка Telegram сохранятся, как и привязка магазина. Старый прокси будет удалён; затем введите новый адрес и проверьте соединение.'],
       key: ['Изменить Golden Key?', 'Сохранённые Golden Key и прокси будут удалены из vault. Привязка Telegram сохранится. Затем введите ключ и прокси заново.'],
       all: ['Начать подключение заново?', 'Bot Token, Golden Key и прокси этого незавершённого подключения будут удалены из vault, а webhook рабочего бота отключён. Тариф и вход в кабинет сохранятся. Все шаги подключения нужно будет пройти заново.']
     };
@@ -1508,10 +1508,10 @@ function renderConnectionWizard() {
     `<span class="connect-illustration connect-illustration--success">${icon('check')}<i></i></span><h3>Read-only проверка</h3><p>ZetSlay проверит аккаунт, чтение заказов и чатов через закреплённый прокси. Лоты и баланс сейчас недоступны; данные на FunPay не изменяются.</p><div class="connection-checks">${checks.map((line) => `<span>${line.split(' <b>')[0]} <b>${line.split(' <b>')[1]}</b></span>`).join('')}<span>Live-действия <b>Отключены</b></span></div>`
   ];
   if (body) body.innerHTML = pages[connectionStep] || pages.at(-1);
-  if (body && !onboarding?.funPay?.store) {
+  if (body) {
     const edits = [];
     if (onboarding?.funPay?.proxyConfigured && connectionStep >= 3) edits.push('<button type="button" data-connect-edit="proxy">Изменить прокси</button>');
-    if (onboarding?.funPay?.credentialConfigured && connectionStep >= 2) edits.push('<button type="button" data-connect-edit="key">Изменить Golden Key</button>');
+    if (!onboarding?.funPay?.store && onboarding?.funPay?.credentialConfigured && connectionStep >= 2) edits.push('<button type="button" data-connect-edit="key">Изменить Golden Key</button>');
     if (edits.length) body.innerHTML += `<div class="connect-helper">${edits.join('')}</div>`;
   }
   if (body && onboarding?.funPay?.proxyConfigured && connectionStep >= 3) {
@@ -1619,7 +1619,7 @@ async function diagnoseConnectionProxy() {
 }
 
 function beginConnectionReset(target) {
-  if (connectionBusy || connectionLoading || state.onboarding?.funPay?.store || !['all', 'key', 'proxy'].includes(target)) return;
+  if (connectionBusy || connectionLoading || (state.onboarding?.funPay?.store && target !== 'proxy') || !['all', 'key', 'proxy'].includes(target)) return;
   connectionResetTarget = target;
   connectionError = '';
   renderConnectionWizard();
@@ -1641,6 +1641,12 @@ async function confirmConnectionReset() {
     connectionResetTarget = null;
     connectionStep = wizardInitialStep();
     renderTelegramOnboarding();
+    if (target === 'proxy' && updated.funPay?.store) {
+      storeContentSyncFlight?.cancel();
+      const store = selectedStore();
+      if (store) store.status = 'attention';
+      renderStoreFleet();
+    }
     showToast(target === 'all' ? 'Подключение сброшено. Можно начать заново.' : 'Сохранённые данные удалены. Введите новое значение.', 'success');
   } catch (error) {
     connectionError = humanError(error);
