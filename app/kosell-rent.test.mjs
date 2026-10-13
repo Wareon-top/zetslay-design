@@ -170,3 +170,9 @@ test('automatic flag alone cannot claim delivery readiness and pending reasons a
  let html=f.run('kosellRentMarkup({installed:true})');assert.match(html,/Добавьте привязку лота/);assert.match(html,/Ожидается первый успешный опрос/);assert.match(html,/Нужна проверка/);assert.doesNotMatch(html,/Готова к новым заказам/);
  f.status.automaticReadiness={ready:true,reasons:[]};html=f.run('kosellRentMarkup({installed:true})');assert.match(html,/Готова к новым заказам/);
 });
+
+test('storefront jobs show staged preparation, delayed bounded retries and actionable failure without unsafe retry buttons',async()=>{
+ const f=app();f.status.offerJobs=[{id:'j1',status:'queued',productName:'Game',hours:1,priceMinor:120,currency:'RUB',stage:'template',failureMessage:'Подключение занято <img src=x>',code:'KOSELL_OFFER_CONNECTION_BUSY',preparationAttempts:1,nextAttemptAt:'2026-10-13T14:00:00Z'},{id:'j2',status:'failed',productName:'Game',hours:3,priceMinor:240,currency:'RUB',stage:'supplier_quote',code:'KOSELL_OFFER_COST_INCREASED',writeStarted:false},{id:'j3',status:'unknown',productName:'Game',hours:6,priceMinor:400,currency:'RUB',stage:'create',code:'INVALID_STATE',writeStarted:true}];
+ await f.run('loadKosellStatus()');const html=f.run('kosellRentMarkup({installed:true})');assert.match(html,/Чтение лота-шаблона/);assert.match(html,/Попыток: 1\/3/);assert.match(html,/Расчёт себестоимости Kosell/);assert.match(html,/Создание лота не запускалось/);assert.match(html,/Повторное создание заблокировано/);assert.doesNotMatch(html,/<img src=x>/);assert.doesNotMatch(html,/data-kosell-retry-offer/);
+ assert.doesNotMatch(f.run("kosellOfferDiagnosticsMarkup({status:'queued',nextAttemptAt:'invalid'})"),/Invalid Date/);
+});
