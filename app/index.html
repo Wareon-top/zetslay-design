@@ -47,6 +47,7 @@
 <link rel="stylesheet" href="learning.css?v=20261011-welcome-tour">
 <link rel="stylesheet" href="subscription-access.css?v=20261011-access-workspace">
 <link rel="stylesheet" href="ai-reviews.css?v=20261012-ai-reviews-ultra">
+    <link rel="stylesheet" href="lot-management.css?v=20261013-lot-management">
 </head>
   <body>
     <svg class="icon-sprite" aria-hidden="true">
@@ -282,6 +283,7 @@
               <div class="inventory-table-wrap"><table class="inventory-table"><thead><tr><th scope="col">Лот / товар</th><th scope="col">Статус</th><th scope="col">Цена</th><th scope="col">Остаток</th><th scope="col"><span class="sr-only">Действия</span></th></tr></thead><tbody data-lots-rows></tbody></table></div>
               <footer class="inventory-footer"><span data-lots-range>Нет лотов для отображения</span><label>На странице <select data-lots-size aria-label="Количество лотов на странице"><option value="10">10</option><option value="20">20</option><option value="50">50</option></select></label><div class="inventory-pagination"><button type="button" data-lots-page="prev" aria-label="Предыдущая страница"><svg><use href="#i-chevron"/></svg></button><span data-lots-page-label>1 / 1</span><button type="button" data-lots-page="next" aria-label="Следующая страница"><svg><use href="#i-chevron"/></svg></button></div></footer>
             </section>
+            <section class="lot-operations" data-lot-operations hidden aria-label="Последние изменения лотов"></section>
             <div class="inventory-tools"><article class="inventory-tool"><svg aria-hidden="true"><use href="#i-box"/></svg><div><h3>Копия лота без ручной сборки</h3><p>Lot Cloner создаёт выключенную копию вашего лота. Проверьте её перед публикацией на FunPay.</p><a href="#plugins/zetslay.lot-cloner" data-lots-plugin="zetslay.lot-cloner">Подробнее о Lot Cloner <svg><use href="#i-chevron"/></svg></a></div></article><article class="inventory-tool"><svg aria-hidden="true"><use href="#i-chart"/></svg><div><h3>Переоценка с проверкой расчёта</h3><p>Mass Price Editor показывает новые цены до вашего подтверждения. Управление — в подключённом боте.</p><a href="#plugins/zetslay.mass-price-editor" data-lots-plugin="zetslay.mass-price-editor">Подробнее о Mass Price Editor <svg><use href="#i-chevron"/></svg></a></div></article></div>
             <dialog class="inventory-dialog" data-lot-dialog aria-labelledby="lot-detail-title"><header><h2 id="lot-detail-title" data-lot-detail-title>Лот FunPay</h2><button class="icon-button" type="button" data-lot-close aria-label="Закрыть информацию о лоте"><svg><use href="#i-close"/></svg></button></header><div data-lot-detail-body></div></dialog>
           </section>
@@ -447,7 +449,8 @@
     <script src="plugin-page.js?v=20261012-ai-reviews-ultra" defer></script>
     <script src="messages.js?v=20261003-message-sync" defer></script>
     <script src="profile.js?v=20261005-profile" defer></script>
-    <script src="lots.js?v=20261009-inventory-live" defer></script>
+    <script src="lots.js?v=20261013-lot-management" defer></script>
+    <script src="lot-management.js?v=20261013-lot-management" defer></script>
     <script src="sales-pause.js?v=20261005-sales-pause" defer></script>
     <script src="roblox-lzt-market.js?v=20261007-roblox-lzt" defer></script>
     <script src="tiktok-lzt-market.js?v=20261007-tiktok-lzt" defer></script>
