@@ -70,6 +70,8 @@ const duplicateAppIds = [...new Set(appIds.filter((id, index) => appIds.indexOf(
 if (duplicateAppIds.length) errors.push(`Duplicate app HTML ids: ${duplicateAppIds.join(", ")}`);
 
 const appIdSet = new Set(appIds);
+// Cabinet sections are hash routes backed by data-view, not necessarily ids.
+for (const match of appHtml.matchAll(/\bdata-view=["']([a-z-]+)["']/g)) appIdSet.add(match[1]);
 const appAnchors = [...appHtml.matchAll(/href="#([^"]+)"/g)].map((match) => match[1]);
 const raritySource = await readFile('app/plugin-rarity.js','utf8');
 const knownPlugins = new Set([...raritySource.matchAll(/["'](zetslay\.[a-z0-9-]+)["']\s*:/g)].map(m=>m[1]));
