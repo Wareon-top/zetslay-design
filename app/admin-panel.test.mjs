@@ -44,3 +44,5 @@ test('problem tab requests combined connection and sync failures, and denies sec
 test('integration resets admin data, binds route and loads module before app',()=>{
  const app=readFileSync(new URL('./app.js',import.meta.url),'utf8');assert.match(app,/admin: 'Админ-панель'/);assert.match(app,/typeof adminReset/);assert.match(app,/adminRoute\(resolvedView\)/);assert.ok(html.indexOf('src="admin-panel.js')<html.indexOf('src="app.js'));
 });
+
+test('owner overview displays queue and fulfillment problems without performing marketplace actions',()=>{const h=harness();h.c.example={registrations:[],plans:[],plugins:[],users:0,newUsers:0,activePlans:0,connectedStores:0,attentionUsers:0,openRequests:0,operations:{pending:3,uncertain:2,fulfillmentConflicts:1,oldestPendingAt:'2026-10-13T10:00:00Z'}};const html=h.run('adminOverviewMarkup(example)');assert.match(html,/Конфликты автовыдачи/);assert.match(html,/Неопределённые операции/);assert.match(html,/автоматический повтор запрещён/);});

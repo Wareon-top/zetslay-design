@@ -72,6 +72,7 @@ const errorMessages = {
   PROXY_CONNECTION_REFUSED: 'Соединение отклонено. Проверьте адрес и порт прокси.',
   PROXY_DNS_FAILED: 'Не удалось разрешить сетевой адрес при подключении через прокси.',
   CAPTCHA_REQUIRED: 'FunPay запросил CAPTCHA. ZetSlay остановил подключение — подтвердите вход вручную.',
+  FULFILLMENT_CONFLICT: 'Лот или заказ назначен нескольким плагинам выдачи. Удалите лишние привязки и проверьте заказ; повторная покупка заблокирована.',
   RATE_LIMITED: 'Слишком много запросов. Подождите и повторите попытку.',
   TELEGRAM_BOT_REJECTED: 'Bot Token не прошёл проверку Telegram.',
   TELEGRAM_REJECTED: 'Telegram отклонил регистрацию webhook. Проверьте доступность HTTPS API и повторите попытку.',
@@ -88,8 +89,18 @@ async function apiRequest(path, { method = 'GET', body, authenticated = false, s
   const headers = { accept: 'application/json' };
   if (body) headers['content-type'] = 'application/json';
   if (authenticated && authState.token) headers.authorization = `Bearer ${authState.token}`;
-  const response = await fetch(`${API_BASE_URL}${path}`, { method, headers, body: body ? JSON.stringify(body) : undefined, signal, credentials: /^\/api\/v1\/auth\/(login|mfa|telegram\/poll|logout)(?:[?]|$)/.test(path) ? 'include' : 'omit' });
-  const payload = await response.json().catch(() => ({}));
+  const reading = method === 'GET' || method === 'HEAD';
+  const deadline = signal ? null : AbortSignal.timeout(reading ? 35000 : 120000);
+  const requestSignal = signal || deadline;
+  let response, payload;
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, { method, headers, body: body ? JSON.stringify(body) : undefined, signal:requestSignal, credentials: /^\/api\/v1\/auth\/(login|mfa|telegram\/poll|logout)(?:[?]|$)/.test(path) ? 'include' : 'omit' });
+    payload = await response.json().catch(error => { if(requestSignal?.aborted)throw error; return {}; });
+    if(requestSignal?.aborted)throw requestSignal.reason;
+  } catch(error) {
+    if(deadline?.aborted){const failure=new Error(reading?'Чтение превысило время ожидания. Попробуйте обновить данные.':'Ответ сервера не получен вовремя. Операция могла завершиться: проверьте её состояние перед повтором.');failure.code=reading?'REQUEST_TIMEOUT':'REQUEST_RESULT_UNKNOWN';throw failure;}
+    throw error;
+  }
   if (!response.ok) {
     const error = new Error(payload.error?.message || 'Запрос отклонён');
     error.code = payload.error?.code || `HTTP_${response.status}`;

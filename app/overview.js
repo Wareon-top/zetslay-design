@@ -133,7 +133,7 @@ function renderOverview() {
   const periodLabel = root.querySelector('[data-overview-period-label]');
   if (periodLabel) periodLabel.textContent = model.range.label;
   const coverage = root.querySelector('[data-overview-period-note]');
-  if (coverage) coverage.textContent = model.loaded ? `${model.range.key === 'all' ? 'Все загруженные заказы.' : 'Заказы выбраны по дате создания, по московскому времени.'} ${model.undatedOrders && model.range.key !== 'all' ? `Заказов без достоверной даты: ${model.undatedOrders}. Они не включены в период. ` : ''}Расчёт по загруженным данным FunPay; полная история может быть недоступна.` : 'Данные появятся после синхронизации магазина.';
+  if (coverage) coverage.textContent = model.loaded ? `${model.range.key === 'all' ? 'Все загруженные заказы.' : 'Заказы выбраны по дате создания, по московскому времени.'} ${model.undatedOrders && model.range.key !== 'all' ? `Заказов без достоверной даты: ${model.undatedOrders}. Они не включены в период. ` : ''}${state.storeContent?.orderArchive ? `Накопленная история: ${state.storeContent.orderArchive.total} заказов. ${state.storeContent.orderArchive.truncated ? 'Показаны последние 5000. ' : ''}Статусы обновляются при повторном чтении заказа. История до подключения может быть неполной.` : 'Расчёт по загруженным данным FunPay; полная история может быть недоступна.'}` : 'Данные появятся после синхронизации магазина.';
   overviewState.currency = model.currency;
   if (!model.dated) overviewState.mode = 'orders';
   const setText = (name, value) => { const node = root.querySelector(`[data-overview-${name}]`); if (node) node.textContent = value; };
