@@ -35,7 +35,10 @@ class StageTest(unittest.TestCase):
             root=Path(temp);local=self.fixture(root);current=(local/'kosell-rent.js').read_text()
             a=current.index('function kosellOfferDiagnosticsMarkup(');b=current.index('function kosellAutomationFields(')
             current=current[:a]+current[b:];current=current.replace('${kosellOfferDiagnosticsMarkup(j)}',"${j.code?`<p>${escapeHtml(j.code)}</p>`:''}")+'\nfunction customSettings(){return "CUSTOM";}\n'
+            import re
+            current=re.sub(r'<article><span>Автоматическая выдача</span>.*?</article>',"<article><span>Автоматическая выдача</span><strong>${c.automatic?'Включена':'Выключена'}</strong><small>Автопокупка включается отдельно</small></article>",current,flags=re.S)
             (local/'kosell-rent.js').write_text(current);module.stage(local,ROOT/'app',root/'out')
             updated=(root/'out/kosell-rent.js').read_text();self.assertIn('function customSettings(){return "CUSTOM";}',updated);self.assertEqual(updated.count('function kosellOfferDiagnosticsMarkup('),1)
             self.assertIn('${kosellOfferDiagnosticsMarkup(j)}',updated)
+            self.assertIn('MAPPINGS_MISSING',updated);self.assertIn('BASELINE_PENDING',updated);self.assertIn('Готова к новым заказам',updated)
 if __name__=='__main__':unittest.main()

@@ -1,7 +1,7 @@
 from pathlib import Path
 import re
 import sys
-VERSION='20261013-offer-recovery'
+VERSION='20261013-offer-recovery-v2'
 def require(ok,message):
     if not ok:raise ValueError(message+'. Сайт не изменён.')
 def stage(local,incoming,out):
@@ -20,6 +20,13 @@ def stage(local,incoming,out):
         require(current.count(old)==1 and current.count(new)==0,'Не подтверждён список заданий')
         current=current.replace(old,new,1)
     require(current.count(new)==1,'Не найден список заданий')
+    # Readiness is part of the staged module's contract. Older VPS modules showed
+    # an enabled flag without checking mappings or the first successful poll.
+    readiness=r'<article><span>Автоматическая выдача</span>.*?</article>'
+    target=list(re.finditer(readiness,current,re.S));replacement=list(re.finditer(readiness,desired,re.S))
+    require(len(target)==len(replacement)==1,'Не подтверждён блок готовности автовыдачи')
+    current=current[:target[0].start()]+replacement[0].group()+current[target[0].end():]
+
     pattern=r'(<script\b[^>]*\bsrc=["\'])kosell-rent\.js(?:\?[^"\']*)?(["\'][^>]*>)'
     matches=list(re.finditer(pattern,html));app=re.search(r'<script\b[^>]*\bsrc=["\']app\.js(?:\?[^"\']*)?["\'][^>]*>',html)
     require(len(matches)==1 and app is not None and matches[0].start()<app.start() and re.search(r'\bdefer\b',matches[0].group()),'Не подтверждён порядок модулей')
