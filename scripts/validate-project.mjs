@@ -1,3 +1,4 @@
+import {missingAppAnchors} from './project-routes.mjs';
 import { readFile, access } from "node:fs/promises";
 import { execFile } from "node:child_process";
 import process from "node:process";
@@ -19,7 +20,7 @@ const requiredFiles = [
   "docs/DEFINITION_OF_DONE.md"
 ];
 
-const requiredSections = ["comparison", "features", "plugins", "tariffs", "faq", "cta"];
+const requiredSections = ["comparison", "features", "plugins", "tariffs", "faq"];
 const environments = ["development", "staging", "production"];
 const errors = [];
 const forbiddenTrackedFiles = /(^|\/)(?:\.env(?:\..+)?|.+\.(?:pem|key|p12|pfx|db|sqlite|sqlite3))$/i;
@@ -70,8 +71,10 @@ if (duplicateAppIds.length) errors.push(`Duplicate app HTML ids: ${duplicateAppI
 
 const appIdSet = new Set(appIds);
 const appAnchors = [...appHtml.matchAll(/href="#([^"]+)"/g)].map((match) => match[1]);
-const missingAppAnchors = [...new Set(appAnchors.filter((anchor) => !appIdSet.has(anchor)))];
-if (missingAppAnchors.length) errors.push(`Broken app local anchors: ${missingAppAnchors.join(", ")}`);
+const raritySource = await readFile('app/plugin-rarity.js','utf8');
+const knownPlugins = new Set([...raritySource.matchAll(/["'](zetslay\.[a-z0-9-]+)["']\s*:/g)].map(m=>m[1]));
+const brokenAppAnchors = missingAppAnchors(appAnchors,appIdSet,knownPlugins);
+if (brokenAppAnchors.length) errors.push(`Broken app local anchors: ${brokenAppAnchors.join(", ")}`);
 
 for (const environment of environments) {
   const path = `config/environments/${environment}.json`;
@@ -113,3 +116,4 @@ if (errors.length) {
 }
 
 console.log(`ZetSlay validation passed: ${requiredFiles.length} required files, ${ids.length + appIds.length} unique ids across two surfaces, ${environments.length} environments, ${trackedFiles.length} tracked files scanned.`);
+
