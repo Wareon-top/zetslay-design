@@ -36,6 +36,22 @@ def stage(local,incoming,out):
     replacement=re.findall(pattern,desired,re.M);require(len(replacement)==len(re.findall(pattern,overview,re.M))==1,'Не найдено пояснение статистики')
     (out/'overview.js').write_text(re.sub(pattern,lambda m:replacement[0],overview,flags=re.M))
     admin=(local/'admin-panel.js').read_text();desired=(incoming/'admin-panel.js').read_text()
+    labels=re.findall(r'^const adminLabel = .*;$',admin,re.M)
+    require(len(labels)==1,'Не подтверждён словарь статусов администратора')
+    label=labels[0]
+    partial=re.search(r"partial:'[^']+'",desired)
+    require(partial is not None,'Нет пояснения частичной ошибки')
+    if not re.search(r'\bpartial\s*:',label):
+        require(label.count('retrying:')==1,'Не найден статус повторной синхронизации')
+        label=label.replace('retrying:',partial[0]+',retrying:',1)
+    require(partial[0] in label,'Не подтверждено пояснение частичной ошибки')
+    admin=admin.replace(labels[0],label,1)
+    old_statuses="['blocked','retrying'].includes(u.sync.status)"
+    new_statuses="['blocked','retrying','partial'].includes(u.sync.status)"
+    if old_statuses in admin:
+        require(admin.count(old_statuses)==1,'Неоднозначные статусы таблицы администратора')
+        admin=admin.replace(old_statuses,new_statuses,1)
+    require(new_statuses in admin,'Не подтверждена индикация частичной ошибки')
     start='<div><span>Открытые обращения пользователей</span><strong>${d.openRequests}</strong></div>'
     end='<p class="admin-note">Обращения доступны'
     require(admin.count(start)==desired.count(start)==admin.count(end)==desired.count(end)==1,'Не подтверждён контроль сервиса')

@@ -22,11 +22,17 @@ python3 "$work/incoming/deploy/stage-reliability.py" "$PWD/app" "$work/incoming/
 mkdir -p "$work/tests/app"
 cp "$work/incoming/app/"* "$work/tests/app/"
 cp "$work/staged/"* "$work/tests/app/"
+test_log=$(mktemp "${ZETSLAY_BACKUP_DIR:-/root}/zetslay-reliability-ui-tests.XXXXXX.tap")
+echo "Полный лог проверки кабинета: $test_log"
 if command -v node >/dev/null 2>&1; then
  for file in app.js kosell-rent.js overview.js admin-panel.js; do node --check "$work/tests/app/$file"; done
- node --test "$work/tests/app/"*.test.mjs
+ if ! node --test --test-reporter=tap "$work/tests/app/"*.test.mjs 2>&1 | tee "$test_log"; then
+  echo "Проверка кабинета не прошла. Файлы сайта не изменены. Причина: $test_log"; exit 1
+ fi
 else
- docker run --rm --network none -v "$work/tests:/work:ro" -w /work node:22-alpine sh -c 'set -eu; for file in app.js kosell-rent.js overview.js admin-panel.js; do node --check "app/$file"; done; node --test app/*.test.mjs'
+ if ! docker run --rm --network none -v "$work/tests:/work:ro" -w /work node:22-alpine sh -c 'set -eu; for file in app.js kosell-rent.js overview.js admin-panel.js; do node --check "app/$file"; done; node --test --test-reporter=tap app/*.test.mjs' 2>&1 | tee "$test_log"; then
+  echo "Проверка кабинета не прошла. Файлы сайта не изменены. Причина: $test_log"; exit 1
+ fi
 fi
 backup=$(mktemp "${ZETSLAY_BACKUP_DIR:-/root}/zetslay-before-reliability-ui.XXXXXX.tar.gz")
 tar -czf "$backup" app/app.js app/kosell-rent.js app/overview.js app/admin-panel.js app/index.html
