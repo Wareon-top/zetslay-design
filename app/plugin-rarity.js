@@ -6,6 +6,7 @@ const PLUGIN_RARITIES = Object.freeze({
   legendary: Object.freeze({label:'Легендарный',symbol:'✧'})
 });
 const PLUGIN_RARITY_BY_ID = Object.freeze({
+  'zetslay.priority-orders':'common',
   'zetslay.confirm-reminder':'common',
   'zetslay.review-reminder':'common',
   'zetslay.lot-cloner':'advanced',

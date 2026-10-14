@@ -20,3 +20,4 @@ jobs:
       - run: node scripts/validate-project.mjs
       - run: python3 deploy/stage-messages-workspace.test.py
       - run: python3 deploy/stage-messages-ui.test.py
+      - run: python3 deploy/stage-priority-orders.test.py
