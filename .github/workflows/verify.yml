@@ -16,3 +16,5 @@ jobs:
           python-version: '3.12'
       - run: node --test --test-concurrency=2 --test-reporter=tap app/*.test.mjs *.test.mjs
       - run: python3 deploy/stage-reliability.test.py
+      - run: python3 deploy/stage-managed-proxy.test.py
+      - run: node scripts/validate-project.mjs
