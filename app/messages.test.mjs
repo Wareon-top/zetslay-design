@@ -295,11 +295,13 @@ test('refresh uses only the existing authenticated GET and both legacy render ho
   assert.equal(app.node('[data-messages-name]').textContent, 'Игрок a');
 });
 
-test('read-only composer has no write controls or fake AI and all new assets load before app', () => {
+test('composer is disabled until server access loads and explicit sending module follows app', () => {
   const html = readFileSync(new URL('./index.html', import.meta.url), 'utf8');
   const section = html.slice(html.indexOf('data-messages-workspace'), html.indexOf('data-view="lots"'));
   assert.match(section, /<textarea[^>]+disabled/);
-  assert.match(section, /aria-label="Отправка недоступна[^>]+disabled/);
+  assert.match(section, /data-messages-send disabled/);
+  assert.match(section, /data-messages-text[^>]+disabled/);
+  assert.ok(html.indexOf('src="messages-actions.js')>html.indexOf('src="app.js'));
   assert.doesNotMatch(section, /data-quick-reply|ai-compose|id="send-message"|data-toast|data-chat="/);
   assert.ok(html.indexOf('src="messages.js') < html.indexOf('src="app.js'));
   assert.equal((html.match(/src="messages\.js/g) || []).length, 1);

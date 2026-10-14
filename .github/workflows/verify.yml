@@ -18,3 +18,5 @@ jobs:
       - run: python3 deploy/stage-reliability.test.py
       - run: python3 deploy/stage-managed-proxy.test.py
       - run: node scripts/validate-project.mjs
+      - run: python3 deploy/stage-messages-workspace.test.py
+      - run: python3 deploy/stage-messages-ui.test.py

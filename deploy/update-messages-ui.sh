@@ -1,55 +1,39 @@
 #!/usr/bin/env bash
 set -euo pipefail
-site_dir=${ZETSLAY_SITE_DIR:-/opt/zetslay-site}
-backup_dir=${ZETSLAY_BACKUP_DIR:-/root}
-cd "$site_dir"
-git fetch origin codex/landing-light-dark-redesign
-revision=$(git rev-parse FETCH_HEAD)
+exec </dev/null
+cd "${ZETSLAY_SITE_DIR:-/opt/zetslay-site}"
+lock=.zetslay-messages-workspace-update.lock
+mkdir "$lock" || { echo 'Обновление сообщений уже выполняется.'; exit 1; }
 work=$(mktemp -d)
-lock="$site_dir/.zetslay-messages-update.lock"
-mkdir "$lock" || { echo 'Другое обновление сообщений уже запущено.'; rm -rf "$work"; exit 1; }
 trap 'rm -rf "$work"; rmdir "$lock"' EXIT
-mkdir -p "$work/incoming" "$work/app"
-for file in index.html app.js app.test.mjs messages.js messages.css messages.test.mjs; do
-  git show "$revision:app/$file" > "$work/incoming/$file"
+git fetch origin "${ZETSLAY_MESSAGES_DESIGN_REVISION:-codex/landing-light-dark-redesign}"
+revision=$(git rev-parse FETCH_HEAD)
+mkdir -p "$work/original" "$work/incoming" "$work/tests"
+cp -p app/index.html "$work/original/index.html"
+cp -p app/app.js "$work/original/app.js"
+for file in index.html messages.js messages.css messages-actions.js; do git show "$revision:app/$file" > "$work/incoming/$file"; done
+git show "$revision:deploy/stage-messages-workspace.py" > "$work/stage.py"
+python3 "$work/stage.py" "$work/original" "$work/incoming" "$work/out"
+for file in messages.js messages-actions.js; do cp "$work/out/$file" "$work/tests/$file"; done
+cp "$work/out/index.html" "$work/tests/index.html"
+cp "$work/original/app.js" "$work/tests/app.js"
+for file in messages.test.mjs messages-actions.test.mjs; do git show "$revision:app/$file" > "$work/tests/$file"; done
+if command -v node >/dev/null 2>&1; then
+ node --check "$work/tests/messages.js"
+ node --check "$work/tests/messages-actions.js"
+ node --test "$work/tests/messages.test.mjs" "$work/tests/messages-actions.test.mjs"
+else
+ docker run --rm --network none -v "$work/tests:/work:ro" -w /work node:22-alpine sh -c 'node --check messages.js && node --check messages-actions.js && node --test messages.test.mjs messages-actions.test.mjs'
+fi
+for file in index.html app.js; do cmp -s "app/$file" "$work/original/$file" || { echo 'Кабинет изменился во время проверки. Обновление остановлено.'; exit 1; }; done
+backup=$(mktemp -d "${ZETSLAY_BACKUP_DIR:-/root}/zetslay-before-messages-workspace-ui.XXXXXX")
+chmod 700 "$backup"
+for file in index.html messages.js messages.css messages-actions.js; do
+ if [ -f "app/$file" ]; then cp -p "app/$file" "$backup/$file"; else touch "$backup/$file.absent"; fi
 done
-git show "$revision:deploy/stage-messages-ui.py" > "$work/stage.py"
-python3 "$work/stage.py" "$site_dir/app" "$work/incoming" "$work/app"
-
-# Validate the actual staged VPS code before changing any served file.
-docker run --rm -v "$work/app:/work:ro" -w /work node:22-alpine node --check app.js </dev/null
-docker run --rm -v "$work/app:/work:ro" -w /work node:22-alpine node --check messages.js </dev/null
-tests=(messages.test.mjs)
-for module in overview orders plugin-page plugin-cover; do
-  if [ -f "$work/app/$module.js" ] && [ -f "$work/app/$module.test.mjs" ]; then tests+=("$module.test.mjs"); fi
+restore(){ for file in index.html messages.js messages.css messages-actions.js; do if [ -f "$backup/$file.absent" ]; then rm -f "app/$file"; else cp -p "$backup/$file" "app/$file"; fi; done; }
+for file in messages.js messages.css messages-actions.js index.html; do
+ if ! cp "$work/out/$file" "app/$file"; then restore; echo "Файлы восстановлены. Backup: $backup"; exit 1; fi
 done
-docker run --rm -v "$work/app:/work:ro" -w /work node:22-alpine node --test "${tests[@]}" </dev/null
-docker run --rm -v "$work/app:/work:ro" -w /work node:22-alpine node --test \
-  --test-name-pattern='existing session|expired session|demo activation' cabinet-regression.test.mjs </dev/null
-
-files=(app/messages.js app/messages.css app/messages.test.mjs app/app.js app/index.html)
-existing=()
-created=()
-for file in "${files[@]}"; do
-  if [ -e "$file" ]; then existing+=("$file"); else created+=("$file"); fi
-done
-backup=$(mktemp "$backup_dir/zetslay-site-before-messages.XXXXXX.tar.gz")
-tar -czf "$backup" "${existing[@]}"
-rollback() {
-  tar -xzf "$backup"
-  for file in "${created[@]}"; do rm -f -- "$file"; done
-  echo "Обновление отменено. Резервная копия: $backup"
-}
-for file in "${files[@]}"; do
-  if ! candidate=$(mktemp "$(dirname "$file")/.zetslay-messages.XXXXXX"); then
-    rollback
-    exit 1
-  fi
-  if ! cp "$work/${file}" "$candidate" || ! chmod 644 "$candidate" || ! mv -f "$candidate" "$file"; then
-    rm -f "$candidate"
-    rollback
-    exit 1
-  fi
-done
-echo "Сообщения обновлены из $revision. Резервная копия: $backup"
-echo 'Откройте кабинет с Ctrl+F5. Перезапуск Docker Compose не требуется.'
+echo "Раздел Сообщения обновлён. Backup: $backup"
+echo 'Нажмите Ctrl+F5. Отправка требует активного тарифа и проверенного магазина. Неопределённые сообщения автоматически не повторяются.'

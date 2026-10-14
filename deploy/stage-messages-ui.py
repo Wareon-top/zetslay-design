@@ -7,6 +7,7 @@ import sys
 GUARD = "  if (typeof renderMessagesWorkspace === 'function' && renderMessagesWorkspace()) return;\n"
 SYNC_HEADER = 'async function syncStoreContent({ silent = false } = {}) {'
 READ_HEADER = 'async function readStoreContent({ silent = false } = {}) {'
+MODERN_READ_HEADER = 'async function readStoreContent({ silent = false, signal } = {}) {'
 SYNC_WRAPPER = """// Share one read request between cabinet views within the same account session.
 let storeContentSyncFlight = null;
 function syncStoreContent(options = {}) {
@@ -47,12 +48,11 @@ def stage(local: Path, incoming: Path, output: Path):
         if not source[start:].startswith(GUARD):
             require(source[start:].startswith(legacy), f'Неизвестное начало {name}')
             source = source[:start] + GUARD + source[start:]
-    require(new_source.count(SYNC_WRAPPER + '\n\n' + READ_HEADER) == 1, 'Неизвестная обёртка запроса в GitHub')
     if source.count(SYNC_HEADER) == 1:
         require('storeContentSyncFlight' not in source and READ_HEADER not in source, 'Неизвестная локальная обёртка запроса')
         source = source.replace(SYNC_HEADER, SYNC_WRAPPER + '\n\n' + READ_HEADER, 1)
     else:
-        require(source.count(SYNC_WRAPPER + '\n\n' + READ_HEADER) == 1 and source.count(READ_HEADER) == 1, 'Неизвестная версия совместного запроса')
+        require(source.count(READ_HEADER)+source.count(MODERN_READ_HEADER) == 1 and source.count('function syncStoreContent(') == 1, 'Неизвестная версия совместного запроса')
     start, end = region(html)
     new_start, new_end = region(new_html)
     require('data-messages-workspace' in new_html[new_start:new_end], 'В GitHub нет нового раздела')
@@ -62,15 +62,16 @@ def stage(local: Path, incoming: Path, output: Path):
         require(len(re.findall(fr'<{kind}[^>]+{attr}="{re.escape(name)}', html)) <= 1, f'Дублируется {name}')
     html = re.sub(r'^[ \t]*<script src="messages\.js(?:\?v=[A-Za-z0-9_-]+)?" defer></script>\n?', '', html, flags=re.M)
     html = re.sub(r'^[ \t]*<link rel="stylesheet" href="messages\.css(?:\?v=[A-Za-z0-9_-]+)?">\n?', '', html, flags=re.M)
-    version = '20261003-message-sync'
-    html, scripts = re.subn(r'^([ \t]*)<script src="app\.js(?:\?v=[A-Za-z0-9_-]+)?" defer></script>', lambda m: f'{m[1]}<script src="messages.js?v={version}" defer></script>\n{m[1]}<script src="app.js?v={version}" defer></script>', html, flags=re.M)
+    html = re.sub(r'^[ \t]*<script src="messages-actions\.js(?:\?v=[A-Za-z0-9_-]+)?" defer></script>\n?', '', html, flags=re.M)
+    version = '20261014-messages-workspace'
+    html, scripts = re.subn(r'^([ \t]*)<script src="app\.js(?:\?v=[A-Za-z0-9_-]+)?" defer></script>', lambda m: f'{m[1]}<script src="messages.js?v={version}" defer></script>\n{m[1]}<script src="app.js?v={version}" defer></script>\n{m[1]}<script src="messages-actions.js?v={version}" defer></script>', html, flags=re.M)
     html, styles = re.subn(r'^([ \t]*)</head>', lambda m: f'{m[1]}  <link rel="stylesheet" href="messages.css?v={version}">\n{m[0]}', html, flags=re.M)
     require(scripts == styles == 1, 'Не найдены подключения JS и CSS')
     require(html.index('src="messages.js') < html.index('src="app.js'), 'Неизвестный порядок загрузки скриптов')
     output.mkdir(parents=True, exist_ok=True)
     (output / 'app.js').write_text(source)
     (output / 'index.html').write_text(html)
-    for file in ['messages.js', 'messages.css', 'messages.test.mjs']:
+    for file in ['messages.js', 'messages.css', 'messages.test.mjs', 'messages-actions.js', 'messages-actions.test.mjs']:
         (output / file).write_bytes((incoming / file).read_bytes())
     (output / 'cabinet-regression.test.mjs').write_bytes((incoming / 'app.test.mjs').read_bytes())
     for module in ['overview', 'orders', 'plugin-page', 'plugin-cover']:

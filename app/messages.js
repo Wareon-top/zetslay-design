@@ -1,5 +1,5 @@
-/* A read-only inbox over the existing FunPay content snapshot. */
-const messagesPageState = { generation: null, snapshot: null, selectedId: null, query: '', actor: 'all', mobileOpen: false, findOpen: false, findQuery: '', matchIndex: 0, busy: false, request: null, error: '', bodyKey: null, detailId: null };
+/* Inbox view over verified FunPay messages; sending lives in messages-actions.js. */
+const messagesPageState = { generation: null, snapshot: null, selectedId: null, query: '', actor: 'all', mobileOpen: false, findOpen: false, findQuery: '', matchIndex: 0, busy: false, request: null, error: '', bodyKey: null, detailId: null, renderedThreadId: null };
 const messagesPolling = { timer: null, observer: null, lastAttempt: 0, failures: 0 };
 const messagesEscape = value => String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
 const messagesIcon = name => `<svg aria-hidden="true"><use href="#i-${name}"/></svg>`;
@@ -13,11 +13,12 @@ function messageDate(value) {
 function messagesContent() {
   const content = state.storeContent;
   const merged = new Map();
-  for (const raw of [...(messagesPageState.history || []), ...(content?.messages || [])]) {
+  for (const raw of [...(messagesPageState.history || []), ...(content?.messages || []), ...(messagesPageState.liveMessages || [])]) {
     if (raw && typeof raw.threadId === 'string' && typeof raw.id === 'string') merged.set(JSON.stringify([raw.threadId, raw.id]), raw);
   }
-  return { ...content, observedAt: content?.observedAt || messagesPageState.archiveObservedAt || null,
-    messages: messagesPageState.history?.length ? [...merged.values()] : content?.messages || [] };
+  const clocks=[content?.observedAt,messagesPageState.archiveObservedAt].filter(value=>messageDate(value)!=null).sort((a,b)=>messageDate(b)-messageDate(a));
+  return { ...content, observedAt: clocks[0] || null,
+    messages: messagesPageState.history?.length || messagesPageState.liveMessages?.length ? [...merged.values()] : content?.messages || [] };
 }
 
 function stopMessagesPolling() {
@@ -64,12 +65,14 @@ function buildMessagesWorkspace(content, filters = {}) {
     groups.set(id, group);
   });
   const threads = [...groups.values()].map(group => {
-    if (group.messages.every(message => message.date != null)) group.messages.sort((a, b) => a.date - b.date);
-    else if (group.messages.every(message => /^\d{1,20}$/.test(message.id))) group.messages.sort((a, b) => BigInt(a.id) < BigInt(b.id) ? -1 : BigInt(a.id) > BigInt(b.id) ? 1 : 0);
+    if (group.messages.every(message => /^[1-9]\d{0,19}$/.test(message.id))) group.messages.sort((a, b) => BigInt(a.id) < BigInt(b.id) ? -1 : BigInt(a.id) > BigInt(b.id) ? 1 : 0);
+    else if (group.messages.every(message => message.date != null)) group.messages.sort((a, b) => a.date - b.date);
     const last = group.messages.at(-1);
-    return { ...group, preview: last.text || 'Текст сообщения не передан', lastSender: last.sender, date: last.date, sourceDateLabel: last.sourceDateLabel };
+    const human = group.messages.findLast(message => ['buyer','seller'].includes(message.sender));
+    return { ...group, preview: last.text || 'Текст сообщения не передан', lastSender: human?.sender || last.sender, date: last.date, sourceDateLabel: last.sourceDateLabel };
   });
   if (threads.every(thread => /^\d{1,20}$/.test(thread.messages.at(-1).id))) threads.sort((a, b) => BigInt(a.messages.at(-1).id) > BigInt(b.messages.at(-1).id) ? -1 : BigInt(a.messages.at(-1).id) < BigInt(b.messages.at(-1).id) ? 1 : 0);
+  if(threads.length&&threads.every(thread=>thread.date!=null)&&!threads.every(thread=>/^[1-9]\d{0,19}$/.test(thread.messages.at(-1).id)))threads.sort((a,b)=>b.date-a.date);
   const query = String(filters.query || '').trim().toLocaleLowerCase('ru-RU');
   const actor = ['all', 'buyer', 'seller'].includes(filters.actor) ? filters.actor : 'all';
   const searched = threads.filter(thread => !query || [thread.id, thread.name, ...thread.messages.map(message => message.text)].some(value => value.toLocaleLowerCase('ru-RU').includes(query)));
@@ -109,7 +112,7 @@ function messagesTranscript(thread, query = '', activeIndex = -1) {
     const label = message.sender === 'seller' ? 'Магазин' : message.sender === 'buyer' ? thread.name : message.sender === 'system' ? 'Системное сообщение' : 'Отправитель не указан';
     const avatar = message.sender === 'seller' ? '<span class="messages-page-avatar messages-page-avatar--seller messages-page-avatar--small" aria-hidden="true">Z</span>' : messagesAvatar(thread.name, true);
     const timestamp = message.date == null ? message.sourceDateLabel ? `<span class="messages-page-source-date" title="Дата в исходном виде FunPay">${messagesEscape(message.sourceDateLabel)}</span>` : '' : `<time datetime="${new Date(message.date).toISOString()}">${messagesEscape(new Date(message.date).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }))}</time>`;
-    return `${divider}<article class="messages-page-message messages-page-message--${message.sender}">${['buyer', 'seller'].includes(message.sender) ? avatar : ''}<div class="messages-page-bubble"><div class="messages-page-message-meta"><strong>${messagesEscape(label)}</strong>${timestamp}</div><p>${text.html}</p>${message.textTruncated ? '<small>Показаны первые 10 000 символов сообщения.</small>' : ''}</div></article>`;
+    return `${divider}<article class="messages-page-message messages-page-message--${message.sender}" data-message-id="${messagesEscape(message.id || '')}">${['buyer', 'seller'].includes(message.sender) ? avatar : ''}<div class="messages-page-bubble"><div class="messages-page-message-meta"><strong>${messagesEscape(label)}</strong>${timestamp}</div><p>${text.html}</p>${message.textTruncated ? '<small>Показаны первые 10 000 символов сообщения.</small>' : ''}</div></article>`;
   }).join('');
   return { html, count };
 }
@@ -144,7 +147,7 @@ function renderMessagesWorkspace() {
     stopMessagesPolling();
     messagesPolling.lastAttempt = Date.now(); messagesPolling.failures = 0;
     Object.assign(messagesPageState, { generation: sessionGeneration, snapshot: null, selectedId: null, query: '', actor: 'all', mobileOpen: false, findOpen: false, findQuery: '', matchIndex: 0, busy: false, request: null, error: '', bodyKey: null });
-    Object.assign(messagesPageState, { storeId: selectedStore()?.id, history: [], archiveObservedAt: null, archive: null, olderLoaded: false });
+    Object.assign(messagesPageState, { storeId: selectedStore()?.id, history: [], liveMessages: [], renderedThreadId: null, archiveObservedAt: null, archive: null, olderLoaded: false });
     closeMessagesInfo();
   }
   const snapshotChanged = messagesPageState.snapshot !== state.storeContent;
@@ -156,8 +159,8 @@ function renderMessagesWorkspace() {
   const model = buildMessagesWorkspace(messagesContent(), messagesPageState);
   const previousId = messagesPageState.selectedId;
   if (!model.threads.some(thread => thread.id === previousId)) messagesPageState.selectedId = model.filtered[0]?.id || null;
-  const threadChanged = previousId !== messagesPageState.selectedId;
-  if (threadChanged) { messagesPageState.findQuery = ''; messagesPageState.matchIndex = 0; messagesPageState.mobileOpen = false; closeMessagesInfo(); }
+  const threadChanged = previousId !== messagesPageState.selectedId || messagesPageState.renderedThreadId !== messagesPageState.selectedId;
+  if (threadChanged) { messagesPageState.findQuery = ''; messagesPageState.matchIndex = 0; if(previousId!==messagesPageState.selectedId)messagesPageState.mobileOpen = false; closeMessagesInfo(); }
   const thread = model.threads.find(item => item.id === messagesPageState.selectedId);
   const connected = selectedStore()?.status === 'connected_read_only';
   const node = name => root.querySelector(`[data-messages-${name}]`);
@@ -167,7 +170,7 @@ function renderMessagesWorkspace() {
   setText('total', model.loaded ? String(model.threads.length) : '—');
   setText('count', model.loaded ? String(model.totalMessages) : '—');
   setText('updated', model.loaded ? new Date(model.observedAt).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) : 'Ещё не загружен');
-  setText('source', connected ? 'FunPay · только просмотр' : 'Магазин не подключён');
+  setText('source', connected ? 'FunPay' : 'Магазин не подключён');
   setText('auto', connected ? 'Автообновление каждые 30 с · пока раздел открыт' : 'Автообновление приостановлено');
   const archive = node('archive');
   if (archive) {
@@ -202,14 +205,17 @@ function renderMessagesWorkspace() {
   setText('matches', messagesPageState.findQuery.trim() ? firstTranscript.count ? `${messagesPageState.matchIndex + 1} / ${firstTranscript.count}` : 'Нет совпадений' : 'Поиск в снимке');
   root.querySelectorAll('[data-messages-match]').forEach(button => { button.disabled = !firstTranscript.count; });
   const body = node('body');
-  const key = JSON.stringify([messagesPageState.generation, thread?.id, messagesPageState.findQuery, messagesPageState.matchIndex]);
+  const key = JSON.stringify([messagesPageState.generation, thread?.id, messagesPageState.findQuery, messagesPageState.matchIndex,thread?.messages.map(m=>[m.id,m.text,m.sender,m.date,m.sourceDateLabel])]);
   if (body && (snapshotChanged || messagesPageState.bodyKey !== key)) {
     const nearBottom = body.scrollHeight - body.scrollTop - body.clientHeight < 80;
     const scrollTop = body.scrollTop;
+    const anchor=Array.from(body.querySelectorAll('[data-message-id]')).find(n=>n.offsetTop+n.offsetHeight>=scrollTop);
+    const anchorOffset=anchor?anchor.offsetTop-scrollTop:0;
     body.innerHTML = thread ? messagesTranscript(thread, messagesPageState.findQuery, messagesPageState.matchIndex).html : messagesEmpty('Выберите диалог', 'Здесь появится переписка вашего магазина.');
     if (messagesPageState.findQuery.trim() && firstTranscript.count) body.querySelector(`[data-message-match="${messagesPageState.matchIndex}"]`)?.scrollIntoView({ block: 'center' });
-    else body.scrollTop = threadChanged || messagesPageState.bodyKey == null || nearBottom ? body.scrollHeight : scrollTop;
-    messagesPageState.bodyKey = key;
+    else if(threadChanged || messagesPageState.bodyKey == null || nearBottom)body.scrollTop=body.scrollHeight;
+    else {const target=anchor?Array.from(body.querySelectorAll('[data-message-id]')).find(n=>n.dataset.messageId===anchor.dataset.messageId):null;body.scrollTop=target?target.offsetTop-anchorOffset:scrollTop;}
+    messagesPageState.bodyKey = key; messagesPageState.renderedThreadId=thread?.id||null;
   }
   setText('date-note', thread && thread.messages.some(message => message.date == null && !message.sourceDateLabel) ? 'FunPay не передал дату части сообщений. Они упорядочены по ID источника, если он доступен.' : thread?.messages.some(message => message.sourceDateLabel && message.date == null) ? 'Даты показаны как на FunPay. Год и часовой пояс не добавляются.' : 'Показана загруженная переписка.');
   renderMessagesInfo(model);

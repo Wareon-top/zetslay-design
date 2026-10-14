@@ -64,7 +64,7 @@ class MessagesStageTests(unittest.TestCase):
         self.assertEqual(html.count('href="messages.css'), 1)
 
     def test_unknown_hooks_or_shared_read_fail_without_output(self):
-        for candidate in [self.source.replace("  const target = byId('conversation-items');", '  customizedInbox();'), self.source.replace(module.SYNC_HEADER, 'async function privateSync() {')]:
+        for candidate in [self.source.replace("  const target = byId('conversation-items');", '  customizedInbox();'), self.source.replace(module.MODERN_READ_HEADER, 'async function privateSync() {')]:
             (self.local / 'app.js').write_text(candidate)
             with self.assertRaises(ValueError):
                 self.stage()
