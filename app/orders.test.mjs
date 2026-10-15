@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import vm from 'node:vm';
 
-const scripts = ['overview.js', 'orders.js', 'app.js'].map(name => readFileSync(new URL(`./${name}`, import.meta.url), 'utf8').replace(/\ninit\(\);\s*$/, '')).join('\n');
+const scripts = ['overview.js', 'orders.js', 'app.js'].map(name => readFileSync(new URL(`./${name}`, import.meta.url), 'utf8').replace(/^init\(\);[ \t]*$/m, '')).join('\n');
 const at = '2026-10-03T12:00:00Z';
 const row = (id, status = 'completed', amount = 1000, currency = 'RUB', createdAt) => ({ id, status, totalMinor: amount, currency, createdAt, product: `Товар ${id}`, buyer: `buyer_${id}` });
 

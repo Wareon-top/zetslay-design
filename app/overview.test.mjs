@@ -4,7 +4,7 @@ import test from 'node:test';
 import vm from 'node:vm';
 
 const overview = readFileSync(new URL('./overview.js', import.meta.url), 'utf8');
-const cabinetSource = readFileSync(new URL('./app.js', import.meta.url), 'utf8').replace(/\ninit\(\);\s*$/, '');
+const cabinetSource = readFileSync(new URL('./app.js', import.meta.url), 'utf8').replace(/^init\(\);[ \t]*$/m, '');
 const at = '2026-10-03T12:00:00.000Z';
 const order = (id, amount, status = 'completed', currency = 'RUB', createdAt) => ({ id, totalMinor: amount, currency, status, createdAt });
 
