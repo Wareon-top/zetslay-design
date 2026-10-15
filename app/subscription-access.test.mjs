@@ -12,7 +12,7 @@ test('redeem failure never grants access; result after dialog removal or logout 
 test('admin form states days vs discount; no payment/topup endpoint is sent',()=>{assert.match(source,/\/api\/v1\/admin\/users\/\$\{form.dataset.userId\}\/plan/);assert.match(source,/body.confirm=body.confirm==='on'/);assert.match(source,/body.requestId=form.dataset.requestId/);assert.doesNotMatch(source,/apiRequest\(['"]\/api\/v1\/.*(?:payment|topup|checkout)/);});
 test('each locked view has its own layout and preview never exposes saved business data or fake figures',()=>{
  const f=harness();f.signin();f.state.orders=[{id:'PRIVATE-ORDER',total:987654}];f.state.messages=[{text:'PRIVATE-CONVERSATION'}];
- const expected={dashboard:'Динамика продаж',orders:'Заказ / товар',messages:'Переписка с покупателем',lots:'Все категории'};
+ const expected={finance:'Доход и прибыль',dashboard:'Динамика продаж',orders:'Заказ / товар',messages:'Переписка с покупателем',lots:'Все категории'};
  for(const [view,label] of Object.entries(expected)){const root=new f.Node();f.nodes.set(`[data-view="${view}"]`,root);f.run('subscriptionApply()');const markup=root.children[0].innerHTML;assert.match(markup,new RegExp(label));assert.match(markup,/Предпросмотр/);assert.match(markup,/aria-hidden="true"/);assert.doesNotMatch(markup,/PRIVATE-|987654|<input|<select|data-overview-period|data-orders-refresh/);assert.equal(root.getAttribute('aria-labelledby'),`access-${view}-title`);}
  assert.equal(f.calls.length,0);
 });
