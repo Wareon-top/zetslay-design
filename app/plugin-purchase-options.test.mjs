@@ -32,7 +32,7 @@ test('each rarity chooses the cheapest eligible monthly tariff from the actual c
     const model=JSON.parse(h.run('JSON.stringify(pluginPurchaseModel({id,priceRub:490}))'));
     assert.equal(model.plan.id,plan);assert.equal(model.plan.price,amount/100+' ₽');
     const markup=h.run('pluginPurchaseOptionsMarkup({id,priceRub:490})');
-    assert.match(markup,/Бессрочный доступ/);assert.match(markup,/один раз/);assert.match(markup,/за 1 месяц/);
+    assert.match(markup,/бессрочную лицензию/);assert.match(markup,/Для работы нужна активная подписка ZetSlay/);assert.match(markup,/один раз/);assert.match(markup,/за 1 месяц/);
   }
 });
 test('subscription states same rarity and lower levels, never promises higher ones',()=>{
@@ -48,7 +48,7 @@ test('lifetime pricing is numeric and independent of stale text and install stat
   h.run('input.priceRub=null; input.price="999 ₽"; renderPluginPage()');assert.match(h.page.innerHTML,/Цена уточняется/);
 });
 test('zero price is free access without invented purchases; unavailable modules cannot be purchased',()=>{
-  const h=harness({priceRub:0});assert.match(h.page.innerHTML,/Бесплатный доступ/);assert.doesNotMatch(h.page.innerHTML,/Купить навсегда/);
+  const h=harness({priceRub:0});assert.match(h.page.innerHTML,/Лицензия на этот плагин — без отдельной оплаты/);assert.doesNotMatch(h.page.innerHTML,/Купить навсегда/);
   h.run('input.planned=true; renderPluginPage()');assert.match(h.page.innerHTML,/Плагин не найден/);
   const pending=h.run('pluginPurchaseOptionsMarkup(input)');assert.match(pending,/Пока недоступен/);assert.doesNotMatch(pending,/data-plugin-subscription=/);
 });

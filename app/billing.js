@@ -54,7 +54,7 @@ function renderBilling() {
   set('[data-billing-store-status]', model.connected ? 'Подключён' : 'Подключение не подтверждено');
   root.querySelector('[data-billing-store-status]')?.classList.toggle('is-connected', model.connected);
   set('[data-billing-plan-name]', model.planName);
-  set('[data-billing-plan-status]', model.planActive ? 'Доступ активен' : 'Выберите подходящий тариф ниже');
+  set('[data-billing-plan-status]', model.planActive ? 'Синхронизация и работа плагинов доступны' : 'Работа магазина и плагинов приостановлена. Выберите тариф ниже');
   set('[data-billing-updated]', model.observedAt ? `Снимок: ${new Date(model.observedAt).toLocaleString('ru-RU', { dateStyle:'medium', timeStyle:'short' })}` : 'Снимок баланса ещё не получен');
   set('[data-billing-balance-note]', model.balanceKnown ? model.approximate ? 'Сумма в шапке FunPay может быть округлена' : 'По последнему снимку магазина' : 'Обновите данные подключённого магазина');
   set('[data-billing-available]', model.available || '—');
@@ -115,7 +115,7 @@ function openBillingDialog(kind, opener) {
     const quote = typeof ZetSlayPricing === 'object' ? ZetSlayPricing.quote(kind, period) : null;
     if (quote) {
       title = `Тариф «${quote.name}»`;
-      detail = `<div class="billing-dialog-quote"><strong>${billingEscape(ZetSlayPricing.rubles(quote.totalKopecks))}<small> за ${quote.months === 1 ? '1 месяц' : quote.months === 3 ? '3 месяца' : '12 месяцев'}</small></strong><p>${billingEscape(ZetSlayPricing.rubles(quote.monthlyKopecks))} в месяц${quote.discount ? ` · скидка ${quote.discount}%` : ''}. Весь период оплачивается целиком.</p></div><div class="billing-dialog-info"><strong>Включено в подписку</strong><ul>${quote.features.map(feature => `<li>${billingEscape(feature)}</li>`).join('')}</ul><p>Один магазин FunPay. Прокси, товары и баланс внешних сервисов оплачиваются отдельно. Срок доступа отсчитывается с активации. Регулярные списания не подключены.</p><p><a href="../legal/offer.html">Условия использования</a> · <a href="../legal/refunds.html">Оплата и возвраты</a></p></div>`;
+      detail = `<div class="billing-dialog-quote"><strong>${billingEscape(ZetSlayPricing.rubles(quote.totalKopecks))}<small> за ${quote.months === 1 ? '1 месяц' : quote.months === 3 ? '3 месяца' : '12 месяцев'}</small></strong><p>${billingEscape(ZetSlayPricing.rubles(quote.monthlyKopecks))} в месяц${quote.discount ? ` · скидка ${quote.discount}%` : ''}. Весь период оплачивается целиком.</p></div><div class="billing-dialog-info"><strong>Включено в подписку</strong><ul>${quote.features.map(feature => `<li>${billingEscape(feature)}</li>`).join('')}</ul><p>Активный тариф нужен для подключения, синхронизации магазина и работы любых плагинов, включая купленные навсегда. Бессрочная лицензия сохраняется после окончания подписки. Один магазин FunPay. Прокси, товары и баланс внешних сервисов оплачиваются отдельно. Срок доступа отсчитывается с активации. Регулярные списания не подключены.</p><p><a href="../legal/offer.html">Условия использования</a> · <a href="../legal/refunds.html">Оплата и возвраты</a></p></div>`;
     }
   }
   closeBillingDialog();

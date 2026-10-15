@@ -62,7 +62,7 @@ let sessionGeneration = 0;
 const errorMessages = {
   API_URL_MISSING: 'Backend ZetSlay ещё не подключён к опубликованному кабинету.',
   INVALID_SESSION: 'Сессия истекла. Войдите в аккаунт ещё раз.',
-  PLAN_REQUIRED: 'Для этого действия нужен активный тариф.',
+  PLAN_REQUIRED: 'Нужен активный тариф или пробный период, даже для плагинов, купленных навсегда.',
   INVALID_STATE: 'Действие недоступно в текущем состоянии магазина.',
   AUTH_REJECTED: 'Golden Key отклонён или устарел. Получите новый ключ и повторите подключение.',
   PROXY_UNAVAILABLE: 'Не удалось выполнить запрос через прокси. Нажмите «Диагностика прокси».',
@@ -1557,7 +1557,7 @@ function renderConnectionWizard() {
     `<span class="connect-illustration">${icon('shield')}<i></i></span><h3>Обязательный прокси</h3><p>${onboarding?.funPay?.proxyConfigured && connectionStep < initialStep ? 'Прокси уже закреплён за магазином. Значение повторно не показывается.' : `Этот прокси будет использовать только worker <strong>${escapeHtml(worker)}</strong> для стабильного подключения.`}</p>${onboarding?.funPay?.proxyConfigured && connectionStep < initialStep ? '' : '<div class="connection-form"><label>Proxy URL<input type="password" name="proxyUrl" maxlength="2048" autocomplete="off" spellcheck="false" placeholder="host:port:login:password"></label><small>Формат: host:port:login:password или login:password@host:port — используется HTTP. Для выбора протокола укажите полный URL http://, https:// или socks5://. Адрес и пароль не появятся в ответе API.</small></div>'}`,
     `<span class="connect-illustration connect-illustration--success">${icon('check')}<i></i></span><h3>Read-only проверка</h3><p>ZetSlay проверит аккаунт, чтение заказов и чатов через закреплённый прокси. Лоты и баланс сейчас недоступны; данные на FunPay не изменяются.</p><div class="connection-checks">${checks.map((line) => `<span>${line.split(' <b>')[0]} <b>${line.split(' <b>')[1]}</b></span>`).join('')}<span>Live-действия <b>Отключены</b></span></div>`
   ];
-  if (body) body.innerHTML = pages[connectionStep] || pages.at(-1);
+  if (body) body.innerHTML = (pages[connectionStep] || pages.at(-1)) + '<p class="connect-helper" data-connection-subscription-note>Для подключения, синхронизации и работы плагинов нужен активный тариф или пробный период. Бессрочная покупка плагина не заменяет подписку.</p>';
   if (body) {
     const edits = [];
     if (onboarding?.funPay?.proxyConfigured && connectionStep >= 3) edits.push('<button type="button" data-connect-edit="proxy">Изменить прокси</button>');

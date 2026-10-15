@@ -21,17 +21,18 @@ function pluginPurchaseOptionsMarkup(plugin) {
   const plan = model.plan;
   return `<div class="plugin-purchase-options" aria-label="Варианты доступа к плагину">
     <section class="plugin-purchase-option plugin-purchase-option--lifetime" aria-label="Разовая покупка">
-      <div class="plugin-purchase-option__heading"><span>Разовая покупка</span><strong>Без продления</strong></div>
+      <div class="plugin-purchase-option__heading"><span>Разовая покупка</span><strong>Без продления лицензии</strong></div>
       <h2>Плагин навсегда</h2><div class="plugin-page-price">${safe(model.price)}${model.amount > 0 ? '<small>один раз</small>' : ''}</div>
-      <p>${model.amount === 0 ? 'Бесплатный доступ к этому плагину. Без ежемесячной платы за его лицензию.' : 'Бессрочный доступ к этому плагину после покупки. Без ежемесячной платы за его лицензию.'}</p>
+      <p>${model.amount === 0 ? 'Лицензия на этот плагин — без отдельной оплаты. Для его работы нужен активный доступ к сервису.' : 'Разовая покупка закрепляет бессрочную лицензию на этот плагин. Повторно оплачивать лицензию не нужно.'}</p>
+      <p class="plugin-purchase-option__requires-access"><strong>Для работы нужна активная подписка ZetSlay.</strong> Это условие действует и для плагинов, купленных навсегда. Подойдёт также действующий пробный период с учётом доступных в нём редкостей.</p>
       ${model.amount === 0 && model.available ? '<p class="plugin-purchase-option__availability">Этот модуль можно установить бесплатно.</p>' : `<button class="button button--primary button--wide" type="button" disabled>${!model.available ? 'Пока недоступен' : 'Купить навсегда · скоро'}</button><p class="plugin-purchase-option__availability">${!model.available ? 'Покупка станет доступна после публикации модуля.' : 'Разовая покупка станет доступна после подключения оплаты.'}</p>`}
     </section>
-    <div class="plugin-purchase-options__divider"><span>или доступ по подписке</span></div>
+    <div class="plugin-purchase-options__divider"><span>или тариф с этим плагином</span></div>
     <section class="plugin-purchase-option plugin-purchase-option--subscription" aria-label="Подписка на месяц">
       <div class="plugin-purchase-option__heading"><span>Подписка на месяц</span><strong>Набор плагинов</strong></div>
-      ${plan ? `<h2>Тариф «${safe(plan.name)}»</h2><div class="plugin-page-price">${safe(plan.price)}<small>за 1 месяц</small></div><p>Этот плагин и все опубликованные собственные плагины ZetSlay включённых редкостей: ${safe(plan.levels)}.</p><p class="plugin-purchase-option__term">Доступ на оплаченный месяц. Автоматических списаний нет.</p>${model.available ? `<a class="button button--ghost button--wide" href="#billing" data-plugin-subscription="${safe(plan.id)}" data-plugin-subscription-id="${safe(plugin.id)}">Посмотреть условия тарифа</a>` : '<button class="button button--ghost button--wide" type="button" disabled>Модуль пока недоступен</button>'}` : '<h2>Сравнить тарифы</h2><p>Условия подписки сейчас не загружены. Откройте раздел «Финансы», чтобы посмотреть актуальный состав и стоимость.</p><a class="button button--ghost button--wide" href="#billing">Перейти к тарифам</a>'}
+      ${plan ? `<h2>Тариф «${safe(plan.name)}»</h2><div class="plugin-page-price">${safe(plan.price)}<small>за 1 месяц</small></div><p>Этот плагин и все опубликованные собственные плагины ZetSlay включённых редкостей: ${safe(plan.levels)}.</p><p class="plugin-purchase-option__term">Сервис и включённые плагины доступны на оплаченный месяц. Автоматических списаний нет.</p>${model.available ? `<a class="button button--ghost button--wide" href="#billing" data-plugin-subscription="${safe(plan.id)}" data-plugin-subscription-id="${safe(plugin.id)}">Посмотреть условия тарифа</a>` : '<button class="button button--ghost button--wide" type="button" disabled>Модуль пока недоступен</button>'}` : '<h2>Сравнить тарифы</h2><p>Условия подписки сейчас не загружены. Откройте раздел «Финансы», чтобы посмотреть актуальный состав и стоимость.</p><a class="button button--ghost button--wide" href="#billing">Перейти к тарифам</a>'}
     </section>
-    <p class="plugin-purchase-options__note">Прокси, покупки у поставщиков и комиссии внешних площадок оплачиваются отдельно.</p>
+    <p class="plugin-purchase-options__note">Без активного тарифа или пробного периода синхронизация магазина и работа плагинов приостанавливаются. Бессрочная лицензия сохраняется. Прокси, покупки у поставщиков и комиссии площадок оплачиваются отдельно.</p>
   </div>`;
 }
 

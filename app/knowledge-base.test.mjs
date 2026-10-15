@@ -75,7 +75,7 @@ test('article actions target existing cabinet routes and plugin IDs; all icons r
   if(article.action==='support')assert.match(markup,/https:\/\/t.me\/zetslaysupport/);
  }
  for(const name of ['shield','bag','puzzle','bolt','user','help','search','chevron','external'])assert.ok(html.includes(`id="i-${name}"`));
- assert.match(html,/data-knowledge-base/);assert.match(html,/for="kb-search"/);assert.match(html,/knowledge-base.js\?v=20261010-knowledge-base/);
+ assert.match(html,/data-knowledge-base/);assert.match(html,/for="kb-search"/);assert.match(html,/knowledge-base.js\?v=20261015-service-access/);
 });
 test('table of contents respects reduced motion and initialization tolerates missing mount',()=>{
  const app=harness();app.run("kbOpen('proxy')");app.click('[data-kb-section]',{kbSection:'1'});
