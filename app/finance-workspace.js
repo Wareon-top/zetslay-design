@@ -10,7 +10,7 @@ function resetFinanceWorkspace(scope=''){
 function financeChart(model){
  if(!model.loaded)return '<p>Загрузите отчёт, чтобы увидеть динамику.</p>';
  if(!model.series.length)return '<p>Для графика нет заказов с точной датой в выбранном периоде.</p>';
- const series=model.series,W=840,H=230,left=70,right=18,top=14,bottom=35,points=series.flatMap(r=>[r.income,r.profit]).filter(financeSigned),low=Math.min(0,...points),rawHigh=Math.max(0,...points),high=rawHigh===0&&low===0?100:rawHigh,span=high-low||1,plotW=W-left-right,plotH=H-top-bottom,y=n=>top+(high-n)/span*plotH,slot=plotW/series.length,x=i=>left+slot*(i+.5),zero=y(0);
+ const series=model.series,W=Math.max(300,Math.min(1200,document.querySelector('[data-finance-chart]')?.clientWidth||840)),H=230,left=70,right=18,top=14,bottom=35,points=series.flatMap(r=>[r.income,r.profit]).filter(financeSigned),low=Math.min(0,...points),rawHigh=Math.max(0,...points),high=rawHigh===0&&low===0?100:rawHigh,span=high-low||1,plotW=W-left-right,plotH=H-top-bottom,y=n=>top+(high-n)/span*plotH,slot=plotW/series.length,x=i=>left+slot*(i+.5),zero=y(0);
  const compact=n=>new Intl.NumberFormat('ru-RU',{notation:'compact',maximumFractionDigits:1}).format(n/100);
  let html=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Доход и чистая прибыль в ${model.currency}. Пропуски означают неполные расходы."><title>Доход и прибыль · ${financeEscape(model.range.label)} · ${model.currency}</title>`;
  for(let i=0;i<4;i++){const value=high-span*i/3,py=y(value);html+=`<line class="fin-grid" x1="${left}" x2="${W-right}" y1="${py}" y2="${py}"/><text x="${left-9}" y="${py+3}" text-anchor="end">${financeEscape(compact(value))}</text>`;}
@@ -105,3 +105,5 @@ if(document.querySelector('[data-finance-workspace]')){
  const previousAccess=subscriptionApply;subscriptionApply=function(...args){const result=previousAccess.apply(this,args);renderFinanceWorkspace();if(!document.querySelector('[data-finance-workspace]').hidden)void loadFinanceWorkspace();return result;};
  renderFinanceWorkspace();if(!document.querySelector('[data-finance-workspace]').hidden)void loadFinanceWorkspace();
 }
+
+window.addEventListener('resize',()=>{const root=document.querySelector('[data-finance-workspace]');if(root&&!root.hidden)renderFinanceWorkspace();});
