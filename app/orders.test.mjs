@@ -17,6 +17,7 @@ function workspace() {
     return nodes.get(name);
   };
   const filters = ['all', 'active', 'completed', 'refunded'].map(value => { const n = node(`filter-${value}`); n.dataset.ordersFilter = value; return n; });
+  const periods = ['all','today','yesterday','last7','last30','week','month','custom','undated'].map(value=>{const n=node('period-'+value);n.dataset.ordersPeriod=value;return n;});
   const counts = filters.map(button => { const n = node(`count-${button.dataset.ordersFilter}`); n.dataset.ordersFilterCount = button.dataset.ordersFilter; return n; });
   const pages = ['prev', 'next'].map(value => { const n = node(`page-${value}`); n.dataset.ordersPage = value; return n; });
   const options = ['source', 'newest', 'oldest', 'amount-asc', 'amount-desc'].map(value => ({ value, disabled: false }));
@@ -24,7 +25,7 @@ function workspace() {
   const root = {
     setAttribute() {}, querySelector: node,
     querySelectorAll(selector) {
-      return { '[data-orders-filter]': filters, '[data-orders-filter-count]': counts, '[data-orders-page]': pages, '[data-orders-reset-filters]': [node('[data-orders-reset-filters]')] }[selector] || [];
+      return { '[data-orders-period]':periods, '[data-orders-filter]': filters, '[data-orders-filter-count]': counts, '[data-orders-page]': pages, '[data-orders-reset-filters]': [node('[data-orders-reset-filters]')] }[selector] || [];
     }
   };
   const closeListeners = [];
@@ -122,7 +123,7 @@ test('orders sorting refuses cross-currency price comparisons and places unknown
   const app = workspace();
   const rows = [row('rub-low', 'paid', 100, 'RUB'), row('usd', 'paid', 5000, 'USD'), row('missing', 'paid', null, 'RUB'), row('rub-high', 'paid', 900, 'RUB')];
   const mixed = app.model(rows, { sort: 'amount-desc' });
-  assert.equal(mixed.sort, 'source');
+  assert.equal(mixed.sort, 'newest');
   assert.equal(mixed.canSortAmount, false);
   assert.deepEqual(app.model(rows, { sort: 'amount-desc', currency: 'RUB' }).filtered.map(order => order.id), ['rub-high', 'rub-low', 'missing']);
   assert.deepEqual(app.model(rows, { sort: 'amount-asc', currency: 'RUB' }).filtered.map(order => order.id), ['rub-low', 'rub-high', 'missing']);
@@ -136,9 +137,9 @@ test('orders date sorting uses actual timestamps and never substitutes sync time
   const rows = [row('missing'), row('old', 'paid', 100, 'RUB', '2026-10-01T10:00:00Z'), row('new', 'paid', 100, 'RUB', '2026-10-02T10:00:00Z')];
   assert.deepEqual(app.model(rows, { sort: 'newest' }).filtered.map(order => order.id), ['new', 'old', 'missing']);
   assert.deepEqual(app.model(rows, { sort: 'oldest' }).filtered.map(order => order.id), ['old', 'new', 'missing']);
-  assert.equal(app.model([row('a')], { sort: 'newest' }).sort, 'source');
+  assert.equal(app.model([row('a')], { sort: 'newest' }).sort, 'newest');
   app.render([row('a')]);
-  assert.equal(app.options.find(option => option.value === 'newest').disabled, true);
+  assert.equal(app.options.find(option => option.value === 'newest').disabled, false);
   assert.match(app.node('#orders-table-body').innerHTML, /Не передана/);
   assert.doesNotMatch(app.node('#orders-table-body').innerHTML, /datetime=/);
 });
@@ -303,4 +304,89 @@ test('orders retain the FunPay date label when a complete timestamp is unavailab
  assert.match(html,/4 октября, 12:00/);assert.match(html,/&lt;img/);assert.ok(!html.includes('<img'));
  const model=app.run(`buildOrdersWorkspace({observedAt:'2026-10-04T12:00:00Z',orders:[{id:'A',sourceDateLabel:'4 октября, 12:00',status:'paid'}]})`);
  assert.equal(model.rows[0].sourceDateLabel,'4 октября, 12:00');assert.equal(model.rows[0].date,null);
+});
+
+const octoberNow=Date.parse('2026-10-15T12:00:00Z'),octoberSnapshot='2026-10-15T12:30:00Z';
+test('default order chronology puts October ahead of July, undated last and equal instants in stable order',()=>{
+ const app=workspace(),rows=[{...row('JULY','paid',1,'RUB','2026-07-18T10:00:00Z'),statusObservedAt:octoberSnapshot},row('UNKNOWN'),row('B','paid',1,'RUB','2026-10-15T13:00:00+03:00'),row('A','paid',1,'RUB','2026-10-15T10:00:00Z')],before=JSON.stringify(rows);
+ assert.deepEqual(app.model(rows,{},octoberSnapshot).filtered.map(x=>x.id),['A','B','JULY','UNKNOWN']);
+ assert.equal(JSON.stringify(rows),before);
+});
+test('today and yesterday use Moscow midnight with exact non-overlapping boundaries',()=>{
+ const app=workspace(),rows=[row('BEFORE','paid',1,'RUB','2026-10-14T20:59:59.999Z'),row('MIDNIGHT','completed',1,'RUB','2026-10-14T21:00:00Z'),row('TODAY','refunded',1,'RUB','2026-10-15T10:00:00Z'),row('UNKNOWN')];
+ assert.deepEqual(app.model(rows,{period:'today',now:octoberNow},octoberSnapshot).filtered.map(x=>x.id),['TODAY','MIDNIGHT']);
+ assert.deepEqual(app.model(rows,{period:'yesterday',now:octoberNow},octoberSnapshot).filtered.map(x=>x.id),['BEFORE']);
+ assert.equal(app.model(rows,{period:'undated'},octoberSnapshot).filtered[0].id,'UNKNOWN');
+});
+test('7 and 30 day periods include today and the correct calendar start day',()=>{
+ const app=workspace(),rows=[row('OCT8','paid',1,'RUB','2026-10-08T20:59:59Z'),row('OCT9','paid',1,'RUB','2026-10-08T21:00:00Z'),row('SEP15','paid',1,'RUB','2026-09-15T20:59:59Z'),row('SEP16','paid',1,'RUB','2026-09-15T21:00:00Z')];
+ assert.deepEqual(app.model(rows,{period:'last7',now:octoberNow},octoberSnapshot).filtered.map(x=>x.id),['OCT9']);
+ assert.deepEqual(app.model(rows,{period:'last30',now:octoberNow},octoberSnapshot).filtered.map(x=>x.id),['OCT9','OCT8','SEP16']);
+});
+test('calendar week starts Monday and month handles year transitions',()=>{
+ const app=workspace();
+ app.context.dateFilters={period:'week'};app.context.nowMs=octoberNow;
+ assert.equal(app.run('new Date(orderPeriodRange(dateFilters,nowMs).start).toISOString()'),'2026-10-11T21:00:00.000Z');
+ app.context.nowMs=Date.parse('2027-01-01T00:00:00Z');app.context.dateFilters={period:'month'};
+ assert.equal(app.run('new Date(orderPeriodRange(dateFilters,nowMs).start).toISOString()'),'2026-12-31T21:00:00.000Z');
+ app.context.dateFilters={period:'week'};
+ assert.equal(app.run('new Date(orderPeriodRange(dateFilters,nowMs).start).toISOString()'),'2026-12-27T21:00:00.000Z');
+});
+test('custom dates include the final Moscow day and reject incomplete, reversed or impossible dates',()=>{
+ const app=workspace(),rows=[row('START','paid',1,'RUB','2026-10-08T21:00:00Z'),row('END','paid',1,'RUB','2026-10-10T20:59:59.999Z'),row('AFTER','paid',1,'RUB','2026-10-10T21:00:00Z')];
+ assert.deepEqual(app.model(rows,{period:'custom',from:'2026-10-09',to:'2026-10-10'},octoberSnapshot).filtered.map(x=>x.id),['END','START']);
+ for(const [from,to] of [['','2026-10-10'],['2026-10-11','2026-10-10'],['2026-02-30','2026-10-10'],['bad','bad']]){
+  const model=app.model(rows,{period:'custom',from,to},octoberSnapshot);assert.ok(model.range.error);assert.equal(model.filtered.length,0);
+ }
+ assert.equal(app.run("orderCalendarDate('2024-02-29')"),Date.parse('2024-02-28T21:00:00Z'));
+ assert.equal(app.run("orderCalendarDate('2025-02-29')"),null);
+});
+test('period totals and status counts use the same selected period while preserving search and currency semantics',()=>{
+ const app=workspace(),rows=[row('TODAY','paid',1,'RUB','2026-10-15T10:00:00Z'),row('REFUND','refunded',1,'USD','2026-10-15T09:00:00Z'),row('OLD','completed',1,'RUB','2026-07-01T09:00:00Z'),row('UNKNOWN')];
+ const model=app.model(rows,{period:'today',now:octoberNow,currency:'USD',status:'refunded'},octoberSnapshot);
+ assert.deepEqual(model.totals,{all:2,active:1,completed:0,refunded:1});assert.equal(model.counts.all,1);assert.equal(model.counts.refunded,1);assert.equal(model.rows[0].id,'REFUND');
+ assert.equal(model.unknownDates,1);
+});
+test('period and native calendar controls update immediately, reset pagination and make no requests',()=>{
+ const app=workspace();app.run('Date.now=()=>'+octoberNow);
+ app.render([row('TODAY','paid',1,'RUB','2026-10-15T09:00:00Z'),row('OLD','paid',1,'RUB','2026-07-01T09:00:00Z'),row('UNKNOWN')],{observedAt:octoberSnapshot});
+ app.context.apiRequest=()=>{throw Error('Filters must remain local');};
+ app.run('ordersPageState.page=8');
+ app.event('click','[data-orders-period]',{dataset:{ordersPeriod:'today'}});
+ assert.equal(app.node('period-today').attributes['aria-pressed'],'true');
+ assert.equal(app.node('[data-orders-total]').textContent,'1');assert.equal(app.run('ordersPageState.page'),1);
+ assert.match(app.node('[data-orders-filter-hint]').textContent,/Без точной даты/);
+ app.event('click','[data-orders-period]',{dataset:{ordersPeriod:'custom'}});
+ assert.equal(app.node('[data-orders-date-range]').hidden,false);
+ app.event('change','[data-orders-from]',{value:'2026-07-01'});
+ app.event('change','[data-orders-to]',{value:'2026-07-01'});
+ assert.equal(app.node('[data-orders-total]').textContent,'1');
+ assert.match(app.node('#orders-table-body').innerHTML,/buyer_OLD/);
+ assert.doesNotMatch(app.node('#orders-table-body').innerHTML,/buyer_TODAY/);
+ app.event('click','[data-orders-reset-filters]');
+ assert.equal(app.run('ordersPageState.period'),'all');assert.equal(app.run('ordersPageState.sort'),'newest');assert.equal(app.node('[data-orders-total]').textContent,'3');assert.equal(app.node('[data-orders-date-range]').hidden,true);
+});
+test('archive coverage and loaded-part limits are visible rather than claiming complete history',()=>{
+ const app=workspace();
+ app.render([row('A')]);
+ app.context.archiveMeta={total:6000,returned:1,truncated:true,complete:false};
+ app.run('state.storeContent.orderArchive=archiveMeta;renderOrderWorkspace()');
+ assert.match(app.node('[data-orders-coverage]').textContent,/6000/);
+ assert.match(app.node('[data-orders-filter-hint]').textContent,/Загружено 1 из 6000/);
+});
+test('changing account or selected store clears date filters, stale errors and detail',()=>{
+ const app=workspace();app.render([row('A')]);
+ app.event('click','[data-orders-period]',{dataset:{ordersPeriod:'custom'}});
+ app.event('change','[data-orders-from]',{value:'2026-07-01'});
+ app.run("state.storeFleet={stores:[{id:'different',status:'connected_read_only'}],selectedStoreId:'different'};renderOrderWorkspace()");
+ assert.equal(app.run('ordersPageState.period'),'all');assert.equal(app.run('ordersPageState.from'),'');
+ app.event('click','[data-orders-period]',{dataset:{ordersPeriod:'undated'}});
+ app.run('sessionGeneration++');app.render([]);
+ assert.equal(app.run('ordersPageState.period'),'all');assert.equal(app.run('ordersPageState.to'),'');
+});
+test('table and details display exact creation in Moscow time, never browser-local time',()=>{
+ const app=workspace();app.render([row('MIDNIGHT','paid',1,'RUB','2026-10-14T21:01:00Z')],{observedAt:octoberSnapshot});
+ const table=app.node('#orders-table-body').innerHTML;assert.match(table,/15 окт/);assert.match(table,/00:01/);
+ app.event('click','[data-order-open]',{dataset:{orderOpen:'MIDNIGHT'}});
+ assert.match(app.node('[data-order-detail-body]').innerHTML,/15\.10\.2026, 00:01/);
 });
