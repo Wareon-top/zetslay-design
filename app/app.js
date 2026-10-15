@@ -22,7 +22,7 @@ const state = {
 
 const viewTitles = {
   dashboard: 'Обзор', orders: 'Заказы', messages: 'Сообщения', lots: 'Лоты и товары',
-  plugins: 'Плагины', plugin: 'Плагин', telegram: 'Telegram', billing: 'Финансы', security: 'Безопасность',
+  plugins: 'Плагины', plugin: 'Плагин', telegram: 'Telegram', billing: 'Подписка', finance: 'Финансы', security: 'Безопасность',
   admin: 'Админ-панель',
   guide: 'База знаний', profile: 'Профиль', author: 'Карточка автора',
 };

@@ -109,7 +109,8 @@
           <button class="nav-item" type="button" data-view-target="lots"><svg><use href="#i-box"/></svg><span>Лоты и товары</span></button>
           <button class="nav-item" type="button" data-view-target="plugins"><svg><use href="#i-puzzle"/></svg><span>Плагины</span></button>
           <span class="sidebar-nav__label">Сервисы и настройки</span>
-          <button class="nav-item" type="button" data-view-target="billing"><svg><use href="#i-card"/></svg><span>Финансы</span></button>
+          <button class="nav-item" type="button" data-view-target="billing"><svg><use href="#i-card"/></svg><span>Подписка</span></button>
+          <button class="nav-item" type="button" data-view-target="finance"><svg><use href="#i-chart"/></svg><span>Финансы</span></button>
           <button class="nav-item" type="button" data-view-target="profile"><svg><use href="#i-user"/></svg><span>Профиль</span></button>
           <button class="nav-item" type="button" data-view-target="guide"><svg><use href="#i-help"/></svg><span>База знаний</span></button>
           <button class="nav-item" type="button" data-admin-nav data-view-target="admin" hidden><svg><use href="#i-shield"/></svg><span>Админ-панель</span></button>
@@ -202,12 +203,12 @@
                   <button type="button" data-view-link="orders"><span class="overview-icon overview-icon--amber"><svg><use href="#i-bag"/></svg></span><span><strong>Заказы</strong><small>Статусы и покупатели</small></span><svg><use href="#i-chevron"/></svg></button>
                   <button type="button" data-view-link="messages"><span class="overview-icon overview-icon--blue"><svg><use href="#i-chat"/></svg></span><span><strong>Сообщения</strong><small>Диалоги магазина</small></span><svg><use href="#i-chevron"/></svg></button>
                   <button type="button" data-view-link="plugins"><span class="overview-icon overview-icon--violet"><svg><use href="#i-puzzle"/></svg></span><span><strong>Плагины</strong><small>Настройки автоматизации</small></span><svg><use href="#i-chevron"/></svg></button>
-                  <button type="button" data-view-link="billing"><span class="overview-icon overview-icon--green"><svg><use href="#i-card"/></svg></span><span><strong>Финансы</strong><small>Баланс и операции</small></span><svg><use href="#i-chevron"/></svg></button>
+                  <button type="button" data-view-link="billing"><span class="overview-icon overview-icon--green"><svg><use href="#i-card"/></svg></span><span><strong>Подписка</strong><small>Тарифы и промокоды</small></span><svg><use href="#i-chevron"/></svg></button>
                 </div>
               </section>
 
               <section class="overview-card overview-orders" aria-labelledby="overview-orders-title"><header class="overview-card__heading"><div><h2 id="overview-orders-title">Заказы за период</h2><p>В порядке списка FunPay</p></div><button class="overview-link" type="button" data-view-link="orders">Все заказы <svg><use href="#i-chevron"/></svg></button></header><div class="dash-list" id="dash-orders-list"></div></section>
-              <section class="overview-card overview-finance" aria-labelledby="overview-finance-title"><header class="overview-card__heading"><div><h2 id="overview-finance-title">Баланс магазина</h2><p>Данные FunPay</p></div><button class="overview-link" type="button" data-view-link="billing">Финансы <svg><use href="#i-chevron"/></svg></button></header><div class="dash-list" id="dash-finance-list"></div></section>
+              <section class="overview-card overview-finance" aria-labelledby="overview-finance-title"><header class="overview-card__heading"><div><h2 id="overview-finance-title">Баланс магазина</h2><p>Данные FunPay</p></div><button class="overview-link" type="button" data-view-link="billing">Подробнее <svg><use href="#i-chevron"/></svg></button></header><div class="dash-list" id="dash-finance-list"></div></section>
             </div>
             <p class="overview-scope"><svg><use href="#i-shield"/></svg>Показатели рассчитаны по загруженному снимку, а не по всей истории магазина. Данные FunPay не изменяются.</p>
           </section>
@@ -337,15 +338,19 @@
           </section>
 
           <section class="view admin-page" data-view="admin" hidden><div data-admin-root></div></section>
+          <section class="view finance-page" data-view="finance" aria-labelledby="finance-title" hidden>
+            <header class="billing-heading"><div><h1 id="finance-title">Финансы</h1></div></header>
+          </section>
+
           <section class="view billing-page" data-view="billing" data-billing aria-labelledby="billing-title">
-  <header class="billing-heading"><div><h1 id="billing-title">Финансы</h1><p>Баланс магазина, доступ к сервису и тарифы — в одном месте.</p></div><div class="billing-heading-actions"><button class="button button--primary" type="button" data-billing-open="topup"><svg><use href="#i-plus"/></svg>Пополнить баланс</button><button class="button button--ghost" type="button" data-billing-open="promo"><svg><use href="#i-gift"/></svg>Ввести промокод</button></div></header>
+  <header class="billing-heading"><div><h1 id="billing-title">Подписка</h1><p>Ваш тариф, доступ к сервису и способы оплаты.</p></div><div class="billing-heading-actions"><button class="button button--primary" type="button" data-billing-open="topup"><svg><use href="#i-plus"/></svg>Пополнить баланс</button><button class="button button--ghost" type="button" data-billing-open="promo"><svg><use href="#i-gift"/></svg>Ввести промокод</button></div></header>
   <div class="billing-summary">
     <article class="billing-summary-card billing-summary-card--account"><div class="billing-summary-top"><h2>Баланс ZetSlay</h2><span class="billing-summary-icon"><svg><use href="#i-card"/></svg></span></div><strong>—</strong><p>Счёт для оплаты подписки сервиса.</p><span class="billing-tag"><i></i>Оплата готовится к запуску</span></article>
     <article class="billing-summary-card"><div class="billing-summary-top"><h2>Баланс FunPay</h2><span class="billing-summary-icon"><svg><use href="#i-bag"/></svg></span></div><strong data-billing-funpay-balance>—</strong><p data-billing-balance-note>Обновите данные подключённого магазина</p></article>
     <article class="billing-summary-card"><div class="billing-summary-top"><h2>Ваш тариф</h2><span class="billing-summary-icon"><svg><use href="#i-puzzle"/></svg></span></div><strong data-billing-plan-name>—</strong><p data-billing-plan-status>Загружаем данные кабинета</p></article>
   </div>
   <p class="billing-error" data-billing-error role="alert" hidden></p>
-  <section class="billing-store" aria-label="Финансы подключённого магазина"><header class="billing-store-heading"><div class="billing-store-identity"><span data-billing-avatar></span><div><h2 data-billing-store-name>Магазин не подключён</h2><p data-billing-updated>Снимок баланса ещё не получен</p></div></div><div class="billing-store-actions"><span class="billing-store-status" data-billing-store-status>Подключение не подтверждено</span><button class="button button--ghost" type="button" data-billing-refresh disabled><svg><use href="#i-bolt"/></svg><span data-billing-refresh-label>Обновить данные</span></button></div></header><div class="billing-store-details"><dl><dt>Доступно на FunPay</dt><dd data-billing-available>—</dd></dl><dl><dt>Ожидает подтверждения</dt><dd data-billing-pending>—</dd></dl><p>Средства магазина учитываются отдельно от счёта ZetSlay. Если FunPay не передал отдельные суммы, они остаются неизвестными.</p></div></section>
+  <section class="billing-store" aria-label="Баланс подключённого магазина"><header class="billing-store-heading"><div class="billing-store-identity"><span data-billing-avatar></span><div><h2 data-billing-store-name>Магазин не подключён</h2><p data-billing-updated>Снимок баланса ещё не получен</p></div></div><div class="billing-store-actions"><span class="billing-store-status" data-billing-store-status>Подключение не подтверждено</span><button class="button button--ghost" type="button" data-billing-refresh disabled><svg><use href="#i-bolt"/></svg><span data-billing-refresh-label>Обновить данные</span></button></div></header><div class="billing-store-details"><dl><dt>Доступно на FunPay</dt><dd data-billing-available>—</dd></dl><dl><dt>Ожидает подтверждения</dt><dd data-billing-pending>—</dd></dl><p>Средства магазина учитываются отдельно от счёта ZetSlay. Если FunPay не передал отдельные суммы, они остаются неизвестными.</p></div></section>
 <section class="section landing-pricing" id="billing-tariffs" data-billing-pricing data-landing-pricing="plans-v1" aria-labelledby="billing-tariffs-title">
   <div class="landing-pricing__shell"><div class="landing-pricing__heading"><div><h2 id="billing-tariffs-title">Тарифы ZetSlay</h2><p>Выберите доступ к нужным категориям плагинов. Каждый следующий тариф включает предыдущий.</p></div><div class="pricing-period" role="group" aria-label="Период доступа" data-pricing-periods hidden><button type="button" data-pricing-period="month" aria-pressed="true">Месяц</button><button type="button" data-pricing-period="quarter" aria-pressed="false">3 месяца <span>−10%</span></button><button type="button" data-pricing-period="year" aria-pressed="false">12 месяцев <span>−20%</span></button></div></div>
     <div class="landing-pricing__grid"><article class="pricing-card pricing-card--blue" data-pricing-plan="start" data-monthly-rub="149" aria-labelledby="billing-pricing-start-title">
@@ -457,7 +462,7 @@
     <script src="priority-orders.js?v=20261015-orders-periods" defer></script>
     <script src="plugin-page.js?v=20261014-priority-orders" defer></script>
     <script src="messages.js?v=20261014-messages-workspace" defer></script>
-    <script src="profile.js?v=20261005-profile" defer></script>
+    <script src="profile.js?v=20261015-subscription-navigation" defer></script>
     <script src="lots.js?v=20261013-lot-management" defer></script>
     <script src="lot-management.js?v=20261013-lot-management" defer></script>
     <script src="sales-pause.js?v=20261005-sales-pause" defer></script>
@@ -469,20 +474,20 @@
     <script src="stars-relay.js?v=20261008-stars-relay" defer></script>
     <script src="admin-panel.js?v=20261008-admin-panel" defer></script>
     <script src="../session-client.js?v=20261012-week-session" defer></script>
-    <script src="app.js?v=20261015-service-access" defer></script>
+    <script src="app.js?v=20261015-subscription-navigation" defer></script>
     <script src="messages-actions.js?v=20261014-messages-workspace" defer></script>
     <script src="plugin-detail-ui.js?v=20261006-plugin-details" defer></script>
     <script src="connection-wizard-ui.js?v=20261006-guided-connect" defer></script>
     <script src="account-security.js?v=20261006-security" defer></script>
     <script src="billing-pricing.js?v=20261015-service-access" defer></script>
     <script src="billing.js?v=20261015-service-access" defer></script>
-    <script src="plugin-purchase-options.js?v=20261015-service-access" defer></script>
+    <script src="plugin-purchase-options.js?v=20261015-subscription-navigation" defer></script>
   <script src="../legal/privacy-controls.js?v=20261008-legal-2" defer></script>
   <script src="legal-cabinet.js?v=20261012-legal-publication" defer></script>
-  <script src="knowledge-base.js?v=20261015-service-access" defer></script>
+  <script src="knowledge-base.js?v=20261015-subscription-navigation" defer></script>
   <script src="sidebar-trial.js?v=20261010-sidebar-trial-states" defer></script>
 <script src="steam-rent.js?v=20261010-steam-rent" defer></script>
-<script src="learning.js?v=20261015-service-access" defer></script>
+<script src="learning.js?v=20261015-subscription-navigation" defer></script>
 <script src="subscription-access.js?v=20261015-service-access" defer></script>
 <script src="store-sync-deadline.js?v=20261011-sync-pipeline-v2" defer></script>
 <script src="ai-reviews.js?v=20261012-ai-reviews-ultra" defer></script>
@@ -490,3 +495,4 @@
   <script src="managed-proxy-ui.js?v=20261014-managed-proxy" defer></script>
 </body>
 </html>
+
