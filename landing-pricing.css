@@ -112,3 +112,6 @@
 .payments-plan-summary summary span { display: block; margin-top: 3px; color: var(--text-muted,#a3a3a3); font-size: 11px; font-weight: 400; }
 .payments-plan-summary ul { display: grid; gap: 8px; margin: 14px 0 0; padding-left: 18px; font-size: 12px; line-height: 1.6; }
 .payments-plan-summary p { margin: 14px 0 0; color: var(--text-muted,#a3a3a3); font-size: 11px; line-height: 1.7; }
+/* Keep the intrinsic table width inside its own horizontal scroll area. */
+.pricing-comparison { width: 100%; min-width: 0; max-width: 100%; }
+.pricing-comparison__scroll { width: 100%; min-width: 0; max-width: 100%; contain: inline-size; }
