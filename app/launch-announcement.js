@@ -71,6 +71,13 @@
       <p class="launch-article__note">ZetSlay — самостоятельный сервис для продавцов, не официальное ПО FunPay. Подключение и работа зависят от доступности площадки и настроек магазина.</p></div>`;
     dialog.addEventListener('cancel', e => { e.preventDefault(); closeArticle(); });
     dialog.addEventListener('close', () => { if (ui.dialog === dialog) closeArticle(); });
+    dialog.addEventListener('keydown', e => {
+      if (e.key !== 'Tab') return;
+      const buttons = [...dialog.querySelectorAll('button:not([disabled])')];
+      const first = buttons[0], last = buttons[buttons.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus(); }
+    });
     dialog.querySelector('.launch-close').addEventListener('click', () => closeArticle());
     dialog.querySelectorAll('[data-launch-route]').forEach(button => button.addEventListener('click', () => {
       if (ui.scope !== scope()) return;

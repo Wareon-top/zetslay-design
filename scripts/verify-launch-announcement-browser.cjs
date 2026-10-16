@@ -69,6 +69,7 @@ const server = http.createServer((req, res) => {
     await page.keyboard.press('Shift+Tab');
     assert.equal(await page.evaluate(()=>document.querySelector('.launch-article').contains(document.activeElement)), true);
     await page.screenshot({path:path.join(out,'launch-article-desktop.png')});
+    if (process.env.ZETSLAY_LAUNCH_INLINE_PREVIEW === '1') console.log('LAUNCH_ARTICLE_PREVIEW=' + (await page.locator('.launch-article').screenshot()).toString('base64'));
     await page.keyboard.press('Escape');
     assert.equal(await page.locator('.launch-article').count(), 0);
     await page.clock.fastForward(5000);
@@ -86,6 +87,7 @@ const server = http.createServer((req, res) => {
     assert.ok(rect.x>=15 && rect.x+rect.width<=375 && rect.y>=15 && rect.y+rect.height<=829);
     assert.equal(await page.locator('.launch-notice').evaluate(n=>getComputedStyle(n).animationName), 'none');
     await page.screenshot({path:path.join(out,'launch-mobile.png')});
+    if (process.env.ZETSLAY_LAUNCH_INLINE_PREVIEW === '1') console.log('LAUNCH_MOBILE_PREVIEW=' + (await page.locator('.launch-notice').screenshot()).toString('base64'));
     await page.locator('.launch-notice__more').click();
     await page.locator('.launch-article[open]').waitFor();
     assert.equal(await page.locator('.launch-article').evaluate(n=>n.scrollWidth<=n.clientWidth), true);
