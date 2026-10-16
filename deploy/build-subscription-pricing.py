@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 import re
 
-VERSION = '20261015-service-access'
+VERSION = '20261016-current-catalog'
 CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>'
 esc = lambda value: html.escape(str(value), quote=True)
 
@@ -32,9 +32,32 @@ def validate(data):
         assert plan['includes']==levels[:index+1]
         assert plan['features'] and len(plan['features'])<=10
     assert [(p['months'],p['discount']) for p in data['periods'].values()]==[(1,0),(3,10),(12,20)]
+    assert [p['days'] for p in data['periods'].values()]==[30,90,360]
+    assert data['trial']['days']==3 and data['trial']['includes']==levels[:3]
+    assert [g['rarity'] for g in data['pluginGroups']]==levels
+    ids=[p['id'] for g in data['pluginGroups'] for p in g['plugins']]
+    assert len(ids)==len(set(ids)) and all(re.fullmatch(r'zetslay\.[a-z0-9-]+',pid) for pid in ids)
+    assert all(g['plugins'] and g['label'] and all(p['name'] and p['description'] for p in g['plugins']) for g in data['pluginGroups'])
+    assert len(data['platformFeatures'])==6 and all(p['title'] and p['description'] for p in data['platformFeatures'])
     for price in amounts:
         for period in data['periods'].values():
             assert price*(100-period['discount'])*period['months']<=data['maxTransactionKopecks'], 'Стоимость периода превышает лимит одной транзакции'
+
+def platform_markup(data):
+    features=''.join(f'<li>{CHECK}<div><strong>{esc(f["title"])}</strong><p>{esc(f["description"])}</p></div></li>' for f in data['platformFeatures'])
+    return f'<div class="pricing-platform" data-pricing-platform><div class="pricing-platform__heading"><span>Основа каждого тарифа</span><h3>Полный кабинет — уже в «Старте»</h3><p>Разница между тарифами — в доступных редкостях плагинов. Эти возможности есть во всех четырёх тарифах.</p></div><ul>{features}</ul></div>'
+
+def comparison_markup(data):
+    headers=''.join(f'<th scope="col">{esc(p["name"])}</th>' for p in data['plans'])
+    rows=[]
+    for group in data['pluginGroups']:
+        rarity=group['rarity']
+        rows.append(f'<tr class="pricing-comparison__group"><th scope="rowgroup" colspan="5"><span class="pricing-level pricing-level--{rarity}">{esc(group["label"])}</span></th></tr>')
+        for plugin in group['plugins']:
+            cells=''.join(f'<td data-plan-id="{p["id"]}" data-included="{str(rarity in p["includes"]).lower()}"><span class="pricing-inclusion">{CHECK if rarity in p["includes"] else "—"}<span class="pricing-sr-only">{"Входит" if rarity in p["includes"] else "Не входит"}</span></span></td>' for p in data['plans'])
+            rows.append(f'<tr data-pricing-plugin="{plugin["id"]}"><th scope="row"><strong>{esc(plugin["name"])}</strong><small>{esc(plugin["description"])}</small></th>{cells}</tr>')
+    count=sum(len(g['plugins']) for g in data['pluginGroups'])
+    return f'<details class="pricing-comparison" data-pricing-comparison><summary><span>Сравнить плагины по тарифам<small>Состав каталога: {count} модулей · четыре редкости</small></span><span class="pricing-comparison__toggle" aria-hidden="true">+</span></summary><div class="pricing-comparison__scroll" tabindex="0" role="region" aria-label="Сравнение плагинов; на узком экране прокрутите таблицу вправо"><table><caption>Опубликованные собственные плагины ZetSlay по тарифам</caption><thead><tr><th scope="col">Плагин</th>{headers}</tr></thead><tbody>{"".join(rows)}</tbody></table></div><p>Доступ к включённым плагинам действует в течение подписки. Настройка и разрешения для операций включаются отдельно. В пробный период легендарные плагины не входят.</p></details>'
 
 def markup(data, cabinet=False):
     identifier='billing-tariffs' if cabinet else 'tariffs'
@@ -50,7 +73,7 @@ def markup(data, cabinet=False):
   <div class="pricing-card__hero"><div class="pricing-card__avatar-row"><span class="pricing-avatar" aria-hidden="true"><i></i><i></i></span>{badge}</div>
     <h3 id="{title}">{name}</h3><p class="pricing-card__description">{esc(plan['description'])}</p>
     <div class="pricing-card__price"><strong data-pricing-price>{plan['monthlyRub']} ₽</strong><del data-pricing-original hidden>{plan['monthlyRub']} ₽</del><span>/ месяц</span></div>
-    <p class="pricing-card__price-note" data-pricing-note>Итого {plan['monthlyRub']} ₽ за 1 месяц доступа</p>{action}</div>
+    <p class="pricing-card__price-note" data-pricing-note>Итого {plan['monthlyRub']} ₽ за 30 дней доступа</p>{action}</div>
   <ul class="pricing-card__features" aria-label="Возможности тарифа {name}">{features}</ul>
   <div class="pricing-card__footer"><strong>{esc(plan['footer'])}</strong><p>{esc(plan['footerDescription'])}</p></div>
 </article>''')
@@ -61,16 +84,22 @@ def markup(data, cabinet=False):
     return f'''<section class="section landing-pricing" id="{identifier}" {'data-billing-pricing' if cabinet else 'data-section="access"'} data-landing-pricing="plans-v1" aria-labelledby="{identifier}-title">
   <div class="landing-pricing__shell"><div class="landing-pricing__heading"><div><h2 id="{identifier}-title">{heading}</h2><p>Выберите доступ к нужным категориям плагинов. Каждый следующий тариф включает предыдущий.</p></div><div class="pricing-period" role="group" aria-label="Период доступа" data-pricing-periods hidden>{picker}</div></div>
     <div class="landing-pricing__grid">{''.join(cards)}</div>
+    {platform_markup(data)}
+    <div class="pricing-trial" data-pricing-trial><span><strong>{data['trial']['days']} дня на знакомство</strong><span>Пробный доступ</span></span><p>{esc(data['trial']['description'])}</p></div>
+    {comparison_markup(data)}
     <div class="landing-pricing__notes"><p><strong>Что входит в стоимость</strong></p>{conditions}<p><strong>Оплата и запуск.</strong> {esc(data['availability'])} Автоматическое продление и регулярные списания не подключены.</p><p data-payment-limit><strong>Лимит одного платежа — 10 000 ₽.</strong> Пополнение счёта ZetSlay и стоимость одной оплачиваемой покупки не должны превышать эту сумму. Лимит относится к оплате нашего сервиса, а не к балансу вашего магазина или покупкам на внешних площадках.</p><nav aria-label="Документы проекта"><a href="{legal}offer.html">Пользовательское соглашение / публичная оферта</a> · <a href="{legal}privacy.html">Политика конфиденциальности</a> · <a href="{legal}refunds.html">Оплата и возвраты</a> · <a href="{legal}">Реквизиты и все документы</a></nav>{review}</div>
     <p class="pricing-announcement" role="status" aria-live="polite" aria-atomic="true" data-pricing-announcement></p>
   </div>
 </section>'''
 
 def faq(text,data):
+    tiers=' '.join(f'«{p["name"]}» — {p["monthlyRub"]} ₽/месяц: '+('обычные плагины.' if p['id']=='start' else 'обычные и продвинутые.' if p['id']=='growth' else 'дополнительно ультра.' if p['id']=='pro' else 'все четыре категории, включая легендарные.') for p in data['plans'])
+    plugins=' '.join(g['label']+': '+', '.join(p['name'] for p in g['plugins'])+'.' for g in data['pluginGroups'])
+    external=next(x for x in data['conditions'] if x.startswith('Прокси,'))
     content={
-      'faq-plans':'<p>«Старт» — 149 ₽/месяц: обычные плагины. «Рост» — 299 ₽/месяц: обычные и продвинутые. «Профи» — 499 ₽/месяц: дополнительно ультра. «Максимум» — 799 ₽/месяц: все четыре категории, включая легендарные.</p><p>Для подключения и синхронизации FunPay и работы плагинов нужен активный тариф или пробный период. Это условие действует и для плагинов, купленных навсегда. Лицензии сохраняются после окончания подписки.</p><p>На 3 месяца действует скидка 10%, на 12 месяцев — 20%. Под ценой показана полная сумма выбранного периода. Подписка оплачивается с внутреннего баланса, пополняемого через Platega. Кнопка на сайте открывает кабинет и сама не списывает деньги.</p><a href="#tariffs">Сравнить тарифы →</a>',
-      'faq-external-costs':'<p>Подписка включает доступ к ZetSlay и опубликованным собственным плагинам выбранных категорий. Прокси, аренды Kosell, товары LZT Market, Robux, Stars и комиссии внешних площадок оплачиваются отдельно. Их покупка требует ваших настроек и разрешений.</p>',
-      'faq-plugins':'<p>Обычные: Confirm Reminder и Review Reminder. Продвинутые: Lot Cloner, Mass Price Editor, «Пауза продаж» и Auto Review Bonus. Ультра: Robux Relay. Легендарные: Kosell Rent, Roblox LZT Market, Stars Relay и TikTok LZT Market.</p><p>Бессрочная покупка закрепляет лицензию, но не даёт бесплатного доступа к сервису. Для работы нужен активный тариф или пробный период; после его окончания лицензия сохраняется.</p><p>Включение и настройка доступны в кабинете и персональном Telegram-боте. Возможности конкретного модуля и его ограничения описаны на странице «Подробнее».</p><a href="#plugins">Открыть каталог плагинов →</a>'}
+      'faq-plans':'<p>'+esc(tiers)+'</p><p>Для подключения и синхронизации FunPay и работы плагинов нужен активный тариф или пробный период. Это условие действует и для плагинов, купленных навсегда. Лицензии сохраняются после окончания подписки.</p><p>На 3 месяца действует скидка 10%, на 12 месяцев — 20%. Под ценой показана полная сумма выбранного периода. Подписка оплачивается с внутреннего баланса, пополняемого через Platega. Кнопка на сайте открывает кабинет и сама не списывает деньги.</p><p>Месяц — 30 дней, 3 месяца — 90 дней, 12 месяцев — 360 дней. Пробный период: 3 дня, весь кабинет и обычные, продвинутые и ультра-плагины; легендарные не включены. Постоянного бесплатного тарифа нет.</p><a href="#tariffs">Сравнить тарифы →</a>',
+      'faq-external-costs':'<p>'+esc(external)+'</p><p>Подписка даёт доступ к программным возможностям, а не оплачивает внешние товары или расход API. Эти операции требуют ваших настроек и разрешений.</p>',
+      'faq-plugins':'<p>'+esc(plugins)+'</p><p>Бессрочная покупка закрепляет лицензию, но не даёт бесплатного доступа к сервису. Для работы нужен активный тариф или пробный период с учётом доступных в нём редкостей; после его окончания лицензия сохраняется.</p><p>Возможности конкретного модуля, способы управления и ограничения описаны на странице «Подробнее».</p><a href="#plugins">Открыть каталог плагинов →</a>'}
     for identifier,body in content.items():
         pattern=r'(<details\b(?=[^>]*\bid="'+identifier+r'")[^>]*>.*?<div class="faq-item__answer">).*?(</div>\s*</details>)'
         text,count=re.subn(pattern,lambda m:m[1]+body+m[2],text,flags=re.S)
@@ -86,8 +115,8 @@ def cache(text, names):
 
 def outputs(root):
     data=json.loads((root/'subscription-plans.json').read_text());validate(data)
-    landing=cache(faq(replace_section((root/'index.html').read_text(),'tariffs',markup(data)),data),['landing-pricing.js'])
-    cabinet=cache(replace_section((root/'app/index.html').read_text(),'billing-tariffs',markup(data,True)),['billing-pricing.js','billing.js'])
+    landing=cache(faq(replace_section((root/'index.html').read_text(),'tariffs',markup(data)),data),['landing-pricing.js','landing-pricing.css'])
+    cabinet=cache(replace_section((root/'app/index.html').read_text(),'billing-tariffs',markup(data,True)),['billing-pricing.js','billing-pricing.css','billing.js'])
     # Finance updater fixture stays synchronized; no store/account panels are changed.
     fixture=(root/'app/billing-section.html').read_text()
     fixture=replace_section(fixture,'billing-tariffs',markup(data,True))

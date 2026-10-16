@@ -44,3 +44,14 @@ jobs:
       - name: Verify automatic updates in the real cabinet
         run: |
           ZETSLAY_PLAYWRIGHT_MODULE="$RUNNER_TEMP/zetslay-ticket-browser/node_modules/playwright" ZETSLAY_TEST_BROWSER_PATH="$(command -v google-chrome)" node scripts/verify-auto-refresh-browser.cjs
+      - run: python3 deploy/build-subscription-pricing.py . --check
+      - run: python3 deploy/stage-tariff-catalog.test.py
+      - run: node --test deploy/landing-pricing.test.mjs
+      - name: Verify current tariff catalogue in desktop and mobile Chrome
+        run: |
+          ZETSLAY_PLAYWRIGHT_MODULE="$RUNNER_TEMP/zetslay-ticket-browser/node_modules/playwright" ZETSLAY_TEST_BROWSER_PATH="$(command -v google-chrome)" ZETSLAY_BROWSER_OUTPUT="$RUNNER_TEMP/zetslay-tariff-screenshots" node scripts/verify-tariff-catalog-browser.cjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: current-tariff-previews
+          path: ${{ runner.temp }}/zetslay-tariff-screenshots/
+          retention-days: 7

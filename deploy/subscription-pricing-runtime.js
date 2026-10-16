@@ -21,7 +21,9 @@
     const value = plan && pricingQuote(plan.monthlyRub, periodId);
     return value ? { ...value, planId:plan.id, name:plan.name, features:plan.features, includes:plan.includes, currency:catalog.currency } : null;
   }
-  globalThis.ZetSlayPricing = Object.freeze({ plans, periods, quote, rubles, paymentAvailable:false, maxTransactionKopecks:catalog.maxTransactionKopecks, isPaymentAmountAllowed });
+  const pluginGroups=Object.freeze(catalog.pluginGroups.map(g=>Object.freeze({...g,plugins:Object.freeze(g.plugins.map(p=>Object.freeze(p)))})));
+  const trial=Object.freeze({...catalog.trial,includes:Object.freeze(catalog.trial.includes)});
+  globalThis.ZetSlayPricing = Object.freeze({ version:catalog.version, pluginGroups, trial, plans, periods, quote, rubles, paymentAvailable:false, maxTransactionKopecks:catalog.maxTransactionKopecks, isPaymentAmountAllowed });
   const root = document.querySelector('[data-landing-pricing="plans-v1"]');
   if (!root) return;
   const picker=root.querySelector('[data-pricing-periods]'),buttons=Array.from(root.querySelectorAll('[data-pricing-period]'));
@@ -42,7 +44,7 @@
       card.price.textContent=rubles(value.monthlyKopecks);
       card.original.hidden=!value.discount;
       card.original.textContent=rubles(card.monthlyRub*100);
-      card.note.textContent=value.months===1 ? `Итого ${rubles(value.totalKopecks)} за 1 месяц доступа` : `${rubles(value.totalKopecks)} за ${value.months===3?'3 месяца':'12 месяцев'} · скидка ${value.discount}% · оплата целиком`;
+      card.note.textContent=value.months===1 ? `Итого ${rubles(value.totalKopecks)} за ${value.days} дней доступа` : `${rubles(value.totalKopecks)} за ${value.months===3?'3 месяца':'12 месяцев'} · ${value.days} дней · скидка ${value.discount}% · оплата целиком`;
     });
     buttons.forEach(button => button.setAttribute('aria-pressed',String(button.dataset.pricingPeriod===periodId)));
     if(announce && announcement) {
