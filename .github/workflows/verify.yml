@@ -48,6 +48,26 @@ jobs:
       - run: python3 deploy/stage-tariff-catalog.test.py
       - run: python3 deploy/summarize-tariff-checks.test.py
       - run: node --test deploy/landing-pricing.test.mjs
+      - run: python3 deploy/stage-launch-announcement.test.py
+  launch-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify launch notice in the real cabinet on desktop and mobile
+        run: |
+          browser_deps="$RUNNER_TEMP/zetslay-launch-browser"
+          npm install --prefix "$browser_deps" --no-save --ignore-scripts playwright@1.56.1
+          ZETSLAY_PLAYWRIGHT_MODULE="$browser_deps/node_modules/playwright" ZETSLAY_TEST_BROWSER_PATH="$(command -v google-chrome)" ZETSLAY_BROWSER_OUTPUT="$RUNNER_TEMP/zetslay-launch-screenshots" ZETSLAY_LAUNCH_INLINE_PREVIEW=1 node scripts/verify-launch-announcement-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: launch-announcement-previews
+          path: ${{ runner.temp }}/zetslay-launch-screenshots/
+          retention-days: 7
   tariff-browser:
     runs-on: ubuntu-latest
     timeout-minutes: 5
