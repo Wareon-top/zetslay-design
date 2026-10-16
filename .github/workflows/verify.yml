@@ -27,3 +27,15 @@ jobs:
       - run: python3 deploy/stage-financial-report.test.py
 
       - run: python3 deploy/stage-platega.test.py
+
+      - run: python3 deploy/stage-payment-confirmation.test.py
+      - name: Verify confirmation tickets in desktop and mobile Chrome
+        run: |
+          browser_deps="$RUNNER_TEMP/zetslay-ticket-browser"
+          npm install --prefix "$browser_deps" --no-save --ignore-scripts playwright@1.56.1
+          ZETSLAY_PLAYWRIGHT_MODULE="$browser_deps/node_modules/playwright" ZETSLAY_TEST_BROWSER_PATH="$(command -v google-chrome)" ZETSLAY_BROWSER_OUTPUT="$RUNNER_TEMP/zetslay-ticket-screenshots" node scripts/verify-payment-confirmation-browser.cjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: confirmation-ticket-previews
+          path: ${{ runner.temp }}/zetslay-ticket-screenshots/
+          retention-days: 7
