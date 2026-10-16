@@ -39,3 +39,8 @@ jobs:
           name: confirmation-ticket-previews
           path: ${{ runner.temp }}/zetslay-ticket-screenshots/
           retention-days: 7
+
+      - run: python3 deploy/stage-auto-refresh.test.py
+      - name: Verify automatic updates in the real cabinet
+        run: |
+          ZETSLAY_PLAYWRIGHT_MODULE="$RUNNER_TEMP/zetslay-ticket-browser/node_modules/playwright" ZETSLAY_TEST_BROWSER_PATH="$(command -v google-chrome)" node scripts/verify-auto-refresh-browser.cjs

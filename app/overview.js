@@ -149,7 +149,7 @@ function renderOverview() {
   setText('updated', model.loaded ? `Снимок от ${new Date(model.observedAt).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}` : 'Ожидает синхронизации');
   setText('plan', authState.workspace?.plan?.active ? `Тариф: ${authState.workspace.plan.id || 'активен'}` : 'Тариф не активен');
   const notice = root.querySelector('[data-overview-notice]');
-  const noticeText = overviewState.error || (model.loaded && !connected ? 'Подключение требует проверки. Ниже сохранён последний загруженный снимок.' : connected && !model.loaded ? 'Магазин подключён. Нажмите «Обновить данные», чтобы загрузить показатели.' : '');
+  const noticeText = overviewState.error || (model.loaded && !connected ? 'Подключение требует проверки. Ниже сохранён последний загруженный снимок.' : connected && !model.loaded ? 'Магазин подключён. Показатели загрузятся автоматически.' : '');
   if (notice) { notice.hidden = !noticeText; notice.textContent = noticeText; }
   setText('sales', model.loaded ? overviewMoney(model.totalMinor, model.currency) : '—');
   setText('orders', measurable ? String(model.count) : '—');
