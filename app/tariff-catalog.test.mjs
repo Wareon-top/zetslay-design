@@ -14,7 +14,7 @@ test('advertised inclusions exactly match cabinet access for every paid plan and
  assert.deepEqual(counts,[3,7,9,14]);
  c.authState.workspace.plan.id='trial_3d';assert.equal(data.trial.days,3);for(const plugin of plugins){c.plugin=plugin;assert.equal(vm.runInContext('subscriptionPluginAllowed(plugin.id)',c),data.trial.includes.includes(plugin.rarity));}
  c.authState.workspace.pluginLicenses=['zetslay.steam-rent'];c.plugin=plugins.find(p=>p.id==='zetslay.steam-rent');assert.equal(vm.runInContext('subscriptionPluginAllowed(plugin.id)',c),false);
- c.authState.workspace.plan.active=false;for(const plugin of plugins){c.plugin=plugin;assert.equal(vm.runInContext('subscriptionPluginAllowed(plugin.id)',c),false);}c.authState.workspace.plan.active=true;c.authState.workspace.pluginLicenses=[];
+ c.authState.workspace.plan.id='start';assert.equal(vm.runInContext('subscriptionPluginAllowed(plugin.id)',c),true);c.authState.workspace.plan.active=false;for(const plugin of plugins){c.plugin=plugin;assert.equal(vm.runInContext('subscriptionPluginAllowed(plugin.id)',c),false);}c.authState.workspace.plan.active=true;c.authState.workspace.pluginLicenses=[];
 });
 test('landing and subscription comparison display the same complete entitlement matrix',()=>{
  for(const [path,id] of [['../index.html','tariffs'],['./index.html','billing-tariffs'],['./billing-section.html','billing-tariffs']]){
