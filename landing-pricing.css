@@ -115,3 +115,5 @@
 /* Keep the intrinsic table width inside its own horizontal scroll area. */
 .pricing-comparison { width: 100%; min-width: 0; max-width: 100%; }
 .pricing-comparison__scroll { width: 100%; min-width: 0; max-width: 100%; contain: inline-size; }
+/* Anchor screen-reader labels inside the table's clipping ancestor. */
+.pricing-comparison__scroll, .pricing-inclusion { position: relative; }
