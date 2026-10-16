@@ -47,10 +47,21 @@ jobs:
       - run: python3 deploy/build-subscription-pricing.py . --check
       - run: python3 deploy/stage-tariff-catalog.test.py
       - run: node --test deploy/landing-pricing.test.mjs
+  tariff-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
       - name: Verify current tariff catalogue in desktop and mobile Chrome
         run: |
-          ZETSLAY_PLAYWRIGHT_MODULE="$RUNNER_TEMP/zetslay-ticket-browser/node_modules/playwright" ZETSLAY_TEST_BROWSER_PATH="$(command -v google-chrome)" ZETSLAY_BROWSER_OUTPUT="$RUNNER_TEMP/zetslay-tariff-screenshots" node scripts/verify-tariff-catalog-browser.cjs
+          browser_deps="$RUNNER_TEMP/zetslay-tariff-browser"
+          npm install --prefix "$browser_deps" --no-save --ignore-scripts playwright@1.56.1
+          ZETSLAY_PLAYWRIGHT_MODULE="$browser_deps/node_modules/playwright" ZETSLAY_TEST_BROWSER_PATH="$(command -v google-chrome)" ZETSLAY_BROWSER_OUTPUT="$RUNNER_TEMP/zetslay-tariff-screenshots" node scripts/verify-tariff-catalog-browser.cjs
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: current-tariff-previews
           path: ${{ runner.temp }}/zetslay-tariff-screenshots/
