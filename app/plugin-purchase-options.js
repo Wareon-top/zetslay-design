@@ -1,4 +1,4 @@
-/* Commercial presentation only. Installation never counts as a purchase. */
+/* Lifetime licenses and subscription access are distinct; only server payment records grant a license. */
 function pluginPurchaseModel(plugin, pricing = typeof ZetSlayPricing === 'object' ? ZetSlayPricing : null) {
   const rarity = typeof pluginRarity === 'function' ? pluginRarity(plugin) : { key:'common', label:'Обычный' };
   const amount = typeof pluginCatalogPrice === 'function' ? pluginCatalogPrice(plugin)
@@ -25,7 +25,7 @@ function pluginPurchaseOptionsMarkup(plugin) {
       <h2>Плагин навсегда</h2><div class="plugin-page-price">${safe(model.price)}${model.amount > 0 ? '<small>один раз</small>' : ''}</div>
       <p>${model.amount === 0 ? 'Лицензия на этот плагин — без отдельной оплаты. Для его работы нужен активный доступ к сервису.' : 'Разовая покупка закрепляет бессрочную лицензию на этот плагин. Повторно оплачивать лицензию не нужно.'}</p>
       <p class="plugin-purchase-option__requires-access"><strong>Для работы нужна активная подписка ZetSlay.</strong> Это условие действует и для плагинов, купленных навсегда. Подойдёт также действующий пробный период с учётом доступных в нём редкостей.</p>
-      ${model.amount === 0 && model.available ? '<p class="plugin-purchase-option__availability">Этот модуль можно установить бесплатно.</p>' : `<button class="button button--primary button--wide" type="button" disabled>${!model.available ? 'Пока недоступен' : 'Купить навсегда · скоро'}</button><p class="plugin-purchase-option__availability">${!model.available ? 'Покупка станет доступна после публикации модуля.' : 'Разовая покупка станет доступна после подключения оплаты.'}</p>`}
+      ${model.amount === 0 && model.available ? '<p class="plugin-purchase-option__availability">Этот модуль можно установить бесплатно.</p>' : `<button class="button button--primary button--wide" type="button" ${model.available&&model.amount>0?`data-plugin-buy="${safe(plugin.id)}"`:'disabled'}>${!model.available ? 'Пока недоступен' : 'Купить навсегда с баланса'}</button><p class="plugin-purchase-option__availability">${!model.available ? 'Покупка станет доступна после публикации модуля.' : 'Пополнение внутреннего баланса — только через Platega. Цена проверяется перед списанием.'}</p>`}
     </section>
     <div class="plugin-purchase-options__divider"><span>или тариф с этим плагином</span></div>
     <section class="plugin-purchase-option plugin-purchase-option--subscription" aria-label="Подписка на месяц">

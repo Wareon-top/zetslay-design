@@ -25,3 +25,5 @@ jobs:
       - run: python3 deploy/stage-order-chronology.test.py
 
       - run: python3 deploy/stage-financial-report.test.py
+
+      - run: python3 deploy/stage-platega.test.py

@@ -11,6 +11,6 @@
   "retentionSchedule": "По цели обработки и обязательным срокам закона; запросы исполняются оператором",
   "localizationReviewed": false,
   "approved": true,
-  "approvedVersion": "2026-10-15-v1",
-  "effectiveFrom": "2026-10-12"
+  "approvedVersion": "2026-10-16-v1",
+  "effectiveFrom": "2026-10-16"
 }

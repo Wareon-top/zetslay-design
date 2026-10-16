@@ -43,7 +43,7 @@ test('subscription states same rarity and lower levels, never promises higher on
 });
 test('lifetime pricing is numeric and independent of stale text and install state',()=>{
   const h=harness();assert.match(h.page.innerHTML,/249,50 ₽/);assert.doesNotMatch(h.page.innerHTML,/999 ₽/);
-  assert.match(h.page.innerHTML,/Купить навсегда · скоро/);assert.match(h.page.innerHTML,/после подключения оплаты/);
+  assert.match(h.page.innerHTML,/Купить навсегда с баланса/);assert.match(h.page.innerHTML,/только через Platega/);
   assert.doesNotMatch(h.page.innerHTML,/Покупка подтверждена|Вы приобрели/);
   h.run('input.priceRub=null; input.price="999 ₽"; renderPluginPage()');assert.match(h.page.innerHTML,/Цена уточняется/);
 });
