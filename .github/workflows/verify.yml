@@ -46,6 +46,7 @@ jobs:
           ZETSLAY_PLAYWRIGHT_MODULE="$RUNNER_TEMP/zetslay-ticket-browser/node_modules/playwright" ZETSLAY_TEST_BROWSER_PATH="$(command -v google-chrome)" node scripts/verify-auto-refresh-browser.cjs
       - run: python3 deploy/build-subscription-pricing.py . --check
       - run: python3 deploy/stage-tariff-catalog.test.py
+      - run: python3 deploy/summarize-tariff-checks.test.py
       - run: node --test deploy/landing-pricing.test.mjs
   tariff-browser:
     runs-on: ubuntu-latest

@@ -169,5 +169,14 @@ test('cabinet tariffs exactly duplicate landing names, prices and benefits witho
   assert.deepEqual(cards(billing),cards(landing));
   assert.equal(cards(billing).length,4);
   assert.ok(!billing.includes('auth=register'));
-  for (const ext of ['css','js']) assert.equal(readFileSync(new URL(`./billing-pricing.${ext}`,import.meta.url),'utf8'),readFileSync(new URL(`../landing-pricing.${ext}`,import.meta.url),'utf8'));
+  assert.equal(readFileSync(new URL('./billing-pricing.js',import.meta.url),'utf8'),readFileSync(new URL('../landing-pricing.js',import.meta.url),'utf8'));
+  // Installed surfaces may have different local themes. Their new shared tariff
+  // rules must still agree; unrelated, preserved styles are not release assets.
+  const marker='/* Common workspace capabilities and the current plugin catalogue. */';
+  const styles=['./billing-pricing.css','../landing-pricing.css'].map(path=>readFileSync(new URL(path,import.meta.url),'utf8'));
+  for(const css of styles){
+    assert.equal(css.split(marker).length,2,'Expected one shared tariff style block');
+    for(const selector of ['.landing-pricing','.pricing-card','.pricing-card__hero','.pricing-card__features','.pricing-period'])assert.ok(css.includes(selector),`Required pricing selector missing: ${selector}`);
+  }
+  assert.equal(styles[0].slice(styles[0].indexOf(marker)),styles[1].slice(styles[1].indexOf(marker)),'Shared tariff comparison styles differ');
 });

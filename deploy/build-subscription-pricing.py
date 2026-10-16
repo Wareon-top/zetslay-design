@@ -126,6 +126,7 @@ def outputs(root):
 def build(root, check=False):
     generated=outputs(Path(root))
     if check:
+        if (Path(root)/'landing-pricing.css').read_bytes()!=(Path(root)/'app/billing-pricing.css').read_bytes():raise ValueError('Стили тарифов в исходном репозитории расходятся')
         stale=[name for name,text in generated.items() if (Path(root)/name).read_text()!=text]
         if stale:raise ValueError('Тарифы требуют пересборки: '+', '.join(stale))
     else:
