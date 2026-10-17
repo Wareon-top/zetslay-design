@@ -56,6 +56,7 @@
 <link rel="stylesheet" href="payment-confirmation.css?v=20261016-confirmation-ticket">
 <link rel="stylesheet" href="launch-announcement.css?v=20261017-launch-reference">
 <link rel="stylesheet" href="admin-finance.css?v=20261017-admin-finance">
+<link rel="stylesheet" href="support.css?v=20261017-support-workspace">
 </head>
   <body>
     <svg class="icon-sprite" aria-hidden="true">
@@ -119,6 +120,7 @@
           <button class="nav-item" type="button" data-view-target="finance"><svg><use href="#i-chart"/></svg><span>Финансы</span></button>
           <button class="nav-item" type="button" data-view-target="profile"><svg><use href="#i-user"/></svg><span>Профиль</span></button>
           <button class="nav-item" type="button" data-view-target="guide"><svg><use href="#i-help"/></svg><span>База знаний</span></button>
+          <button class="nav-item" type="button" data-view-target="support"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 14v-3a8 8 0 0 1 16 0v3M4 12H3v6h4v-6H4Zm16 0h1v6h-4v-6h3Zm0 6c0 3-3 3-6 3"/></svg><span>Поддержка</span><b class="sup-nav-unread" data-support-unread hidden></b></button>
           <a class="nav-item" href="https://t.me/zetslay" target="_blank" rel="noopener noreferrer" data-blog-link aria-label="Мой блог — Telegram, откроется в новой вкладке"><svg aria-hidden="true"><use href="#i-send"/></svg><span>Мой блог</span><svg aria-hidden="true"><use href="#i-external"/></svg></a>
           <button class="nav-item" type="button" data-admin-nav data-view-target="admin" hidden><svg><use href="#i-shield"/></svg><span>Админ-панель</span></button>
         </nav>
@@ -344,6 +346,7 @@
             <noscript><p>Для поиска и чтения инструкций включите JavaScript. Поддержка: <a href="https://t.me/zetslaysupport">@zetslaysupport</a>.</p></noscript>
           </section>
 
+          <section class="view support-page" data-view="support" hidden><div data-support-root="user"></div></section>
           <section class="view admin-page" data-view="admin" hidden><div data-admin-root></div></section>
           <section class="view finance-page" data-view="finance" data-finance-workspace aria-labelledby="finance-title" hidden>
             <header class="fin-heading"><div><span class="fin-eyebrow">ZETSLAY / АНАЛИТИКА МАГАЗИНА</span><h1 id="finance-title">Финансы</h1><p>Доход, расходы и прибыль — с детализацией до каждого заказа.</p></div><div class="fin-actions"><button type="button" class="button button--ghost" data-finance-export disabled><svg aria-hidden="true"><use href="#i-external"/></svg>Скачать CSV</button><button type="button" class="button button--primary" data-finance-refresh disabled><svg aria-hidden="true"><use href="#i-bolt"/></svg><span data-finance-refresh-label>Обновить отчёт</span></button></div></header>
@@ -491,9 +494,10 @@
     <script src="robux-relay.js?v=20261009-robux-relay" defer></script>
     <script src="stars-relay.js?v=20261008-stars-relay" defer></script>
     <script src="admin-finance.js?v=20261017-admin-finance" defer></script>
-    <script src="admin-panel.js?v=20261017-admin-finance" defer></script>
+    <script src="support.js?v=20261017-support-workspace" defer></script>
+    <script src="admin-panel.js?v=20261017-support-workspace" defer></script>
     <script src="../session-client.js?v=20261012-week-session" defer></script>
-    <script src="app.js?v=20261015-subscription-navigation" defer></script>
+    <script src="app.js?v=20261017-support-workspace" defer></script>
     <script src="messages-actions.js?v=20261014-messages-workspace" defer></script>
     <script src="plugin-detail-ui.js?v=20261006-plugin-details" defer></script>
     <script src="connection-wizard-ui.js?v=20261006-guided-connect" defer></script>

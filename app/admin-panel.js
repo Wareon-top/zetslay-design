@@ -2,6 +2,7 @@ const adminUi = { token:'', generation:0, revision:0, tab:'overview', overview:n
 function adminAllowed() { return Boolean(authState.token && authState.user?.telegramUserId === '5062414502'); }
 function adminReset() {
   if(typeof adminFinanceReset==='function')adminFinanceReset();
+  if(typeof supportReset==='function')supportReset('admin');
   adminUi.revision++; Object.assign(adminUi,{token:'',generation:0,overview:null,list:null,detail:null,busy:false,error:'',tab:'overview',filters:{query:'',access:'all',plan:'all',connection:'all',sync:'all',offset:0}});
   const root=document.querySelector('[data-admin-root]'); if(root)root.innerHTML='';
   document.querySelectorAll('[data-admin-nav]').forEach(n=>n.hidden=true);
@@ -15,7 +16,7 @@ const adminLabel = value => ({connected_read_only:'Подключён',not_conne
 const adminPluginName = id => state.plugins.find(p=>p.id===id)?.name || ({'zetslay.stars-relay':'Stars Relay','zetslay.kosell-rent':'Kosell Rent','zetslay.confirm-reminder':'Confirm Reminder','zetslay.review-reminder':'Review Reminder','zetslay.sales-pause':'Пауза продаж','zetslay.mass-price-editor':'Mass Price Editor','zetslay.lot-cloner':'Lot Cloner','zetslay.auto-review-bonus':'Auto Review Bonus','zetslay.tiktok-lzt-market':'TikTok LZT Market'})[id] || id;
 function adminDate(value) { return value && Number.isFinite(new Date(value).getTime()) ? new Intl.DateTimeFormat('ru-RU',{dateStyle:'medium',timeStyle:'short',timeZone:'Europe/Moscow'}).format(new Date(value)) : '—'; }
 function adminTag(label,tone='muted') { return `<span class="admin-tag admin-tag--${tone}">${escapeHtml(label)}</span>`; }
-function adminTabLabel(tab) { return ({overview:'Обзор',finance:'Доходы проекта',users:'Пользователи',attention:'Проблемы'})[tab] || 'Обзор'; }
+function adminTabLabel(tab) { return ({overview:'Обзор',finance:'Доходы проекта',support:'Поддержка',users:'Пользователи',attention:'Проблемы'})[tab] || 'Обзор'; }
 function adminMetric(label,value,note,key='') { return `<button type="button" class="admin-metric" ${key?`data-admin-metric="${key}"`:''}><span>${label}</span><strong>${escapeHtml(value ?? '—')}</strong><small>${note}</small></button>`; }
 function adminOverviewMarkup(d) {
   const max=Math.max(1,...d.registrations.map(r=>r.count));
@@ -39,7 +40,8 @@ function adminDetailMarkup(d) {
 function renderAdminPanel() {
   const root=document.querySelector('[data-admin-root]'); if(!root)return;
   if(!adminAllowed()){root.innerHTML='<div class="admin-empty">Доступ только для владельца сервиса.</div>';return;}
-  root.innerHTML=`<header class="admin-heading"><div><span class="admin-eyebrow">Управление ZetSlay</span><h1>Админ-панель</h1><p>Пользователи, доходы проекта и работоспособность кабинетов.</p></div><button type="button" class="button button--ghost" data-admin-refresh ${adminUi.busy?'disabled':''}>${adminUi.busy?'Загружаем…':'Обновить данные'}</button></header><nav class="admin-tabs" aria-label="Разделы админ-панели">${['overview','finance','users','attention'].map(t=>`<button type="button" data-admin-tab="${t}" aria-current="${adminUi.tab===t?'page':'false'}">${adminTabLabel(t)}</button>`).join('')}</nav>${adminUi.error?`<p class="admin-error" role="alert">${escapeHtml(adminUi.error)}</p>`:''}${adminUi.busy?'<p class="admin-loading" role="status">Загружаем актуальные данные…</p>':''}${adminUi.detail?adminDetailMarkup(adminUi.detail):adminUi.tab==='finance'?adminFinanceMarkup():adminUi.tab==='overview'?(adminUi.overview?adminOverviewMarkup(adminUi.overview):'<div class="admin-empty">Сводка ещё не загружена</div>'):adminFiltersMarkup()+(adminUi.list?adminTableMarkup(adminUi.list):'<div class="admin-empty">Список ещё не загружен</div>')}`;
+  root.innerHTML=`<header class="admin-heading"><div><span class="admin-eyebrow">Управление ZetSlay</span><h1>Админ-панель</h1><p>Пользователи, доходы проекта и работоспособность кабинетов.</p></div><button type="button" class="button button--ghost" data-admin-refresh ${adminUi.busy?'disabled':''}>${adminUi.busy?'Загружаем…':'Обновить данные'}</button></header><nav class="admin-tabs" aria-label="Разделы админ-панели">${['overview','finance','support','users','attention'].map(t=>`<button type="button" data-admin-tab="${t}" aria-current="${adminUi.tab===t?'page':'false'}">${adminTabLabel(t)}</button>`).join('')}</nav>${adminUi.error?`<p class="admin-error" role="alert">${escapeHtml(adminUi.error)}</p>`:''}${adminUi.busy?'<p class="admin-loading" role="status">Загружаем актуальные данные…</p>':''}${adminUi.detail?adminDetailMarkup(adminUi.detail):adminUi.tab==='support'?`<div data-support-root="admin">${supportMarkup('admin')}</div>`:adminUi.tab==='finance'?adminFinanceMarkup():adminUi.tab==='overview'?(adminUi.overview?adminOverviewMarkup(adminUi.overview):'<div class="admin-empty">Сводка ещё не загружена</div>'):adminFiltersMarkup()+(adminUi.list?adminTableMarkup(adminUi.list):'<div class="admin-empty">Список ещё не загружен</div>')}`;
+  if(typeof supportAfterRender==='function')supportAfterRender();
 }
 async function adminLoad(kind='all',id='') {
   if(!adminAllowed()){adminAccess();return;}
@@ -49,6 +51,7 @@ async function adminLoad(kind='all',id='') {
   adminUi.token=token;adminUi.generation=generation;adminUi.busy=true;adminUi.error='';renderAdminPanel();
   try {
     if(kind==='detail') {const detail=await apiRequest('/api/v1/admin/users/'+encodeURIComponent(id),{authenticated:true});if(current())adminUi.detail=detail;}
+    else if(adminUi.tab==='support') {await loadSupport('admin');}
     else if(adminUi.tab==='finance') {const data=await apiRequest('/api/v1/admin/finance?'+adminFinanceQuery(),{authenticated:true});if(current())adminFinanceUi.report=data;}
     else if(adminUi.tab==='overview') {const data=await apiRequest('/api/v1/admin/overview',{authenticated:true});if(current())adminUi.overview=data;}
     else { const filters={...adminUi.filters};

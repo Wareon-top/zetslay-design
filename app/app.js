@@ -23,7 +23,7 @@ const state = {
 const viewTitles = {
   dashboard: 'Обзор', orders: 'Заказы', messages: 'Сообщения', lots: 'Лоты и товары',
   plugins: 'Плагины', plugin: 'Плагин', telegram: 'Telegram', billing: 'Подписка', finance: 'Финансы', security: 'Безопасность',
-  admin: 'Админ-панель',
+  admin: 'Админ-панель', support: 'Поддержка',
   guide: 'База знаний', profile: 'Профиль', author: 'Карточка автора',
 };
 
@@ -116,6 +116,7 @@ function accountInitials(email = '') {
 
 function renderAuthState() {
   if (typeof adminAccess === 'function') adminAccess();
+  if (typeof supportAuth === 'function') supportAuth();
   const email = authState.user?.email || '';
   const accountName = email || (authState.user ? 'Telegram-аккаунт' : 'Войти');
   document.querySelectorAll('[data-auth-name]').forEach((node) => { node.textContent = accountName; });
@@ -197,6 +198,7 @@ function setAuthModal(open) {
 }
 
 function resetAccountData() {
+  if (typeof supportReset === 'function') supportReset();
   storeContentSyncFlight?.cancel();
   if (typeof overviewState !== 'undefined') Object.assign(overviewState, {busy:false, request:null, error:''});
   if (typeof resetRobuxUi === 'function') resetRobuxUi();
@@ -1401,6 +1403,7 @@ function setView(viewName, updateHash = true) {
   setSidebar(false);
   if (updateHash) history.replaceState(null, '', `#${route || authorId ? viewName : resolvedView}`);
   if (typeof adminRoute === 'function') adminRoute(resolvedView);
+  if (typeof supportRoute === 'function') supportRoute(resolvedView);
   if (typeof renderPluginPage === 'function') renderPluginPage();
   window.scrollTo({ top: 0, behavior: 'smooth' });
   if (typeof renderProfileRoute === 'function') renderProfileRoute(authorId ? viewName : resolvedView);
