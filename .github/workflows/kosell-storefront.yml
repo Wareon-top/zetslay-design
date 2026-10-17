@@ -1,0 +1,31 @@
+name: Verify category storefront
+on:
+  push:
+    paths:
+      - 'app/kosell-storefront*'
+      - 'deploy/*kosell-storefront*'
+      - 'scripts/verify-kosell-storefront-browser.cjs'
+      - '.github/workflows/kosell-storefront.yml'
+permissions:
+  contents: read
+jobs:
+  storefront:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test app/kosell-storefront.test.mjs
+      - run: python3 deploy/stage-kosell-storefront.test.py
+      - name: Verify real browser layout and creation flow
+        run: |
+          browser_deps="$RUNNER_TEMP/zetslay-storefront-browser"
+          npm install --prefix "$browser_deps" --no-save --ignore-scripts playwright@1.56.1
+          ZETSLAY_PLAYWRIGHT_MODULE="$browser_deps/node_modules/playwright" ZETSLAY_TEST_BROWSER_PATH="$(command -v google-chrome)" ZETSLAY_BROWSER_OUTPUT="$RUNNER_TEMP/storefront-previews" node scripts/verify-kosell-storefront-browser.cjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kosell-storefront-previews
+          path: ${{ runner.temp }}/storefront-previews/
+          retention-days: 7

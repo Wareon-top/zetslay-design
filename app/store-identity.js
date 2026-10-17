@@ -1,0 +1,76 @@
+/* Store identity uses the selected connection and its matching read-only snapshot. */
+function safeStoreAvatar(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' && ['funpay.com', 's.funpay.com', 'sfunpay.com'].includes(url.hostname) && !url.username && !url.password && !url.port && !url.hash ? url.href : '';
+  } catch { return ''; }
+}
+function storeIdentityModel(store, content, plugins = [], signedIn = false) {
+  const matching = signedIn && store && String(content?.profile?.id) === String(store.id);
+  const profile = matching ? content.profile : null;
+  const name = signedIn && store ? String(profile?.displayName || store.displayName || 'Магазин FunPay') : 'Ваш магазин FunPay';
+  return {
+    name, id: signedIn && store ? String(store.id) : '',
+    avatar: signedIn && store ? safeStoreAvatar(profile?.avatarUrl || store.avatarUrl) : '',
+    initials: name.trim().slice(0, 2).toUpperCase() || 'FP',
+    connected: signedIn && store?.status === 'connected_read_only',
+    proxy: signedIn && Boolean(store?.proxyConfigured),
+    observedAt: matching && typeof content.observedAt === 'string' && Number.isFinite(Date.parse(content.observedAt)) ? content.observedAt : null,
+    balance: matching && Number.isSafeInteger(content.balance?.totalMinor) && content.balance.totalMinor >= 0 && ['RUB','USD','EUR'].includes(content.balance.currency) ? {totalMinor:content.balance.totalMinor,currency:content.balance.currency,approximate:content.balance.approximate===true} : null,
+    active: signedIn ? plugins.filter(p => p.installed && p.active && !p.planned).length : 0,
+    installed: signedIn ? plugins.filter(p => p.installed && !p.planned).length : 0
+  };
+}
+function storeIdentityAvatar(model) {
+  const escape = overviewEscape;
+  return `<span class="store-portrait${model.connected ? ' is-connected' : ''}" aria-label="${model.connected ? 'Магазин подключён' : 'Подключение не подтверждено'}"><span class="store-portrait__fallback">${escape(model.initials)}</span>${model.avatar ? `<img src="${escape(model.avatar)}" alt="Аватар магазина ${escape(model.name)}" referrerpolicy="no-referrer" data-store-portrait-image>` : ''}<i class="store-portrait__dot" aria-hidden="true"></i></span>`;
+}
+function renderStoreIdentity() {
+  const model = storeIdentityModel(selectedStore(), state.storeContent, state.plugins, Boolean(authState.user));
+  renderCabinetTopbar(model);
+  const escape = overviewEscape;
+  const avatar = storeIdentityAvatar(model);
+  document.querySelectorAll('[data-selected-store-avatar]').forEach(node => { node.innerHTML = avatar; });
+  const sidebar = document.querySelector('.workspace-switcher--single');
+  if (sidebar) {
+    sidebar.classList.toggle('store-sidebar', true);
+    let status = sidebar.querySelector('[data-store-sidebar-status]');
+    if (!status) { status = document.createElement('span'); status.dataset.storeSidebarStatus = ''; sidebar.append(status); }
+    status.textContent = model.connected ? 'Подключён' : 'Ожидает подключения';
+    status.className = `store-sidebar__status${model.connected ? ' is-connected' : ''}`;
+  }
+  const grid = document.querySelector('[data-overview] .overview-grid');
+  if (!grid) return;
+  let panel = document.querySelector('[data-store-identity]');
+  if (!panel) { panel = document.createElement('div'); panel.dataset.storeIdentity = ''; grid.before(panel); }
+  const time = model.observedAt ? new Date(model.observedAt).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Ещё не загружены';
+  const balanceText = model.balance ? `${model.balance.approximate ? '≈ ' : ''}${new Intl.NumberFormat('ru-RU',{style:'currency',currency:model.balance.currency}).format(model.balance.totalMinor/100)}` : 'Не получен';
+  const symbol = id => `<svg aria-hidden="true"><use href="#i-${id}"/></svg>`;
+  panel.innerHTML = `<article class="store-banner"><div class="store-banner__identity">${avatar}<div><span class="store-kicker">ВАШ МАГАЗИН / FUNPAY</span><h2>${escape(model.name)}</h2><p>${model.id ? `ID ${escape(model.id)} · Один аккаунт` : 'Подключите аккаунт, чтобы увидеть данные магазина'}</p></div></div><div class="store-banner__balance"><span class="store-kicker">БАЛАНС FUNPAY</span><strong>${escape(balanceText)}</strong><small>${model.balance?.approximate ? 'По шапке FunPay · может быть округлён' : 'По последнему снимку магазина'}</small></div><span class="store-state${model.connected ? ' is-connected' : ''}">${symbol('shield')}${model.connected ? 'Подключение подтверждено' : 'Нет подтверждённого подключения'}</span></article>
+  <div class="store-pulse-grid"><article class="store-pulse"><span class="store-pulse__icon">${symbol('shield')}</span><div><h3>Соединение</h3><strong>${model.connected ? 'FunPay подключён' : 'Ожидает подключения'}</strong><p>${model.proxy ? 'Прокси закреплён за магазином' : 'Прокси ещё не настроен'}</p></div></article><article class="store-pulse"><span class="store-pulse__icon store-pulse__icon--violet">${symbol('zap')}</span><div><h3>Автоматизация</h3><strong>${model.active} включено · ${model.installed} установлено</strong><button type="button" data-view-target="plugins">Настроить плагины ${symbol('chevron-right')}</button></div></article><article class="store-pulse"><span class="store-pulse__icon store-pulse__icon--blue">${symbol('clock')}</span><div><h3>Последние данные</h3><strong>${escape(time)}</strong><p>Снимок магазина · обновление вручную</p></div></article></div>`;
+}
+document.addEventListener('error', event => {
+  if (event.target?.matches?.('[data-store-portrait-image]')) event.target.remove();
+}, true);
+
+function cabinetAccountLabel(user) {
+  if (!user) return {name:'Войти',subtitle:'Личный кабинет',telegram:false};
+  return user.email ? {name:String(user.email),subtitle:'Аккаунт ZetSlay',telegram:false}
+    : {name:'Мой аккаунт',subtitle:'Вход через Telegram',telegram:true};
+}
+function renderCabinetTopbar(model = null) {
+  const root=document.querySelector('.topbar');
+  if(!root)return;
+  if(!model)model=storeIdentityModel(selectedStore(),state.storeContent,state.plugins,Boolean(authState.user));
+  const balance=root.querySelector('[data-topbar-balance]');
+  if(balance){balance.textContent=model.balance?`${model.balance.approximate?'≈ ':''}${new Intl.NumberFormat('ru-RU',{style:'currency',currency:model.balance.currency}).format(model.balance.totalMinor/100)}`:'—';balance.closest('.balance-chip')?.setAttribute('title',model.balance?'Баланс из последнего снимка FunPay; сумма в шапке может быть округлена':'Баланс FunPay ещё не получен. Обновите данные магазина.');}
+  const account=root.querySelector('.topbar-profile');
+  if(account){
+    const label=cabinetAccountLabel(authState.user);
+    const name=account.querySelector('[data-auth-name]');if(name){name.textContent=label.name;name.title=label.name;}
+    const subtitle=account.querySelector('.topbar-profile__meta small');if(subtitle)subtitle.textContent=label.subtitle;
+    const avatar=account.querySelector('[data-auth-avatar]');
+    if(avatar){avatar.classList.toggle('topbar-account-avatar--telegram',label.telegram);avatar.innerHTML=label.telegram?'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="m20.7 3.8-3.1 16c-.2 1.1-.9 1.3-1.8.8l-4.8-3.5-2.3 2.2c-.3.3-.5.5-1 .5l.4-4.9 8.9-8c.4-.3-.1-.5-.6-.2l-11 6.9-4.7-1.5c-1-.3-1-1 .2-1.5l18.4-7.1c.9-.3 1.6.2 1.3 1.3Z"/></svg>':overviewEscape(label.name==='Войти'?'Z':label.name.slice(0,2).toUpperCase());}
+    account.setAttribute('aria-label',authState.user?'Открыть свой аккаунт ZetSlay':'Войти в ZetSlay');
+  }
+}
