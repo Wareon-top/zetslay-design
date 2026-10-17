@@ -1,5 +1,5 @@
 {
-  "version": "2026-10-16",
+  "version": "2026-10-17",
   "currency": "RUB",
   "paymentAvailable": false,
   "maxTransactionKopecks": 1000000,
@@ -76,7 +76,7 @@
       "monthlyRub": 499,
       "palette": "amber",
       "featured": "Оптимальный выбор",
-      "description": "Ответы ИИ на отзывы и автоматизация заказов Robux.",
+      "description": "ИИ, Robux и работа с неподтверждёнными заказами.",
       "includes": [
         "common",
         "advanced",
@@ -88,7 +88,7 @@
         "AI Reviews — ответы ИИ на отзывы",
         "Robux Relay — обработка заказов на Robux",
         "Лимиты и разрешения внешних операций",
-        "Очередь, журнал и проверка результата",
+        "Ticket Pilot — обращения по выполненным заказам",
         "Свои API-ключи для внешних интеграций",
         "Обновления включённых модулей ZetSlay"
       ],
@@ -220,6 +220,11 @@
           "id": "zetslay.ai-reviews",
           "name": "AI Reviews",
           "description": "Генерация и публикация ответов на отзывы"
+        },
+        {
+          "id": "zetslay.ticket-pilot",
+          "name": "Ticket Pilot",
+          "description": "Обращения по выполненным неподтверждённым заказам"
         }
       ]
     },

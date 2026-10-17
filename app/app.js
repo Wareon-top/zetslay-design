@@ -198,6 +198,7 @@ function setAuthModal(open) {
 }
 
 function resetAccountData() {
+  if(typeof resetTicketPilotUi==='function')resetTicketPilotUi();
   if (typeof supportReset === 'function') supportReset();
   storeContentSyncFlight?.cancel();
   if (typeof overviewState !== 'undefined') Object.assign(overviewState, {busy:false, request:null, error:''});

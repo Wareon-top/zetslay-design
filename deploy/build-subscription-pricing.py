@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 import re
 
-VERSION = '20261016-current-catalog'
+VERSION = '20261017-ticket-pilot-catalog'
 CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>'
 esc = lambda value: html.escape(str(value), quote=True)
 
