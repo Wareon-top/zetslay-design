@@ -28,7 +28,10 @@ const server=http.createServer((req,res)=>{
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,'No horizontal overflow on '+name);
   await page.screenshot({path:join(output,name+'.png'),fullPage:true});
   await page.getByRole('button',{name:'Подготовить план',exact:true}).click();await page.getByRole('button',{name:'Создать лоты (1)',exact:true}).waitFor();
-  const before=creations;await page.getByRole('button',{name:'Создать лоты (1)',exact:true}).click();await page.getByText(/В очередь добавлено лотов: 1/).waitFor();assert.equal(creations,before+1);assert.equal(await page.locator('[data-sf-action="confirm"]').count(),0);assert.deepEqual(errors,[]);await page.close();
+  const before=creations;await page.getByRole('button',{name:'Создать лоты (1)',exact:true}).click();await page.getByText(/В очередь добавлено лотов: 1/).waitFor();assert.equal(creations,before+1);assert.equal(await page.locator('[data-sf-action="confirm"]').count(),0);
+  await page.evaluate(form=>{const u=sfState();u.entries=Array.from({length:49},(_,i)=>({productId:i+1,productName:'Игра '+(i+1),nodeId:'2500',form:i<22?form:null,fields:i<22?{...form.fields}:{},error:i<22?'':'Не удалось проверить форму этой категории FunPay.'}));u.preparation=null;sfInvalidate();sfRefresh();},category);
+  assert.equal(await page.getByRole('button',{name:'Подготовить план',exact:true}).isDisabled(),true);await page.getByText('План пока не готов: проверьте 27 из 49 игр',{exact:true}).waitFor();assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,'Blocker explanation fits on '+name);await page.screenshot({path:join(output,name+'-blocked.png'),fullPage:true});
+  await page.getByRole('button',{name:'Загрузить недостающие параметры (27)',exact:true}).click();await page.getByText('49/49 готово',{exact:true}).waitFor();assert.equal(await page.locator('[data-sf-reviewed]').isChecked(),false);assert.equal(creations,before+1,'Retrying category reads never creates lots');assert.deepEqual(errors,[]);await page.close();
  }
  console.log('Real Chromium: storefront search, category fields, plan, one confirmation, dark/light desktop and mobile overflow checks passed. No live API calls.');
 }finally{await browser.close();server.close();}})().catch(error=>{console.error(error);server.close();process.exitCode=1;});

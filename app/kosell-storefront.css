@@ -7,3 +7,5 @@
 @media(max-width:760px){.kosell-storefront{padding:19px 16px}.sf-columns{grid-template-columns:1fr;gap:20px}.sf-heading h3{font-size:22px}.sf-count{font-size:25px}.sf-steps{gap:15px}.sf-steps li span{font-size:10px}.sf-product-list{max-height:300px}.sf-selections{max-height:440px}.sf-fields{grid-template-columns:1fr}.sf-progress>div{flex-direction:column;gap:5px}}
 
 .kosell-storefront .kosell-hint{color:var(--muted,#9a9ca8);font-size:12px;line-height:1.6}
+
+.sf-blockers{border:1px solid var(--border,rgba(128,128,128,.22));border-left:2px solid #b39863;border-radius:10px;padding:13px 14px;margin:15px 0;color:var(--text,#e9e9ee)}.sf-blockers strong{font-size:12px;line-height:1.5}.sf-blockers p{font-size:11px;line-height:1.6;margin:7px 0;color:var(--muted,#9a9ca8)}.sf-blockers .button{white-space:normal;text-align:left;margin-top:5px;max-width:100%}
