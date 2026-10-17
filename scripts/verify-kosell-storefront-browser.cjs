@@ -23,7 +23,7 @@ const server=http.createServer((req,res)=>{
   const page=await browser.newPage({viewport}),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('http://127.0.0.1:'+server.address().port);if(theme==='light')await page.evaluate(()=>{document.documentElement.dataset.theme='light';document.body.classList.add('light');});
   await page.getByRole('button',{name:'Выбрать игры',exact:true}).click();await page.locator('[data-sf-search]').waitFor();
   await page.locator('[data-sf-search]').fill('Body');assert.equal(await page.locator('.sf-product').count(),1);assert.equal(await page.locator('.sf-product').evaluate(el=>getComputedStyle(el).display),'flex','Game rows retain layout under existing Kosell label styles');
-  await page.locator('[data-sf-select="86"]').check();await page.getByText('Параметры готовы',{exact:true}).waitFor();
+  if(theme==='light')assert.equal(await page.locator('.sf-product strong').evaluate(el=>getComputedStyle(el).color),'rgb(34, 35, 43)','Game names remain readable in light theme');await page.locator('[data-sf-select="86"]').check();await page.getByText('Параметры готовы',{exact:true}).waitFor();
   await page.locator('[data-sf-durations]').fill('24');await page.locator('[data-sf-reviewed]').check();
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,'No horizontal overflow on '+name);
   await page.screenshot({path:join(output,name+'.png'),fullPage:true});
