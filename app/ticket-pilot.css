@@ -4,3 +4,5 @@
 
 .ticket-pilot{container-type:inline-size}.tp-heading{flex-wrap:wrap}.tp-heading>div{flex:1;min-width:min(260px,100%)}.tp-metrics span{min-height:35px}.tp-search{flex-wrap:wrap}.tp-search label{flex:1 1 220px}.tp-search select{flex:1 1 180px;width:auto}
 @container(max-width:620px){.tp-heading{flex-direction:column}.tp-order{flex-wrap:wrap}.tp-order-content{flex-basis:calc(100% - 30px)}.tp-tag{margin-left:28px}.tp-fields{grid-template-columns:1fr}.tp-settings summary small{display:none}.tp-job>header{flex-wrap:wrap}}
+
+.tp-connection-check{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:17px;border:1px solid var(--tp-line);border-radius:11px;margin:20px 0}.tp-connection-check strong{font-size:12px}.tp-connection-check p{font-size:10px;color:var(--tp-muted);line-height:1.8;margin:7px 0 0}.tp-connection-check .button{font-size:11px;flex-shrink:0}
