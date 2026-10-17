@@ -21,10 +21,10 @@ trap 'exit 130' INT TERM
 git fetch origin "${ZETSLAY_LAUNCH_DESIGN_REVISION:-codex/landing-light-dark-redesign}"
 revision=$(git rev-parse FETCH_HEAD)
 mkdir -p "$work/incoming/assets" "$work/site/app" "$work/before/assets"
-files=(launch-announcement.js launch-announcement.css launch-announcement.test.mjs assets/launch-waves.svg index.html)
+files=(launch-announcement.js launch-announcement.css launch-announcement.test.mjs assets/launch-cover.jpg assets/launch-brand.webp index.html)
 for name in "${files[@]}"; do if [ -f "app/$name" ]; then cp -p "app/$name" "$work/before/$name"; fi; done
 cp app/app.js app/learning.js "$work/site/app/"
-for name in launch-announcement.js launch-announcement.css launch-announcement.test.mjs assets/launch-waves.svg; do git show "$revision:app/$name" > "$work/incoming/$name"; done
+for name in launch-announcement.js launch-announcement.css launch-announcement.test.mjs assets/launch-cover.jpg assets/launch-brand.webp; do git show "$revision:app/$name" > "$work/incoming/$name"; done
 git show "$revision:deploy/stage-launch-announcement.py" > "$work/stage.py"
 python3 "$work/stage.py" app "$work/incoming" "$work/site/app"
 verify(){ node --check "$1/app/launch-announcement.js"; node --test "$1/app/launch-announcement.test.mjs"; }

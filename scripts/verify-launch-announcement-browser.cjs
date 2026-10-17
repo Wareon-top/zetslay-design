@@ -8,7 +8,7 @@ const server = http.createServer((req, res) => {
   let file = path.join(site, decodeURIComponent(url.pathname));
   if (url.pathname.endsWith('/')) file = path.join(file, 'index.html');
   if (!file.startsWith(site + path.sep) || !fs.existsSync(file) || !fs.statSync(file).isFile()) {res.statusCode = 404; return res.end();}
-  const types = {'.html':'text/html', '.css':'text/css', '.js':'application/javascript', '.svg':'image/svg+xml', '.woff2':'font/woff2'};
+  const types = {'.html':'text/html', '.css':'text/css', '.js':'application/javascript', '.svg':'image/svg+xml', '.jpg':'image/jpeg', '.webp':'image/webp', '.woff2':'font/woff2', '.woff':'font/woff'};
   res.setHeader('Content-Type', types[path.extname(file)] || 'application/json');
   res.end(fs.readFileSync(file));
 });
@@ -57,11 +57,20 @@ const server = http.createServer((req, res) => {
     assert.equal(await page.locator('.launch-notice').getAttribute('aria-labelledby'), 'launch-notice-title');
     assert.equal(await page.evaluate(() => document.activeElement.closest('.launch-notice') === null), true);
     assert.equal(await page.locator('.launch-notice__cover img').evaluate(n=>n.complete && n.naturalWidth>0), true);
+    assert.equal(await page.locator('.launch-author__avatar').evaluate(n=>n.complete && n.naturalWidth>0), true);
+    assert.equal(await page.locator('.launch-notice__body button, .launch-notice .launch-eyebrow').count(),0);
+    const proportions=await page.locator('.launch-notice__cover').evaluate(n=>({ratio:n.clientWidth/n.clientHeight,body:getComputedStyle(n.closest('.launch-notice')).backgroundColor}));
+    assert.ok(Math.abs(proportions.ratio-16/9)<.02);
+    assert.match(proportions.body,/13, 13, 13/);
     await page.screenshot({path:path.join(out,'launch-desktop.png')});
     if (process.env.ZETSLAY_LAUNCH_INLINE_PREVIEW === '1') {
       const preview = await page.locator('.launch-notice').screenshot();
       console.log('LAUNCH_PREVIEW=' + preview.toString('base64'));
     }
+    await page.locator('.launch-notice__cover').hover();
+    await page.waitForTimeout(550);
+    assert.equal(await page.locator('.launch-notice__more').evaluate(n=>getComputedStyle(n).opacity),'1');
+    await page.screenshot({path:path.join(out,'launch-hover-desktop.png')});
     await page.locator('.launch-notice__more').click();
     await page.locator('.launch-article[open]').waitFor();
     assert.match(await page.locator('.launch-access').textContent(), /кроме легендарных/);
@@ -106,6 +115,17 @@ const server = http.createServer((req, res) => {
     assert.deepEqual(requests.filter(r=>r.method!=='GET'),[]);
     assert.equal(requests.some(r=>/payments\/(topup|purchase)/.test(r.path)),false);
     assert.deepEqual(errors,[]);
-    console.log(JSON.stringify({passed:true,realCabinet:true,weeklyCadence:true,overlayPriority:true,accountIsolation:true,mobile:true,reducedMotion:true,financialWrites:0,browserErrors:errors}));
+    const touchContext=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true,reducedMotion:'reduce'});
+    await touchContext.route('**/*',r=>r.request().url().startsWith(base)?r.continue():r.fulfill({status:401,contentType:'application/json',body:'{"error":{"code":"UNAUTHORIZED"}}'}));
+    const touch=await touchContext.newPage();await prepare(touch,'launch-touch');await show(touch);
+    assert.equal(await touch.locator('.launch-notice__more').evaluate(n=>getComputedStyle(n).opacity),'1');
+    assert.equal(await touch.locator('.launch-notice__more').evaluate(n=>getComputedStyle(n).backdropFilter),'none');
+    await touch.screenshot({path:path.join(out,'launch-touch.png')});
+    if(process.env.ZETSLAY_LAUNCH_INLINE_PREVIEW==='1')console.log('LAUNCH_TOUCH_PREVIEW='+(await touch.locator('.launch-notice').screenshot()).toString('base64'));
+    await touch.locator('.launch-notice__more').tap();await touch.locator('.launch-article[open]').waitFor();await touch.locator('.launch-article .launch-close').tap();
+    assert.equal(await touch.locator('.launch-article').count(),0);
+    await touchContext.close();
+    assert.deepEqual(errors,[]);
+    console.log(JSON.stringify({passed:true,realCabinet:true,referenceCover:true,weeklyCadence:true,overlayPriority:true,accountIsolation:true,mobile:true,touchAction:true,reducedMotion:true,financialWrites:0,browserErrors:errors}));
   } finally {await browser.close();server.close();}
 })().catch(error=>{console.error(error);server.close();process.exitCode=1;});

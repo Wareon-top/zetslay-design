@@ -51,20 +51,21 @@
   const cross = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>';
   const clock = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg>';
   const arrow = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg>';
+  const book = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6c-3-2-6-2-9-1v14c3-1 6-1 9 1 3-2 6-2 9-1V5c-3-1-6-1-9 1Zm0 0v14"/></svg>';
   function openArticle() {
     if (!ui.card || !permitted() || ui.scope !== scope()) return;
     removeCard();
     const dialog = document.createElement('dialog');
     dialog.className = 'launch-article'; dialog.setAttribute('aria-labelledby', 'launch-article-title');
     dialog.innerHTML = `<button type="button" class="launch-close launch-article__close" aria-label="Закрыть рассказ о запуске">${cross}</button>
-      <div class="launch-article__cover"><img src="assets/launch-waves.svg" alt="" width="800" height="450"><span>ZetSlay · официальный запуск</span></div>
-      <div class="launch-article__body"><p class="launch-eyebrow">Меньше рутины. Больше внимания магазину.</p>
-      <h2 id="launch-article-title">Ваш магазин — в одном рабочем пространстве</h2>
+      <div class="launch-article__cover"><img src="assets/launch-cover.jpg" alt="" width="800" height="608"></div>
+      <div class="launch-article__body"><div class="launch-article__byline"><img src="assets/launch-brand.webp" alt="" width="32" height="32"><span>Команда ZetSlay<time datetime="2026-10-16">16 октября 2026</time></span></div>
+      <h2 id="launch-article-title">ZetSlay официально запущен</h2>
       <p class="launch-article__intro">Мы запустили ZetSlay, чтобы ежедневная работа продавца на FunPay стала понятнее: от первого подключения до обработки заказов и управления ассортиментом.</p>
       <div class="launch-benefits">
-        <section><span aria-hidden="true">01</span><div><h3>Держите события в поле зрения</h3><p>Заказы, переписка с покупателями и лоты собраны в кабинете. Отвечайте на сообщения, управляйте товарами и смотрите показатели за нужный период.</p></div></section>
-        <section><span aria-hidden="true">02</span><div><h3>Выбирайте свою автоматизацию</h3><p>Подключайте плагины под задачи магазина: выдачу, аренду, работу с ценами и отзывами. Настройки и лимиты остаются под вашим контролем.</p></div></section>
-        <section><span aria-hidden="true">03</span><div><h3>Оставайтесь на связи</h3><p>Рабочий Telegram-бот помогает следить за событиями, а база знаний — разобраться с подключением и возможностями сервиса.</p></div></section>
+        <section><h3>Заказы, сообщения и товары</h3><p>Следите за продажами, отвечайте покупателям и управляйте лотами из кабинета. Смотрите показатели за день, неделю или месяц.</p></section>
+        <section><h3>Плагины под задачи магазина</h3><p>Настраивайте выдачу, аренду, работу с ценами и отзывами. Выбирайте нужные модули и задавайте лимиты перед включением.</p></section>
+        <section><h3>Telegram и база знаний</h3><p>Получайте события в рабочем боте. Инструкции по подключению и настройке сервиса доступны в базе знаний.</p></section>
       </div>
       <aside class="launch-access"><strong>Начните с трёх дней знакомства</strong><p>Пробный период доступен один раз и открывает все плагины, кроме легендарных. Для работы магазина нужна активная подписка или пробный период — в том числе при покупке плагина навсегда.</p></aside>
       <div class="launch-article__actions"><button type="button" class="launch-primary" data-launch-route="billing">Посмотреть подписки ${arrow}</button><button type="button" class="launch-secondary" data-launch-route="plugins">Каталог плагинов</button></div>
@@ -90,14 +91,15 @@
   function mount() {
     const card = document.createElement('aside');
     card.className = 'launch-notice'; card.setAttribute('aria-labelledby', 'launch-notice-title');
-    card.innerHTML = `<div class="launch-notice__cover"><img src="assets/launch-waves.svg" alt="" width="800" height="450">
+    // The reference's original cover is served locally, without a runtime CDN request.
+    card.innerHTML = `<div class="launch-notice__cover"><img src="assets/launch-cover.jpg" alt="" width="800" height="608">
       <div class="launch-tags"><span>Запуск</span><span>FunPay</span></div>
+      <button type="button" class="launch-notice__more" aria-label="Читать о запуске ZetSlay"><span>${book} Читать</span></button>
       <button type="button" class="launch-close" aria-label="Закрыть уведомление о запуске">${cross}</button></div>
-      <div class="launch-notice__body"><p class="launch-eyebrow">Новая глава вашего магазина</p>
+      <div class="launch-notice__body">
       <h2 id="launch-notice-title" role="status" aria-live="polite">ZetSlay официально запущен</h2>
-      <p class="launch-notice__excerpt">Заказы, сообщения и автоматизация FunPay — в одном кабинете. Освободите время для развития магазина.</p>
-      <button type="button" class="launch-notice__more">Что умеет ZetSlay ${arrow}</button>
-      <div class="launch-notice__footer"><span class="launch-author"><span class="launch-author__avatar" aria-hidden="true">Z</span><span><strong>Команда ZetSlay</strong><time datetime="2026-10-16">16 октября 2026</time></span></span><span class="launch-readtime">${clock} 1 мин</span></div></div>`;
+      <p class="launch-notice__excerpt">Кабинет для вашего магазина FunPay: заказы, сообщения и плагины в одном месте.</p>
+      <div class="launch-notice__footer"><span class="launch-author"><img class="launch-author__avatar" src="assets/launch-brand.webp" alt="" width="32" height="32"><span><strong>Команда ZetSlay</strong><time datetime="2026-10-16">16 октября 2026</time></span></span><span class="launch-readtime">${clock} 1 мин</span></div></div>`;
     card.querySelector('.launch-close').addEventListener('click', () => { stop(); removeCard(true); });
     card.querySelector('.launch-notice__more').addEventListener('click', openArticle);
     ui.returnFocus = document.activeElement; ui.card = card; document.body.append(card);
