@@ -32,3 +32,44 @@ test('cancelling a retry stops the remaining reads and ignores its late response
  const f=fixture();await f.run('sfLoad()');f.ctx.entries=[1,2].map(productId=>({productId,productName:'Game',nodeId:'2500',form:null,fields:{}}));f.run('sfState().entries=entries');let finish,calls=0;f.ctx.apiRequest=()=>{calls++;return new Promise(r=>finish=r);};
  const pending=f.run('sfRetryFields()');await new Promise(setImmediate);await f.run('sfCancel()');finish(structuredClone(form));await pending;assert.equal(calls,1);assert.equal(f.run('sfState().entries[0].form'),null);assert.equal(f.run('sfState().busy'),false);
 });
+function allGames(f,count=65){f.ctx.catalog={products:Array.from({length:count},(_,i)=>({id:i+1,name:'Game '+(i+1),nodeId:'2500',availableAccounts:2})),categories:structuredClone(sources.categories),preparation:null};f.run('sfState().sources=catalog');}
+test('one click selects every in-stock game beyond search and pagination, with no duplicates or creation',async()=>{
+ const f=fixture();await f.run('sfLoad()');allGames(f);f.ctx.catalog.products.push({id:100,name:'No stock',availableAccounts:0},{id:101,name:'Unknown stock'},{...f.ctx.catalog.products[0]});f.run("sfState().query='Game 1';sfState().limit=1");
+ const button={dataset:{sfAction:'select-all'}};await f.handlers.click[0]({target:{closest:()=>button}});
+ assert.equal(f.run('sfState().entries.length'),65);assert.equal(f.run('new Set(sfState().entries.map(e=>e.productId)).size'),65);assert.equal(f.run('sfState().entries.at(-1).productId'),65);
+ assert.equal(f.calls.filter(c=>c.path.endsWith('/category')).length,50);assert.equal(f.calls.some(c=>/\/(start|step|offer-confirm)$/.test(c.path)),false);
+ assert.match(f.root.innerHTML,/Выбрать все доступные \(65\)/);assert.match(f.root.innerHTML,/Ещё 15 останутся выбранными/);
+ assert.match(f.root.innerHTML,/data-sf-action="select-all" disabled/);
+ await f.run('sfSelectProducts(true)');assert.equal(f.run('sfState().entries.length'),65);assert.equal(f.calls.filter(c=>c.path.endsWith('/category')).length,50);
+});
+test('large selection submits only the ready first batch and confirmed batches leave the remaining games selected',async()=>{
+ const f=fixture();await f.run('sfLoad()');allGames(f);await f.run('sfSelectProducts(true)');f.run('sfState().reviewed=true');
+ assert.equal(f.run('sfInput().entries.length'),50);assert.equal(f.run('sfInput().entries.at(-1).productId'),50);
+ let queued=50;f.ctx.apiRequest=async(path,options)=>{f.calls.push({path,options});return path.endsWith('/offer-confirm')?{queued}:structuredClone(form);};
+ f.ctx.example={...structuredClone(plan),items:Array.from({length:50},(_,i)=>({...plan.items[0],productId:i+1}))};f.run('sfState().plan=example');await f.run('sfConfirm()');
+ assert.equal(f.run('sfState().entries.length'),15);assert.equal(f.run('sfState().entries[0].productId'),51);assert.equal(f.run('sfState().reviewed'),false);assert.match(f.root.innerHTML,/Загрузите параметры следующей партии/);
+ assert.equal(f.calls.filter(c=>c.path.endsWith('/category')).length,50,'later forms wait for an explicit request');
+ await f.run('sfRetryFields()');f.run('sfState().reviewed=true');assert.equal(f.run('sfInput().entries.length'),15);assert.equal(f.calls.filter(c=>c.path.endsWith('/category')).length,65);
+ queued=15;f.ctx.example={...structuredClone(plan),items:Array.from({length:15},(_,i)=>({...plan.items[0],productId:51+i}))};f.run('sfState().plan=example');await f.run('sfConfirm()');assert.equal(f.run('sfState().entries.length'),0);
+ assert.equal(f.calls.filter(c=>c.path.endsWith('/offer-confirm')).length,2);
+});
+test('selecting all preserves existing fields and manually selected out-of-stock games',async()=>{
+ const f=await selected();f.run("sfState().entries[0].fields.custom='KEEP';sfState().entries.push({productId:99,productName:'Manual no-stock',nodeId:null,fields:{}})");
+ await f.run('sfSelectProducts(true)');assert.equal(f.run('sfState().entries.length'),2);assert.equal(f.run('sfState().entries[0].fields.custom'),'KEEP');assert.equal(f.calls.filter(c=>c.path.endsWith('/category')).length,1);
+});
+test('an unknown batch creation result does not advance or drop any selected games',async()=>{
+ const f=fixture();await f.run('sfLoad()');allGames(f);await f.run('sfSelectProducts(true)');f.ctx.example=structuredClone(plan);f.run('sfState().plan=example');let writes=0;f.ctx.apiRequest=async()=>{writes++;throw Error('Ответ потерян');};
+ await f.run('sfConfirm()');await f.run('sfConfirm()');assert.equal(writes,1);assert.equal(f.run('sfState().entries.length'),65);assert.equal(f.run('sfState().entries[0].productId'),1);assert.match(f.root.innerHTML,/Проверьте очередь/);
+});
+test('an empty plan can advance to the remaining selection without creating offers',async()=>{
+ const f=fixture();await f.run('sfLoad()');allGames(f);await f.run('sfSelectProducts(true)');f.ctx.empty={...structuredClone(plan),items:[]};f.run('sfState().plan=empty');
+ assert.match(f.run('sfPlan(empty)'),/Перейти к следующим играм/);await f.run('sfNextBatch()');assert.equal(f.run('sfState().entries.length'),15);assert.equal(f.run('sfState().entries[0].productId'),51);assert.equal(f.run('sfState().reviewed'),false);assert.equal(f.calls.some(c=>c.path.endsWith('/offer-confirm')),false);
+});
+test('cancelling bulk selection stops form reads while retaining the selected games',async()=>{
+ const f=fixture();await f.run('sfLoad()');allGames(f);let finish,reads=0;f.ctx.apiRequest=()=>{reads++;return new Promise(r=>finish=r);};const pending=f.run('sfSelectProducts(true)');await new Promise(setImmediate);
+ assert.equal(f.run('sfState().entries.length'),65);await f.run('sfCancel()');finish(structuredClone(form));await pending;assert.equal(reads,1);assert.equal(f.run('sfState().busy'),false);assert.equal(f.run('sfState().entries[0].form'),null);
+});
+test('switching account during bulk selection discards the old catalogue and late forms',async()=>{
+ const f=fixture();await f.run('sfLoad()');allGames(f);let finish;f.ctx.apiRequest=()=>new Promise(r=>finish=r);const pending=f.run('sfSelectProducts(true)');await new Promise(setImmediate);f.ctx.authState.token='account-two';f.ctx.sessionGeneration++;finish(structuredClone(form));await pending;
+ assert.equal(f.run('sfState().sources'),null);assert.equal(f.run('sfState().entries.length'),0);assert.equal(f.run('sfState().busy'),false);
+});
