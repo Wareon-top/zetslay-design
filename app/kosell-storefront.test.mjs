@@ -156,3 +156,28 @@ test('a duplicate click or a late probe response cannot populate another session
 test('a rejected or malformed probe approval reports an error and does not submit creation confirmation',async()=>{
  for(const reply of [{accepted:false},{accepted:true,nodeId:'999'}]){const f=fixture(),form=held(f);f.ctx.apiRequest=async(path,options)=>{f.calls.push({path,options});return reply};await f.run('sfResumeCreation')(form);assert.equal(f.calls.length,1);assert.match(f.root.innerHTML,/Разрешение не подтверждено/);assert.ok(!f.calls.some(call=>call.path.endsWith('/offer-confirm')));}
 });
+const queueFields={nodeId:'451',afterJobId:hold.afterJobId,queueFingerprint:'b'.repeat(64),jobs:8,form:{nodeId:'451',categoryTitle:'Прочие игры',fingerprint:'c'.repeat(64),controls:[{name:'server_id',label:'Игра',kind:'select',required:false,options:[{value:'',label:'Выберите'},{value:'17',label:'Game 1'},{value:'18',label:'Game 2 <svg onload=x>'}]}]},entries:[{productId:1,productName:'Game 1',jobs:4,fields:{server_id:'17'}},{productId:2,productName:'Game 2 <img onerror=x>',jobs:4,fields:{server_id:''}}]};
+test('native optional game selectors require a value in the ordinary catalogue too',()=>{
+ const f=fixture();f.ctx.example={form:queueFields.form,fields:{server_id:''}};assert.equal(f.run('sfEntryReady(example)'),false);f.run('example.fields.server_id="17"');assert.equal(f.run('sfEntryReady(example)'),true);
+});
+test('queue field review escapes game names, shares one options list and blocks empty-game probes',async()=>{
+ const f=fixture();held(f);f.run('kosellUi.status.offerCreationQueue.holds[0].missingGameValues=8');let html=f.run('sfInner(kosellUi.status)');assert.match(html,/Проверить и исправить параметры очереди/);assert.doesNotMatch(html,/data-sf-creation-resume/);
+ f.ctx.apiRequest=async(path,options)=>{f.calls.push({path,options});return structuredClone(queueFields);};await f.run('sfLoadQueueFields')({dataset:{sfQueueFields:'451',after:hold.afterJobId}});html=f.root.innerHTML;
+ assert.match(html,/Параметры готовы: 1 из 2 игр/);assert.match(html,/Цены и сроки сохранятся/);assert.doesNotMatch(html,/<img onerror|<svg onload/);assert.equal((html.match(/<datalist id="sf-repair-options-0"/g)||[]).length,1);assert.match(html,/Сохранить параметры очереди/);
+ const target={dataset:{sfRepairField:'server_id',sfRepairProduct:'2'},value:'Game 2 <svg onload=x> (#18)',hasAttribute:()=>false};for(const fn of f.handlers.change)await fn({target});assert.equal(f.run('sfState().repair.entries[1].fields.server_id'),'18');assert.match(f.root.innerHTML,/Параметры готовы: 2 из 2 игр/);assert.equal(f.calls.length,1);
+});
+test('saving repaired fields requires review, sends only field selections, and never starts creation or price preparation',async()=>{
+ const f=fixture();held(f);f.ctx.preview=structuredClone(queueFields);f.run('sfState().repair={...preview,reviewed:false};sfState().repair.entries[1].fields.server_id="18"');const node={querySelector:()=>({checked:true})};await f.run('sfSaveQueueFields')(node);assert.equal(f.calls.length,0);
+ f.run('sfState().repair.reviewed=true');f.ctx.apiRequest=async(path,options)=>{f.calls.push({path,options});return{saved:true,nodeId:'451',updated:8};};await f.run('sfSaveQueueFields')(node);assert.equal(f.calls.length,1);assert.ok(f.calls[0].path.endsWith('/queue-fields/save'));assert.equal(f.calls[0].options.body.entries[1].fields.server_id,'18');assert.equal(Object.hasOwn(f.calls[0].options.body.entries[0],'priceMinor'),false);assert.equal(f.run('sfState().repair'),null);assert.match(f.root.innerHTML,/Параметры исправлены в 8 заданиях/);assert.equal(f.calls.some(c=>/offer-confirm|offer-creation-resume|\/step|\/start/.test(c.path)),false);
+});
+test('queue parameter reads and saves are single-flight and discard results from another account',async()=>{
+ for(const mode of ['read','save']){
+  const f=fixture();held(f);let resolve;f.ctx.apiRequest=(path,options)=>{f.calls.push({path,options});return new Promise(r=>resolve=r);};
+  if(mode==='save'){f.ctx.preview=structuredClone(queueFields);f.run('sfState().repair={...preview,reviewed:true};sfState().repair.entries[1].fields.server_id="18"');}
+  const fn=f.run(mode==='read'?'sfLoadQueueFields':'sfSaveQueueFields'),input=mode==='read'?{dataset:{sfQueueFields:'451',after:hold.afterJobId}}:{querySelector:()=>({checked:true})},request=fn(input);await fn(input);assert.equal(f.calls.length,1);f.ctx.authState.token='other';f.ctx.sessionGeneration++;resolve(mode==='read'?queueFields:{saved:true,nodeId:'451',updated:8});await request;assert.equal(f.run('sfState().repair'),undefined);assert.equal(f.run('sfState().message'),'');
+ }
+});
+test('malformed queue previews and arbitrary datalist values do not authorize a mutation',async()=>{
+ const f=fixture();held(f);f.ctx.apiRequest=async()=>({...structuredClone(queueFields),form:{...queueFields.form,controls:[{name:'server_id',kind:'select'}]}});await f.run('sfLoadQueueFields')({dataset:{sfQueueFields:'451',after:hold.afterJobId}});assert.match(f.root.innerHTML,/Параметры очереди не подтверждены/);assert.equal(f.run('sfState().repair'),null);
+ f.ctx.preview=structuredClone(queueFields);f.run('sfState().repair={...preview,reviewed:true}');const target={dataset:{sfRepairField:'server_id',sfRepairProduct:'2'},value:'Invented game',hasAttribute:()=>false};for(const fn of f.handlers.change)await fn({target});assert.equal(f.run('sfState().repair.entries[1].fields.server_id'),'');assert.equal(f.run('sfState().repair.reviewed'),false);assert.match(f.root.innerHTML,/Выберите значение из списка FunPay/);
+});
