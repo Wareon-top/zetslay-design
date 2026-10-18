@@ -142,3 +142,17 @@ test('a renewal response from another session or after cancellation cannot resto
   resolve({token:'draft',state:'ready',plan:{...plan,token:'late'}});await pending;assert.equal(f.run('sfState().plan'),null);assert.notEqual(f.run('sfState().preparation?.state'),'ready');
  }
 });
+const hold={nodeId:'451',afterJobId:'00000000-0000-0000-0000-000000000002',pending:12,failures:2,message:'Проверьте <img onerror=x>',probePending:false};
+function held(f){f.ctx.hold=structuredClone(hold);f.run('kosellUi.status.offerCreationQueue={pending:12,holds:[hold]}');return{dataset:{node:'451',after:hold.afterJobId},querySelector:()=>({checked:true})};}
+test('creation holds explain a saved queue, escape diagnostics and require explicit review before one new probe',async()=>{
+ const f=fixture(),form=held(f);let markup=f.run('sfInner(kosellUi.status)');assert.match(markup,/Создание требует проверки/);assert.match(markup,/data-sf-creation-resume/);assert.match(markup,/ещё не отправленного задания/);assert.doesNotMatch(markup,/<img onerror/);assert.equal(f.calls.length,0);
+ form.querySelector=()=>({checked:false});await f.run('sfResumeCreation').call(null,form);assert.equal(f.calls.length,0);assert.match(f.feedback.textContent,/Подтвердите/);
+ form.querySelector=()=>({checked:true});f.ctx.apiRequest=async(path,options)=>{f.calls.push({path,options});return{accepted:true,nodeId:'451',jobId:'queued-new'};};f.ctx.loadKosellStatus=async()=>{f.run('kosellUi.status.offerCreationQueue.holds[0].probePending=true')};await f.run('sfResumeCreation').call(null,form);
+ assert.equal(f.calls.length,1);assert.ok(f.calls[0].path.endsWith('/offer-creation-resume'));assert.deepEqual(JSON.parse(JSON.stringify(f.calls[0].options.body)),{nodeId:'451',afterJobId:hold.afterJobId,confirm:true});assert.match(f.root.innerHTML,/Один лот ожидает пробного создания/);assert.doesNotMatch(f.root.innerHTML,/data-sf-creation-resume/);
+});
+test('a duplicate click or a late probe response cannot populate another session or send another authorization',async()=>{
+ const f=fixture(),form=held(f);let done;f.ctx.apiRequest=(path,options)=>{f.calls.push({path,options});return new Promise(resolve=>done=resolve)};const run=f.run('sfResumeCreation'),pending=run(form);await new Promise(setImmediate);await run(form);assert.equal(f.calls.length,1);f.ctx.authState.token='other';f.ctx.sessionGeneration=2;done({accepted:true,nodeId:'451',jobId:'new'});await pending;assert.equal(f.run('sfState().message'),'');assert.equal(f.run('sfState().busy'),false);
+});
+test('a rejected or malformed probe approval reports an error and does not submit creation confirmation',async()=>{
+ for(const reply of [{accepted:false},{accepted:true,nodeId:'999'}]){const f=fixture(),form=held(f);f.ctx.apiRequest=async(path,options)=>{f.calls.push({path,options});return reply};await f.run('sfResumeCreation')(form);assert.equal(f.calls.length,1);assert.match(f.root.innerHTML,/Разрешение не подтверждено/);assert.ok(!f.calls.some(call=>call.path.endsWith('/offer-confirm')));}
+});

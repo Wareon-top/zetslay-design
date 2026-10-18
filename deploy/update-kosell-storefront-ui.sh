@@ -24,4 +24,4 @@ tar -czf "$backup" "${files[@]}"
 for name in kosell-storefront.js kosell-storefront.css index.html; do candidate=$(mktemp "app/.storefront.XXXXXX"); if ! cp "$work/staged/$name" "$candidate" || ! chmod 644 "$candidate" || ! mv -f "$candidate" "app/$name"; then rm -f "$candidate"; exit 1; fi; done
 complete=true
 echo "Массовая витрина без обязательных лотов-образцов установлена. Backup: $backup"
-echo 'Ctrl+F5 → Kosell Rent → Массовая витрина. Для сохранённого плана: «Обновить подтверждение без пересчёта».'
+echo 'Ctrl+F5 → Kosell Rent → Массовая витрина. Для приостановленной категории доступна проверка одного оставшегося лота. Неизвестные задания повторно не создаются.'

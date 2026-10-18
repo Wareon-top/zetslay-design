@@ -2,7 +2,7 @@ from pathlib import Path
 import re
 import sys
 
-VERSION='20261018-storefront-saved-plan'
+VERSION='20261018-storefront-creation-holds'
 def require(ok,message):
     if not ok: raise ValueError(message+'. Сайт не изменён.')
 
