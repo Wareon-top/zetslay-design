@@ -13,6 +13,15 @@ class StageTest(unittest.TestCase):
    m.stage(local,ROOT/'app',base/'out');html=(base/'out/index.html').read_text()
    self.assertIn('local-preserved.test',html);self.assertFalse((base/'out/app.js').exists());self.assertLess(html.index('src="app.js'),html.index('src="subscription-access.js'))
    self.assertEqual(html.count('src="subscription-access.js'),1)
+   self.assertLess(html.index('src="subscription-access.js'),html.index('src="payments.js'))
+ def test_missing_subscription_module_is_inserted_before_payment_wrapper(self):
+  with tempfile.TemporaryDirectory() as temp:
+   base=Path(temp);local=base/'local';local.mkdir()
+   import re
+   html=re.sub(r'<script[^>]*src="subscription-access\.js[^\"]*"[^>]*>\s*</script>','',(ROOT/'app/index.html').read_text())
+   (local/'index.html').write_text(html);m.stage(local,ROOT/'app',base/'out');result=(base/'out/index.html').read_text()
+   self.assertLess(result.index('src="app.js'),result.index('src="subscription-access.js'))
+   self.assertLess(result.index('src="subscription-access.js'),result.index('src="payments.js'))
  def test_repeated_update_keeps_one_asset_link(self):
   with tempfile.TemporaryDirectory() as temp:
    base=Path(temp);m.stage(ROOT/'app',ROOT/'app',base/'once');m.stage(base/'once',ROOT/'app',base/'twice')

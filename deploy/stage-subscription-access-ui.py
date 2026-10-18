@@ -4,7 +4,7 @@ import re
 import sys
 
 ASSETS = ['subscription-access.js','subscription-access.css','subscription-access.test.mjs']
-VERSION = '20261011-access-workspace'
+VERSION = '20261018-promo-upgrades'
 
 
 def stage(local, incoming, out):
@@ -25,15 +25,17 @@ def stage(local, incoming, out):
         matches = list(re.finditer(pattern, html, re.I))
         if len(matches)>1:
             raise ValueError('Тарифы подключено несколько раз. Файлы не изменены.')
-        # Put it last, after all existing wrappers, even when updating an earlier version.
-        if matches:
-            m=matches[0];begin=m.start();end=m.end()
-            while begin>0 and html[begin-1] in ' \t': begin-=1
-            if html[end:end+2]=='\r\n': end+=2
-            elif html[end:end+1]=='\n': end+=1
-            html=html[:begin]+html[end:]
         fresh = f'<link rel="stylesheet" href="{name}?v={VERSION}">' if kind=='style' else f'<script src="{name}?v={VERSION}" defer></script>'
-        html = re.sub(r'[ \t]*'+re.escape(closing),lambda _:fresh+'\n'+closing,html,count=1,flags=re.I)
+        if matches:
+            # Preserve wrapper order: payments.js must keep ownership of checkout.
+            match=matches[0]
+            html=html[:match.start()]+fresh+html[match.end():]
+        else:
+            payment = re.search(r'<script\b[^>]*\bsrc=["\']payments\.js(?:\?[^"\']*)?["\'][^>]*>\s*</script>',html,re.I) if kind=='script' else None
+            if payment:
+                html=html[:payment.start()]+fresh+'\n'+html[payment.start():]
+            else:
+                html = re.sub(r'[ \t]*'+re.escape(closing),lambda _:fresh+'\n'+closing,html,count=1,flags=re.I)
     outputs['index.html']=html
     for name, text in outputs.items():
         path=out/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_text(text)
