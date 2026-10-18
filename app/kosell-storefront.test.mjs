@@ -110,3 +110,7 @@ test('category limits and busy preparation are retried, while authentication and
   const f=await selected();let attempts=0;f.ctx.apiRequest=async()=>{attempts++;throw Object.assign(Error(code),{code});};await f.run('sfPrepare()');assert.equal(attempts,1);assert.equal(f.run('sfState().busy'),false);
  }
 });
+test('a persistent category limit pauses the batch instead of exhausting retries for every selected game',async()=>{
+ const f=fixture();await f.run('sfLoad()');f.ctx.entries=[1,2].map(productId=>({productId,productName:'Game',nodeId:'2500',form:null,fields:{}}));f.run('sfState().entries=entries');let attempts=0;
+ f.ctx.apiRequest=async()=>{attempts++;throw Object.assign(Error('Limit'),{code:'RATE_LIMITED'});};await f.run('sfRetryFields()');assert.equal(attempts,6);assert.equal(f.run('sfState().entries[0].retryExhausted'),true);assert.equal(f.run('sfState().entries[1].loading'),undefined);assert.equal(f.run('sfState().busy'),false);assert.match(f.root.innerHTML,/Загрузить недостающие параметры/);
+});
