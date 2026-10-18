@@ -30,9 +30,10 @@ def support_contact(config):
     if not re.fullmatch(r'@[A-Za-z][A-Za-z0-9_]{4,31}',handle):raise ValueError('Некорректный контакт поддержки Telegram')
     return '<a data-support-contact href="https://t.me/'+handle[1:]+'">Поддержка '+html.escape(handle)+'</a>'
 
-def operator_requisites(config):
+def operator_requisites(config,compact=False):
     name=config.get('operatorName','').strip();inn=config.get('inn','').strip()
     if not name or not inn:return ''
+    if compact:return '<p data-operator-requisites class="wave-footer__description">ZetSlay · ИНН '+html.escape(inn)+' · НПД · <a href="/legal/#operator">Реквизиты</a></p>'
     return '<p data-operator-requisites class="wave-footer__description">Самозанятый '+html.escape(name)+' · ИНН '+html.escape(inn)+' · Налог на профессиональный доход (НПД)</p>'
 
 def update_operator_footer(text,config):
@@ -41,7 +42,7 @@ def update_operator_footer(text,config):
     m=matches[0];footer=m.group()
     footer=re.sub(r'\s*<p\b[^>]*\bdata-operator-requisites\b[^>]*>.*?</p>','',footer,flags=re.S)
     footer=re.sub(r'\s*<a\b[^>]*\bdata-support-contact\b[^>]*>.*?</a>','',footer,flags=re.S)
-    line=operator_requisites(config)
+    line=operator_requisites(config,compact=True)
     if line:
         marker='<div class="wave-footer__bottom">'
         footer=re.sub(r'\s*'+re.escape(marker),'\n      '+line+'\n      '+marker,footer,count=1) if marker in footer else re.sub(r'\s*</footer>','\n'+line+'\n</footer>',footer,count=1)
@@ -89,7 +90,7 @@ def build(root):
         for entry in sorted((root/'archive').iterdir()) if (root/'archive').is_dir() else []:
             if entry.is_dir() and re.fullmatch(r'\d{4}-\d{2}-\d{2}-(?:v\d+|draft-\d+)',entry.name):
                 links+='<a class="legal-button" href="/legal/archive/'+esc(entry.name)+'/index.html">Архив редакции '+esc(entry.name)+'</a>'
-    home=f'<div class="legal-hero"><span class="legal-eyebrow">ZetSlay / Документы</span><h1>Правила, данные<br>и ваши права.</h1><p>Условия доступа, границы автоматизации, расходы, обработка данных и понятный порядок обращений.</p><div class="legal-meta"><span>Редакция {esc(data["version"])}</span><span>{esc(data["date"])}</span></div></div>{notice}<div class="legal-actions">{contact}</div><div class="legal-grid">{cards}</div>{independence}<section class="legal-operator"><h2>Оператор проекта</h2><dl>{facts}</dl></section><section class="legal-operator"><h2>Обращения и запросы</h2><p>Пользователь может направить запрос о данных, удалении аккаунта, отзыве согласия, инциденте, оплате или претензии через профиль. Ответ сохраняется в кабинете.</p><p>Отправка обращения не запускает автоматическое удаление или возврат. Для обращений лиц без аккаунта или с утраченным доступом используйте контакт поддержки, указанный ниже.</p><p>Срок зависит от основания запроса: например, сведения об обработке — 10 рабочих дней по ст. 20 152-ФЗ; отдельные денежные требования потребителя — 10 дней по ст. 31 закона о защите потребителей. Номер заявки не переносит начало обязательного срока на дату решения оператора.</p><div class="legal-actions"><a class="legal-button legal-button--primary" href="/app/#profile">Перейти к обращениям</a><button class="legal-button" data-privacy-settings type="button">Настройки cookies</button></div></section>'
+    home=f'<div class="legal-hero"><span class="legal-eyebrow">ZetSlay / Документы</span><h1>Правила, данные<br>и ваши права.</h1><p>Условия доступа, границы автоматизации, расходы, обработка данных и понятный порядок обращений.</p><div class="legal-meta"><span>Редакция {esc(data["version"])}</span><span>{esc(data["date"])}</span></div></div>{notice}<div class="legal-actions">{contact}</div><div class="legal-grid">{cards}</div>{independence}<section class="legal-operator" id="operator"><h2>Оператор проекта</h2><dl>{facts}</dl></section><section class="legal-operator"><h2>Обращения и запросы</h2><p>Пользователь может направить запрос о данных, удалении аккаунта, отзыве согласия, инциденте, оплате или претензии через профиль. Ответ сохраняется в кабинете.</p><p>Отправка обращения не запускает автоматическое удаление или возврат. Для обращений лиц без аккаунта или с утраченным доступом используйте контакт поддержки, указанный ниже.</p><p>Срок зависит от основания запроса: например, сведения об обработке — 10 рабочих дней по ст. 20 152-ФЗ; отдельные денежные требования потребителя — 10 дней по ст. 31 закона о защите потребителей. Номер заявки не переносит начало обязательного срока на дату решения оператора.</p><div class="legal-actions"><a class="legal-button legal-button--primary" href="/app/#profile">Перейти к обращениям</a><button class="legal-button" data-privacy-settings type="button">Настройки cookies</button></div></section>'
     (root/'index.html').write_text(page('Юридическая информация',home))
     (root/'publication.json').write_text(json.dumps(release,ensure_ascii=False,indent=2)+'\n')
     for d in docs:
