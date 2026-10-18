@@ -37,6 +37,10 @@ const server=http.createServer((req,res)=>{
   await page.evaluate(()=>{const u=sfState();u.entries=[];u.query='Игра 1';u.limit=1;u.sources.products=Array.from({length:65},(_,i)=>({id:i+1,name:'Игра '+(i+1),nodeId:'2500',availableAccounts:2}));sfInvalidate();sfRefresh();});
   await page.getByRole('button',{name:'Выбрать все доступные (65)',exact:true}).click();await page.waitForFunction(()=>sfState().entries.length===65&&!sfState().busy);assert.equal(await page.evaluate(()=>sfBatch().filter(sfEntryReady).length),50);assert.equal(await page.evaluate(()=>sfState().entries.at(-1).productId),65);
   await page.locator('[data-sf-reviewed]').check();assert.equal(await page.evaluate(()=>sfInput().entries.length),50);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,'Bulk toolbar and batching note fit on '+name);assert.equal(creations,before+1,'Selecting the entire catalogue never creates lots');await page.screenshot({path:join(output,name+'-all.png'),fullPage:true});
+  // A real DOM countdown must remain readable and cancellable on every theme/viewport.
+  await page.evaluate(()=>{const u=sfState();u.preparation={token:'limited',state:'preparing',revision:15,completed:15,total:250};u.busy=true;u.wait={seconds:60};sfRefresh();});
+  await page.locator('[data-sf-wait]').scrollIntoViewIfNeeded();await page.getByText(/Продолжим автоматически через 60 с/).waitFor();assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,'Limit countdown fits on '+name);await page.screenshot({path:join(output,name+'-waiting.png'),fullPage:true});
+  await page.getByRole('button',{name:'Остановить подготовку',exact:true}).click();assert.equal(await page.locator('[data-sf-wait]').count(),0);assert.equal(creations,before+1,'Cancelling the limit wait never creates lots');
   assert.deepEqual(errors,[]);await page.close();
  }
  console.log('Real Chromium: storefront search, category fields, plan, one confirmation, dark/light desktop and mobile overflow checks passed. No live API calls.');

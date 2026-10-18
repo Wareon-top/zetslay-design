@@ -11,3 +11,5 @@
 .sf-blockers{border:1px solid var(--border,rgba(128,128,128,.22));border-left:2px solid #b39863;border-radius:10px;padding:13px 14px;margin:15px 0;color:var(--text,#e9e9ee)}.sf-blockers strong{font-size:12px;line-height:1.5}.sf-blockers p{font-size:11px;line-height:1.6;margin:7px 0;color:var(--muted,#9a9ca8)}.sf-blockers .button{white-space:normal;text-align:left;margin-top:5px;max-width:100%}
 
 .sf-game-actions{flex-wrap:wrap;align-items:center;column-gap:16px;row-gap:12px}.sf-game-actions .sf-select-all{color:var(--text,#e9e9ee);font-weight:600}.sf-game-actions button:disabled{opacity:.5;cursor:default}.kosell-storefront .sf-selection-hint,.kosell-storefront .sf-batch-note{font-size:11px;line-height:1.6;color:var(--muted,#9a9ca8);margin:10px 0 14px}.sf-batch-note{padding:11px 12px;border:1px solid var(--border,rgba(128,128,128,.22));border-radius:9px}
+
+.kosell-storefront .sf-wait{padding:12px 16px;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--muted,#9a9ca8);font-size:13px;line-height:1.6;}

@@ -73,3 +73,40 @@ test('switching account during bulk selection discards the old catalogue and lat
  const f=fixture();await f.run('sfLoad()');allGames(f);let finish;f.ctx.apiRequest=()=>new Promise(r=>finish=r);const pending=f.run('sfSelectProducts(true)');await new Promise(setImmediate);f.ctx.authState.token='account-two';f.ctx.sessionGeneration++;finish(structuredClone(form));await pending;
  assert.equal(f.run('sfState().sources'),null);assert.equal(f.run('sfState().entries.length'),0);assert.equal(f.run('sfState().busy'),false);
 });
+
+test('a 250-step plan waits a full minute at step 15 and resumes the same revision without restarting or creating',async()=>{
+ const f=await selected();let revision=0,limited=false,waitTicks=0;const sent=[];
+ f.ctx.setTimeout=(fn,ms)=>{if(ms===1000){waitTicks++;assert.match(f.root.innerHTML,/Продолжим автоматически через/);}queueMicrotask(fn);return 1;};
+ f.ctx.apiRequest=async(path,options)=>{
+  sent.push({path,body:structuredClone(options?.body)});
+  if(path.endsWith('/start'))return{token:'saved-250',state:'preparing',revision:0,completed:0,total:250};
+  assert.ok(path.endsWith('/step'));
+  assert.equal(options.body.token,'saved-250');assert.equal(options.body.revision,revision);
+  if(revision===15&&!limited){limited=true;throw Object.assign(Error('Limit'),{code:'RATE_LIMITED'});}
+  revision++;return{token:'saved-250',state:revision===250?'ready':'preparing',revision,completed:revision,total:250,...revision===250?{plan}:{}};
+ };
+ await f.run('sfPrepare()');assert.equal(revision,250);assert.equal(waitTicks,60);assert.equal(sent.filter(c=>c.path.endsWith('/start')).length,1);assert.equal(sent.filter(c=>c.path.endsWith('/step')&&c.body.revision===15).length,2);assert.equal(f.run('sfState().busy'),false);assert.equal(f.run('sfState().wait'),null);assert.equal(f.run('sfState().plan.token'),plan.token);assert.equal(sent.some(c=>c.path.endsWith('/offer-confirm')),false);
+});
+test('persistent limits stop after five waits and retain a resumable preparation',async()=>{
+ const f=await selected();let attempts=0,ticks=0;f.ctx.setTimeout=(fn,ms)=>{if(ms===1000)ticks++;queueMicrotask(fn);return 1;};
+ f.ctx.apiRequest=async path=>{if(path.endsWith('/start'))return{token:'saved',state:'preparing',revision:15,completed:15,total:250};attempts++;throw Object.assign(Error('Limit'),{code:'RATE_LIMITED'});};
+ await f.run('sfPrepare()');assert.equal(attempts,6);assert.equal(ticks,300);assert.equal(f.run('sfState().preparation.revision'),15);assert.equal(f.run('sfState().busy'),false);assert.match(f.root.innerHTML,/Прогресс сохранён/);assert.match(f.root.innerHTML,/data-sf-action="resume"/);
+});
+test('cancelling during the limit countdown sends no further preparation steps',async()=>{
+ const f=await selected();let stepCalls=0,release;f.ctx.setTimeout=(fn,ms)=>{if(ms===1000)release=fn;else queueMicrotask(fn);return 1;};
+ f.ctx.apiRequest=async path=>{if(path.endsWith('/start'))return{token:'saved',state:'preparing',revision:15,completed:15,total:250};if(path.endsWith('/cancel'))return{};stepCalls++;throw Object.assign(Error('Limit'),{code:'RATE_LIMITED'});};
+ const pending=f.run('sfPrepare()');await new Promise(setImmediate);assert.match(f.root.innerHTML,/Продолжим автоматически через 60 с/);await f.run('sfCancel()');release();await pending;assert.equal(stepCalls,1);assert.equal(f.run('sfState().preparation.state'),'cancelled');assert.equal(f.run('sfState().wait'),null);assert.doesNotMatch(f.root.innerHTML,/Продолжим автоматически/);
+});
+test('changing account during a limit wait discards old progress without further API requests',async()=>{
+ const f=await selected();let stepCalls=0,release;f.ctx.setTimeout=(fn,ms)=>{if(ms===1000)release=fn;else queueMicrotask(fn);return 1;};
+ f.ctx.apiRequest=async path=>{if(path.endsWith('/start'))return{token:'old',state:'preparing',revision:15,completed:15,total:250};stepCalls++;throw Object.assign(Error('Limit'),{code:'RATE_LIMITED'});};
+ const pending=f.run('sfPrepare()');await new Promise(setImmediate);f.ctx.authState.token='new-account';f.ctx.sessionGeneration++;release();await pending;assert.equal(stepCalls,1);assert.equal(f.run('sfState().preparation'),null);assert.equal(f.run('sfState().entries.length'),0);
+});
+test('category limits and busy preparation are retried, while authentication and unknown results stop immediately',async()=>{
+ for(const failure of [{code:'RATE_LIMITED',message:'Limit'},{code:'SYNC_BUSY',message:'Busy'},{code:'INVALID_STATE',message:'Подключение временно занято'}]){
+  const f=fixture();await f.run('sfLoad()');let attempts=0;f.ctx.apiRequest=async()=>{if(++attempts===1)throw Object.assign(Error(failure.message),failure);return structuredClone(form);};await f.run('sfSelect(1,true)');assert.equal(attempts,2);assert.equal(f.run('sfEntryReady(sfState().entries[0])'),true);
+ }
+ for(const code of ['AUTH_REJECTED','INVALID_SESSION','REQUEST_RESULT_UNKNOWN','INTERNAL_ERROR']){
+  const f=await selected();let attempts=0;f.ctx.apiRequest=async()=>{attempts++;throw Object.assign(Error(code),{code});};await f.run('sfPrepare()');assert.equal(attempts,1);assert.equal(f.run('sfState().busy'),false);
+ }
+});
