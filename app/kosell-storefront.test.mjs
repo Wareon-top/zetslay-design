@@ -208,3 +208,33 @@ test('initial mass selection offers a single generic choice for unmatched games 
  const f=fixture();await f.run('sfLoad()');f.ctx.preview=structuredClone(queueFields);f.run(`preview.form.gameFallbacks=[{name:'server_id',value:'other',label:'Other game'}];preview.form.gameMatches={server_id:{status:'missing'}};preview.form.controls[0].options.push({value:'other',label:'Other game'});sfState().entries=[1,2,3].map(productId=>({productId,productName:'Unknown '+productId,nodeId:'451',fields:{server_id:productId===3?'17':''},form:preview.form}));sfState().reviewed=true;sfState().plan={token:'old',items:[],skipped:[],currency:'RUB'};sfRefresh()`);
  assert.match(f.root.innerHTML,/data-sf-catalog-fallback="0"/);assert.match(f.root.innerHTML,/Для 2 игр выбрать «Other game»/);f.run('sfApplyCatalogFallback(0)');assert.equal(f.run('sfState().entries[0].fields.server_id'),'other');assert.equal(f.run('sfState().entries[1].fields.server_id'),'other');assert.equal(f.run('sfState().entries[2].fields.server_id'),'17');assert.equal(f.run('sfState().reviewed'),false);assert.equal(f.run('sfState().plan'),null);assert.equal(f.calls.some(c=>/start|step|save|confirm/.test(c.path)),false);
 });
+
+function queuePolling(f){
+ const timers=new Map();let sequence=0;f.ctx.setTimeout=(fn,ms)=>{timers.set(++sequence,{fn,ms});return sequence;};f.ctx.clearTimeout=id=>timers.delete(id);f.ctx.document.visibilityState='visible';
+ return {timers,tick:async()=>{const [id,timer]=timers.entries().next().value;timers.delete(id);await timer.fn();}};
+}
+test('probe waiting separates the previous error and one read-only poll replaces the stale status',async()=>{
+ const f=fixture();held(f);const poll=queuePolling(f);f.run('kosellUi.status.offerCreationQueue.holds[0].probePending=true;sfRefresh();sfRefresh()');
+ assert.equal(poll.timers.size,1);assert.equal([...poll.timers.values()][0].ms,15000);assert.match(f.root.innerHTML,/Пробное создание лота/);assert.match(f.root.innerHTML,/<details class="sf-previous-failure">/);assert.match(f.root.innerHTML,/Проверить результат сейчас/);
+ f.ctx.apiRequest=async(path,options)=>{f.calls.push({path,options});return{storeId:'42',offerCreationQueue:{pending:11,holds:[]}};};await poll.tick();
+ assert.equal(f.calls.length,1);assert.equal(f.calls[0].path,'/api/v1/plugins/kosell-rent/status');assert.equal(f.calls[0].options.method,undefined);assert.equal(f.calls[0].options.body,undefined);assert.equal(f.run('kosellUi.status.offerCreationQueue.pending'),11);assert.doesNotMatch(f.root.innerHTML,/Один лот ожидает пробного создания/);assert.match(f.root.innerHTML,/Статус пробного создания обновлён/);assert.equal(poll.timers.size,1);
+ f.ctx.apiRequest=async()=>({storeId:'42',offerCreationQueue:{pending:0,holds:[]}});await poll.tick();assert.equal(poll.timers.size,0);assert.doesNotMatch(f.root.innerHTML,/data-sf-queue-refresh/);
+});
+test('automatic queue polling is single-flight and discards a late response after an account change',async()=>{
+ const f=fixture();held(f);const poll=queuePolling(f);let resolve;f.ctx.apiRequest=(path,options)=>{f.calls.push({path,options});return new Promise(r=>resolve=r);};f.run('sfWatchQueue()');const request=poll.tick();await new Promise(setImmediate);await f.run('sfReadQueueStatus()');assert.equal(f.calls.length,1);
+ f.ctx.authState.token='other';f.ctx.sessionGeneration++;resolve({storeId:'42',offerCreationQueue:{pending:0,holds:[]}});await request;assert.equal(f.run('kosellUi.status.offerCreationQueue.pending'),12);assert.equal(f.run('sfState().message'),'');
+});
+test('queue reads pause while hidden or editing and never overwrite a newer manual refresh',async()=>{
+ const f=fixture();held(f);const poll=queuePolling(f);f.run('sfWatchQueue()');f.ctx.document.visibilityState='hidden';for(const h of f.handlers.visibilitychange)h();assert.equal(poll.timers.size,0);
+ f.ctx.document.visibilityState='visible';f.ctx.document.activeElement={matches:()=>true};f.run('sfWatchQueue()');await poll.tick();assert.equal(f.calls.length,0);assert.equal(poll.timers.size,1);
+ f.ctx.document.activeElement=null;let resolve;f.ctx.apiRequest=()=>new Promise(r=>resolve=r);const request=poll.tick();await new Promise(setImmediate);f.run('kosellUi.status={...kosellUi.status,offerCreationQueue:{pending:7,holds:[]}}');resolve({storeId:'42',offerCreationQueue:{pending:0,holds:[]}});await request;assert.equal(f.run('kosellUi.status.offerCreationQueue.pending'),7);
+});
+test('starting to edit during a poll or leaving the plugin discards its result without replacing input',async()=>{
+ for(const mode of ['edit','leave']){const f=fixture();held(f);const poll=queuePolling(f);let resolve;f.ctx.apiRequest=()=>new Promise(r=>resolve=r);f.run('sfWatchQueue()');const request=poll.tick();await new Promise(setImmediate);
+  if(mode==='edit')f.ctx.document.activeElement={matches:()=>true};else f.ctx.document.querySelector=()=>null;
+  f.root.innerHTML='UNSAVED_INPUT';resolve({storeId:'42',offerCreationQueue:{pending:0,holds:[]}});await request;assert.equal(f.root.innerHTML,'UNSAVED_INPUT');assert.equal(f.run('kosellUi.status.offerCreationQueue.pending'),12);
+ }
+});
+test('a failed or foreign-store queue read keeps prior data, shows it may be stale and retries without writes',async()=>{
+ for(const mode of ['failure','foreign']){const f=fixture();held(f);const poll=queuePolling(f);f.ctx.apiRequest=async(path,options)=>{f.calls.push({path,options});if(mode==='failure')throw Error('PRIVATE');return{storeId:'other',offerCreationQueue:{pending:0,holds:[]}};};f.run('sfWatchQueue()');await poll.tick();assert.equal(f.run('kosellUi.status.offerCreationQueue.pending'),12);assert.match(f.root.innerHTML,/статус может быть устаревшим/);assert.doesNotMatch(f.root.innerHTML,/PRIVATE/);assert.equal(poll.timers.size,1);assert.equal(f.calls[0].options.method,undefined);}
+});

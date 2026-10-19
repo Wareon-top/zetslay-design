@@ -2,7 +2,7 @@ from pathlib import Path
 import re
 import sys
 
-VERSION='20261019-storefront-game-matching'
+VERSION='20261019-storefront-queue-live'
 def require(ok,message):
     if not ok: raise ValueError(message+'. Сайт не изменён.')
 
