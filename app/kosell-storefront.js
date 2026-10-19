@@ -25,10 +25,23 @@ function sfCategoryReadError(error){
  }
  return humanError(error);
 }
+function sfCatalogFallbacks(){
+ const groups=new Map();for(const e of sfBatch())if(e.form&&!e.loading&&!e.error){
+  for(const f of sfRepairFallbacks({form:e.form,gameFallbacks:e.form.gameFallbacks})){
+   if(!sfFallbackEligible({fields:e.fields,gameMatches:e.form.gameMatches},f))continue;
+   const key=JSON.stringify([e.nodeId,f.name,f.value,f.label]);if(!groups.has(key))groups.set(key,{...f,nodeId:e.nodeId,entries:[]});groups.get(key).entries.push(e);
+  }
+ }return [...groups.values()];
+}
+function sfApplyCatalogFallback(index){
+ const u=sfState();if(u.busy||!Number.isInteger(index))return;const group=sfCatalogFallbacks()[index];if(!group)return;
+ sfInvalidate();for(const e of group.entries){e.fields[group.name]=group.value;e.expanded=!sfEntryReady(e);}
+ u.message=`Для ${group.entries.length} игр выбран общий вариант «${group.label}». Проверьте сводку перед подготовкой.`;sfRefresh();
+}
 function sfBlockers(){
  const u=sfState(),batch=sfBatch(),pending=batch.filter(e=>!sfEntryReady(e));if(!pending.length)return '';
  const unloaded=pending.filter(e=>e.nodeId&&!e.form&&!e.loading).length,manual=pending.filter(e=>!e.nodeId).length,fields=pending.filter(e=>e.form&&!e.loading).length;
- return `<div class="sf-blockers" role="status"><strong>План пока не готов: проверьте ${pending.length} из ${batch.length} игр${u.entries.length>SF_BATCH_SIZE?' текущей партии':''}</strong><p>${[unloaded?`Не загружены параметры: ${unloaded}`:'',manual?`Не выбрана категория: ${manual}`:'',fields?`Не заполнены поля: ${fields}`:'',pending.some(e=>e.loading)?'Параметры загружаются':'' ].filter(Boolean).join(' · ')}. Запуск станет доступен после проверки игр текущей партии.</p>${unloaded?`<button type="button" class="button button--ghost" data-sf-action="retry-fields" ${u.busy?'disabled':''}>Загрузить недостающие параметры (${unloaded})</button>`:''}</div>`;
+ return `<div class="sf-blockers" role="status"><strong>План пока не готов: проверьте ${pending.length} из ${batch.length} игр${u.entries.length>SF_BATCH_SIZE?' текущей партии':''}</strong><p>${[unloaded?`Не загружены параметры: ${unloaded}`:'',manual?`Не выбрана категория: ${manual}`:'',fields?`Не заполнены поля: ${fields}`:'',pending.some(e=>e.loading)?'Параметры загружаются':'' ].filter(Boolean).join(' · ')}. Запуск станет доступен после проверки игр текущей партии.</p>${sfCatalogFallbacks().map((g,i)=>`<p>FunPay предлагает общий вариант «${sfEscape(g.label)}» для игр без совпадения. Полные названия останутся в лотах.</p><button type="button" class="button button--ghost" data-sf-catalog-fallback="${i}" ${u.busy?'disabled':''}>Для ${g.entries.length} игр выбрать «${sfEscape(g.label)}»</button>`).join('')}${unloaded?`<button type="button" class="button button--ghost" data-sf-action="retry-fields" ${u.busy?'disabled':''}>Загрузить недостающие параметры (${unloaded})</button>`:''}</div>`;
 }
 async function sfRetryFields(){
  const u=sfState();if(u.busy)return;const scope=u.scope,run=++u.run,entries=sfBatch().filter(e=>e.nodeId&&!e.form&&!e.loading);sfInvalidate();u.busy=true;sfRefresh();
@@ -47,11 +60,26 @@ function sfRepairControl(c,e,i){
  }
  return `<label>${label}<input ${base} type="${c.kind==='number'?'number':'text'}" maxlength="${c.maxLength||2000}" value="${sfEscape(value)}"></label>`;
 }
+function sfRepairFallbacks(p){
+ return (Array.isArray(p.gameFallbacks)?p.gameFallbacks:[]).filter(f=>f&&['server_id','fields[game]'].includes(f.name)&&p.form.controls.some(c=>c.name===f.name&&c.kind==='select'&&c.options.some(o=>o.value===f.value&&o.label===f.label)));
+}
+const sfFallbackEligible=(e,f)=>!e.fields[f.name]&&e.gameMatches?.[f.name]?.status==='missing';
+function sfApplyGameFallback(name){
+ const u=sfState(),p=u.repair;if(u.busy||!p)return;const f=sfRepairFallbacks(p).find(f=>f.name===name);if(!f)return;
+ let changed=0;for(const e of p.entries)if(sfFallbackEligible(e,f)){e.fields[f.name]=f.value;e.gameMatches[f.name]={status:'generic',value:f.value,label:f.label};changed++;}
+ if(changed){p.reviewed=false;u.error='';u.message=`Для ${changed} игр выбран общий вариант FunPay «${f.label}». Названия игр в лотах сохранятся. Проверьте сводку и подтвердите сохранение.`;sfRefresh();}
+}
+function sfRepairGameRow(p,e){
+ const matches=Object.values(e.gameMatches||{}),generic=matches.some(m=>m.status==='generic'),edition=matches.some(m=>m.status==='edition'),ambiguous=matches.some(m=>m.status==='ambiguous');
+ const info=generic?'Общий вариант FunPay':edition?'Сопоставлено с учётом издания и нумерации':ambiguous?'Несколько вариантов — проверьте игру':'';
+ return `<div class="sf-queue-fields-game"><header><strong>${sfEscape(e.productName)}</strong><span>${e.jobs} заданий</span></header>${info?`<p class="sf-match-note">${info}</p>`:''}<div class="sf-fields">${p.form.controls.map((c,i)=>sfRepairControl(c,e,i)).join('')}</div></div>`;
+}
 function sfQueueFieldsMarkup(h){
  const u=sfState(),p=u.repair;if(h.probePending)return '';
  if(!p||p.nodeId!==h.nodeId||p.afterJobId!==h.afterJobId)return `<button type="button" class="button button--primary sf-queue-fields-button" data-sf-queue-fields="${sfEscape(h.nodeId)}" data-after="${sfEscape(h.afterJobId)}" ${u.busy?'disabled':''}>Проверить и исправить параметры очереди</button>`;
- const ready=p.entries.filter(e=>sfRepairEntryReady(p,e)).length;
- return `<form data-sf-queue-fields-save class="sf-queue-fields"><h5>Параметры сохранённой очереди</h5><p>${sfEscape(p.form.categoryTitle)} · ${p.jobs} заданий. Цены и сроки сохранятся. Проверьте подобранные значения и заполните оставшиеся поля.</p>${p.form.controls.map((c,i)=>c.kind==='select'&&c.options.length>30?`<datalist id="sf-repair-options-${i}">${c.options.filter(o=>o.value).map(o=>`<option value="${sfEscape(sfRepairOption(o,c))}"></option>`).join('')}</datalist>`:'').join('')}<div class="sf-queue-fields-list">${p.entries.map(e=>`<div class="sf-queue-fields-game"><header><strong>${sfEscape(e.productName)}</strong><span>${e.jobs} заданий</span></header><div class="sf-fields">${p.form.controls.map((c,i)=>sfRepairControl(c,e,i)).join('')}</div></div>`).join('')}</div><p role="status">Параметры готовы: ${ready} из ${p.entries.length} игр</p><label class="sf-check"><input type="checkbox" name="confirm" data-sf-repair-review ${p.reviewed?'checked':''} ${u.busy?'disabled':''}>Параметры проверены — сохранить для ожидающих заданий</label><div class="sf-queue-fields-actions"><button type="submit" class="button button--primary" ${u.busy||ready!==p.entries.length||!p.reviewed?'disabled':''}>Сохранить параметры очереди</button><button type="button" class="button button--ghost" data-sf-repair-close ${u.busy?'disabled':''}>Закрыть</button></div><small>После сохранения можно отдельно проверить создание одного лота.</small></form>`;
+ const complete=p.entries.filter(e=>sfRepairEntryReady(p,e)),pending=p.entries.filter(e=>!sfRepairEntryReady(p,e)),ready=complete.length;
+ const fallbacks=sfRepairFallbacks(p).map(f=>({f,count:p.entries.filter(e=>sfFallbackEligible(e,f)).length})).filter(x=>x.count);
+ return `<form data-sf-queue-fields-save class="sf-queue-fields"><h5>Сопоставление игр</h5><p>${sfEscape(p.form.categoryTitle)} · ${p.jobs} заданий. Цены и сроки сохранятся. Совпадения уже заполнены; проверьте общую сводку.</p>${fallbacks.map(({f,count})=>`<div class="sf-match-fallback"><p>Для ${count} игр нет однозначного совпадения по названию. В списке FunPay есть «${sfEscape(f.label)}»: этот вариант можно применить ко всем оставшимся играм. Полное название каждой игры останется в её лоте.</p><button type="button" class="button button--ghost" data-sf-game-fallback="${sfEscape(f.name)}" ${u.busy?'disabled':''}>Для ${count} игр выбрать «${sfEscape(f.label)}»</button></div>`).join('')}${p.form.controls.map((c,i)=>c.kind==='select'&&c.options.length>30?`<datalist id="sf-repair-options-${i}">${c.options.filter(o=>o.value).map(o=>`<option value="${sfEscape(sfRepairOption(o,c))}"></option>`).join('')}</datalist>`:'').join('')}<div class="sf-queue-fields-list">${pending.map(e=>sfRepairGameRow(p,e)).join('')}${complete.length?`<details class="sf-matched-games"><summary>Готово к сохранению: ${complete.length} из ${p.entries.length} игр · посмотреть соответствия</summary>${complete.map(e=>sfRepairGameRow(p,e)).join('')}</details>`:''}</div><p role="status">Параметры готовы: ${ready} из ${p.entries.length} игр</p><label class="sf-check"><input type="checkbox" name="confirm" data-sf-repair-review ${p.reviewed?'checked':''} ${u.busy?'disabled':''}>Параметры проверены — сохранить для ожидающих заданий</label><div class="sf-queue-fields-actions"><button type="submit" class="button button--primary" ${u.busy||ready!==p.entries.length||!p.reviewed?'disabled':''}>Сохранить параметры очереди</button><button type="button" class="button button--ghost" data-sf-repair-close ${u.busy?'disabled':''}>Закрыть</button></div><small>Выбор сохранится для следующих запусков. После сохранения можно отдельно проверить создание одного лота.</small></form>`;
 }
 async function sfLoadQueueFields(button){
  const u=sfState();if(u.busy)return;const hold=kosellUi.status?.offerCreationQueue?.holds?.find(h=>h.nodeId===button.dataset.sfQueueFields&&h.afterJobId===button.dataset.after&&!h.probePending);if(!hold)return;
@@ -195,8 +223,12 @@ document.addEventListener('change',event=>{
  if(el.hasAttribute?.('data-sf-repair-review')){p.reviewed=el.checked;sfRefresh();return;}
  if(!el.dataset?.sfRepairField)return;const e=p.entries.find(e=>e.productId===Number(el.dataset.sfRepairProduct)),c=p.form.controls.find(c=>c.name===el.dataset.sfRepairField);if(!e||!c)return;
  const selected=c.kind==='select'?c.options.find(o=>o.value&&(el.tagName==='SELECT'?o.value===el.value:sfRepairOption(o,c)===el.value)):null;
- e.fields[c.name]=c.kind==='select'?selected?.value||'':c.kind==='checkbox'?el.checked?c.checkedValue:'':el.value;p.reviewed=false;u.error=c.kind==='select'&&el.value&&!selected?'Выберите значение из списка FunPay.':'';sfRefresh();
+ e.fields[c.name]=c.kind==='select'?selected?.value||'':c.kind==='checkbox'?el.checked?c.checkedValue:'':el.value;if(e.gameMatches?.[c.name])e.gameMatches[c.name]={status:'manual'};p.reviewed=false;u.error=c.kind==='select'&&el.value&&!selected?'Выберите значение из списка FunPay.':'';sfRefresh();
 });
 document.addEventListener('submit',async event=>{const form=event.target;if(!form.matches?.('[data-sf-queue-fields-save]'))return;event.preventDefault();await sfSaveQueueFields(form);});
 
 document.addEventListener('click',event=>{const button=event.target.closest('[data-sf-hold]'),u=sfState();if(!button||u.busy)return;u.openHold=button.getAttribute('aria-expanded')==='true'?'':button.dataset.sfHold;sfRefresh();});
+
+document.addEventListener('click',event=>{const button=event.target.closest('[data-sf-game-fallback]');if(button)sfApplyGameFallback(button.dataset.sfGameFallback);});
+
+document.addEventListener('click',event=>{const button=event.target.closest('[data-sf-catalog-fallback]');if(button)sfApplyCatalogFallback(Number(button.dataset.sfCatalogFallback));});
