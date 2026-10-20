@@ -14,3 +14,21 @@ test('API errors are visible, retries retain known state and do not claim succes
 test('metadata and confirmation titles are escaped and secret inputs never prefill',()=>{const h=harness();h.context.data={...snapshot,accounts:[{id:'id',label:'<script>X</script>',game:'Game',mode:'online'}],config:{...snapshot.config,deliveryTemplate:'<svg/onload=x>'}};h.run('resetSteamRentUi();steamRentUi.status=data');const html=h.run('steamRentMarkup({installed:true})');assert.ok(!html.includes('<script>X'));assert.match(html,/&lt;script&gt;/);assert.match(html,/type="password"/);assert.match(html,/maFileUpload/);assert.match(html,/data-sr-form="mapping"/);assert.match(html,/data-sr-period="today"/);});
 test('new module has a legendary palette, page hook and no generated banner asset',()=>{const page=readFileSync(new URL('./plugin-page.js',import.meta.url),'utf8'),rarity=readFileSync(new URL('./plugin-rarity.js',import.meta.url),'utf8'),html=readFileSync(new URL('./index.html',import.meta.url),'utf8');assert.match(page,/steamRentMarkup/);assert.match(rarity,/'zetslay.steam-rent':\s*'legendary'/);assert.match(html,/steam-rent.js/);assert.match(html,/steam-rent.css/);assert.doesNotMatch(source,/<img|data:image/);});
 test('zero seeded catalogue price is labelled unspecified, with administrator prices preserved',()=>{const h=harness();assert.equal(h.run("pluginPurchaseModel({id:'zetslay.steam-rent'}).amount"),null);assert.equal(h.run("pluginPurchaseModel({id:'other'}).amount"),0);});
+test('local account search does not filter the status request or remove other pool accounts',async()=>{
+ const h=harness();h.context.data={...snapshot,accounts:[{id:'first',label:'First',game:'Portal',mode:'online'},{id:'second',label:'Second',game:'Dota 2',mode:'offline'}]};h.run("resetSteamRentUi();steamRentUi.status=data;steamRentUi.search='Portal'");
+ assert.equal(h.run('steamRentAccounts(steamRentUi.status).length'),1);
+ const html=h.run('steamRentMarkup({installed:true})');assert.match(html,/<option value="second">Dota 2/);
+ await h.run('loadSteamRentStatus()');assert.doesNotMatch(h.calls[0][0],/search=/);
+});
+test('confirmed check survives a subsequent status failure without suggesting that the action failed',async()=>{
+ const h=harness(async(path)=>{if(path.endsWith('/check'))return {kind:'login',result:{steamId:'76561198000000000'}};throw Error('State unavailable');});
+ await h.run("steamRentRequest('check',{accountId:'one',kind:'login'})");
+ assert.equal(h.run('steamRentUi.report.kind'),'login');assert.match(h.run('steamRentUi.error'),/Операция выполнена/);assert.equal(h.calls.filter(x=>x[1].method==='POST').length,1);
+});
+test('rental filtering keeps attention states visible and orders by observation time',()=>{
+ const h=harness();h.context.data={...snapshot,orders:[{orderId:'old',status:'completed',observedAt:'2020-01-01'},{orderId:'unknown',status:'delivery_unknown',observedAt:'2030-01-01'},{orderId:'new',status:'active',observedAt:'2031-01-01'}]};h.run("resetSteamRentUi();steamRentUi.status=data;steamRentUi.rentalFilter='attention'");assert.equal(h.run('steamRentRentals(data)[0].orderId'),'unknown');h.run("steamRentUi.rentalFilter='all'");assert.deepEqual(JSON.parse(JSON.stringify(h.run('steamRentRentals(data).map(t=>t.orderId)'))),['new','unknown','old']);
+});
+test('render preservation rejects DOM from an earlier account epoch even after reset changes the token',()=>{
+ const h=harness();let queried=false;h.run("resetSteamRentUi();steamRentUi.epoch=2");h.context.document.querySelector=()=>({dataset:{srEpoch:'1'},querySelectorAll(){queried=true;throw Error('Old account DOM must not be captured')}});
+ h.run('steamRentPreservingRender(()=>{},[],null)');assert.equal(queried,false);
+});

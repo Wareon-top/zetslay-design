@@ -3,7 +3,7 @@ from pathlib import Path
 import re
 import sys
 ASSETS=('steam-rent.js','steam-rent.css','steam-rent.test.mjs')
-VERSION='20261010-steam-rent'
+VERSION='20261020-steam-rent-workspace'
 def stage(local,incoming,out):
  local,incoming,out=map(Path,(local,incoming,out));page=(local/'plugin-page.js').read_text();rarity=(local/'plugin-rarity.js').read_text();html=(local/'index.html').read_text()
  if re.search(r'^(<<<<<<<|=======|>>>>>>>)',page+'\n'+rarity+'\n'+html,re.M):raise ValueError('Маркеры конфликта; кабинет не изменён.')
@@ -12,7 +12,8 @@ def stage(local,incoming,out):
   marker='    </div><aside class="plugin-page-sidebar"'
   if page.count(marker)!=1:raise ValueError('Неизвестная разметка страницы плагина; кабинет не изменён.')
   page=page.replace(marker,hook+marker,1)
- context="plugin.id === 'zetslay.steam-rent' ? 'Приём оплаченных заказов включается отдельно. Неизвестный результат удерживает аккаунт; выдача и завершение сохраняются до внешнего запроса. При отключении модуля или окончании тарифа вручную закройте действующие доступы Steam.' : "
+ context="plugin.id === 'zetslay.steam-rent' ? 'Приём новых заказов включается отдельно. Выданный аккаунт остаётся занят до подтверждённого закрытия доступа. Проверяйте завершение аренд после остановки плагина или окончания тарифа.' : "
+ page=page.replace('Приём оплаченных заказов включается отдельно. Неизвестный результат удерживает аккаунт; выдача и завершение сохраняются до внешнего запроса. При отключении модуля или окончании тарифа вручную закройте действующие доступы Steam.','Приём новых заказов включается отдельно. Выданный аккаунт остаётся занят до подтверждённого закрытия доступа. Проверяйте завершение аренд после остановки плагина или окончания тарифа.')
  if context not in page:
   marker="plugin.id === 'zetslay.kosell-rent' ? 'Автопокупка"
   if page.count(marker)!=1:raise ValueError('Поясняющая панель не распознана; кабинет не изменён.')
