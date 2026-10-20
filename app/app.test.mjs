@@ -245,6 +245,8 @@ test('late onboarding response cannot roll back an activated plan', async () => 
 test('failed Bot Token save stays on the first step and displays the cause', async () => {
   const modal = fakeModal();
   modal.fields.set('input[name="botToken"]', { value: 'example-bot-token' });
+  modal.fields.set('[name="botPassword"]', { value: 'LongPassword123' });
+  modal.fields.set('[name="botPasswordConfirm"]', { value: 'LongPassword123' });
   const app = cabinet({ token: 'session', modal });
   app.run('authState.user = { email: "seller@example.com" }; state.onboarding = { state: "telegram_bot_required", telegram: {}, funPay: {} }');
   app.context.showToast = () => {};
