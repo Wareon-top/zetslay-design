@@ -16,3 +16,22 @@ test('a late conversation response cannot replace the newly selected ticket or e
 test('staff composer sends an authenticated reply without asking for MFA or losing its draft',async()=>{const h=harness();h.c.ticket=ticket;h.run("supportUi.admin.selected=ticket.id;supportUi.admin.ticket=ticket;supportUi.admin.drafts.set(ticket.id,'Staff reply')");const html=h.run("supportMarkup('admin')");assert.doesNotMatch(html,/2FA|аутентификатор|подтверждение.*профиле/);assert.match(html,/от имени поддержки ZetSlay/);await h.run("supportSend('admin')");const call=h.calls.find(c=>c.options?.method==='POST');assert.equal(call.path,'/api/v1/admin/support/tickets/'+id+'/messages');assert.equal(call.options.authenticated,true);assert.equal(call.options.body.text,'Staff reply');assert.equal(h.run('supportUi.admin.pendingReplies.size'),0);assert.equal(h.run('supportUi.admin.drafts.size'),0);assert.equal(h.run('supportUi.admin.error'),'');});
 test('authorization rejection keeps staff reply editable and does not falsely mark it sent',async()=>{const h=harness();h.c.ticket=ticket;h.run("supportUi.admin.selected=ticket.id;supportUi.admin.ticket=ticket;supportUi.admin.drafts.set(ticket.id,'Staff reply')");h.c.apiRequest=async()=>{throw Object.assign(Error('Доступ запрещён'),{code:'ACCESS_DENIED'});};await h.run("supportSend('admin')");assert.equal(h.run('supportUi.admin.pendingReplies.size'),0);assert.equal(h.run('supportUi.admin.drafts.get(ticket.id)'),'Staff reply');assert.equal(h.run('supportUi.admin.error'),'Доступ запрещён');});
 test('integration adds a distinct support route, private reset and owner-only queue without browser persistence',()=>{const html=readFileSync(new URL('./index.html',import.meta.url),'utf8'),app=readFileSync(new URL('./app.js',import.meta.url),'utf8'),admin=readFileSync(new URL('./admin-panel.js',import.meta.url),'utf8');assert.match(html,/data-view-target="support"/);assert.match(html,/data-view="support"/);assert.match(app,/supportRoute\(resolvedView\)/);assert.match(app,/supportReset\(\)/);assert.match(admin,/loadSupport\('admin'\)/);assert.ok(html.indexOf('src="support.js')<html.indexOf('src="admin-panel.js'));assert.doesNotMatch(source,/localStorage|sessionStorage/);});
+test('conversation grouping respects sender, five-minute gaps and the Moscow day boundary',()=>{
+ const h=harness();h.c.rows=[
+  {...message,id:'a',createdAt:'2026-10-19T20:58:00Z'},
+  {...message,id:'b',createdAt:'2026-10-19T20:59:00Z'},
+  {...message,id:'c',createdAt:'2026-10-19T21:01:00Z'},
+  {...message,id:'d',role:'admin',createdAt:'2026-10-19T21:02:00Z'},
+  {...message,id:'e',role:'admin',createdAt:'2026-10-19T21:08:00Z'}
+ ];
+ assert.deepEqual(JSON.parse(JSON.stringify(h.run('supMessageGroups(rows).map(({start,end})=>[start,end])'))),[[true,false],[false,true],[true,true],[true,true],[true,true]]);
+});
+test('chat attachment names, user names and message text cannot inject markup',()=>{
+ const h=harness();h.c.ticket={...ticket,owner:{name:'<img src=x onerror=bad()>'}};
+ h.c.message={...message,text:'<script>bad()</script>',attachment:{id:'sa_test',name:'<iframe>.jpg',bytes:200}};
+ h.run('supportUi.admin.ticket=ticket;supportUi.admin.selected=ticket.id;supportUi.admin.messages=[message]');
+ const html=h.run("supChatMarkup('admin')");
+ assert.doesNotMatch(html,/<script>|<iframe>|<img src=x/);
+ assert.match(html,/&lt;script&gt;/);assert.match(html,/&lt;iframe&gt;/);assert.match(html,/&lt;img/);
+ assert.match(html,/data-sup-message/);
+});

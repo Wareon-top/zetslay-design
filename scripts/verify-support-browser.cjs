@@ -34,10 +34,61 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(await customer.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,'Intake fits '+name);await customer.screenshot({path:join(out,name+'-intake.png'),fullPage:true});await customer.getByRole('button',{name:'Отправить заявку',exact:true}).click();await customer.locator('.sup-chat-title h2').waitFor();assert.equal(ticket.priority,'urgent');assert.equal(messages.length,1);
   await staff.goto(base+'/?role=admin');if(light)await staff.evaluate(()=>document.documentElement.classList.add('light'));await staff.locator('.sup-chat-title h2').waitFor();await staff.locator('[data-sup-file]').click();await staff.locator('dialog img').waitFor();assert.equal(await staff.locator('dialog img').evaluate(e=>e.naturalWidth>0),true);await staff.keyboard.press('Escape');await staff.locator('[data-sup-draft]').fill('Здравствуйте! Проверим подключение. Уточните, когда обновление прошло успешно в последний раз.');await staff.locator('[data-sup-reply] button[type=submit]').click();await staff.waitForFunction(()=>supportUi.admin.ticket?.status==='waiting_customer'&&!supportUi.admin.posting);
   await customer.locator('[data-sup-action=refresh]').click();await customer.getByText('Мы ответили и ждём вашего дополнения.',{exact:false}).waitFor();assert.equal(await customer.locator('.sup-message').count(),2);
-  await customer.screenshot({path:join(out,name+'-chat.png'),fullPage:true});await staff.screenshot({path:join(out,name+'-staff.png'),fullPage:true});assert.equal(await customer.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,'Chat fits '+name);assert.equal(await staff.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,'Staff queue fits '+name);
+  assert.equal(await customer.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,'Chat fits '+name);assert.equal(await staff.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,'Staff queue fits '+name);
   await customer.locator('[data-sup-draft]').fill('Добавляю детали');await customer.locator('[data-sup-reply] button[type=submit]').click();await customer.getByRole('button',{name:'Повторить проверку',exact:true}).waitFor();assert.equal(messages.length,3);await customer.getByRole('button',{name:'Повторить проверку',exact:true}).click();await customer.waitForFunction(()=>!supportUi.user.posting&&supportUi.user.pendingReplies.size===0);assert.equal(messages.length,3,'Unknown response is not duplicated');
   await customer.getByRole('button',{name:'Вопрос решён',exact:true}).click();await customer.getByRole('button',{name:'Возобновить обращение',exact:true}).waitFor();await customer.getByRole('button',{name:'Возобновить обращение',exact:true}).click();await customer.locator('[data-sup-reply]').waitFor();assert.equal(ticket.status,'open');
+  // A longer fixture conversation exercises reading history while new replies arrive.
+  const conversation=[
+   [false,'Вчера данные обновлялись без проблем. Сегодня появились новые заказы, а в кабинете они пока не видны.'],
+   [true,'Спасибо за подробности. Посмотрим состояние подключения и последнюю синхронизацию.'],
+   [true,'Откройте подключённый магазин. Какое время указано рядом с последним обновлением?'],
+   [false,'Последнее обновление — вчера, 18:42. Статус магазина: подключён.'],
+   [false,'Прокси активен. Проверил срок действия в личном кабинете поставщика.'],
+   [true,'Приняли. Дополнительные ключи и пароли не нужны — всё необходимое для проверки уже есть в кабинете.'],
+   [false,'Хорошо, спасибо. Прикреплённый скриншот показывает состояние до обновления.'],
+   [true,'Видим задержку чтения заказов. Проверяем её отдельно от подключения магазина.'],
+   [false,'Подскажите, уже купленные аренды будут продолжать работать?'],
+   [true,'Проверим конкретный заказ и его состояние. Пришлите номер заказа без данных аккаунта.'],
+   [false,'Заказ #DEMO2026. Данные покупатель получил, вопрос только по списку в кабинете.'],
+   [true,'Заказ проверили. Теперь обновите список заказов в кабинете и напишите, появились ли новые записи.'],
+   [false,'Да, список обновился. Вижу последние заказы и правильное время обновления.'],
+   [true,'Отлично! Оставим обращение открытым до вашего подтверждения. Если всё в порядке, нажмите «Вопрос решён».']
+  ];
+  for(let i=0;i<conversation.length;i++){
+   const [admin,text]=conversation[i],m=append({requestId:randomUUID(),text},admin);
+   m.createdAt=new Date(Date.now()-86400000+(i<4?i*120000:86400000-3600000+i*120000)).toISOString();
+  }
+  await customer.evaluate(()=>supportThread('user'));
+  await staff.evaluate(()=>supportThread('admin'));
+  const log=customer.locator('[data-sup-log]'),draft=customer.locator('[data-sup-draft]');
+  await customer.locator('[data-sup-details] > summary').click();
+  await draft.fill('Проверяю ещё один заказ.\nПосле этого закрою обращение.\nСпасибо за помощь!');
+  await draft.evaluate(e=>e.setSelectionRange(8,8));
+  await log.evaluate(e=>{e.scrollTop=100;});
+  const oldTop=await log.evaluate(e=>e.scrollTop);
+  append({requestId:randomUUID(),text:'Если понадобится помощь, ответьте в этом диалоге — история сохранится.'},true);
+  await customer.evaluate(()=>supportThread('user',{after:supportUi.user.messages.at(-1).sequence,quiet:true}));
+  assert.equal(await customer.locator('[data-sup-details]').evaluate(e=>e.open),true,'Details survive polling');
+  assert.equal(await draft.inputValue(),'Проверяю ещё один заказ.\nПосле этого закрою обращение.\nСпасибо за помощь!','Draft survives polling');
+  assert.equal(await draft.evaluate(e=>e===document.activeElement&&e.selectionStart===8),true,'Caret survives polling');
+  assert.ok(Math.abs(await log.evaluate(e=>e.scrollTop)-oldTop)<2,'New reply does not jump through history');
+  await customer.getByRole('button',{name:'Новые сообщения · 1',exact:true}).click();
+  assert.equal(await customer.locator('[data-sup-latest]').isVisible(),false,'Latest button returns to the bottom');
+  assert.ok(await log.evaluate(e=>e.scrollHeight-e.scrollTop-e.clientHeight<75));
+  assert.ok(await draft.evaluate(e=>e.clientHeight>=80),'Composer grows with a multiline draft');
+  assert.equal(await customer.locator('[data-sup-send]').isEnabled(),true);
+  await customer.locator('[data-sup-details] > summary').click();
+  await draft.fill('Спасибо, всё работает!');
+  await customer.locator('[data-sup-action=latest]').evaluate(e=>e.click());
+  await customer.screenshot({path:join(out,name+'-chat.png'),fullPage:true});
+  await staff.evaluate(()=>supportThread('admin'));
+  await staff.screenshot({path:join(out,name+'-staff.png'),fullPage:true});
+  for(const page of [customer,staff]){
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Conversation has no horizontal overflow');
+   const box=await page.locator('[data-sup-reply]').boundingBox();
+   assert.ok(box.height>70&&box.width>200,'Composer has usable space');
+  }
   await customer.evaluate(()=>{authState.token='';authState.user=null;sessionGeneration++;supportReset();});assert.equal(await customer.locator('[data-support-root=user]').textContent(),'');assert.deepEqual(errors,[]);await customer.close();await staff.close();
- }console.log('Real Chromium: intake/priority/image, staff response, read flow, safe retry, close/reopen, logout and desktop/mobile/light layouts verified. No external messages or live requests.');}
+ }console.log('Real Chromium: intake/priority/image, staff response, read flow, safe retry, close/reopen, history anchoring, new-reply navigation, draft/caret preservation and desktop/mobile/light layouts verified. No external messages or live requests.');}
  finally{await browser.close();server.close();}
 })().catch(e=>{console.error(e);server.close();process.exitCode=1;});
