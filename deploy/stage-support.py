@@ -2,7 +2,7 @@
 from pathlib import Path
 import re
 import sys
-VERSION='20261020-support-conversation'
+VERSION='20261020-support-bubbles'
 ASSETS=['support.js','support.css','admin-panel.js','admin-finance.js','admin-finance.css']
 NAV='<button class="nav-item" type="button" data-view-target="support"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 14v-3a8 8 0 0 1 16 0v3M4 12H3v6h4v-6H4Zm16 0h1v6h-4v-6h3Zm0 6c0 3-3 3-6 3"/></svg><span>Поддержка</span><b class="sup-nav-unread" data-support-unread hidden></b></button>'
 SECTION='<section class="view support-page" data-view="support" hidden><div data-support-root="user"></div></section>'

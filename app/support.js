@@ -35,16 +35,19 @@ function supMessageGroups(messages) {
 function supDay(value) { return new Date(Date.parse(value)+10800000).toISOString().slice(0,10); }
 function supMessagesMarkup(mode) {
   const s=supportUi[mode];let day='';
+  const customerName=mode==='admin'?s.ticket?.owner?.name:
+    authState.user?.displayName||authState.user?.name||authState.user?.email?.split('@')[0];
+  const initials=customerName?String(customerName).trim().split(/\s+/).slice(0,2).map(v=>[...v][0]||'').join('').toUpperCase():(mode==='admin'?'П':'Вы');
   const rows=supMessageGroups(s.messages).map(({message:m,start,end})=>{
     const currentDay=supDay(m.createdAt),separator=currentDay!==day?`<div class="sup-date"><time datetime="${supSafe(currentDay)}">${supSafe(supDate(m.createdAt,true))}</time></div>`:'';
-    day=currentDay;const mine=m.role===(mode==='admin'?'admin':'user');
-    return `${separator}<article class="sup-message ${mine?'is-mine':''} ${start?'is-group-start':''} ${end?'is-group-end':''}" data-sup-message="${supSafe(m.id)}">
-      <span class="sup-message-icon ${m.role==='admin'?'is-team':''}" aria-hidden="true">${m.role==='admin'?'Z':mode==='admin'?'П':'Вы'}</span>
-      <div class="sup-bubble">${start?`<small>${m.role==='admin'?'Команда ZetSlay':mode==='admin'?supSafe(s.ticket?.owner?.name||'Пользователь'):'Вы'}</small>`:''}
+    day=currentDay;const mine=m.role===(mode==='admin'?'admin':'user'),
+      author=m.role==='admin'?'Команда ZetSlay':mode==='admin'?s.ticket?.owner?.name||'Пользователь':'Вы';
+    return `${separator}<article class="sup-message ${mine?'is-mine':''} ${start?'is-group-start':''} ${end?'is-group-end':''}" data-sup-message="${supSafe(m.id)}" aria-label="${supSafe(author)}">
+      <span class="sup-message-icon ${m.role==='admin'?'is-team':''}" aria-hidden="true">${m.role==='admin'?'Z':supSafe(initials)}</span>
+      <div class="sup-message-content"><div class="sup-bubble">
         ${m.text?`<p>${supSafe(m.text)}</p>`:''}
         ${m.attachment?`<button class="sup-file" type="button" data-sup-file="${supSafe(m.attachment.id)}"><span class="sup-file-icon">${supIcon('image')}</span><span><strong>${supSafe(m.attachment.name)}</strong><small>Скриншот · ${Math.ceil(m.attachment.bytes/1024)} КБ</small></span><span class="sup-file-open" aria-hidden="true">${supIcon('external')}</span></button>`:''}
-        <footer><time datetime="${supSafe(m.createdAt)}">${supSafe(supTime(m.createdAt))}</time>${mine?`<span class="sup-sent" aria-label="Отправлено">${supIcon('check')}</span>`:''}</footer>
-      </div>
+      </div><footer class="sup-message-meta"><time datetime="${supSafe(m.createdAt)}">${supSafe(supTime(m.createdAt))}</time>${mine?`<span class="sup-sent" aria-label="Отправлено">${supIcon('check')}</span>`:''}</footer></div>
     </article>`;
   }).join('');
   return `${s.hasEarlier?'<button type="button" class="sup-history-more" data-sup-action="earlier">Загрузить предыдущие сообщения</button>':''}${rows||'<p class="sup-list-empty">Загружаем переписку…</p>'}`;
