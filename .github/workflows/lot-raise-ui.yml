@@ -1,0 +1,32 @@
+name: Verify lot raising interface
+on:
+  push:
+    paths:
+      - 'app/lot-raise*'
+      - 'deploy/*lot-raise*'
+      - 'scripts/verify-lot-raise-browser.cjs'
+      - '.github/workflows/lot-raise-ui.yml'
+permissions:
+  contents: read
+jobs:
+  lot-raise:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test app/lot-raise.test.mjs app/lots.test.mjs app/lot-management.test.mjs
+      - run: python3 deploy/stage-lot-raise-ui.test.py
+      - name: Verify schedule controls in desktop and mobile Chrome
+        run: |
+          browser_deps="$RUNNER_TEMP/zetslay-lot-raise-browser"
+          npm install --prefix "$browser_deps" --no-save --ignore-scripts playwright@1.56.1
+          ZETSLAY_PLAYWRIGHT_MODULE="$browser_deps/node_modules/playwright" ZETSLAY_TEST_BROWSER_PATH="$(command -v google-chrome)" ZETSLAY_BROWSER_OUTPUT="$RUNNER_TEMP/lot-raise-previews" node scripts/verify-lot-raise-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lot-raise-previews
+          path: ${{ runner.temp }}/lot-raise-previews/
+          retention-days: 7
