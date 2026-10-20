@@ -33,7 +33,7 @@ const server=http.createServer(async(req,res)=>{
   await customer.goto(base);if(light)await customer.evaluate(()=>document.documentElement.classList.add('light'));await customer.getByRole('button',{name:'Создать обращение',exact:true}).first().click();await customer.getByRole('button',{name:/Подключение FunPay Магазин/}).click();await customer.getByRole('button',{name:'Продолжить →',exact:true}).click();await customer.getByLabel('Тема обращения',{exact:true}).fill('Не обновляются данные магазина');await customer.locator('[data-sup-create-field=text]').fill('Магазин подключён, но список заказов не обновляется. Помогите проверить подключение.');await customer.locator('input[name=priority][value=urgent]').check();await customer.locator('[data-sup-upload=create]').setInputFiles({name:'screen.png',mimeType:'image/png',buffer:pixel});await customer.locator('.sup-upload-preview').waitFor();
   assert.equal(await customer.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,'Intake fits '+name);await customer.screenshot({path:join(out,name+'-intake.png'),fullPage:true});await customer.getByRole('button',{name:'Отправить заявку',exact:true}).click();await customer.locator('.sup-chat-title h2').waitFor();assert.equal(ticket.priority,'urgent');assert.equal(messages.length,1);
   await staff.goto(base+'/?role=admin');if(light)await staff.evaluate(()=>document.documentElement.classList.add('light'));await staff.locator('.sup-chat-title h2').waitFor();await staff.locator('[data-sup-file]').click();await staff.locator('dialog img').waitFor();assert.equal(await staff.locator('dialog img').evaluate(e=>e.naturalWidth>0),true);await staff.keyboard.press('Escape');await staff.locator('[data-sup-draft]').fill('Здравствуйте! Проверим подключение. Уточните, когда обновление прошло успешно в последний раз.');await staff.locator('[data-sup-reply] button[type=submit]').click();await staff.waitForFunction(()=>supportUi.admin.ticket?.status==='waiting_customer'&&!supportUi.admin.posting);
-  await customer.locator('[data-sup-action=refresh]').click();await customer.getByText('Мы ответили и ждём вашего дополнения.',{exact:false}).waitFor();assert.equal(await customer.locator('.sup-message').count(),2);
+  await customer.getByRole('button',{name:'Обновить',exact:true}).click();await customer.getByText('Мы ответили и ждём вашего дополнения.',{exact:false}).waitFor();assert.equal(await customer.locator('.sup-message').count(),2);
   assert.equal(await customer.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,'Chat fits '+name);assert.equal(await staff.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,'Staff queue fits '+name);
   await customer.locator('[data-sup-draft]').fill('Добавляю детали');await customer.locator('[data-sup-reply] button[type=submit]').click();await customer.getByRole('button',{name:'Повторить проверку',exact:true}).waitFor();assert.equal(messages.length,3);await customer.getByRole('button',{name:'Повторить проверку',exact:true}).click();await customer.waitForFunction(()=>!supportUi.user.posting&&supportUi.user.pendingReplies.size===0);assert.equal(messages.length,3,'Unknown response is not duplicated');
   await customer.getByRole('button',{name:'Вопрос решён',exact:true}).click();await customer.getByRole('button',{name:'Возобновить обращение',exact:true}).waitFor();await customer.getByRole('button',{name:'Возобновить обращение',exact:true}).click();await customer.locator('[data-sup-reply]').waitFor();assert.equal(ticket.status,'open');
@@ -58,8 +58,8 @@ const server=http.createServer(async(req,res)=>{
    const [admin,text]=conversation[i],m=append({requestId:randomUUID(),text},admin);
    m.createdAt=new Date(Date.now()-86400000+(i<4?i*120000:86400000-3600000+i*120000)).toISOString();
   }
-  await customer.evaluate(()=>supportThread('user'));
-  await staff.evaluate(()=>supportThread('admin'));
+  await customer.evaluate(async()=>{await loadSupport('user',true);await supportThread('user');});
+  await staff.evaluate(async()=>{await loadSupport('admin',true);await supportThread('admin');});
   const log=customer.locator('[data-sup-log]'),draft=customer.locator('[data-sup-draft]');
   await customer.locator('[data-sup-details] > summary').click();
   await draft.fill('Проверяю ещё один заказ.\nПосле этого закрою обращение.\nСпасибо за помощь!');
@@ -87,6 +87,7 @@ const server=http.createServer(async(req,res)=>{
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Conversation has no horizontal overflow');
    const box=await page.locator('[data-sup-reply]').boundingBox();
    assert.ok(box.height>70&&box.width>200,'Composer has usable space');
+   if(name==='mobile')assert.ok(box.y+box.height<=viewport.height+2,'Mobile composer stays inside the viewport');
   }
   await customer.evaluate(()=>{authState.token='';authState.user=null;sessionGeneration++;supportReset();});assert.equal(await customer.locator('[data-support-root=user]').textContent(),'');assert.deepEqual(errors,[]);await customer.close();await staff.close();
  }console.log('Real Chromium: intake/priority/image, staff response, read flow, safe retry, close/reopen, history anchoring, new-reply navigation, draft/caret preservation and desktop/mobile/light layouts verified. No external messages or live requests.');}

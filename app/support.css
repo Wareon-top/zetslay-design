@@ -133,7 +133,7 @@
 .sup-message.is-mine.is-group-end .sup-bubble{border-bottom-left-radius:15px;border-bottom-right-radius:5px}
 .sup-bubble>small{display:block;margin-bottom:6px;font-size:10px;font-weight:600;color:var(--sup-accent);line-height:1.4}
 .sup-message.is-mine .sup-bubble>small{color:var(--sup-muted)}
-.sup-bubble p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;line-height:1.8}
+.sup-bubble p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;line-height:1.75}
 .sup-bubble footer{display:flex;justify-content:flex-end;align-items:center;gap:5px;margin-top:5px;font-size:10px;color:var(--sup-muted);font-variant-numeric:tabular-nums;line-height:1.5}
 .sup-sent{display:inline-flex;color:var(--sup-accent)}
 .sup-sent svg{width:13px;height:13px}
@@ -183,7 +183,7 @@
 .sup-closed>div>svg{width:25px;height:25px;flex-shrink:0;color:var(--green)}
 .sup-closed strong{display:block;font-size:13px;font-weight:600}
 .sup-closed small{display:block;color:var(--sup-muted);font-size:11px;line-height:1.7;margin-top:5px}
-.sup-mobile-back{display:none}
+.sup-mobile-bar{display:none}
 /* Intake remains a short two-step flow, with the same visual language. */
 .sup-wizard{padding:30px;flex:1;min-height:0;overflow:auto;scrollbar-width:thin}
 .sup-wizard-top{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:25px}
@@ -258,7 +258,9 @@
  .support-workspace:has(.sup-layout.has-selection) .sup-heading,.support-workspace:has(.sup-layout.is-writing) .sup-heading{display:none}
  .support-workspace:has(.sup-layout.has-selection) .sup-layout,.support-workspace:has(.sup-layout.is-writing) .sup-layout{height:calc(100dvh - 128px);min-height:430px}
  .sup-content{flex:1}
- .sup-mobile-back{display:flex;align-items:center;gap:5px;margin:0 0 15px;padding:4px 0;border:0;background:transparent;color:var(--sup-muted);font-size:11px!important;min-height:28px}
+ .sup-mobile-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+ .sup-mobile-refresh{border:0;background:transparent;color:var(--sup-muted);font-size:11px!important;min-height:36px;padding:4px 0 4px 12px}
+ .sup-mobile-back{display:flex;align-items:center;gap:5px;margin:0;padding:4px 0;border:0;background:transparent;color:var(--sup-muted);font-size:11px!important;min-height:28px}
  .sup-mobile-back svg{width:13px;height:13px;transform:rotate(180deg)}
  .sup-chat-header{padding:12px 15px 0}
  .sup-chat-title h2{font-size:13px;line-height:1.5}
@@ -276,7 +278,7 @@
  .sup-message-icon{width:23px;height:23px;border-radius:8px;font-size:8px}
  .sup-message-icon.is-team{font-size:14px}
  .sup-bubble{max-width:calc(100% - 39px);padding:10px 12px 6px}
- .sup-bubble p{font-size:13px;line-height:1.75}
+ .sup-bubble p{font-size:14px;line-height:1.7}
  .sup-bubble>small{font-size:9px}.sup-bubble footer{font-size:9px}
  .sup-compose{padding:0 10px 10px}
  .sup-compose textarea{font-size:16px;line-height:1.55;padding:12px 13px 6px;height:64px}
@@ -303,3 +305,12 @@
 }
 @media(prefers-reduced-motion:reduce){.support-workspace *{scroll-behavior:auto!important;transition:none!important}}
 
+/* Keep the admin conversation within the same viewport as its tools. */
+@media(min-width:651px){
+ .support-workspace[data-support-mode=admin] .sup-layout{height:clamp(480px,calc(100dvh - 420px),850px)}
+}
+@media(max-width:650px){
+ .admin-page:has([data-support-root=admin] .has-selection) .admin-heading,
+ .admin-page:has([data-support-root=admin] .has-selection) .admin-tabs,
+ .support-workspace[data-support-mode=admin]:has(.has-selection) .sup-stats{display:none}
+}
