@@ -91,8 +91,11 @@ function supChatMarkup(mode) {
 function supportMarkup(mode='user'){const s=supportUi[mode],admin=mode==='admin',stats=s.list?.stats;return `<div class="support-workspace" data-support-mode="${mode}">${!admin?`<header class="sup-heading"><div><span class="sup-eyebrow">${supIcon('chat')}Помощь с ZetSlay</span><h1>Поддержка</h1><p>От первого вопроса до решения — в одном диалоге.</p></div><div class="sup-heading-actions"><button class="button button--primary" type="button" data-sup-action="new">${supIcon('plus')}Создать обращение</button><button class="button button--ghost" type="button" data-sup-action="refresh" ${s.listBusy?'disabled':''}>Обновить</button></div></header>`:''}${admin&&stats?`<div class="sup-stats">${[['open','Новые',stats.open],['in_progress','В работе',stats.inProgress],['waiting_customer','Ждём пользователя',stats.waitingCustomer],['completed','Завершены',stats.completed]].map(([key,label,n])=>`<button type="button" class="sup-stat" data-sup-filter="${key}"><span>${label}</span><strong>${n}</strong></button>`).join('')}</div>`:''}${s.error?`<div class="sup-error" role="alert">${supSafe(s.error)}<button type="button" data-sup-action="refresh">Обновить переписку</button></div>`:''}${s.pendingAction?`<div class="sup-info" role="status">Результат изменения статуса ещё не подтверждён.<button type="button" data-sup-action="verify-status" ${s.posting?'disabled':''}>Проверить сохранение</button></div>`:''}${s.info?`<p class="sup-info" role="status">${supSafe(s.info)}</p>`:''}<div class="sup-layout ${s.selected?'has-selection':''} ${s.newTicket?'is-writing':''}">${supListMarkup(mode)}<section class="sup-content" aria-label="${s.newTicket?'Создать обращение':'Переписка по обращению'}">${s.newTicket&&!admin?supWizardMarkup():supChatMarkup(mode)}</section></div></div>`;}
 function supportResizeComposer(input){
   if(!input)return;
+  const log=input.closest('[data-support-mode]')?.querySelector('[data-sup-log]'),
+    atBottom=log&&log.scrollHeight-log.scrollTop-log.clientHeight<75;
   input.style.height='auto';
   input.style.height=Math.min(160,Math.max(64,input.scrollHeight))+'px';
+  if(atBottom)log.scrollTop=log.scrollHeight;
 }
 function supportScrollState(mode){
   const root=supRoot(mode),log=root?.querySelector('[data-sup-log]'),button=root?.querySelector('[data-sup-latest]');

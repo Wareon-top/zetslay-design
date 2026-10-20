@@ -62,7 +62,9 @@ const server=http.createServer(async(req,res)=>{
   await staff.evaluate(async()=>{await loadSupport('admin',true);await supportThread('admin');});
   const log=customer.locator('[data-sup-log]'),draft=customer.locator('[data-sup-draft]');
   await customer.locator('[data-sup-details] > summary').click();
+  await log.evaluate(e=>{e.scrollTop=e.scrollHeight;});
   await draft.fill('Проверяю ещё один заказ.\nПосле этого закрою обращение.\nСпасибо за помощь!');
+  assert.ok(await log.evaluate(e=>e.scrollHeight-e.scrollTop-e.clientHeight<75),'Growing the draft keeps the latest messages in view');
   await draft.evaluate(e=>e.setSelectionRange(8,8));
   await log.evaluate(e=>{e.scrollTop=100;});
   const oldTop=await log.evaluate(e=>e.scrollTop);
