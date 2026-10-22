@@ -9,6 +9,7 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://fixtu
  const browser=await chromium.launch({headless:true,executablePath:process.env.ZETSLAY_TEST_BROWSER_PATH||undefined,args:['--no-sandbox','--disable-dev-shm-usage']});
  try{for(const [name,viewport]of [['desktop',{width:1440,height:1000}],['mobile',{width:390,height:844}],['compact',{width:320,height:700}]]){
   const page=await browser.newPage({viewport,reducedMotion:'reduce'}),errors=[];
+  try{
   page.on('pageerror',e=>errors.push(e.message));await page.route('**/*',r=>r.request().url().startsWith(base)?r.continue():r.fulfill({status:401,contentType:'application/json',body:'{"error":{"code":"UNAUTHORIZED"}}'}));
   await page.clock.install();await page.goto(base+'/app/');await page.waitForFunction(()=>typeof proxyShopMarkup==='function'&&typeof storeToolsRoute==='function');
   await page.evaluate(()=>{
@@ -53,8 +54,8 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://fixtu
   const panel=page.locator('[data-view=profile] [data-managed-proxy]');
   await panel.locator('[data-ps-selection]').waitFor();
   assert.equal(await page.evaluate(()=>proxyFixture.calls.filter(c=>c.method==='POST').length),0,'opening shop never buys a proxy');
-  await page.evaluate(()=>{setModal(true);connectionStep=3;connectionLoading=false;connectionLoadFailed=false;renderConnectionWizard();});
-  await page.locator('.connect-modal [data-ps-selection]').waitFor();await page.screenshot({path:path.join(out,name+'-wizard.png'),fullPage:false});await page.evaluate(()=>setModal(false));
+  await page.evaluate(()=>{setModal(true);connectionStep=3;connectionLoading=false;connectionLoadFailed=false;renderConnectionWizard();});await page.clock.runFor(400);
+  await page.locator('.connect-modal [data-ps-selection]').waitFor();await page.screenshot({path:path.join(out,name+'-wizard.png'),fullPage:false});await page.evaluate(()=>setModal(false));await page.clock.runFor(250);
   await panel.locator('[data-ps-selection] [type=submit]').click();await panel.locator('[data-ps-purchase]').waitFor();
   assert.equal(await page.evaluate(()=>proxyFixture.calls.filter(c=>c.path.endsWith('/purchase')).length),0,'quote does not debit');
   await panel.locator('.proxy-shop').screenshot({path:path.join(out,name+'-quote.png')});
@@ -72,7 +73,8 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://fixtu
   assert.equal(await page.evaluate(()=>proxyShopUi.data.balanceMinor),0);await panel.locator('.proxy-shop').screenshot({path:path.join(out,name+'-renewed.png')});
   assert.ok(await panel.evaluate(n=>{const r=n.getBoundingClientRect();return r.width<=innerWidth+1&&r.right<=innerWidth+1;}),'shop panel fits viewport');
   assert.equal(await page.evaluate(()=>JSON.stringify({...localStorage,...sessionStorage}).includes('sp_live_')),false);
-  await page.evaluate(()=>resetAccountData());assert.equal(await page.evaluate(()=>proxyShopUi.data),null);assert.equal(await page.evaluate(()=>proxyShopUi.quote),null);assert.deepEqual(errors,[]);await page.close();
+  await page.evaluate(()=>resetAccountData());assert.equal(await page.evaluate(()=>proxyShopUi.data),null);assert.equal(await page.evaluate(()=>proxyShopUi.quote),null);assert.deepEqual(errors,[]);
+  }catch(error){await page.screenshot({path:path.join(out,name+'-failure.png'),fullPage:false});console.log('Fixture state',await page.evaluate(()=>({shopBusy:typeof proxyShopUi!=='undefined'&&proxyShopUi.busy,connectionStep,connectionLoading,connectionLoadFailed,modalOpen:document.querySelector('.connect-modal')?.className,selectionCount:document.querySelectorAll('.connect-modal [data-ps-selection]').length})));throw error;}finally{await page.close();}
  }
  console.log('Proxy shop Chrome: desktop/mobile/320px, real profile and connection wizard, quote consent, wallet-only purchase, double-click protection, separate activation, lost renewal recovery and account reset passed. No live supplier or marketplace requests.');
  }finally{await browser.close();server.close();fs.rmSync(stage,{recursive:true,force:true});}
