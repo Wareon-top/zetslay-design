@@ -9,7 +9,7 @@ trap 'rm -rf "$work"; rmdir "$lock"' EXIT
 git fetch origin "${ZETSLAY_SUBSCRIPTION_UI_REVISION:-codex/landing-light-dark-redesign}"
 revision=$(git rev-parse FETCH_HEAD)
 mkdir -p "$work/incoming/assets" "$work/original"
-assets=(subscription-access.js subscription-access.css subscription-access.test.mjs)
+assets=(subscription-access.js subscription-access.css subscription-access.test.mjs cabinet-demo.js cabinet-demo.css cabinet-demo.test.mjs)
 for file in "${assets[@]}"; do git show "$revision:app/$file" > "$work/incoming/$file"; done
 git show "$revision:deploy/stage-subscription-access-ui.py" > "$work/stage.py"
 cp -p app/index.html "$work/original/index.html"
@@ -18,10 +18,11 @@ python3 "$work/stage.py" "$work/original" "$work/incoming" "$work/out"
 git show "$revision:app/sidebar-trial.js" > "$work/out/sidebar-trial.js"
 if command -v node >/dev/null 2>&1; then
   node --check "$work/out/subscription-access.js"
-  node --test "$work/out/subscription-access.test.mjs"
+  node --check "$work/out/cabinet-demo.js"
+  node --test "$work/out/subscription-access.test.mjs" "$work/out/cabinet-demo.test.mjs"
 else
   docker run --rm --network none -v "$work/out:/work:ro" -w /work node:22-alpine \
-    sh -c 'node --check subscription-access.js && node --test subscription-access.test.mjs'
+    sh -c 'node --check subscription-access.js && node --check cabinet-demo.js && node --test subscription-access.test.mjs cabinet-demo.test.mjs'
 fi
 cmp -s app/index.html "$work/original/index.html" || { echo 'Кабинет изменился во время проверки. Обновление остановлено.'; exit 1; }
 files=(app/index.html); created=()
@@ -38,5 +39,5 @@ for file in "${assets[@]}" index.html; do
     echo "Файлы восстановлены. Backup: $backup";exit 1
   fi
 done
-echo "Дизайн закрытых разделов, тарифы и промокоды обновлены. Backup: $backup"
+echo "Интерактивное знакомство с кабинетом установлено. Backup: $backup"
 echo 'Обновите страницу через Ctrl+F5. Серверные ограничения доступа сохранены.'

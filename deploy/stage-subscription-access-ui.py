@@ -3,8 +3,8 @@ from pathlib import Path
 import re
 import sys
 
-ASSETS = ['subscription-access.js','subscription-access.css','subscription-access.test.mjs']
-VERSION = '20261018-promo-upgrades'
+ASSETS = ['subscription-access.js','subscription-access.css','subscription-access.test.mjs','cabinet-demo.js','cabinet-demo.css','cabinet-demo.test.mjs']
+VERSION = '20261022-cabinet-demo'
 
 
 def stage(local, incoming, out):
@@ -36,6 +36,19 @@ def stage(local, incoming, out):
                 html=html[:payment.start()]+fresh+'\n'+html[payment.start():]
             else:
                 html = re.sub(r'[ \t]*'+re.escape(closing),lambda _:fresh+'\n'+closing,html,count=1,flags=re.I)
+    # Always put the demo before the access wrapper, including on older cabinets.
+    for name, pattern in [
+        ('cabinet-demo.js',r'<script\b[^>]*\bsrc=["\']cabinet-demo\.js(?:\?[^"\']*)?["\'][^>]*>\s*</script>'),
+        ('cabinet-demo.css',r'<link\b[^>]*\bhref=["\']cabinet-demo\.css(?:\?[^"\']*)?["\'][^>]*>')
+    ]:
+        matches=list(re.finditer(pattern,html,re.I))
+        if len(matches)>1:
+            raise ValueError('Учебный кабинет подключён несколько раз. Файлы не изменены.')
+        html=re.sub(pattern,'',html,flags=re.I)
+    anchor=re.search(r'<script\b[^>]*\bsrc=["\']subscription-access\.js(?:\?[^"\']*)?["\'][^>]*>\s*</script>',html,re.I)
+    html=html[:anchor.start()]+f'<script src="cabinet-demo.js?v={VERSION}" defer></script>\n'+html[anchor.start():]
+    anchor=re.search(r'<link\b[^>]*\bhref=["\']subscription-access\.css(?:\?[^"\']*)?["\'][^>]*>',html,re.I)
+    html=html[:anchor.end()]+f'\n<link rel="stylesheet" href="cabinet-demo.css?v={VERSION}">'+html[anchor.end():]
     outputs['index.html']=html
     for name, text in outputs.items():
         path=out/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_text(text)
