@@ -1,7 +1,7 @@
 /* A guided introduction only. Business actions remain explicit, outside the tour. */
 const LEARNING_TOUR_STEPS = Object.freeze([
   {id:'dashboard',view:'dashboard',target:'[data-view-target="dashboard"]',title:'Главная',text:'На главной — состояние подключения и статистика за день, неделю или месяц. Ваши данные появятся после подключения FunPay и активации доступа.',hint:'Начните со статуса магазина, затем выберите период статистики.',nav:true},
-  {id:'connection',view:'dashboard',target:'[data-overview-connect]',fallback:'[data-open-connect]',title:'Подключение FunPay',text:'Мастер поможет подключить рабочего Telegram-бота, магазин FunPay и прокси. Каждый этап покажет, что уже готово. Для запуска мастера сначала нужен активный доступ.',hint:'Кнопка подключения всегда рядом со статусом магазина.'},
+  {id:'connection',view:'dashboard',target:'[data-overview-connect]',fallback:'[data-open-connect], [data-view="dashboard"] .demo-start',title:'Подключение FunPay',text:'Мастер поможет подключить рабочего Telegram-бота, магазин FunPay и прокси. Каждый этап покажет, что уже готово. Для запуска мастера сначала нужен активный доступ.',hint:'Кнопка подключения всегда рядом со статусом магазина.'},
   {id:'trial',view:'dashboard',target:'[data-sidebar-trial]',fallback:'[data-view-target="billing"]',title:'Пробный период',text:'В пробном периоде доступны статистика, автовыдача и плагины всех редкостей, кроме легендарных. Период начинается, когда вы сами нажмёте «Начать бесплатно».',hint:'Если у вас уже есть тариф, ваш доступ отображается в разделе «Подписка».',nav:true},
   {id:'orders',view:'orders',target:'[data-view-target="orders"]',title:'Заказы и сообщения',text:'В «Заказах» следите за продажами, а в «Сообщениях» отвечайте покупателям. Рабочий Telegram-бот поможет получать уведомления и отвечать вне сайта.',hint:'Номер заказа и собеседник помогут найти нужный диалог.',nav:true},
   {id:'plugins',view:'plugins',target:'[data-view-target="plugins"]',title:'Первая автоматизация',text:'Выберите плагин и откройте «Подробнее»: там описание, условия доступа и настройки. Для знакомства удобно начать с напоминания покупателю.',hint:'Изучите настройки перед включением. Легендарные модули не входят в пробный период.',nav:true},
@@ -168,8 +168,8 @@ function learningResize() {
   learningLayout();clearTimeout(learningUi.layoutTimer);learningUi.layoutTimer=setTimeout(learningLayout,350);
 }
 function learningTarget(step=LEARNING_TOUR_STEPS[learningUi.index]) {
-  const visible=node=>node&&!node.closest('[hidden]')&&node.getBoundingClientRect().width>0&&node.getBoundingClientRect().height>0;
-  for(const selector of [step.target,step.fallback,`[data-view-target="${step.view}"]`].filter(Boolean)){const node=document.querySelector(selector);if(visible(node))return node;}
+  const visible=node=>{if(!node||node.closest('[hidden]'))return false;const r=node.getBoundingClientRect();return r.width>0&&r.height>0&&r.right>0&&r.left<window.innerWidth;};
+  for(const selector of [step.target,step.fallback,`[data-view-target="${step.view}"]`].filter(Boolean)){for(const node of document.querySelectorAll(selector)){if(visible(node))return node;}}
   return null;
 }
 function learningLayout() {

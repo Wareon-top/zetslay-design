@@ -5,7 +5,7 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://fixtu
 (async()=>{
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;
  const browser=await chromium.launch({headless:true,executablePath:process.env.ZETSLAY_TEST_BROWSER_PATH||undefined,args:['--no-sandbox','--disable-dev-shm-usage']});
- try{for(const [name,viewport]of [['desktop',{width:1440,height:1100}],['mobile',{width:390,height:844}]]){
+ try{for(const [name,viewport]of [['desktop',{width:1440,height:1100}],['mobile',{width:390,height:844}],['compact',{width:320,height:700}]]){
   const page=await browser.newPage({viewport,reducedMotion:'reduce'}),errors=[];
   page.on('pageerror',e=>errors.push(e.message));await page.route('**/*',r=>r.request().url().startsWith(base)?r.continue():r.fulfill({status:401,contentType:'application/json',body:'{"error":{"code":"UNAUTHORIZED"}}'}));
   await page.clock.install();await page.goto(base+'/app/');await page.waitForFunction(()=>typeof cabinetDemoExperience==='function'&&typeof storeToolsRoute==='function');
@@ -19,7 +19,7 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://fixtu
   });
   const gate=view=>page.locator(`[data-view="${view}"] [data-access-gate]`);
   const navigate=async view=>{if(viewport.width<1100)await page.locator('[data-sidebar-open]').click();await page.locator(`.sidebar [data-view-target="${view}"]`).click();};
-  const capture=async label=>{await page.evaluate(()=>{scrollTo(0,0);document.querySelector('.toast-region')?.replaceChildren();});await page.screenshot({path:path.join(out,name+'-'+label+'.png'),fullPage:true});};
+  const capture=async label=>{await page.evaluate(()=>{scrollTo(0,0);document.querySelector('.toast-region')?.replaceChildren();});await page.screenshot({path:path.join(out,name+'-'+label+'.png'),fullPage:!['welcome','tour'].includes(label)});};
   await gate('dashboard').locator('.demo-workspace-head').waitFor();
   assert.equal(await page.locator('[data-view="dashboard"] .overview-context').isVisible(),false,'real shop controls hidden');
   const before=await gate('dashboard').locator('.demo-metric-primary strong').innerText();await gate('dashboard').locator('[data-demo-period=month]').click();assert.notEqual(await gate('dashboard').locator('.demo-metric-primary strong').innerText(),before);
@@ -52,7 +52,7 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://fixtu
     assert.equal(await page.evaluate(()=>learningUi.index),step);
     assert.ok(await page.locator('.learning-coach').evaluate(n=>{const r=n.getBoundingClientRect();return r.left>=0&&r.top>=0&&r.right<=innerWidth+1&&r.bottom<=innerHeight+1;}),'tour card fits '+name+' step '+step);
     assert.equal(await page.locator('.learning-spot').isVisible(),true,'visible target '+name+' step '+step);
-    if(step===0)await capture('tour');
+    if(step===0){assert.ok(await page.evaluate(()=>{const a=learningTarget().getBoundingClientRect(),b=document.querySelector('.learning-spot').getBoundingClientRect();return Math.abs(Math.max(0,a.left-6)-b.left)<2&&Math.abs(Math.max(0,a.top-6)-b.top)<2;}),'spotlight follows its target');await capture('tour');}
     if(step===2){
       await page.keyboard.press('Escape');await page.waitForFunction(()=>!learningUi.mode&&!learningUi.busy);assert.equal(await page.locator('.app-shell').evaluate(n=>n.inert),false);
       await page.evaluate(()=>learningStart());await page.waitForFunction(()=>learningUi.mode==='tour'&&!learningUi.busy);await page.clock.runFor(400);assert.equal(await page.evaluate(()=>learningUi.index),2,'resume saved step');
