@@ -61,7 +61,7 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://fixtu
   }
   assert.equal(await page.evaluate(()=>learningUi.mode),'finish');assert.equal(await page.evaluate(()=>authState.workspace.plan.active),false,'tour grants no access');
   assert.ok(await page.evaluate(()=>demoFixture.calls.filter(c=>c.method==='POST').every(c=>c.path==='/api/v1/learning')),'tour writes only progress');
-  await page.locator('.learning-welcome [data-learning-close]').click();await page.evaluate(()=>setView('finance'));
+  await page.locator('.learning-welcome [data-learning-close]').first().click();await page.evaluate(()=>setView('finance'));
   await gate('finance').locator('[data-access-billing]').click();await page.waitForFunction(()=>!document.querySelector('[data-view="billing"]').hidden);
   await page.evaluate(()=>setView('dashboard'));await gate('dashboard').locator('[data-access-trial]').click();await page.waitForFunction(()=>!!demoFixture.activationResolve);assert.equal(await gate('dashboard').locator('[data-access-trial]').isDisabled(),true);await page.evaluate(()=>document.querySelector('[data-view="dashboard"] [data-access-trial]').click());assert.equal(await page.evaluate(()=>demoFixture.calls.filter(c=>c.path==='/api/v1/subscription/trial'&&c.method==='POST').length),1);
   await page.evaluate(()=>demoFixture.activationResolve());await page.waitForFunction(()=>!document.querySelector('[data-view="dashboard"]').hasAttribute('data-access-blocked'));assert.equal(await gate('dashboard').count(),0);assert.equal(await page.evaluate(()=>cabinetDemoSession),null);assert.equal(await page.locator('[data-view="dashboard"] .overview-context').isVisible(),true);
