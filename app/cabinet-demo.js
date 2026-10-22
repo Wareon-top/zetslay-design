@@ -4,7 +4,7 @@ const cabinetDemoLabels = {dashboard:'Обзор', orders:'Заказы', messag
 const cabinetDemoSteps = [['dashboard','Посмотрите продажи','period'], ['messages','Ответьте покупателю','reply'], ['lots','Измените учебный лот','lot']];
 let cabinetDemoSession = null;
 const demoEsc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const demoMoney = minor => new Intl.NumberFormat('ru-RU', {style:'currency',currency:'RUB',maximumFractionDigits:0}).format(minor / 100);
+const demoMoney = minor => new Intl.NumberFormat('ru-RU', {style:'currency',currency:'RUB',minimumFractionDigits:0,maximumFractionDigits:2}).format(minor / 100);
 const demoScope = () => authState.user?.id && authState.token ? `${authState.user.id}:${authState.token}` : '';
 function cabinetDemoReset(){ cabinetDemoSession = null; }
 function cabinetDemoData(){
