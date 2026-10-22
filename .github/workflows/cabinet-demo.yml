@@ -1,9 +1,12 @@
-name: Verify interactive cabinet preview
+name: Verify cabinet design and onboarding
 on:
   push:
     paths:
       - 'app/cabinet-demo*'
       - 'app/subscription-access*'
+      - 'app/learning*'
+      - 'app/sidebar-trial*'
+      - 'deploy/*cabinet-polish*'
       - 'deploy/*subscription-access*'
       - 'scripts/verify-cabinet-demo-browser.cjs'
       - '.github/workflows/cabinet-demo.yml'
@@ -18,9 +21,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: node --test app/cabinet-demo.test.mjs app/subscription-access.test.mjs app/sidebar-trial.test.mjs app/billing.test.mjs app/service-access-policy.test.mjs
+      - run: node --test app/learning.test.mjs app/cabinet-demo.test.mjs app/subscription-access.test.mjs app/sidebar-trial.test.mjs app/billing.test.mjs app/service-access-policy.test.mjs
       - run: python3 deploy/stage-subscription-access-ui.test.py
-      - name: Try the preview and activate trial in desktop and mobile Chrome
+      - run: python3 deploy/stage-cabinet-polish-ui.test.py
+      - name: Verify welcome, tour, preview and trial in desktop and mobile Chrome
         run: |
           browser_deps="$RUNNER_TEMP/zetslay-demo-browser"
           npm install --prefix "$browser_deps" --no-save --ignore-scripts playwright@1.56.1

@@ -13,10 +13,10 @@ function harness(api=async()=>available,{signedIn=true,missing=false}={}) {
  const run=code=>vm.runInContext(code,context);run(source);
  return {run,context,calls,node,root,events,click:()=>run('sidebarTrialClick()'),async ready(){for(let i=0;i<10;i++)await Promise.resolve()}};
 }
-test('card follows the reference design and replaces only the support promotion',()=>{
+test('compact trial card preserves its action and account state without decorative promotion',()=>{
  const html=readFileSync(new URL('./index.html',import.meta.url),'utf8'),css=readFileSync(new URL('./sidebar-trial.css',import.meta.url),'utf8');
  assert.doesNotMatch(html,/class="support-card"/);assert.match(html,/data-sidebar-trial/);assert.match(html,/data-trial-metric>3/);
- assert.match(html,/class="user-card"/);assert.match(css,/radial-gradient/);assert.match(css,/clip-path: polygon/);assert.match(css,/prefers-reduced-motion/);
+ assert.match(html,/class="user-card"/);assert.doesNotMatch(css,/radial-gradient|clip-path: polygon/);assert.match(css,/prefers-reduced-motion/);
 });
 test('startup checks eligibility with GET only; activation requires an explicit click',async()=>{
  const app=harness(async(_path,options)=>options.method==='POST'?{trial:active,workspace:{id:'w',plan:{id:'trial_3d',active:true}},onboarding:{state:'telegram_bot_required'}}:available);
