@@ -11,7 +11,7 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://fixtu
   await page.clock.install();await page.goto(base+'/app/');await page.waitForFunction(()=>typeof cabinetDemoExperience==='function'&&typeof storeToolsRoute==='function');
   await page.evaluate(()=>{
    authState.user={id:'demo-browser-user',email:'demo@example.invalid'};authState.token='fixture';authState.workspace={id:'demo-browser-workspace',plan:{active:false},pluginLicenses:[]};
-   state.onboarding={state:'plan_required',activePlan:false};state.storeContent=null;
+   state.onboarding={state:'plan_required',activePlan:false};state.storeContent={observedAt:null,orders:[],messages:[],lots:[]};
    window.demoFixture={calls:[],active:false,fail:false,activationResolve:null};
    const trial=()=>({state:demoFixture.active?'active':'available',durationHours:72,serverNow:new Date().toISOString(),remainingSeconds:demoFixture.active?259200:0,...(demoFixture.active?{startedAt:new Date().toISOString(),expiresAt:new Date(Date.now()+259200000).toISOString()}:{})});
    apiRequest=async(p,o={})=>{demoFixture.calls.push({path:p,method:o.method||'GET'});if(p==='/api/v1/subscription/trial'&&o.method==='POST'){if(demoFixture.fail)throw Error('Test activation failure');return new Promise(resolve=>demoFixture.activationResolve=()=>{demoFixture.active=true;authState.workspace.plan={id:'trial_3d',active:true,expiresAt:new Date(Date.now()+259200000).toISOString()};resolve({workspace:structuredClone(authState.workspace),trial:trial()});});}if(p==='/api/v1/subscription/trial')return trial();if(p==='/api/v1/subscription/status')return{workspace:structuredClone(authState.workspace),trial:trial(),discounts:[]};if(p==='/api/v1/plugins')return{plugins:[]};return {};};
