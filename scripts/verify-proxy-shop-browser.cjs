@@ -20,6 +20,10 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://fixtu
    apiRequest=async(p,o={})=>{
     const f=proxyFixture;f.calls.push({path:p,method:o.method||'GET',body:o.body});
     if(p==='/api/v1/learning')return{version:1,revision:1,welcomeSeen:true,status:'completed',step:5};
+    if(p.startsWith('/api/v1/legal/requests'))return{requests:[],nextOffset:null,admin:false};
+    if(p==='/api/v1/legal/acceptance')return{required:false,publication:{state:'published',...f.publication},acceptance:null};
+    if(p==='/api/v1/account/security')return{enabled:false,sessions:[]};
+    if(p==='/api/v1/account/sync-health')return{status:'not_observed'};
     if(p==='/api/v1/profile')return structuredClone(f.profile);
     if(p==='/api/v1/onboarding')return structuredClone(f.onboarding);
     if(p==='/api/v1/managed-proxy')return structuredClone(f.managed);
@@ -74,7 +78,7 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://fixtu
   assert.ok(await panel.evaluate(n=>{const r=n.getBoundingClientRect();return r.width<=innerWidth+1&&r.right<=innerWidth+1;}),'shop panel fits viewport');
   assert.equal(await page.evaluate(()=>JSON.stringify({...localStorage,...sessionStorage}).includes('sp_live_')),false);
   await page.evaluate(()=>resetAccountData());assert.equal(await page.evaluate(()=>proxyShopUi.data),null);assert.equal(await page.evaluate(()=>proxyShopUi.quote),null);assert.deepEqual(errors,[]);
-  }catch(error){await page.screenshot({path:path.join(out,name+'-failure.png'),fullPage:false});console.log('Fixture state',await page.evaluate(()=>({shopBusy:typeof proxyShopUi!=='undefined'&&proxyShopUi.busy,connectionStep,connectionLoading,connectionLoadFailed,modalOpen:document.querySelector('.connect-modal')?.className,selectionCount:document.querySelectorAll('.connect-modal [data-ps-selection]').length})));throw error;}finally{await page.close();}
+  }catch(error){await page.screenshot({path:path.join(out,name+'-failure.png'),fullPage:false});console.log('Fixture state',await page.evaluate(()=>({shopBusy:typeof proxyShopUi!=='undefined'&&proxyShopUi.busy,connectionStep,connectionLoading,connectionLoadFailed,connectionError,modalOpen:document.querySelector('.connect-modal')?.className,selectionCount:document.querySelectorAll('.connect-modal [data-ps-selection]').length})));throw error;}finally{await page.close();}
  }
  console.log('Proxy shop Chrome: desktop/mobile/320px, real profile and connection wizard, quote consent, wallet-only purchase, double-click protection, separate activation, lost renewal recovery and account reset passed. No live supplier or marketplace requests.');
  }finally{await browser.close();server.close();fs.rmSync(stage,{recursive:true,force:true});}

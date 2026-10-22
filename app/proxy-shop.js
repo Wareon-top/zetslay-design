@@ -31,8 +31,9 @@ function proxyShopMarkup(data){
  <footer><button class="ps-text-button" type="button" data-ps-refresh ${ui.loading||ui.busy?'disabled':''}>Обновить покупки</button><a href="https://t.me/zetslaysupport" target="_blank" rel="noopener">Помощь с прокси ↗</a></footer></section>`;
 }
 async function proxyShopLoad({catalog=false}={}){
- const scope=proxyShopScope();if(!scope||proxyShopUi.loading)return;
+ const scope=proxyShopScope();if(!scope)return;
  if(proxyShopUi.scope&&proxyShopUi.scope!==scope)proxyShopReset();
+ if(proxyShopUi.loading)return;
  const epoch=proxyShopUi.epoch,revision=++proxyShopUi.loadRevision;const current=()=>proxyShopCurrent(scope,epoch)&&revision===proxyShopUi.loadRevision;proxyShopUi.scope=scope;proxyShopUi.loading=true;
  try{
   const data=await apiRequest('/api/v1/proxy-shop',{authenticated:true});if(!current())return;
@@ -68,7 +69,7 @@ function proxyShopAdminMarkup(data){
 }
 (function installProxyShop(){
  if(typeof document==='undefined'||typeof managedProxyRender!=='function')return;
- const render=managedProxyRender;managedProxyRender=function(...args){const result=render(...args);if(proxyShopScope()&&document.querySelector('[data-managed-proxy]')&&!proxyShopUi.data&&!proxyShopUi.loading&&!proxyShopUi.error)void proxyShopLoad();return result;};
+ const render=managedProxyRender;managedProxyRender=function(...args){if(proxyShopUi.scope&&proxyShopUi.scope!==proxyShopScope())proxyShopReset();const result=render(...args);if(proxyShopScope()&&document.querySelector('[data-managed-proxy]')&&!proxyShopUi.data&&!proxyShopUi.loading&&!proxyShopUi.error)void proxyShopLoad();return result;};
  const reset=resetAccountData;resetAccountData=function(...args){proxyShopReset();return reset.apply(this,args);};
  const admin=renderAdminPanel;renderAdminPanel=function(...args){const result=admin.apply(this,args),root=document.querySelector('[data-admin-root]');if(root&&adminAllowed()&&!root.querySelector('[data-proxy-shop-admin]')){const panel=document.createElement('div');panel.dataset.proxyShopAdmin='';root.append(panel);void proxyShopAdminLoad(panel);}return result;};
  document.addEventListener('change',e=>{const form=e.target.closest?.('[data-ps-selection]');if(!form||proxyShopUi.busy)return;proxyShopUi.quote=null;proxyShopUi.request=null;proxyShopUi.unknown=false;const fields=new FormData(form);proxyShopUi.nodeId=String(fields.get('nodeId')||'');proxyShopUi.resourceId=String(fields.get('resourceId')||'');proxyShopUi.months=Number(fields.get('months'));proxyShopRender();});
