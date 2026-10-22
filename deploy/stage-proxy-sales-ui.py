@@ -1,7 +1,7 @@
 """Install reseller UI while preserving local cabinet and payment behaviour."""
 from pathlib import Path
 import re, sys
-VERSION='20261022-steelproxy-sales'
+VERSION='20261022-steelproxy-sales-v2'
 ASSETS=['proxy-shop.js','proxy-shop.css','proxy-shop.test.mjs','managed-proxy-ui.js','managed-proxy-ui.css','managed-proxy-ui.test.mjs']
 
 def stage(local,incoming,out):

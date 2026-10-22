@@ -59,10 +59,10 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://fixtu
   await panel.locator('[data-ps-selection]').waitFor();
   assert.equal(await page.evaluate(()=>proxyFixture.calls.filter(c=>c.method==='POST').length),0,'opening shop never buys a proxy');
   await page.evaluate(()=>{setModal(true);connectionStep=3;connectionLoading=false;connectionLoadFailed=false;renderConnectionWizard();});await page.clock.runFor(400);
-  await page.locator('.connect-modal [data-ps-selection]').waitFor();await page.screenshot({path:path.join(out,name+'-wizard.png'),fullPage:false});await page.evaluate(()=>setModal(false));await page.clock.runFor(250);
+  await page.locator('.connect-modal [data-ps-selection]').waitFor();await page.evaluate(()=>document.querySelector('.toast-region')?.replaceChildren());await page.screenshot({path:path.join(out,name+'-wizard.png'),fullPage:false});await page.evaluate(()=>setModal(false));await page.clock.runFor(250);
   await panel.locator('[data-ps-selection] [type=submit]').click();await panel.locator('[data-ps-purchase]').waitFor();
   assert.equal(await page.evaluate(()=>proxyFixture.calls.filter(c=>c.path.endsWith('/purchase')).length),0,'quote does not debit');
-  await panel.locator('.proxy-shop').screenshot({path:path.join(out,name+'-quote.png')});
+  await panel.locator('[data-ps-purchase]').scrollIntoViewIfNeeded();await page.evaluate(()=>document.querySelector('.toast-region')?.replaceChildren());await page.screenshot({path:path.join(out,name+'-quote.png'),fullPage:false});
   await panel.locator('[name=confirmed]').check();await panel.locator('[data-ps-purchase] [type=submit]').click();await page.waitForFunction(()=>!!proxyFixture.resolve);
   assert.equal(await panel.locator('[data-ps-purchase] [type=submit]').isDisabled(),true);
   await page.evaluate(()=>document.querySelector('[data-view=profile] [data-ps-purchase] [type=submit]').click());
@@ -74,7 +74,7 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://fixtu
   await page.evaluate(()=>{proxyFixture.lostRenewal=true;proxyFixture.resolve=null;});await panel.locator('[name=confirmed]').check();await panel.locator('[data-ps-purchase] [type=submit]').click();await page.waitForFunction(()=>!!proxyFixture.resolve);await page.evaluate(()=>proxyFixture.resolve());await page.waitForFunction(()=>!proxyShopUi.busy&&proxyShopUi.data?.operations[0]?.status==='review_required');
   await panel.locator('[data-ps-reconcile]').waitFor();await panel.locator('[data-ps-reconcile]').click();await page.waitForFunction(()=>!proxyShopUi.busy&&proxyShopUi.data?.operations[0]?.status==='delivered');
   assert.equal(await page.evaluate(()=>proxyFixture.calls.filter(c=>c.path==='/api/v1/proxy-shop/purchase').length),2,'lost renewal is read back, not purchased twice');
-  assert.equal(await page.evaluate(()=>proxyShopUi.data.balanceMinor),0);await panel.locator('.proxy-shop').screenshot({path:path.join(out,name+'-renewed.png')});
+  assert.equal(await page.evaluate(()=>proxyShopUi.data.balanceMinor),0);await panel.locator('.proxy-shop>.ps-operation').scrollIntoViewIfNeeded();await page.evaluate(()=>document.querySelector('.toast-region')?.replaceChildren());await page.screenshot({path:path.join(out,name+'-renewed.png'),fullPage:false});
   assert.ok(await panel.evaluate(n=>{const r=n.getBoundingClientRect();return r.width<=innerWidth+1&&r.right<=innerWidth+1;}),'shop panel fits viewport');
   assert.equal(await page.evaluate(()=>JSON.stringify({...localStorage,...sessionStorage}).includes('sp_live_')),false);
   await page.evaluate(()=>clearSession());assert.equal(await page.evaluate(()=>proxyShopUi.data),null);assert.equal(await page.evaluate(()=>proxyShopUi.quote),null);assert.deepEqual(errors,[]);
