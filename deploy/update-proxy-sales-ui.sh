@@ -18,7 +18,7 @@ if command -v node >/dev/null 2>&1; then
  node --check "$work/out/proxy-shop.js";node --check "$work/out/managed-proxy-ui.js";node --check "$work/out/payments.js"
  node --test "$work/out/proxy-shop.test.mjs" "$work/out/managed-proxy-ui.test.mjs"
 else
- docker run --rm --network none -v "$work/out:/work:ro" -w /work node:22-alpine sh -c 'node --check proxy-shop.js && node --check managed-proxy-ui.js && node --check payments.js && node --test proxy-shop.test.mjs managed-proxy-ui.test.mjs'
+ docker run --rm --network none -v "$work/out:/work:ro" -w /work node:22.23.4-alpine3.23@sha256:6abbcf5dd6b231da109bcde1181db1d92bf78015ae1a9514d9807c1f857869db sh -c 'node --check proxy-shop.js && node --check managed-proxy-ui.js && node --check payments.js && node --test proxy-shop.test.mjs managed-proxy-ui.test.mjs'
 fi
 for file in index.html payments.js; do cmp -s "app/$file" "$work/original/$file" || { echo 'Кабинет изменился во время проверки. Обновление остановлено.';exit 1; }; done
 files=(app/index.html app/payments.js);created=()
