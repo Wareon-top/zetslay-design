@@ -1,5 +1,5 @@
 /* Purchases use the ZetSlay wallet. Supplier credentials never enter this module. */
-const proxyShopUi={scope:'',epoch:0,loadRevision:0,data:null,catalog:null,loading:false,busy:false,error:'',quote:null,request:null,unknown:false,kind:'issue',nodeId:'',resourceId:'',months:1,poll:null};
+const proxyShopUi={scope:'',epoch:0,loadRevision:0,resetting:false,data:null,catalog:null,loading:false,busy:false,error:'',quote:null,request:null,unknown:false,kind:'issue',nodeId:'',resourceId:'',months:1,poll:null};
 const proxyShopScope=()=>authState.user?.id&&authState.token?`${authState.user.id}:${authState.token}:${typeof sessionGeneration==='number'?sessionGeneration:0}`:'';
 const proxyShopMoney=n=>Number.isSafeInteger(n)?new Intl.NumberFormat('ru-RU',{style:'currency',currency:'RUB',maximumFractionDigits:2}).format(n/100):'—';
 const proxyShopSafe=v=>escapeHtml(String(v??''));
@@ -14,7 +14,7 @@ function proxyShopOperation(o){
  return `<article class="ps-operation ${success?'is-complete':''}"><header><strong>${proxyShopSafe(proxyShopLabels[o.status]||'Уточняем результат')}</strong><span>${proxyShopMoney(o.priceMinor)}</span></header><p>${o.kind==='renew'?'Продление':o.kind==='replace'?'Новый адрес':'Покупка прокси'} · ${proxyShopSafe(o.country)} · ${o.months*30} дней${o.expiresAt?' · до '+proxyShopDate(o.expiresAt):''}</p>${success?`<small>${o.kind==='renew'?'Срок продлён у поставщика. Дата в кабинете обновлена.':'FunPay доступен с сервера ZetSlay. Для подключения нажмите «Проверить и подключить» выше — авторизация магазина проверяется отдельно.'}</small>`:o.status==='refunded'?'<small>Сумма возвращена на внутренний баланс ZetSlay. Повторного списания нет.</small>':'<small>Повторная покупка не запускается. Сумма зарезервирована до подтверждения результата.</small>'}${pending?`<button type="button" class="ps-text-button" data-ps-reconcile="${proxyShopSafe(o.id)}" ${proxyShopUi.busy?'disabled':''}>Проверить результат</button>`:''}<span class="ps-operation-id">№ ${proxyShopSafe(o.id.slice(0,8))} · ${proxyShopDate(o.createdAt)}</span></article>`;
 }
 function proxyShopMarkup(data){
- const ui=proxyShopUi,status=ui.data;if(!proxyShopScope())return '';
+ const ui=proxyShopUi,status=ui.data;if(!proxyShopScope()||proxyShopUi.resetting)return '';
  if(!status)return `<section class="proxy-shop"><header><h3>Купить прокси</h3></header><p>${proxyShopSafe(ui.error||'Проверяем доступность покупки…')}</p>${ui.error?'<button type="button" class="ps-text-button" data-ps-refresh>Повторить проверку</button>':''}</section>`;
  const pending=status.operations?.find(o=>!['delivered','refunded'].includes(o.status));
  const resources=proxyShopResources(data),locations=ui.catalog?.locations||[],canRenew=resources.length>0;
@@ -31,7 +31,7 @@ function proxyShopMarkup(data){
  <footer><button class="ps-text-button" type="button" data-ps-refresh ${ui.loading||ui.busy?'disabled':''}>Обновить покупки</button><a href="https://t.me/zetslaysupport" target="_blank" rel="noopener">Помощь с прокси ↗</a></footer></section>`;
 }
 async function proxyShopLoad({catalog=false}={}){
- const scope=proxyShopScope();if(!scope)return;
+ const scope=proxyShopScope();if(!scope||proxyShopUi.resetting)return;
  if(proxyShopUi.scope&&proxyShopUi.scope!==scope)proxyShopReset();
  if(proxyShopUi.loading)return;
  const epoch=proxyShopUi.epoch,revision=++proxyShopUi.loadRevision;const current=()=>proxyShopCurrent(scope,epoch)&&revision===proxyShopUi.loadRevision;proxyShopUi.scope=scope;proxyShopUi.loading=true;
@@ -69,8 +69,8 @@ function proxyShopAdminMarkup(data){
 }
 (function installProxyShop(){
  if(typeof document==='undefined'||typeof managedProxyRender!=='function')return;
- const render=managedProxyRender;managedProxyRender=function(...args){if(proxyShopUi.scope&&proxyShopUi.scope!==proxyShopScope())proxyShopReset();const result=render(...args);if(proxyShopScope()&&document.querySelector('[data-managed-proxy]')&&!proxyShopUi.data&&!proxyShopUi.loading&&!proxyShopUi.error)void proxyShopLoad();return result;};
- const reset=resetAccountData;resetAccountData=function(...args){proxyShopReset();return reset.apply(this,args);};
+ const render=managedProxyRender;managedProxyRender=function(...args){if(proxyShopUi.scope&&proxyShopUi.scope!==proxyShopScope())proxyShopReset();const result=render(...args);if(!proxyShopUi.resetting&&proxyShopScope()&&document.querySelector('[data-managed-proxy]')&&!proxyShopUi.data&&!proxyShopUi.loading&&!proxyShopUi.error)void proxyShopLoad();return result;};
+ const reset=resetAccountData;resetAccountData=function(...args){proxyShopUi.resetting=true;proxyShopReset();try{return reset.apply(this,args);}finally{proxyShopUi.resetting=false;}};
  const admin=renderAdminPanel;renderAdminPanel=function(...args){const result=admin.apply(this,args),root=document.querySelector('[data-admin-root]');if(root&&adminAllowed()&&!root.querySelector('[data-proxy-shop-admin]')){const panel=document.createElement('div');panel.dataset.proxyShopAdmin='';root.append(panel);void proxyShopAdminLoad(panel);}return result;};
  document.addEventListener('change',e=>{const form=e.target.closest?.('[data-ps-selection]');if(!form||proxyShopUi.busy)return;proxyShopUi.quote=null;proxyShopUi.request=null;proxyShopUi.unknown=false;const fields=new FormData(form);proxyShopUi.nodeId=String(fields.get('nodeId')||'');proxyShopUi.resourceId=String(fields.get('resourceId')||'');proxyShopUi.months=Number(fields.get('months'));proxyShopRender();});
  document.addEventListener('submit',e=>{const recovery=e.target.closest?.('[data-ps-admin-recover],[data-ps-admin-refund]');if(recovery){e.preventDefault();void proxyShopAdminAction(recovery);return;}const form=e.target.closest?.('[data-ps-selection],[data-ps-purchase]');if(!form)return;e.preventDefault();if(proxyShopUi.busy)return;

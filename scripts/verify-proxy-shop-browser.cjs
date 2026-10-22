@@ -77,7 +77,7 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://fixtu
   assert.equal(await page.evaluate(()=>proxyShopUi.data.balanceMinor),0);await panel.locator('.proxy-shop').screenshot({path:path.join(out,name+'-renewed.png')});
   assert.ok(await panel.evaluate(n=>{const r=n.getBoundingClientRect();return r.width<=innerWidth+1&&r.right<=innerWidth+1;}),'shop panel fits viewport');
   assert.equal(await page.evaluate(()=>JSON.stringify({...localStorage,...sessionStorage}).includes('sp_live_')),false);
-  await page.evaluate(()=>resetAccountData());assert.equal(await page.evaluate(()=>proxyShopUi.data),null);assert.equal(await page.evaluate(()=>proxyShopUi.quote),null);assert.deepEqual(errors,[]);
+  await page.evaluate(()=>clearSession());assert.equal(await page.evaluate(()=>proxyShopUi.data),null);assert.equal(await page.evaluate(()=>proxyShopUi.quote),null);assert.deepEqual(errors,[]);
   }catch(error){await page.screenshot({path:path.join(out,name+'-failure.png'),fullPage:false});console.log('Fixture state',await page.evaluate(()=>({shopBusy:typeof proxyShopUi!=='undefined'&&proxyShopUi.busy,connectionStep,connectionLoading,connectionLoadFailed,connectionError,modalOpen:document.querySelector('.connect-modal')?.className,selectionCount:document.querySelectorAll('.connect-modal [data-ps-selection]').length})));throw error;}finally{await page.close();}
  }
  console.log('Proxy shop Chrome: desktop/mobile/320px, real profile and connection wizard, quote consent, wallet-only purchase, double-click protection, separate activation, lost renewal recovery and account reset passed. No live supplier or marketplace requests.');
