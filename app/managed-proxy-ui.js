@@ -82,6 +82,7 @@ async function managedProxyRun(path,body,admin=false){
   const body=document.querySelector('.connect-modal__body');if(!body)return result;
   const panel=document.createElement('div');panel.dataset.managedProxy='';body.prepend(panel);
   const source=document.createElement('div');source.className='mp-source';source.innerHTML=`<button type="button" data-mp-source="managed" aria-pressed="${managedProxyUi.source==='managed'}">Управляемый прокси</button><button type="button" data-mp-source="external" aria-pressed="${managedProxyUi.source==='external'}">Свой прокси</button>`;panel.before(source);
+  const shortcut=document.createElement('div');shortcut.className='ps-wizard-link';shortcut.innerHTML='<button type="button" data-proxy-open>Покупка и продление в разделе «Прокси» →</button>';source.after(shortcut);
   panel.hidden=managedProxyUi.source==='external';
   if(connectionStep===3)for(const child of Array.from(body.children))if(child!==source&&child!==panel&&(child.matches('h3,p,.connect-illustration')))child.hidden=managedProxyUi.source==='managed';
   const own=body.querySelector('input[name="proxyUrl"]')?.closest('.connection-form');if(own)own.hidden=managedProxyUi.source!=='external';

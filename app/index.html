@@ -51,8 +51,7 @@
 <link rel="stylesheet" href="cabinet-demo.css?v=20261022-cabinet-polish">
 <link rel="stylesheet" href="ai-reviews.css?v=20261012-ai-reviews-ultra">
     <link rel="stylesheet" href="lot-management.css?v=20261013-lot-management">
-  <link rel="stylesheet" href="managed-proxy-ui.css?v=20261022-steelproxy-sales-v2">
-  <link rel="stylesheet" href="priority-orders.css?v=20261015-orders-periods">
+    <link rel="stylesheet" href="priority-orders.css?v=20261015-orders-periods">
     <link rel="stylesheet" href="finance-workspace.css?v=20261015-financial-report">
 <link rel="stylesheet" href="payments.css?v=20261016-platega-wallet">
 <link rel="stylesheet" href="payment-confirmation.css?v=20261016-confirmation-ticket">
@@ -61,7 +60,8 @@
 <link rel="stylesheet" href="support.css?v=20261020-support-bubbles">
 <link rel="stylesheet" href="ticket-pilot.css?v=20261017-ticket-pilot">
 <link rel="stylesheet" href="store-tools.css?v=20261020-store-tools">
-<link rel="stylesheet" href="proxy-shop.css?v=20261022-steelproxy-sales-v2">
+<link rel="stylesheet" href="managed-proxy-ui.css?v=20261023-proxy-store-v1">
+<link rel="stylesheet" href="proxy-shop.css?v=20261023-proxy-store-v1">
 </head>
   <body>
     <svg class="icon-sprite" aria-hidden="true">
@@ -119,6 +119,7 @@
           <button class="nav-item" type="button" data-view-target="messages"><svg><use href="#i-chat"/></svg><span>Сообщения</span><b data-nav-messages>0</b></button>
           <span class="sidebar-nav__label">Магазин</span>
           <button class="nav-item" type="button" data-view-target="lots"><svg><use href="#i-box"/></svg><span>Лоты и товары</span></button>
+          <button class="nav-item proxy-nav-item" type="button" data-view-target="proxy-shop"><svg aria-hidden="true"><use href="#i-shield"/></svg><span>Прокси</span><small class="proxy-nav-badge">Купить</small></button>
           <button class="nav-item" type="button" data-view-target="plugins"><svg><use href="#i-puzzle"/></svg><span>Плагины</span></button>
           <span class="sidebar-nav__label">Сервисы и настройки</span>
           <button class="nav-item" type="button" data-view-target="billing"><svg><use href="#i-card"/></svg><span>Подписка</span></button>
@@ -330,6 +331,7 @@
 
           <section class="view plugin-page" data-view="plugin" data-plugin-page aria-label="Подробности плагина"></section>
 
+          <section class="view proxy-store-page" data-view="proxy-shop" data-proxy-store aria-labelledby="proxy-store-title" hidden></section>
           <section class="view" data-view="profile" aria-label="Профиль" hidden><div data-profile></div></section>
           <section class="view" data-view="author" aria-label="Карточка автора" hidden><div data-author-page></div></section>
           <section class="view" data-view="guide" data-knowledge-base aria-labelledby="guide-title">
@@ -503,7 +505,7 @@
     <script src="support.js?v=20261020-support-bubbles" defer></script>
     <script src="admin-panel.js?v=20261017-support-workspace" defer></script>
     <script src="../session-client.js?v=20261012-week-session" defer></script>
-    <script src="app.js?v=20261020-store-tools" defer></script>
+    <script src="app.js?v=20261023-proxy-store-v1" defer></script>
     <script src="messages-actions.js?v=20261014-messages-workspace" defer></script>
     <script src="plugin-detail-ui.js?v=20261006-plugin-details" defer></script>
     <script src="connection-wizard-ui.js?v=20261006-guided-connect" defer></script>
@@ -522,18 +524,18 @@
 <script src="store-sync-deadline.js?v=20261011-sync-pipeline-v2" defer></script>
 <script src="ai-reviews.js?v=20261012-ai-reviews-ultra" defer></script>
 <script src="legal-acceptance.js?v=20261012-legal-publication" defer></script>
-  <script src="managed-proxy-ui.js?v=20261022-steelproxy-sales-v2" defer></script>
-<script src="finance-model.js?v=20261015-financial-report" defer></script>
+  <script src="finance-model.js?v=20261015-financial-report" defer></script>
 <script src="finance-workspace.js?v=20261015-financial-report" defer></script>
 <script src="payment-confirmation.js?v=20261016-confirmation-ticket" defer></script>
-<script src="payments.js?v=20261022-steelproxy-sales-v2" defer></script>
+<script src="payments.js?v=20261023-proxy-store-v1" defer></script>
 <script src="payments-admin.js?v=20261016-platega-wallet" defer></script>
 <script src="auto-refresh.js?v=20261016-background-snapshots" defer></script>
 <script src="tariff-summary.js?v=20261016-current-catalog" defer></script>
 <script src="launch-announcement.js?v=20261017-launch-reference" defer></script>
 <script src="ticket-pilot.js?v=20261017-ticket-pilot" defer></script>
 <script src="store-tools.js?v=20261020-store-tools" defer></script>
-<script src="proxy-shop.js?v=20261022-steelproxy-sales-v2" defer></script>
+<script src="managed-proxy-ui.js?v=20261023-proxy-store-v1" defer></script>
+<script src="proxy-shop.js?v=20261023-proxy-store-v1" defer></script>
 </body>
 </html>
 
