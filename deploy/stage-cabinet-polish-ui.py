@@ -36,7 +36,8 @@ def stage(local, incoming, out):
         if len(re.findall(pattern(name), html, re.I)) > 1:
             raise ValueError(f'{name} подключён несколько раз. Файлы не изменены.')
     for name in ['learning.css', 'subscription-access.css', 'cabinet-demo.css', 'sidebar-trial.css']:
-        fresh = f'<link rel="stylesheet" href="{name}?v={VERSION}">'
+        version = '20261023-trial-restored' if name == 'sidebar-trial.css' else VERSION
+        fresh = f'<link rel="stylesheet" href="{name}?v={version}">'
         if re.search(pattern(name), html, re.I):
             html = re.sub(pattern(name), lambda _: fresh, html, count=1, flags=re.I)
         else:

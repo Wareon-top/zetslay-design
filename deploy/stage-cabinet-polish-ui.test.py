@@ -23,7 +23,7 @@ class StageTest(unittest.TestCase):
    self.assertTrue((base/'out/cabinet-demo.test.mjs').exists())
    self.assertLess(html.index('src="learning.js'),html.index('src="cabinet-demo.js'))
    self.assertIn('learning.css?v=20261022-cabinet-polish',html)
-   self.assertIn('sidebar-trial.css?v=20261022-cabinet-polish',html)
+   self.assertIn('sidebar-trial.css?v=20261023-trial-restored',html)
  def test_missing_subscription_module_is_inserted_before_payment_wrapper(self):
   with tempfile.TemporaryDirectory() as temp:
    base=Path(temp);local=base/'local';local.mkdir()
