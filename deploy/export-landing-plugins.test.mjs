@@ -33,3 +33,19 @@ test('database failure produces no partial public catalog and redacts connection
   assert.doesNotMatch(result.error,/secret|password|address/);
   assert.ok(result.released && result.ended);
 });
+test('all fifteen showcase plugins are exported once, including the eight added modules',async()=>{
+  const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+  const ids=[...html.matchAll(/data-public-plugin="([^"]+)"/g)].map(match=>match[1]);
+  assert.equal(ids.length,15);assert.equal(new Set(ids).size,15);
+  const result=await run(ids.map(id=>({id,metadata:{name:id,cover:'',published:true}})));
+  const queried=Array.from(result.statements.find(({sql})=>sql.startsWith('SELECT')).params[0]);
+  assert.deepEqual(queried,ids);
+  assert.deepEqual(JSON.parse(result.output).entries.map(entry=>entry.id),ids);
+  const raritySource=readFileSync(new URL('../app/plugin-rarity.js',import.meta.url),'utf8');
+  const rarities=vm.runInNewContext(raritySource+';PLUGIN_RARITY_BY_ID');
+  for(const id of ids){
+    assert.ok(Object.hasOwn(rarities,id),'showcase uses an existing catalog module: '+id);
+    const card=html.match(new RegExp('<article[^>]*data-public-plugin="'+id.replaceAll('.','\\.')+'"[^>]*>[\\s\\S]*?</article>'))[0];
+    assert.ok(card.includes('landing-plugin-rarity--'+rarities[id]),'rarity matches the cabinet catalog: '+id);
+  }
+});

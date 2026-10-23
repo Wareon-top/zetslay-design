@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
+# Staged assets are public and must remain readable by the static web server.
+# mktemp creates the backup archive privately regardless of this mask.
+umask 022
 cd "${ZETSLAY_SITE_DIR:-/opt/zetslay-site}"
 lock='.zetslay-landing-hero-update.lock'
 mkdir "$lock" || { echo 'Главная страница уже обновляется.'; exit 1; }
@@ -30,9 +33,14 @@ for file in index.html landing-plugins.css; do git show "$revision:$file" > "$wo
 git show "$revision:deploy/stage-landing-plugins.py" > "$work/stage.py"
 git show "$revision:deploy/export-landing-plugins.mjs" > "$work/export.mjs"
 # No login/session, FunPay connection or workspace settings are accessed.
-core_dir=${ZETSLAY_CORE_DIR:-/opt/zetslay}
-sudo docker compose --project-directory "$core_dir" --env-file "$core_dir/deploy/staging.env" \
-  -f "$core_dir/docker-compose.staging.yml" exec -T api node --input-type=module \
+timeout 15s sudo docker ps --filter label=com.docker.compose.project=zetslay-staging \
+  --filter label=com.docker.compose.service=api --format '{{.ID}}' > "$work/api-containers"
+mapfile -t api_containers < "$work/api-containers"
+if [ "${#api_containers[@]}" -ne 1 ] || ! [[ "${api_containers[0]}" =~ ^[a-f0-9]{12,64}$ ]]; then
+  echo 'Не найден единственный работающий API. Главная страница не изменена.' >&2
+  exit 1
+fi
+timeout 60s sudo docker exec -i "${api_containers[0]}" node --input-type=module \
   < "$work/export.mjs" > "$work/public-cards.json"
 python3 "$work/stage.py" "$PWD" "$work/incoming" "$work/site" "$work/public-cards.json"
 mapfile -t files < <(find "$work/site" -type f -printf '%P\n' | sort)

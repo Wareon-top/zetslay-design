@@ -1,6 +1,11 @@
 // Executed inside the existing API container; export only public card fields.
 import pg from 'pg';
-const ids=['confirm-reminder','review-reminder','auto-review-bonus','lot-cloner','mass-price-editor','sales-pause','kosell-rent'].map(id=>'zetslay.'+id);
+const ids=[
+  'steam-rent','robux-relay','stars-relay','ai-reviews',
+  'kosell-rent','roblox-lzt-market','tiktok-lzt-market','ticket-pilot',
+  'priority-orders','sales-pause','lot-cloner','mass-price-editor',
+  'confirm-reminder','review-reminder','auto-review-bonus'
+].map(id=>'zetslay.'+id);
 const pool=new pg.Pool({connectionString:process.env.DATABASE_URL,connectionTimeoutMillis:5000});
 let client;
 try{

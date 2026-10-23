@@ -8,8 +8,12 @@ import json
 import re
 import sys
 
-VERSION = '20261006-public-catalog'
-IDS = ['zetslay.' + name for name in ('confirm-reminder', 'review-reminder', 'auto-review-bonus', 'lot-cloner', 'mass-price-editor', 'sales-pause', 'kosell-rent')]
+VERSION = '20261023-expanded-catalogue'
+IDS = ['zetslay.' + name for name in (
+    'steam-rent', 'robux-relay', 'stars-relay', 'ai-reviews',
+    'kosell-rent', 'roblox-lzt-market', 'tiktok-lzt-market', 'ticket-pilot',
+    'priority-orders', 'sales-pause', 'lot-cloner', 'mass-price-editor',
+    'confirm-reminder', 'review-reminder', 'auto-review-bonus')]
 
 
 def require(value, message):
@@ -55,7 +59,7 @@ def stage(local, incoming, output, export_file=None):
     overrides = {}
     if export_file is not None:
         path = Path(export_file)
-        require(path.stat().st_size <= 24 * 1024 * 1024, 'Слишком большой экспорт каталога')
+        require(path.stat().st_size <= len(IDS) * (3 * 1024 * 1024 + 1024), 'Слишком большой экспорт каталога')
         payload = json.loads(path.read_text())
         require(isinstance(payload, dict), 'Неизвестный экспорт каталога')
         entries = payload.get('entries')
