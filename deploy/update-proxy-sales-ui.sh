@@ -54,5 +54,5 @@ for file in "${assets[@]}" payments.js app.js index.html; do
   echo "Файлы восстановлены. Backup: $backup";exit 1
  fi
 done
-echo "Раздел «Прокси» в меню, профиле и мастере подключения установлен. Backup: $backup"
-echo 'Откройте https://zetslay.pro/app/#proxy-shop и нажмите Ctrl+F5. API и контейнеры не перезапускались.'
+echo "Окно покупки прокси установлено. Кнопки: Главная, База знаний и этап подключения прокси. Backup: $backup"
+echo 'Откройте https://zetslay.pro/app/#dashboard и нажмите Ctrl+F5. API и контейнеры не перезапускались.'

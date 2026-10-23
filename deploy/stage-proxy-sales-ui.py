@@ -1,7 +1,7 @@
 """Install reseller UI while preserving local cabinet and payment behaviour."""
 from pathlib import Path
 import re, sys
-VERSION='20261023-proxy-store-v1'
+VERSION='20261023-proxy-modal-v2'
 ASSETS=['proxy-shop.js','proxy-shop.css','proxy-shop.test.mjs','managed-proxy-ui.js','managed-proxy-ui.css','managed-proxy-ui.test.mjs']
 
 def stage(local,incoming,out):
@@ -14,18 +14,20 @@ def stage(local,incoming,out):
  if not re.search(r'[\"\']proxy-shop[\"\']\s*:',router[0]):
   app=app[:router.start()]+router[0].replace('const viewTitles = {',"const viewTitles = {\n  'proxy-shop': 'Прокси',",1)+app[router.end():]
  outputs={name:(incoming/name).read_text() for name in ASSETS}
- if 'data-view-target="proxy-shop"' not in html:
-  pattern=r'<button\b[^>]*data-view-target=["\']plugins["\'][^>]*>.*?</button>'
+ # Retire the previous sidebar destination; purchases now open from context.
+ nav=r'[ \t]*<button\b[^>]*data-view-target=["\']proxy-shop["\'][^>]*>.*?</button>'
+ if len(re.findall(nav,html,re.S))>1:raise ValueError('Дубли навигации прокси. Файлы не изменены.')
+ html=re.sub(nav,'',html,flags=re.S)
+ page=r'[ \t]*<section\b[^>]*data-view=["\']proxy-shop["\'][^>]*>\s*</section>'
+ html=re.sub(page,'',html)
+ if 'data-proxy-store' in html:raise ValueError('Не подтверждена старая страница прокси. Файлы не изменены.')
+ for place,heading,title in [('dashboard','overview-heading','Прокси для вашего магазина'),('guide','kb-heading','Нужен прокси для подключения?')]:
+  if f'data-proxy-invite="{place}"' in html:continue
+  pattern=rf'<header\b[^>]*class=["\']{heading}["\'][^>]*>.*?</header>'
   anchors=list(re.finditer(pattern,html,re.S))
-  if len(anchors)!=1:raise ValueError('Не подтверждена навигация кабинета. Файлы не изменены.')
-  nav='<button class="nav-item proxy-nav-item" type="button" data-view-target="proxy-shop"><svg aria-hidden="true"><use href="#i-shield"/></svg><span>Прокси</span><small class="proxy-nav-badge">Купить</small></button>\n          '
-  html=html[:anchors[0].start()]+nav+html[anchors[0].start():]
- if 'data-view="proxy-shop"' not in html:
-  pattern=r'<section\b[^>]*data-view=["\']profile["\'][^>]*>'
-  anchors=list(re.finditer(pattern,html))
-  if len(anchors)!=1:raise ValueError('Не подтверждено место раздела прокси. Файлы не изменены.')
-  page='<section class="view proxy-store-page" data-view="proxy-shop" data-proxy-store aria-labelledby="proxy-store-title" hidden></section>\n          '
-  html=html[:anchors[0].start()]+page+html[anchors[0].start():]
+  if len(anchors)!=1:raise ValueError('Не подтверждено место кнопки покупки. Файлы не изменены.')
+  invite=f'<section class="ps-invite" data-proxy-invite="{place}" aria-label="Прокси от ZetSlay"><span class="ps-invite-icon" aria-hidden="true"><svg><use href="#i-shield"/></svg></span><div><span class="ps-eyebrow">ПРОКСИ ОТ ZETSLAY</span><h2>{title}</h2><p>Купите в ZetSlay: оплата с баланса и проверка доступности FunPay перед выдачей.</p></div><button class="button button--primary" type="button" data-proxy-open>Купить прокси <span aria-hidden="true">↗</span></button></section>'
+  html=html[:anchors[0].end()]+'\n            '+invite+html[anchors[0].end():]
  for name in ['proxy-shop.js','proxy-shop.css','managed-proxy-ui.js','managed-proxy-ui.css']:
   pattern=rf'<(?:script|link)\b[^>]*(?:src|href)=["\']{re.escape(name)}(?:\?[^"\']*)?["\'][^>]*(?:></script>|>)'
   found=list(re.finditer(pattern,html))

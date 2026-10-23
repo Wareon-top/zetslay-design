@@ -12,8 +12,8 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://fixtu
   try{
   page.on('pageerror',e=>errors.push(e.message));await page.route('**/*',r=>r.request().url().startsWith(base)?r.continue():r.fulfill({status:401,contentType:'application/json',body:'{"error":{"code":"UNAUTHORIZED"}}'}));
   await page.route('**/legal/publication.json',r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({version:'fixture',hash:'fixture-publication',status:'active'})}));
-  await page.clock.install();await page.goto(base+'/app/#proxy-shop');await page.waitForFunction(()=>typeof proxyShopMarkup==='function'&&typeof storeToolsRoute==='function');
-  assert.equal(await page.evaluate(()=>location.hash),'#proxy-shop','deep link survives initial routing');
+  await page.clock.install();await page.goto(base+'/app/#dashboard');await page.waitForFunction(()=>typeof proxyShopMarkup==='function'&&typeof storeToolsRoute==='function');
+  assert.equal(await page.evaluate(()=>location.hash),'#dashboard');
   await page.evaluate(()=>{
    sessionGeneration++;resetAccountData();authState.user={id:'proxy-test-user',email:'proxy@example.invalid'};authState.token='proxy-fixture';authState.workspace={id:'proxy-test-workspace',plan:{id:'start',active:true,activatedAt:'2026-01-01T00:00:00Z',expiresAt:'2099-01-01T00:00:00Z'},pluginLicenses:[]};
    state.storeContent={observedAt:null,orders:[],messages:[],lots:[]};
@@ -35,12 +35,13 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://fixtu
      const b=o.body,id=crypto.randomUUID(),q={id,kind:b.kind,nodeId:35,resourceId:b.resourceId||null,country:'DE',months:b.months,termDays:b.months*30,totalMinor:5000*b.months,currency:'RUB',expiresAt:new Date(Date.now()+600000).toISOString(),...(b.kind==='renew'?{extendedExpiresAt:new Date(Date.parse(f.managed.current.expiresAt)+b.months*30*86400000).toISOString()}:{})};f.quotes.set(id,q);return{quote:q,balanceMinor:f.shop.balanceMinor,publication:f.publication};
     }
     if(p==='/api/v1/proxy-shop/purchase'){
-     const q=f.quotes.get(o.body.quoteId);return new Promise((resolve,reject)=>f.resolve=()=>{
-      f.shop.balanceMinor-=q.totalMinor;
-      const op={id:o.body.requestId,kind:q.kind,status:f.lostRenewal?'review_required':'delivered',walletState:f.lostRenewal?'reserved':'charged',priceMinor:q.totalMinor,country:'DE',months:q.months,resourceId:q.resourceId||'mpx_00000000-0000-4000-8000-000000000005',expiresAt:q.extendedExpiresAt||new Date(Date.now()+30*86400000).toISOString(),createdAt:new Date().toISOString(),checks:{availability:{status:'passed',httpStatus:200,attempts:2},authorization:{status:'not_checked'},readAccess:{status:'not_checked'}}};
-      f.shop.operations.unshift(op);
+     const q=f.quotes.get(o.body.quoteId);f.shop.balanceMinor-=q.totalMinor;
+     const op={id:o.body.requestId,kind:q.kind,status:'reserved',walletState:'reserved',priceMinor:q.totalMinor,country:'DE',months:q.months,resourceId:q.resourceId||'mpx_00000000-0000-4000-8000-000000000005',expiresAt:q.extendedExpiresAt||new Date(Date.now()+30*86400000).toISOString(),createdAt:new Date().toISOString(),checks:{availability:{status:'not_checked'},authorization:{status:'not_checked'},readAccess:{status:'not_checked'}}};f.shop.operations.unshift(op);
+     f.advance=status=>{op.status=status;if(status==='checking')op.checks.availability={status:'passed',httpStatus:200,attempts:1};};
+     return new Promise((resolve,reject)=>f.resolve=()=>{
+      op.status=f.lostRenewal?'review_required':'delivered';op.walletState=f.lostRenewal?'reserved':'charged';
       if(q.kind==='renew'){if(!f.lostRenewal)f.managed.current.expiresAt=op.expiresAt;}
-      else f.managed.candidates=[{id:op.resourceId,label:'Германия · Серверный',supplier:'steelproxy',country:'DE',state:'assigned',remainingDays:30,expiresAt:op.expiresAt,availability:op.checks.availability}];
+      else{op.checks.availability={status:'passed',httpStatus:200,attempts:2};f.managed.candidates=[{id:op.resourceId,label:'Германия · Серверный',supplier:'steelproxy',country:'DE',state:'assigned',remainingDays:30,expiresAt:op.expiresAt,availability:op.checks.availability}];}
       if(f.lostRenewal)reject(Error('Lost fixture response'));else resolve({operation:structuredClone(op)});
      });
     }
@@ -55,43 +56,62 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://fixtu
     if(p==='/api/v1/funpay/connection')return{};
     return{};
    };
-   renderAuthState();setAuthModal(false);learningUi.data={version:1,revision:1,welcomeSeen:true,status:'completed',step:5};profileState.data=proxyFixture.profile;setView('profile');renderProfile();
+   renderAuthState();setAuthModal(false);learningUi.data={version:1,revision:1,welcomeSeen:true,status:'completed',step:5};profileState.data=proxyFixture.profile;setView('dashboard');renderProfile();
   });
-  await page.locator('[data-profile] [data-proxy-entry] a').waitFor();
-  if(viewport.width<1000)await page.evaluate(()=>setSidebar(true));
-  const nav=page.locator('[data-view-target="proxy-shop"]');await nav.click();await page.clock.runFor(300);
-  const store=page.locator('[data-proxy-store]'),panel=store.locator('[data-managed-proxy]');
-  await panel.locator('[data-ps-selection]').waitFor();
-  assert.equal(await nav.getAttribute('aria-current'),'page');assert.equal(await page.title(),'Прокси — ZetSlay Control');
-  assert.match(await store.locator('.ps-offer').innerText(),/Германия/);assert.doesNotMatch(await store.locator('.ps-offer').innerText(),/DE_ISP01/);
-  assert.match(await store.locator('.ps-offer-price').innerText(),/50.*₽/);
-  assert.ok(await store.evaluate(n=>{const r=n.getBoundingClientRect();return r.width<=innerWidth+1&&r.right<=innerWidth+1;}),'store fits viewport');
-  await page.evaluate(()=>document.querySelector('.toast-region')?.replaceChildren());await page.screenshot({path:path.join(out,name+'-store.png'),fullPage:false});
-  await store.locator('[data-ps-topup]:visible').first().click();await page.locator('dialog [data-payment-form] [name=amount]').waitFor();assert.equal(await page.evaluate(()=>location.hash),'#billing');
-  await page.locator('dialog [data-billing-close]').click();await page.evaluate(()=>setView('proxy-shop'));await page.clock.runFor(300);await panel.locator('[data-ps-selection]').waitFor();
-  assert.equal(await page.evaluate(()=>proxyFixture.calls.filter(c=>c.method==='POST').length),0,'opening store and topup never charges the wallet');
+  assert.equal(await page.locator('.sidebar-nav [data-view-target="proxy-shop"]').count(),0,'proxy is absent from sidebar');
+  const invite=page.locator('[data-proxy-invite="dashboard"] [data-proxy-open]'),dialog=page.locator('dialog.ps-purchase-dialog');
+  await invite.waitFor();await page.screenshot({path:path.join(out,name+'-dashboard.png'),fullPage:false});
+  await invite.click();await dialog.locator('[data-ps-purchase]').waitFor();
+  assert.match(await dialog.innerText(),/Германия/);assert.doesNotMatch(await dialog.innerText(),/DE_ISP01/);
+  assert.equal(await page.evaluate(()=>proxyFixture.calls.filter(c=>c.path.endsWith('/purchase')).length),0,'opening checkout never buys');
+  assert.ok(await dialog.evaluate(n=>n.scrollWidth<=n.clientWidth+1),'dialog has no horizontal overflow');
+  await page.screenshot({path:path.join(out,name+'-checkout.png'),fullPage:false});
+  await page.keyboard.press('Escape');await page.waitForFunction(()=>!document.querySelector('.ps-purchase-dialog'));
+  assert.equal(await invite.evaluate(n=>n===document.activeElement),true,'Escape restores focus to opener');
+  await page.evaluate(()=>setView('guide'));const guide=page.locator('[data-proxy-invite="guide"] [data-proxy-open]');await guide.click();await dialog.locator('[data-ps-purchase]').waitFor();
+  await dialog.locator('[data-ps-close]').click();await page.evaluate(()=>kbOpen('proxy'));await guide.waitFor();
+  await page.screenshot({path:path.join(out,name+'-guide.png'),fullPage:false});
   await page.evaluate(()=>{setModal(true);connectionStep=3;connectionLoading=false;connectionLoadFailed=false;renderConnectionWizard();});await page.clock.runFor(400);
-  await page.locator('.connect-modal [data-ps-selection]').waitFor();await page.evaluate(()=>document.querySelector('.toast-region')?.replaceChildren());await page.screenshot({path:path.join(out,name+'-wizard.png'),fullPage:false});await page.locator('.connect-modal [data-proxy-open]').click();await page.clock.runFor(300);assert.equal(await page.evaluate(()=>location.hash),'#proxy-shop');assert.equal(await page.locator('.connect-modal').evaluate(n=>n.classList.contains('is-open')),false);
-  await panel.locator('[data-ps-selection] [type=submit]').click();await panel.locator('[data-ps-purchase]').waitFor();
-  assert.equal(await page.evaluate(()=>proxyFixture.calls.filter(c=>c.path.endsWith('/purchase')).length),0,'quote does not debit');
-  await panel.locator('[data-ps-purchase]').scrollIntoViewIfNeeded();await page.evaluate(()=>document.querySelector('.toast-region')?.replaceChildren());await page.screenshot({path:path.join(out,name+'-quote.png'),fullPage:false});
-  await panel.locator('[name=confirmed]').check();await panel.locator('[data-ps-purchase] [type=submit]').click();await page.waitForFunction(()=>!!proxyFixture.resolve);
-  assert.equal(await panel.locator('[data-ps-purchase] [type=submit]').isDisabled(),true);
-  await page.evaluate(()=>document.querySelector('[data-proxy-store] [data-ps-purchase] [type=submit]').click());
-  assert.equal(await page.evaluate(()=>proxyFixture.calls.filter(c=>c.path==='/api/v1/proxy-shop/purchase').length),1);
-  await page.evaluate(()=>proxyFixture.resolve());await page.waitForFunction(()=>!proxyShopUi.busy&&proxyShopUi.data?.operations[0]?.status==='delivered');
-  assert.equal(await panel.locator('[data-mp-action=activate]').count(),1);assert.equal(await page.evaluate(()=>proxyFixture.managed.current),null,'delivery does not silently replace route');assert.equal(await page.evaluate(()=>proxyShopUi.data.balanceMinor),5000);
-  await panel.locator('[data-mp-action=activate]').click();await page.waitForFunction(()=>managedProxyUi.data?.operation?.installed&&!managedProxyUi.busy);
-  assert.match(await panel.innerText(),/Магазин #42/);await panel.locator('[data-ps-kind=renew]').click();await panel.locator('[data-ps-selection] [type=submit]').click();await panel.locator('[data-ps-purchase]').waitFor();
-  await page.evaluate(()=>{proxyFixture.lostRenewal=true;proxyFixture.resolve=null;});await panel.locator('[name=confirmed]').check();await panel.locator('[data-ps-purchase] [type=submit]').click();await page.waitForFunction(()=>!!proxyFixture.resolve);await page.evaluate(()=>proxyFixture.resolve());await page.waitForFunction(()=>!proxyShopUi.busy&&proxyShopUi.data?.operations[0]?.status==='review_required');
-  await panel.locator('[data-ps-reconcile]').waitFor();await panel.locator('[data-ps-reconcile]').click();await page.waitForFunction(()=>!proxyShopUi.busy&&proxyShopUi.data?.operations[0]?.status==='delivered');
-  assert.equal(await page.evaluate(()=>proxyFixture.calls.filter(c=>c.path==='/api/v1/proxy-shop/purchase').length),2,'lost renewal is read back, not purchased twice');
-  assert.equal(await page.evaluate(()=>proxyShopUi.data.balanceMinor),0);await panel.locator('.proxy-shop>.ps-operation').scrollIntoViewIfNeeded();await page.evaluate(()=>document.querySelector('.toast-region')?.replaceChildren());await page.screenshot({path:path.join(out,name+'-renewed.png'),fullPage:false});
-  assert.ok(await panel.evaluate(n=>{const r=n.getBoundingClientRect();return r.width<=innerWidth+1&&r.right<=innerWidth+1;}),'shop panel fits viewport');
+  await page.locator('.connect-modal .ps-wizard-link [data-proxy-open]').waitFor();await page.screenshot({path:path.join(out,name+'-wizard.png'),fullPage:false});
+  await page.locator('.connect-modal .ps-wizard-link [data-proxy-open]').click();await dialog.locator('[data-ps-purchase]').waitFor();await page.clock.runFor(300);
+  assert.equal(await page.locator('.connect-modal').evaluate(n=>n.classList.contains('is-open')),false);
+  await dialog.locator('[data-ps-topup]:visible').first().click();await page.locator('dialog [data-payment-form] [name=amount]').waitFor();assert.equal(await page.evaluate(()=>location.hash),'#billing');
+  await page.locator('dialog [data-billing-close]').click();await page.evaluate(()=>setView('dashboard'));await page.clock.runFor(300);await invite.click();await dialog.locator('[data-ps-purchase]').waitFor();
+  await dialog.locator('[name=months]').selectOption('2');await page.waitForFunction(()=>proxyShopUi.quote?.termDays===60&&!proxyShopUi.busy);
+  assert.match(await dialog.locator('[data-ps-purchase]').innerText(),/100.*₽/);
+  await dialog.locator('[name=months]').selectOption('1');await page.waitForFunction(()=>proxyShopUi.quote?.termDays===30&&!proxyShopUi.busy);
+  assert.equal(await page.evaluate(()=>proxyFixture.calls.filter(c=>c.path.endsWith('/purchase')).length),0,'selection and quote never debit');
+  await dialog.locator('[name=confirmed]').check();await dialog.locator('[data-ps-purchase] [type=submit]').click();await page.waitForFunction(()=>!!proxyFixture.resolve);
+  await page.evaluate(()=>proxyShopAction('purchase',proxyShopUi.request));
+  assert.equal(await page.evaluate(()=>proxyFixture.calls.filter(c=>c.path.endsWith('/purchase')).length),1,'duplicate payment is blocked');
+  assert.match(await dialog.innerText(),/Оформляем покупку/);
+  await page.clock.runFor(2100);await page.waitForFunction(()=>proxyShopUi.data?.operations[0]?.status==='reserved');
+  await page.evaluate(()=>proxyFixture.advance('ordering'));await page.clock.runFor(2100);await page.waitForFunction(()=>proxyShopUi.data?.operations[0]?.status==='ordering');
+  await page.screenshot({path:path.join(out,name+'-ordering.png'),fullPage:false});
+  await page.keyboard.press('Escape');await invite.click();await page.waitForFunction(()=>document.querySelector('.ps-purchase-dialog[open]'));
+  assert.equal(await page.evaluate(()=>proxyFixture.calls.filter(c=>c.path.endsWith('/purchase')).length),1,'reopening does not reorder');
+  await page.evaluate(()=>proxyFixture.advance('checking'));await page.clock.runFor(2100);await page.waitForFunction(()=>proxyShopUi.data?.operations[0]?.status==='checking');
+  await page.screenshot({path:path.join(out,name+'-checking.png'),fullPage:false});
+  assert.match(await dialog.innerText(),/Первая проверка пройдена/);assert.doesNotMatch(await dialog.innerText(),/Прокси куплен|Магазин подключён/);
+  await page.evaluate(()=>proxyFixture.resolve());await page.waitForFunction(()=>!proxyShopUi.busy&&proxyShopUi.data?.operations[0]?.status==='delivered'&&managedProxyUi.data?.candidates?.length);
+  assert.equal(await page.evaluate(()=>proxyShopUi.data.balanceMinor),5000);assert.equal(await page.evaluate(()=>proxyFixture.managed.current),null);
+  assert.match(await dialog.innerText(),/Прокси куплен/);assert.doesNotMatch(await dialog.innerText(),/Магазин подключён/);
+  await dialog.evaluate(n=>n.scrollTop=0);await page.screenshot({path:path.join(out,name+'-delivered.png'),fullPage:false});
+  await dialog.locator('[data-mp-action=activate]').click();await page.waitForFunction(()=>managedProxyUi.data?.operation?.installed&&!managedProxyUi.busy);
+  assert.match(await dialog.innerText(),/Магазин подключён/);assert.match(await dialog.innerText(),/Магазин #42/);
+  await dialog.locator('[data-ps-close]').click();await invite.click();await dialog.locator('[data-ps-purchase]').waitFor();
+  assert.equal(await page.evaluate(()=>proxyShopUi.quote.kind),'renew');
+  await page.evaluate(()=>{proxyFixture.lostRenewal=true;proxyFixture.resolve=null;});await dialog.locator('[name=confirmed]').check();await dialog.locator('[data-ps-purchase] [type=submit]').click();await page.waitForFunction(()=>!!proxyFixture.resolve);await page.evaluate(()=>proxyFixture.resolve());await page.waitForFunction(()=>!proxyShopUi.busy&&proxyShopUi.data?.operations[0]?.status==='review_required');
+  assert.match(await dialog.innerText(),/Уточняем результат/);assert.doesNotMatch(await dialog.innerText(),/Прокси продлён/);await dialog.evaluate(n=>n.scrollTop=0);await page.screenshot({path:path.join(out,name+'-review.png'),fullPage:false});
+  await dialog.locator('[data-ps-reconcile]').click();await page.waitForFunction(()=>!proxyShopUi.busy&&proxyShopUi.data?.operations[0]?.status==='delivered');
+  assert.match(await dialog.innerText(),/Прокси продлён/);assert.doesNotMatch(await dialog.innerText(),/Проверяем доступность FunPay/);
+  assert.equal(await page.evaluate(()=>proxyFixture.calls.filter(c=>c.path.endsWith('/purchase')).length),2,'lost response is reconciled without a new purchase');
+  assert.equal(await page.evaluate(()=>proxyShopUi.data.balanceMinor),0);await dialog.evaluate(n=>n.scrollTop=0);await page.screenshot({path:path.join(out,name+'-renewed.png'),fullPage:false});
+  assert.ok(await dialog.evaluate(n=>n.scrollWidth<=n.clientWidth+1),'all purchase states fit viewport');
   assert.equal(await page.evaluate(()=>JSON.stringify({...localStorage,...sessionStorage}).includes('sp_live_')),false);
-  await page.evaluate(()=>clearSession());assert.equal(await store.innerHTML(),'','private proxy page is cleared on logout');assert.equal(await page.evaluate(()=>proxyShopUi.data),null);assert.equal(await page.evaluate(()=>proxyShopUi.quote),null);assert.deepEqual(errors,[]);
+  await page.evaluate(()=>clearSession());assert.equal(await page.locator('.ps-purchase-dialog').count(),0,'logout removes private checkout');assert.equal(await page.evaluate(()=>proxyShopUi.data),null);assert.equal(await page.evaluate(()=>proxyShopUi.quote),null);assert.deepEqual(errors,[]);
   }catch(error){await page.screenshot({path:path.join(out,name+'-failure.png'),fullPage:false});console.log('Fixture state',name,JSON.stringify(await page.evaluate(()=>({shopBusy:typeof proxyShopUi!=='undefined'&&proxyShopUi.busy,connectionStep,connectionLoading,connectionLoadFailed,connectionError,modalOpen:document.querySelector('.connect-modal')?.className,selectionCount:document.querySelectorAll('.connect-modal [data-ps-selection]').length,hiddenParents:Array.from(document.querySelectorAll('.connect-modal [data-ps-selection]')).map(n=>{const rows=[];for(;n;n=n.parentElement)rows.push([n.tagName,n.className,n.hidden,getComputedStyle(n).display,getComputedStyle(n).visibility,n.getBoundingClientRect().width]);return rows;})}))));throw error;}finally{await page.close();}
  }
- console.log('Proxy shop Chrome: desktop/mobile/320px, dedicated menu page, direct link, profile shortcut and connection wizard, quote consent, wallet-only purchase, double-click protection, separate activation, lost renewal recovery and account reset passed. No live supplier or marketplace requests.');
+ console.log('Proxy shop Chrome: desktop/mobile/320px, dashboard, knowledge base and wizard invitations; wallet checkout modal, automatic quote, explicit consent, live server stages, close/reopen, double-click protection, separate activation, renewal recovery and account reset passed. No live supplier or marketplace requests.');
  }finally{await browser.close();server.close();fs.rmSync(stage,{recursive:true,force:true});}
 })().catch(e=>{console.error(e);server.close();process.exitCode=1;});

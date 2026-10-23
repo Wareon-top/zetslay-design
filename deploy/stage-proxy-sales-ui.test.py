@@ -1,5 +1,5 @@
 from pathlib import Path
-import importlib.util, tempfile, unittest, os, subprocess, shutil
+import importlib.util, tempfile, unittest, os, subprocess, shutil, re
 ROOT=Path(__file__).resolve().parents[1]
 spec=importlib.util.spec_from_file_location('stage_proxy_sales',ROOT/'deploy/stage-proxy-sales-ui.py');m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
 class StageTest(unittest.TestCase):
@@ -51,7 +51,18 @@ class StageTest(unittest.TestCase):
    (root/'index.html').write_text(html);(root/'app.js').write_text(app);(root/'payments.js').write_text((ROOT/'app/payments.js').read_text())
    m.stage(root,ROOT/'app',root/'out')
    updated=(root/'out/index.html').read_text();patched=(root/'out/app.js').read_text()
-   self.assertEqual(updated.count('data-view-target="proxy-shop"'),1);self.assertEqual(updated.count('data-view="proxy-shop"'),1)
+   self.assertNotIn('data-view-target="proxy-shop"',updated);self.assertNotIn('data-proxy-store',updated);self.assertEqual(updated.count('data-proxy-invite="dashboard"'),1);self.assertEqual(updated.count('data-proxy-invite="guide"'),1)
    self.assertIn("'proxy-shop': 'Прокси',",patched);self.assertEqual(patched.replace("\n  'proxy-shop': 'Прокси',",''),app)
    m.stage(root/'out',ROOT/'app',root/'twice');self.assertEqual(patched,(root/'twice/app.js').read_text())
+ def test_previous_sidebar_destination_is_replaced_with_context_invitations(self):
+  with tempfile.TemporaryDirectory() as temp:
+   root=Path(temp);html=(ROOT/'app/index.html').read_text()
+   html=re.sub(r'<section[^>]*data-proxy-invite="(?:dashboard|guide)".*?</section>','',html,flags=re.S)
+   html=html.replace('<section class="view" data-view="profile"','<section class="view proxy-store-page" data-view="proxy-shop" data-proxy-store hidden></section><section class="view" data-view="profile"')
+   html=html.replace('data-view-target="plugins"','data-view-target="proxy-shop"',1)
+   (root/'index.html').write_text(html);(root/'app.js').write_text((ROOT/'app/app.js').read_text());(root/'payments.js').write_text((ROOT/'app/payments.js').read_text())
+   m.stage(root,ROOT/'app',root/'out');updated=(root/'out/index.html').read_text()
+   self.assertNotIn('data-view-target="proxy-shop"',updated);self.assertNotIn('data-proxy-store',updated)
+   self.assertEqual(updated.count('data-proxy-invite="dashboard"'),1);self.assertEqual(updated.count('data-proxy-invite="guide"'),1)
+   m.stage(root/'out',ROOT/'app',root/'twice');self.assertEqual(updated,(root/'twice/index.html').read_text())
 if __name__=='__main__':unittest.main()

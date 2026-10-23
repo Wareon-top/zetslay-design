@@ -60,8 +60,8 @@
 <link rel="stylesheet" href="support.css?v=20261020-support-bubbles">
 <link rel="stylesheet" href="ticket-pilot.css?v=20261017-ticket-pilot">
 <link rel="stylesheet" href="store-tools.css?v=20261020-store-tools">
-<link rel="stylesheet" href="managed-proxy-ui.css?v=20261023-proxy-store-v1">
-<link rel="stylesheet" href="proxy-shop.css?v=20261023-proxy-store-v1">
+<link rel="stylesheet" href="managed-proxy-ui.css?v=20261023-proxy-modal-v2">
+<link rel="stylesheet" href="proxy-shop.css?v=20261023-proxy-modal-v2">
 </head>
   <body>
     <svg class="icon-sprite" aria-hidden="true">
@@ -119,7 +119,7 @@
           <button class="nav-item" type="button" data-view-target="messages"><svg><use href="#i-chat"/></svg><span>Сообщения</span><b data-nav-messages>0</b></button>
           <span class="sidebar-nav__label">Магазин</span>
           <button class="nav-item" type="button" data-view-target="lots"><svg><use href="#i-box"/></svg><span>Лоты и товары</span></button>
-          <button class="nav-item proxy-nav-item" type="button" data-view-target="proxy-shop"><svg aria-hidden="true"><use href="#i-shield"/></svg><span>Прокси</span><small class="proxy-nav-badge">Купить</small></button>
+
           <button class="nav-item" type="button" data-view-target="plugins"><svg><use href="#i-puzzle"/></svg><span>Плагины</span></button>
           <span class="sidebar-nav__label">Сервисы и настройки</span>
           <button class="nav-item" type="button" data-view-target="billing"><svg><use href="#i-card"/></svg><span>Подписка</span></button>
@@ -172,6 +172,7 @@
                 <button class="button button--primary" type="button" data-overview-connect data-open-connect><svg><use href="#i-plus"/></svg><span data-overview-connect-label>Подключить FunPay</span></button>
               </div>
             </header>
+            <section class="ps-invite" data-proxy-invite="dashboard" aria-label="Прокси от ZetSlay"><span class="ps-invite-icon" aria-hidden="true"><svg><use href="#i-shield"/></svg></span><div><span class="ps-eyebrow">ПРОКСИ ОТ ZETSLAY</span><h2>Прокси для вашего магазина</h2><p>Купите в ZetSlay: оплата с баланса и проверка доступности FunPay перед выдачей.</p></div><button class="button button--primary" type="button" data-proxy-open>Купить прокси <span aria-hidden="true">↗</span></button></section>
             <div class="overview-context"><span class="overview-source" data-overview-source>Магазин не подключён</span><span data-overview-updated>Ожидает синхронизации</span><span class="overview-plan" data-overview-plan></span></div>
             <p class="overview-notice" data-overview-notice role="status" aria-live="polite" hidden></p>
 
@@ -331,11 +332,12 @@
 
           <section class="view plugin-page" data-view="plugin" data-plugin-page aria-label="Подробности плагина"></section>
 
-          <section class="view proxy-store-page" data-view="proxy-shop" data-proxy-store aria-labelledby="proxy-store-title" hidden></section>
+
           <section class="view" data-view="profile" aria-label="Профиль" hidden><div data-profile></div></section>
           <section class="view" data-view="author" aria-label="Карточка автора" hidden><div data-author-page></div></section>
           <section class="view" data-view="guide" data-knowledge-base aria-labelledby="guide-title">
             <header class="kb-heading"><div><span class="kb-kicker">База знаний</span><h1 id="guide-title">Разберёмся вместе.</h1><p>От первого подключения до автоматизации магазина.<br>Найдите ответ и вернитесь к работе.</p></div><div class="kb-heading-symbol" aria-hidden="true"><svg><use href="#i-help"/></svg></div></header>
+            <section class="ps-invite" data-proxy-invite="guide" aria-label="Прокси от ZetSlay"><span class="ps-invite-icon" aria-hidden="true"><svg><use href="#i-shield"/></svg></span><div><span class="ps-eyebrow">ПРОКСИ ОТ ZETSLAY</span><h2>Нужен прокси для подключения?</h2><p>Купите в ZetSlay: оплата с баланса и проверка доступности FunPay перед выдачей.</p></div><button class="button button--primary" type="button" data-proxy-open>Купить прокси <span aria-hidden="true">↗</span></button></section>
             <div class="kb-search"><svg aria-hidden="true"><use href="#i-search"/></svg><label class="kb-sr-only" for="kb-search">Поиск по инструкциям</label><input id="kb-search" data-kb-search type="search" maxlength="160" autocomplete="off" placeholder="Например: прокси, привязка лота, KOSELL_UNAVAILABLE"><button type="button" data-kb-clear aria-label="Очистить поиск" hidden><svg aria-hidden="true"><use href="#i-close"/></svg></button><span class="kb-search-hint">По вопросам и кодам ошибок</span></div>
             <div data-kb-library>
               <section class="kb-shortcuts" aria-label="Быстрый старт">
@@ -505,7 +507,7 @@
     <script src="support.js?v=20261020-support-bubbles" defer></script>
     <script src="admin-panel.js?v=20261017-support-workspace" defer></script>
     <script src="../session-client.js?v=20261012-week-session" defer></script>
-    <script src="app.js?v=20261023-proxy-store-v1" defer></script>
+    <script src="app.js?v=20261023-proxy-modal-v2" defer></script>
     <script src="messages-actions.js?v=20261014-messages-workspace" defer></script>
     <script src="plugin-detail-ui.js?v=20261006-plugin-details" defer></script>
     <script src="connection-wizard-ui.js?v=20261006-guided-connect" defer></script>
@@ -527,15 +529,15 @@
   <script src="finance-model.js?v=20261015-financial-report" defer></script>
 <script src="finance-workspace.js?v=20261015-financial-report" defer></script>
 <script src="payment-confirmation.js?v=20261016-confirmation-ticket" defer></script>
-<script src="payments.js?v=20261023-proxy-store-v1" defer></script>
+<script src="payments.js?v=20261023-proxy-modal-v2" defer></script>
 <script src="payments-admin.js?v=20261016-platega-wallet" defer></script>
 <script src="auto-refresh.js?v=20261016-background-snapshots" defer></script>
 <script src="tariff-summary.js?v=20261016-current-catalog" defer></script>
 <script src="launch-announcement.js?v=20261017-launch-reference" defer></script>
 <script src="ticket-pilot.js?v=20261017-ticket-pilot" defer></script>
 <script src="store-tools.js?v=20261020-store-tools" defer></script>
-<script src="managed-proxy-ui.js?v=20261023-proxy-store-v1" defer></script>
-<script src="proxy-shop.js?v=20261023-proxy-store-v1" defer></script>
+<script src="managed-proxy-ui.js?v=20261023-proxy-modal-v2" defer></script>
+<script src="proxy-shop.js?v=20261023-proxy-modal-v2" defer></script>
 </body>
 </html>
 
