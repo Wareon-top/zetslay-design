@@ -64,7 +64,10 @@ tar -xzf /root/zetslay-site-before-hero.EXACT_BACKUP_NAME.tar.gz
 
 The archive restores the previous HTML and replaced assets. New orphaned image
 or stylesheet files are harmless because the restored HTML does not load them.
-It does not undo unrelated future changes to other page sections.
+Restoring the archive restores the entire previous index.html. If other landing
+sections have been edited since installation, restore only the old header/hero
+from the archived HTML so those newer edits are retained. Cabinet and API files
+are outside this archive.
 
 ## Verification
 

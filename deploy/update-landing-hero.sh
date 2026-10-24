@@ -8,12 +8,13 @@ work=$(mktemp -d)
 lock='.zetslay-landing-hero-update.lock'
 mkdir "$lock" || { rm -rf "$work"; echo 'Главный блок уже обновляется.'; exit 1; }
 backup=''
+rollback=false
 complete=false
 existing=()
 created=()
 cleanup() {
   status=$?
-  if [ -n "$backup" ] && [ "$complete" = false ]; then
+  if [ "$rollback" = true ] && [ "$complete" = false ]; then
     tar -xzf "$backup"
     for file in "${created[@]}"; do rm -f -- "$file"; done
     echo "Обновление отменено. Резервная копия: $backup"
@@ -43,6 +44,7 @@ for file in "${files[@]}"; do
 done
 backup=$(mktemp "${ZETSLAY_BACKUP_DIR:-/root}/zetslay-site-before-hero.XXXXXX.tar.gz")
 tar -czf "$backup" "${existing[@]}"
+rollback=true
 for file in "${files[@]}"; do
   mkdir -p "$(dirname "$file")"
   candidate=$(mktemp "$(dirname "$file")/.zetslay-hero.XXXXXX")
