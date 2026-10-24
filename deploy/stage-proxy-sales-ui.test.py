@@ -12,6 +12,7 @@ class StageTest(unittest.TestCase):
    m.stage(local,ROOT/'app',root/'out');html=(root/'out/index.html').read_text()
    self.assertIn('local-preserved.invalid',html);self.assertTrue((root/'out/app.js').read_text().endswith('// LOCAL APP CONFIG\n'));self.assertEqual((local/'app.js').read_text(),(ROOT/'app/app.js').read_text()+'\n// LOCAL APP CONFIG\n')
    self.assertIn('PRESERVE LOCAL CHECKOUT',(root/'out/payments.js').read_text());self.assertIn('proxy_purchase:',(root/'out/payments.js').read_text())
+   self.assertEqual((root/'out/assets/proxy-offer.jpg').read_bytes(),(ROOT/'app/assets/proxy-offer.jpg').read_bytes())
    self.assertLess(html.index('src="managed-proxy-ui.js'),html.index('src="proxy-shop.js'));self.assertLess(html.index('src="payments.js'),html.index('src="proxy-shop.js'))
    m.stage(root/'out',ROOT/'app',root/'twice');self.assertEqual((root/'out/index.html').read_text(),(root/'twice/index.html').read_text())
  def test_rejects_unknown_layout_and_duplicate_scripts_before_output(self):

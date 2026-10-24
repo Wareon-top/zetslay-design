@@ -9,10 +9,10 @@ work=$(mktemp -d)
 trap 'rm -rf "$work"; rmdir "$lock"' EXIT
 git fetch origin "${ZETSLAY_PROXY_SALES_DESIGN_REVISION:-codex/landing-light-dark-redesign}"
 revision=$(git rev-parse FETCH_HEAD)
-mkdir -p "$work/original" "$work/incoming"
+mkdir -p "$work/original" "$work/incoming/assets"
 git show "$revision:app/index.html" > "$work/incoming/index.html"
 for file in index.html payments.js app.js; do cp -p "app/$file" "$work/original/$file"; done
-assets=(proxy-shop.js proxy-shop.css proxy-shop.test.mjs managed-proxy-ui.js managed-proxy-ui.css managed-proxy-ui.test.mjs)
+assets=(proxy-shop.js proxy-shop.css proxy-shop.test.mjs managed-proxy-ui.js managed-proxy-ui.css managed-proxy-ui.test.mjs assets/proxy-offer.jpg)
 for file in "${assets[@]}"; do git show "$revision:app/$file" > "$work/incoming/$file"; done
 git show "$revision:deploy/stage-proxy-sales-ui.py" > "$work/stage.py"
 python3 "$work/stage.py" "$work/original" "$work/incoming" "$work/out"
@@ -50,6 +50,7 @@ files=(app/index.html app/payments.js app/app.js);created=()
 for file in "${assets[@]}"; do if [ -f "app/$file" ]; then files+=("app/$file");else created+=("app/$file");fi;done
 backup=$(mktemp "${ZETSLAY_BACKUP_DIR:-/root}/zetslay-before-proxy-sales-ui.XXXXXX.tar.gz")
 chmod 600 "$backup";tar -czf "$backup" "${files[@]}"
+mkdir -p app/assets
 for file in "${assets[@]}" payments.js app.js index.html; do
  if ! cp "$work/out/$file" "app/$file"; then
   tar -xzf "$backup";if [ "${#created[@]}" -gt 0 ];then rm -f -- "${created[@]}";fi

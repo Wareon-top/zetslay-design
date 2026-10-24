@@ -1,8 +1,8 @@
 """Install reseller UI while preserving local cabinet and payment behaviour."""
 from pathlib import Path
 import re, sys
-VERSION='20261024-proxy-experience'
-ASSETS=['proxy-shop.js','proxy-shop.css','proxy-shop.test.mjs','managed-proxy-ui.js','managed-proxy-ui.css','managed-proxy-ui.test.mjs']
+VERSION='20261024-proxy-reference-card'
+ASSETS=['proxy-shop.js','proxy-shop.css','proxy-shop.test.mjs','managed-proxy-ui.js','managed-proxy-ui.css','managed-proxy-ui.test.mjs','assets/proxy-offer.jpg']
 
 def stage(local,incoming,out):
  local,incoming,out=Path(local),Path(incoming),Path(out)
@@ -13,7 +13,7 @@ def stage(local,incoming,out):
  if not router:raise ValueError('Не подтверждена навигация кабинета. Файлы не изменены.')
  if not re.search(r'[\"\']proxy-shop[\"\']\s*:',router[0]):
   app=app[:router.start()]+router[0].replace('const viewTitles = {',"const viewTitles = {\n  'proxy-shop': 'Прокси',",1)+app[router.end():]
- outputs={name:(incoming/name).read_text() for name in ASSETS}
+ outputs={name:(incoming/name).read_bytes() if name.endswith('.jpg') else (incoming/name).read_text() for name in ASSETS}
  # Retire the previous sidebar destination; purchases now open from context.
  nav=r'[ \t]*<button\b[^>]*data-view-target=["\']proxy-shop["\'][^>]*>.*?</button>'
  if len(re.findall(nav,html,re.S))>1:raise ValueError('Дубли навигации прокси. Файлы не изменены.')
@@ -54,7 +54,9 @@ def stage(local,incoming,out):
  if len(re.findall(pattern,html))!=1:raise ValueError('Не подтверждено подключение навигации.')
  outputs['index.html']=re.sub(pattern,lambda m:m[1]+f'app.js?v={VERSION}'+m[2],html)
  for name,text in outputs.items():
-  path=out/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_text(text)
+  path=out/name;path.parent.mkdir(parents=True,exist_ok=True)
+  if isinstance(text,bytes):path.write_bytes(text)
+  else:path.write_text(text)
 if __name__=='__main__':
  try:stage(*sys.argv[1:])
  except (ValueError,OSError) as e:raise SystemExit(str(e))

@@ -60,7 +60,8 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://fixtu
   });
   assert.equal(await page.locator('.sidebar-nav [data-view-target="proxy-shop"]').count(),0,'proxy is absent from sidebar');
   const invite=page.locator('[data-proxy-invite="dashboard"] [data-proxy-open]'),dialog=page.locator('dialog.ps-purchase-dialog');
-  await invite.waitFor();assert.equal(await page.locator('[data-proxy-invite="dashboard"] .ps-invite-visual').count(),1);assert.ok(await page.locator('[data-proxy-invite="dashboard"]').evaluate(n=>n.scrollWidth<=n.clientWidth+1),'invitation fits viewport');await page.screenshot({path:path.join(out,name+'-dashboard.png'),fullPage:false});
+  await invite.waitFor();const banner=page.locator('[data-proxy-invite="dashboard"]');await banner.locator('img').evaluate(n=>n.decode());assert.ok(await banner.evaluate(n=>n.scrollWidth<=n.clientWidth+1),'invitation fits viewport');assert.equal(await banner.evaluate(n=>getComputedStyle(n).backgroundImage),'none');await page.screenshot({path:path.join(out,name+'-dashboard.png'),fullPage:false});
+  await banner.locator('[data-proxy-invite-dismiss]').click();assert.equal(await banner.isVisible(),false);assert.equal(await page.evaluate(()=>proxyFixture.calls.filter(c=>c.path.endsWith('/purchase')).length),0,'closing the offer never purchases');assert.equal(await page.locator('.overview-heading h1').evaluate(n=>n===document.activeElement),true);await page.evaluate(()=>document.querySelector('[data-proxy-invite="dashboard"]').hidden=false);
   await invite.click();await dialog.locator('[data-ps-purchase]').waitFor();
   assert.match(await dialog.innerText(),/Германия/);assert.doesNotMatch(await dialog.innerText(),/DE_ISP01/);
   assert.equal(await page.evaluate(()=>proxyFixture.calls.filter(c=>c.path.endsWith('/purchase')).length),0,'opening checkout never buys');
