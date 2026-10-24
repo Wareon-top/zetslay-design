@@ -6,7 +6,7 @@ site=${ZETSLAY_SITE_DIR:-/opt/zetslay-site}
 core=${ZETSLAY_CORE_DIR:-/opt/zetslay}
 cd "$site"
 design_revision=$(git rev-parse "${ZETSLAY_BOT_CONNECTION_REVISION:?Укажите ревизию исправления}^{commit}")
-core_revision=aa9ff1b48b54e2a3f739ed41eecd7b4617cdb287
+core_revision=90c989045bfab0b1b2dc7bc5e415d8e783742006
 git -C "$core" fetch origin "$core_revision"
 job=$(mktemp -d /root/zetslay-bot-connection-job.XXXXXX)
 mkdir "$job/core"
