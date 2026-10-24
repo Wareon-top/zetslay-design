@@ -15,6 +15,17 @@ try{for(const [name,viewport]of [['desktop',{width:1440,height:1000}],['mobile',
    if(p==='/api/v1/onboarding/telegram/bot'){f.snapshot.state='telegram_link_pending';Object.assign(f.snapshot.telegram,{botConfigured:true,bot:{id:123,username:'fixture_working_bot'}});return structuredClone(f.snapshot);}
    if(p==='/api/v1/bot-access/password'){if(f.failPassword){f.failPassword=false;throw Error('Проверочная ошибка сохранения');}f.snapshot.telegram.passwordConfigured=true;return{required:true,botConfigured:true,configured:true};}
    if(p==='/api/v1/onboarding/telegram/link-code')return{code:'123456',expiresAt:new Date(Date.now()+600000).toISOString(),onboarding:structuredClone(f.snapshot)};
+   if(p==='/api/v1/account/security')return{enabled:false,sessions:[]};
+   if(p==='/api/v1/account/sync-health')return{status:'not_observed'};
+   if(p==='/api/v1/legal/acceptance')return{required:false,publication:{state:'published'},acceptance:null};
+   if(p.startsWith('/api/v1/legal/requests'))return{requests:[],nextOffset:null,admin:false};
+   if(p.startsWith('/api/v1/support/tickets'))return{tickets:[],nextOffset:null,admin:false};
+   if(p==='/api/v1/proxy-shop')return{enabled:false,balanceMinor:0,operations:[]};
+   if(p==='/api/v1/managed-proxy')return{source:'none',configured:false,activePlan:true,current:null,candidates:[],requests:[]};
+   if(p==='/api/v1/profile')return{profile:{authorId:'author_fixture',displayName:'Владелец',bio:'',publicVisible:false,version:0},identity:{email:'owner@example.invalid',role:'user'},plan:{active:true}};
+   if(p==='/api/v1/payments')return{enabled:false,balanceMinor:0,payments:[],ledger:[]};
+   if(p==='/api/v1/learning')return{version:1,revision:1,welcomeSeen:true,status:'completed',step:5};
+   if(p==='/api/v1/subscription/trial')return{state:'plan_active',durationHours:72,serverNow:new Date().toISOString(),remainingSeconds:0};
    if(p.startsWith('/api/v1/onboarding'))return structuredClone(f.snapshot);return{};
   };
   state.onboarding=structuredClone(connectFixture.snapshot);connectionStep=0;connectionBusy=false;connectionLoading=false;connectionLoadFailed=false;serviceBotUsername='fixture_service_bot';
