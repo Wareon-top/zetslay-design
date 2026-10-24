@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450" fill="none">
+<defs>
+ <linearGradient id="sky" x1="73" y1="0" x2="776" y2="350" gradientUnits="userSpaceOnUse"><stop stop-color="#ffe0bb"/><stop offset=".4" stop-color="#efb6d0"/><stop offset="1" stop-color="#9573c4"/></linearGradient>
+ <linearGradient id="rose" x1="158" y1="72" x2="663" y2="399" gradientUnits="userSpaceOnUse"><stop stop-color="#f5c3bd"/><stop offset=".48" stop-color="#d993c6"/><stop offset="1" stop-color="#8664b5"/></linearGradient>
+ <linearGradient id="violet" x1="244" y1="134" x2="649" y2="478" gradientUnits="userSpaceOnUse"><stop stop-color="#d2b1e1"/><stop offset=".42" stop-color="#af8ed0"/><stop offset="1" stop-color="#574e9e"/></linearGradient>
+ <linearGradient id="ocean" x1="98" y1="242" x2="689" y2="470" gradientUnits="userSpaceOnUse"><stop stop-color="#72c3cf"/><stop offset=".47" stop-color="#7398ca"/><stop offset="1" stop-color="#6d5ba8"/></linearGradient>
+ <linearGradient id="deep" x1="85" y1="330" x2="672" y2="516" gradientUnits="userSpaceOnUse"><stop stop-color="#437e9f"/><stop offset=".6" stop-color="#5b6fa9"/><stop offset="1" stop-color="#584583"/></linearGradient>
+ <filter id="shadow" x="-20%" y="-50%" width="140%" height="200%"><feDropShadow dx="0" dy="-8" stdDeviation="14" flood-color="#593c79" flood-opacity=".19"/></filter>
+ <radialGradient id="light" cx="0" cy="0" r="1" gradientTransform="translate(85 30) rotate(32) scale(730 410)" gradientUnits="userSpaceOnUse"><stop stop-color="#fff5d7" stop-opacity=".37"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+</defs>
+<path fill="url(#sky)" d="M0 0h800v450H0z"/>
+<g filter="url(#shadow)"><path fill="url(#rose)" d="M-80 36C56 109 77 194 237 153S403 78 530 111s205 93 350-14v400H-80Z"/></g>
+<g filter="url(#shadow)"><path fill="url(#violet)" d="M-80 130c134 140 236 13 367 42s164 137 303 91 225-103 290-32v265H-80Z"/></g>
+<g filter="url(#shadow)"><path fill="url(#ocean)" d="M-80 240c136-105 191-28 325 44s236 9 354 44 195 93 281 3v165H-80Z"/></g>
+<g filter="url(#shadow)"><path fill="url(#deep)" d="M-80 335c148-103 234 25 371 17s213 59 334 45 179-12 255 31v70H-80Z"/></g>
+<path fill="url(#light)" d="M0 0h800v450H0z"/>
+</svg>

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="176" viewBox="0 0 240 176" fill="none">
+  <defs>
+    <linearGradient id="face" x1="52" y1="31" x2="169" y2="134" gradientUnits="userSpaceOnUse"><stop stop-color="#ff656b"/><stop offset=".48" stop-color="#ff3447"/><stop offset="1" stop-color="#de122d"/></linearGradient>
+    <linearGradient id="edge" x1="42" y1="38" x2="180" y2="150" gradientUnits="userSpaceOnUse"><stop stop-color="#f04753"/><stop offset="1" stop-color="#790d23"/></linearGradient>
+    <linearGradient id="rim" x1="42" y1="25" x2="193" y2="151" gradientUnits="userSpaceOnUse"><stop stop-color="#ffc3c5" stop-opacity=".85"/><stop offset=".5" stop-color="#ff7b87" stop-opacity=".3"/><stop offset="1" stop-color="#ff334b" stop-opacity=".1"/></linearGradient>
+    <linearGradient id="play" x1="105" y1="56" x2="130" y2="109" gradientUnits="userSpaceOnUse"><stop stop-color="#fff"/><stop offset="1" stop-color="#ffe1e5"/></linearGradient>
+    <filter id="shadow" x="0" y="0" width="240" height="176" filterUnits="userSpaceOnUse"><feGaussianBlur stdDeviation="8"/></filter>
+  </defs>
+  <ellipse cx="121" cy="137" rx="74" ry="13" fill="#690b20" opacity=".4" filter="url(#shadow)"/>
+  <g transform="rotate(-10 120 88)">
+    <rect x="35" y="41" width="173" height="111" rx="32" fill="url(#edge)"/>
+    <rect x="32" y="29" width="173" height="111" rx="32" fill="url(#face)" stroke="url(#rim)" stroke-width="1.5"/>
+    <path d="M43 68V61C43 49 52 40 65 40h104" stroke="#ffb0b5" stroke-opacity=".35" stroke-width="2" stroke-linecap="round"/>
+    <path d="M104 61c0-2 2.2-3.2 4-2.2l40 23c1.8 1 1.8 3.6 0 4.6l-40 23c-1.8 1-4-.2-4-2.2V61Z" fill="#9c1730" transform="translate(0 3)"/>
+    <path d="M104 58c0-2 2.2-3.2 4-2.2l40 23c1.8 1 1.8 3.6 0 4.6l-40 23c-1.8 1-4-.2-4-2.2V58Z" fill="url(#play)"/>
+  </g>
+</svg>

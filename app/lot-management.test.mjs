@@ -1,0 +1,41 @@
+import test from 'node:test';import assert from 'node:assert/strict';import vm from 'node:vm';import {readFileSync} from 'node:fs';
+const source=readFileSync(new URL('./lot-management.js',import.meta.url),'utf8');
+const id='lop_12345678-1234-1234-1234-123456789abc';
+const lot={id:'12',nodeId:'3',title:'Игра'};
+const receipt={storeId:'42',operationId:id,editor:{lotId:'12',nodeId:'3',currency:'RUB',stockEditable:true,values:{title:'Название',titleEn:'Title',description:'Описание',instructions:'Инструкция',price:'100.00',stock:2,active:true}}};
+function fixture(){
+ const listeners={},calls=[],toasts=[],host={hidden:true,innerHTML:''};let dialog=null;
+ const root={hidden:false};const makeDialog=()=>({open:false,innerHTML:'',dataset:{},className:'',setAttribute(){},addEventListener(){},querySelectorAll:()=>[],querySelector:()=>null,showModal(){this.open=true},close(){this.open=false},remove(){dialog=null}});
+ const c=vm.createContext({Date,URL,AbortSignal,console,authState:{user:{id:'alice'},token:'token'},sessionGeneration:1,selectedStore:()=>({id:'42',status:'connected_read_only'}),lotsPageState:{inventory:{storeId:'42',lots:[{...lot}],observedAt:'2026-10-13T11:00:00Z'}},state:{storeContent:{storeId:'42',lots:[{...lot}]}},currentLotsModel:()=>({lots:[lot]}),icon:()=>'<svg></svg>',lotEscape:v=>String(v??'').replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x])),showToast:(...args)=>toasts.push(args),humanError:e=>e.message||e.code,resetLotsWorkspace(){},renderLotWorkspace(){},closeLotDetail(){},FormData:class{constructor(form){this.values=form.values;}get(key){return this.values[key]??null;}has(key){return Object.hasOwn(this.values,key);}},apiRequest:async(path,options)=>{calls.push([path,options]);return path.includes('lot-operations?')?{storeId:'42',operations:[]}:structuredClone(receipt);},document:{hidden:false,createElement:makeDialog,querySelector:selector=>selector==='[data-lot-editor]'?dialog:selector==='[data-lot-operations]'?host:selector==='[data-lots-workspace]'?root:null,addEventListener:(name,fn)=>listeners[name]=fn,body:{append(value){dialog=value;}}}});
+ vm.runInContext(source,c);return {c,calls,toasts,host,listeners,run:code=>vm.runInContext(code,c),get dialog(){return dialog;}};
+}
+const form=(values={},valid=true)=>({values,reportValidity:()=>valid,querySelectorAll:()=>[],querySelector:()=>({textContent:'',disabled:false})});
+const operation=(patch={})=>({id,storeId:'42',nodeId:'3',lotId:'12',status:'done',action:'edit',updatedAt:'2026-10-13T11:01:00Z',...patch});
+test('editor loads a fresh pinned lot over authenticated GET and supports bilingual text, price, stock and state',async()=>{
+ const f=fixture();await f.run("openLotEditor('12')");assert.match(f.calls[0][0],/lots\/12\?storeId=42&nodeId=3/);assert.equal(f.calls[0][1].authenticated,true);assert.equal(f.calls[0][1].method,undefined);assert.equal(f.dialog.open,true);assert.match(f.dialog.innerHTML,/name="title"/);assert.match(f.dialog.innerHTML,/name="titleEn"/);assert.match(f.dialog.innerHTML,/name="stock"/);assert.match(f.dialog.innerHTML,/name="active"/);
+});
+test('foreign editor response and old-account response cannot populate a form',async()=>{
+ const f=fixture();f.c.apiRequest=async()=>({...receipt,storeId:'99'});await f.run("openLotEditor('12')");assert.match(f.dialog.innerHTML,/другого лота/);assert.equal(f.run('lotManagementUi.editor'),null);
+ const g=fixture();let resolve;g.c.apiRequest=()=>new Promise(r=>resolve=r);const pending=g.run("openLotEditor('12')");g.c.authState.token='other';g.run('resetLotManagement()');resolve(receipt);await pending;assert.equal(g.dialog,null);assert.equal(g.run('lotManagementUi.editor'),null);
+});
+test('submit sends only changed editable fields; duplicate submit shares one durable operation',async()=>{
+ const f=fixture();await f.run("openLotEditor('12')");f.c.form=form({...receipt.editor.values,title:'Новое',price:'123.45',stock:'0',active:'on'});let resolve,count=0;f.c.apiRequest=(path,opts)=>{if(path.includes('lot-operations?'))return Promise.resolve({storeId:'42',operations:[]});count++;f.calls.push([path,opts]);return new Promise(r=>resolve=r)};
+ const pending=f.run("submitLotEditor(form,'edit')");await f.run("submitLotEditor(form,'edit')");assert.equal(count,1);const request=f.calls.at(-1);assert.equal(request[1].method,'POST');assert.deepEqual(JSON.parse(JSON.stringify(request[1].body)),{operationId:id,storeId:'42',nodeId:'3',changes:{title:'Новое',price:'123.45',stock:0}});
+ resolve({operation:operation(),lot:{...lot,title:'Новое',stock:0}});await pending;assert.equal(f.c.lotsPageState.inventory.lots[0].title,'Новое');assert.equal(f.dialog,null);assert.ok(f.toasts.some(([text])=>text.includes('сохранены на FunPay')));
+});
+test('delete needs explicit confirmation and confirmed outcome removes exactly that row, not orders or other lots',async()=>{
+ const f=fixture();await f.run("openLotEditor('12','delete')");assert.match(f.dialog.innerHTML,/name="confirmed" type="checkbox" required/);assert.doesNotMatch(f.dialog.innerHTML,/name="confirmed"[^>]*checked/);f.c.form=form({});await f.run("submitLotEditor(form,'delete')");assert.equal(f.calls.length,1);
+ f.c.lotsPageState.inventory.lots.push({id:'13'});f.c.apiRequest=async()=>({operation:operation({action:'delete'}),lot:null});f.c.form=form({confirmed:'on'});await f.run("submitLotEditor(form,'delete')");assert.deepEqual(f.c.lotsPageState.inventory.lots.map(x=>x.id),['13']);assert.ok(f.toasts.some(([text])=>text.includes('Лот удалён')));
+});
+test('unknown write shows recovery and does not pretend success or repeat POST; reconciliation uses check route',async()=>{
+ const f=fixture();await f.run("openLotEditor('12')");f.c.apiRequest=async(path,opts)=>{f.calls.push([path,opts]);if(path.includes('lot-operations?'))return {storeId:'42',operations:[operation({status:'unknown'})]};return {operation:operation({status:'unknown'})};};f.c.form=form({...receipt.editor.values,price:'101.00',active:'on'});await f.run("submitLotEditor(form,'edit')");assert.match(f.dialog.innerHTML,/Проверить результат/);assert.equal(f.run('lotManagementUi.editor'),null);assert.ok(!f.toasts.some(([text])=>text.includes('сохранены')));assert.match(f.host.innerHTML,/data-lot-operation-check/);await f.run(`checkLotOperation('${id}')`);assert.match(f.calls.at(-2)[0],/\/check$/);assert.equal(f.calls.filter(([path])=>path.endsWith('/edit')).length,1);
+});
+test('auto-delivery stock cannot be edited, user text is escaped, unchanged form causes no write',async()=>{
+ const f=fixture();f.c.apiRequest=async()=>({...receipt,editor:{...receipt.editor,autoDelivery:true,stockEditable:false,values:{title:'<script>alert(1)</script>',description:'</textarea><script>x</script>',price:'100.00',active:true}}});await f.run("openLotEditor('12')");assert.doesNotMatch(f.dialog.innerHTML,/name="stock"/);assert.doesNotMatch(f.dialog.innerHTML,/<script>/);assert.match(f.dialog.innerHTML,/&lt;script&gt;/);const values=f.run('lotManagementUi.editor.values');f.c.form=form({...values,active:'on'});let writes=0;f.c.apiRequest=async()=>{writes++};await f.run("submitLotEditor(form,'edit')");assert.equal(writes,0);
+});
+test('late save after switching account neither changes the new inventory nor reports old success',async()=>{
+ const f=fixture();await f.run("openLotEditor('12')");let resolve;f.c.apiRequest=()=>new Promise(r=>resolve=r);f.c.form=form({...receipt.editor.values,price:'101.00',active:'on'});const pending=f.run("submitLotEditor(form,'edit')");f.c.authState.token='bob';f.run('resetLotManagement()');f.c.lotsPageState.inventory={storeId:'42',lots:[{id:'77'}]};resolve({operation:operation(),lot:{...lot,title:'OLD PRIVATE'}});await pending;assert.deepEqual(f.c.lotsPageState.inventory.lots.map(r=>r.id),['77']);assert.equal(f.dialog,null);assert.ok(!f.toasts.length);
+});
+test('HTML entry loads inventory before its management addon and preserves the weekly session helper',()=>{
+ const html=readFileSync(new URL('./index.html',import.meta.url),'utf8');assert.ok(html.indexOf('src="lots.js?')<html.indexOf('src="lot-management.js?'));assert.ok(html.indexOf('src="lot-management.js?')<html.indexOf('src="app.js?'));assert.match(html,/data-lot-operations hidden/);
+});

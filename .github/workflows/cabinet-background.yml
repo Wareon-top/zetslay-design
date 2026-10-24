@@ -1,0 +1,24 @@
+name: Verify cabinet ASCII background
+on:
+  push:
+    paths:
+      - 'app/index.html'
+      - 'app/cabinet-background*'
+      - 'deploy/*cabinet-background*'
+      - '.github/workflows/cabinet-background.yml'
+permissions:
+  contents: read
+jobs:
+  background:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --check app/cabinet-background.js
+      - run: node --test app/cabinet-background.test.mjs
+      - run: python3 deploy/stage-cabinet-background.test.py
+      - run: bash -n deploy/update-cabinet-background.sh
+      - run: npm run validate

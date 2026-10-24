@@ -1,0 +1,28 @@
+/* One existing ZetSlay mark on all current site surfaces. */
+body .brand-mark,
+body .brand__mark,
+body .auth-modal__brand .brand__mark {
+  flex-shrink:0;
+  background:#dc6117 url("/assets/zetslay-logo.webp?v=20261024-brand") center / cover no-repeat;
+}
+body .brand-mark::after,
+body .brand__mark::after { content:none; }
+.site-workspace-brand,
+.site-auth-brand { display:none; }
+.site-workspace-brand:focus-visible,
+.site-auth-brand:focus-visible { outline:2px solid #ffad78; outline-offset:4px; border-radius:9px; }
+.site-workspace-brand img,
+.site-auth-brand img { display:block; flex-shrink:0; width:32px; height:32px; border-radius:9px; object-fit:cover; }
+body .legal-brand>span {
+  display:inline-block; width:32px; height:32px; flex:0 0 32px; border:0; border-radius:9px;
+  background:#dc6117 url("/assets/zetslay-logo.webp?v=20261024-brand") center / cover no-repeat;
+  font-size:0; color:transparent;
+}
+@media(max-width:980px) {
+  .app-shell .site-workspace-brand { display:flex; align-items:center; justify-content:center; flex:0 0 30px; width:30px; height:40px; margin-right:-4px; }
+  .app-shell .site-workspace-brand img { width:30px; height:30px; border-radius:8px; }
+}
+@media(max-width:760px) {
+  .auth-content>.site-auth-brand { display:flex; align-items:center; gap:10px; width:fit-content; margin:0 0 22px; color:#fff; text-decoration:none; font:650 19px/1.2 Manrope,Inter,Arial,sans-serif; letter-spacing:-.035em; }
+  .auth-content>.site-auth-brand+.auth-content__eyebrow { display:none; }
+}

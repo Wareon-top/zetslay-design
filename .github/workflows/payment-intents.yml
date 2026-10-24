@@ -1,0 +1,23 @@
+name: Verify abandoned payment checkout
+on:
+  push:
+    paths:
+      - 'app/payments*'
+      - 'app/index.html'
+      - 'deploy/*payment-intents*'
+      - '.github/workflows/payment-intents.yml'
+permissions:
+  contents: read
+jobs:
+  payments:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test app/payments.test.mjs
+      - run: python3 deploy/stage-payment-intents-ui.test.py
+      - run: bash -n deploy/update-payment-intents-ui.sh deploy/start-payment-intents-repair.sh
+      - run: npm run validate

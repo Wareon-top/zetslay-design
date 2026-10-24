@@ -1,0 +1,11 @@
+/* Common layer beneath all cabinet sections; no layout or surface overrides. */
+.app-shell main.workspace { position:relative; isolation:isolate; }
+.cabinet-ascii-background {
+  position:fixed; z-index:-1; top:0; left:0;
+  display:block; width:100%; height:100vh; height:100dvh;
+  color:#d6c4ba; opacity:.085;
+  pointer-events:none; user-select:none;
+  mask-image:linear-gradient(180deg,transparent 0%,#0009 12%,#000 35%,#000b 85%,transparent 100%);
+}
+@media(max-width:600px){.cabinet-ascii-background{opacity:.065;}}
+@media print{.cabinet-ascii-background{display:none;}}
