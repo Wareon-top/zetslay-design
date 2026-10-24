@@ -10,18 +10,30 @@ middle reserved for text. `assets/zetslay-orderflow.webp` is 1672 × 941 pixels,
 about 103 kB. It is preloaded and displayed with an empty alt because it is
 decorative. This file contains only artwork; heading and buttons are real HTML.
 
-`landing-orderflow.css` scopes the new header, image, orange glow, 1 px square
-pattern, vignette and responsive typography to this first screen. The existing
+`landing-orderflow.css` scopes the new header, image, stronger localized orange glow, a very dark ASCII
+field, vignette and responsive typography to this first screen. The existing
 `landing.css`, platform ribbon and all other landing sections retain their code.
 At small widths the image is composed from a centered wider crop and the menu
 uses native details/summary. It closes after an anchor, outside click or Escape.
 
-`landing-hero.js` draws sparse small particles slowly upward, limiting draw calls
-to 30fps and canvas pixel ratio to 1.5. Motion stops in hidden tabs, outside the
-viewport and for reduced-motion preferences. Save-data disables particles.
-Reduced motion also disables glow and ribbon animation. Authentication still
-uses the existing session client and native links; the artwork enhancer never
-reads or changes credentials.
+`landing-hero.js` adapts the supplied ASCII noise field to the buildless site.
+The original ramp and flowing noise are retained, with cursor-proximity resolve
+on mouse pointers. The layer uses 11% opacity (9% on phones) and additional
+attenuation behind the heading/actions and above the coin silhouettes. The old
+square grid and rising particles are replaced. Localized screen-blended amber
+light is stronger around the coins, while the text region stays dark.
+
+Drawing is capped at 30fps, DPR at 1.5 and the grid adapts on ultrawide screens.
+Motion pauses offscreen, in hidden tabs and across page-cache navigation.
+Reduced-motion and save-data use a static ASCII frame and stop glow animation.
+Existing authentication/session behavior and native action links are preserved.
+
+For an existing coin hero, use `deploy/update-landing-background.sh` with
+`ZETSLAY_BACKGROUND_REVISION` set to the fetched commit. It changes only
+`landing-hero.js`, `landing-orderflow.css` and their live HTML references. It
+saves the actual previous files to `/root/zetslay-before-ascii-background.*.tar.gz`,
+publishes HTML last, and restores the backup if publication fails. The prior
+repository variant is `8eb10b904e99c1ee7f71bd8c98cec8d9ace27ec7`.
 
 ## Preserved version and installation
 

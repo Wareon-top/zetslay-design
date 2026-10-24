@@ -6,7 +6,7 @@ import sys
 from xml.etree import ElementTree
 
 FILES = ['landing-hero.css', 'landing-hero.js', 'landing-orderflow.css', 'assets/zetslay-orderflow.webp'] + [f'assets/platforms/{name}.svg' for name in ['funpay', 'ggsel', 'plati-market', 'starvell']]
-VERSION = '20261024-orderflow'
+VERSION = '20261024-ascii'
 
 def require(condition, message):
     if not condition:

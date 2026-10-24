@@ -7,6 +7,7 @@ on:
       - 'landing-orderflow.css'
       - 'assets/zetslay-orderflow.webp'
       - 'deploy/*landing-hero*'
+      - 'deploy/*landing-background*'
       - '.github/workflows/landing-hero.yml'
   pull_request:
     paths:
@@ -14,6 +15,7 @@ on:
       - 'landing-hero*'
       - 'landing-orderflow.css'
       - 'deploy/*landing-hero*'
+      - 'deploy/*landing-background*'
 permissions:
   contents: read
 jobs:
@@ -31,6 +33,7 @@ jobs:
       - run: node --check landing-hero.js
       - run: node --test landing-hero.test.mjs landing-session.test.mjs project-validation.test.mjs
       - run: python3 deploy/stage-landing-hero.test.py
+      - run: python3 deploy/stage-landing-background.test.py
       - run: python3 deploy/recover-landing-hero.test.py
-      - run: bash -n deploy/update-landing-hero.sh
+      - run: bash -n deploy/update-landing-hero.sh deploy/update-landing-background.sh
       - run: npm run validate
