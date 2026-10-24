@@ -65,4 +65,13 @@ class StageTest(unittest.TestCase):
    self.assertNotIn('data-view-target="proxy-shop"',updated);self.assertNotIn('data-proxy-store',updated)
    self.assertEqual(updated.count('data-proxy-invite="dashboard"'),1);self.assertEqual(updated.count('data-proxy-invite="guide"'),1)
    m.stage(root/'out',ROOT/'app',root/'twice');self.assertEqual(updated,(root/'twice/index.html').read_text())
+ def test_existing_invites_are_upgraded_without_changing_trial_or_exit(self):
+  with tempfile.TemporaryDirectory() as temp:
+   root=Path(temp);html=(ROOT/'app/index.html').read_text()
+   html=re.sub(r'<section[^>]*data-proxy-invite="dashboard".*?</section>','<section class="ps-invite" data-proxy-invite="dashboard"><h2>OLD PROXY OFFER</h2><button data-proxy-open>Купить прокси</button></section>',html,flags=re.S)
+   for name,value in [('index.html',html),('app.js',(ROOT/'app/app.js').read_text()),('payments.js',(ROOT/'app/payments.js').read_text())]:(root/name).write_text(value)
+   trial=re.search(r'<aside[^>]*data-sidebar-trial.*?</aside>',html,re.S)[0]
+   m.stage(root,ROOT/'app',root/'out');updated=(root/'out/index.html').read_text()
+   self.assertNotIn('OLD PROXY OFFER',updated);self.assertEqual(updated.count('class="ps-invite-visual"'),2)
+   self.assertIn(trial,updated);self.assertIn('sidebar-trial.css?v=20261023-trial-restored',updated);self.assertEqual(updated.count('data-account-signout'),1)
 if __name__=='__main__':unittest.main()

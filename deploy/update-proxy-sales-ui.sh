@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+umask 022
 exec </dev/null
 cd "${ZETSLAY_SITE_DIR:-/opt/zetslay-site}"
 lock=.zetslay-proxy-sales-ui-update.lock
@@ -9,6 +10,7 @@ trap 'rm -rf "$work"; rmdir "$lock"' EXIT
 git fetch origin "${ZETSLAY_PROXY_SALES_DESIGN_REVISION:-codex/landing-light-dark-redesign}"
 revision=$(git rev-parse FETCH_HEAD)
 mkdir -p "$work/original" "$work/incoming"
+git show "$revision:app/index.html" > "$work/incoming/index.html"
 for file in index.html payments.js app.js; do cp -p "app/$file" "$work/original/$file"; done
 assets=(proxy-shop.js proxy-shop.css proxy-shop.test.mjs managed-proxy-ui.js managed-proxy-ui.css managed-proxy-ui.test.mjs)
 for file in "${assets[@]}"; do git show "$revision:app/$file" > "$work/incoming/$file"; done

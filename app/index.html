@@ -60,8 +60,8 @@
 <link rel="stylesheet" href="support.css?v=20261020-support-bubbles">
 <link rel="stylesheet" href="ticket-pilot.css?v=20261017-ticket-pilot">
 <link rel="stylesheet" href="store-tools.css?v=20261020-store-tools">
-<link rel="stylesheet" href="managed-proxy-ui.css?v=20261023-proxy-modal-v2">
-<link rel="stylesheet" href="proxy-shop.css?v=20261023-proxy-modal-v2">
+<link rel="stylesheet" href="managed-proxy-ui.css?v=20261024-proxy-experience">
+<link rel="stylesheet" href="proxy-shop.css?v=20261024-proxy-experience">
 <link rel="stylesheet" href="bot-settings.css?v=20261023-bot-settings-v1">
 <link rel="stylesheet" href="account-signout.css?v=20261023-visible-signout">
 </head>
@@ -178,7 +178,7 @@
                 <button class="button button--primary" type="button" data-overview-connect data-open-connect><svg><use href="#i-plus"/></svg><span data-overview-connect-label>Подключить FunPay</span></button>
               </div>
             </header>
-            <section class="ps-invite" data-proxy-invite="dashboard" aria-label="Прокси от ZetSlay"><span class="ps-invite-icon" aria-hidden="true"><svg><use href="#i-shield"/></svg></span><div><span class="ps-eyebrow">ПРОКСИ ОТ ZETSLAY</span><h2>Прокси для вашего магазина</h2><p>Купите в ZetSlay: оплата с баланса и проверка доступности FunPay перед выдачей.</p></div><button class="button button--primary" type="button" data-proxy-open>Купить прокси <span aria-hidden="true">↗</span></button></section>
+            <section class="ps-invite" data-proxy-invite="dashboard" aria-label="Прокси от ZetSlay"><div class="ps-invite-visual" aria-hidden="true"><span class="ps-invite-orb"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="23"/><ellipse cx="32" cy="32" rx="10" ry="23"/><path d="M9 32h46M14 18h36M14 46h36"/></svg></span><span class="ps-invite-link"><svg viewBox="0 0 24 24"><path d="m8 12 3 3 5-6"/><path d="m12 3-8 3v6c0 5 8 9 8 9s8-4 8-9V6l-8-3Z"/></svg>FunPay</span></div><div class="ps-invite-copy"><span class="ps-eyebrow"><i aria-hidden="true"></i>ПРОКСИ ОТ ZETSLAY</span><h2>Ваш магазин.<br>Наш <em>прокси.</em></h2><p>Выберите срок — проверку и выдачу мы возьмём на себя. Всё в вашем кабинете.</p><ul class="ps-invite-benefits"><li>Проверка FunPay перед выдачей</li><li>Без автопродления</li></ul></div><div class="ps-invite-action"><span>Готовы подключить магазин?</span><button class="button button--primary" type="button" data-proxy-open>Купить прокси <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button><small>Оплата с баланса ZetSlay</small></div></section>
             <div class="overview-context"><span class="overview-source" data-overview-source>Магазин не подключён</span><span data-overview-updated>Ожидает синхронизации</span><span class="overview-plan" data-overview-plan></span></div>
             <p class="overview-notice" data-overview-notice role="status" aria-live="polite" hidden></p>
 
@@ -343,7 +343,7 @@
           <section class="view" data-view="author" aria-label="Карточка автора" hidden><div data-author-page></div></section>
           <section class="view" data-view="guide" data-knowledge-base aria-labelledby="guide-title">
             <header class="kb-heading"><div><span class="kb-kicker">База знаний</span><h1 id="guide-title">Разберёмся вместе.</h1><p>От первого подключения до автоматизации магазина.<br>Найдите ответ и вернитесь к работе.</p></div><div class="kb-heading-symbol" aria-hidden="true"><svg><use href="#i-help"/></svg></div></header>
-            <section class="ps-invite" data-proxy-invite="guide" aria-label="Прокси от ZetSlay"><span class="ps-invite-icon" aria-hidden="true"><svg><use href="#i-shield"/></svg></span><div><span class="ps-eyebrow">ПРОКСИ ОТ ZETSLAY</span><h2>Нужен прокси для подключения?</h2><p>Купите в ZetSlay: оплата с баланса и проверка доступности FunPay перед выдачей.</p></div><button class="button button--primary" type="button" data-proxy-open>Купить прокси <span aria-hidden="true">↗</span></button></section>
+            <section class="ps-invite" data-proxy-invite="guide" aria-label="Прокси от ZetSlay"><div class="ps-invite-visual" aria-hidden="true"><span class="ps-invite-orb"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="23"/><ellipse cx="32" cy="32" rx="10" ry="23"/><path d="M9 32h46M14 18h36M14 46h36"/></svg></span><span class="ps-invite-link"><svg viewBox="0 0 24 24"><path d="m8 12 3 3 5-6"/><path d="m12 3-8 3v6c0 5 8 9 8 9s8-4 8-9V6l-8-3Z"/></svg>FunPay</span></div><div class="ps-invite-copy"><span class="ps-eyebrow"><i aria-hidden="true"></i>ПРОКСИ ОТ ZETSLAY</span><h2>Подключение начинается<br>с хорошего <em>прокси.</em></h2><p>Выберите срок — проверку и выдачу мы возьмём на себя. Всё в вашем кабинете.</p><ul class="ps-invite-benefits"><li>Проверка FunPay перед выдачей</li><li>Без автопродления</li></ul></div><div class="ps-invite-action"><span>Готовы подключить магазин?</span><button class="button button--primary" type="button" data-proxy-open>Купить прокси <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button><small>Оплата с баланса ZetSlay</small></div></section>
             <div class="kb-search"><svg aria-hidden="true"><use href="#i-search"/></svg><label class="kb-sr-only" for="kb-search">Поиск по инструкциям</label><input id="kb-search" data-kb-search type="search" maxlength="160" autocomplete="off" placeholder="Например: прокси, привязка лота, KOSELL_UNAVAILABLE"><button type="button" data-kb-clear aria-label="Очистить поиск" hidden><svg aria-hidden="true"><use href="#i-close"/></svg></button><span class="kb-search-hint">По вопросам и кодам ошибок</span></div>
             <div data-kb-library>
               <section class="kb-shortcuts" aria-label="Быстрый старт">
@@ -542,8 +542,8 @@
 <script src="launch-announcement.js?v=20261017-launch-reference" defer></script>
 <script src="ticket-pilot.js?v=20261017-ticket-pilot" defer></script>
 <script src="store-tools.js?v=20261020-store-tools" defer></script>
-<script src="managed-proxy-ui.js?v=20261023-proxy-modal-v2" defer></script>
-<script src="proxy-shop.js?v=20261023-proxy-modal-v2" defer></script>
+<script src="managed-proxy-ui.js?v=20261024-proxy-experience" defer></script>
+<script src="proxy-shop.js?v=20261024-proxy-experience" defer></script>
 <script src="bot-settings.js?v=20261023-bot-settings-v1" defer></script>
 </body>
 </html>

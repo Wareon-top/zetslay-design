@@ -2,8 +2,8 @@ const {chromium}=require(process.env.ZETSLAY_PLAYWRIGHT_MODULE||'playwright');
 const {execFileSync}=require('node:child_process'),os=require('node:os');
 const fs=require('node:fs'),http=require('node:http'),path=require('node:path'),assert=require('node:assert/strict');
 const root=path.resolve(__dirname,'..'),out=process.env.ZETSLAY_BROWSER_OUTPUT||'/tmp/proxy-shop-previews';fs.mkdirSync(out,{recursive:true});
-const stage=fs.mkdtempSync(path.join(os.tmpdir(),'zetslay-proxy-stage-'));execFileSync('python3',[path.join(root,'deploy/stage-proxy-sales-ui.py'),path.join(root,'app'),path.join(root,'app'),stage]);
-const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://fixture');let file=path.join(root,decodeURIComponent(u.pathname));if(u.pathname.endsWith('/'))file=path.join(file,'index.html');if(!file.startsWith(root+path.sep)||!fs.existsSync(file)||!fs.statSync(file).isFile()){res.statusCode=404;return res.end();}res.setHeader('content-type',file.endsWith('.html')?'text/html':file.endsWith('.js')?'application/javascript':file.endsWith('.css')?'text/css':'application/octet-stream');res.end(fs.readFileSync(u.pathname==='/app/'?path.join(stage,'index.html'):file));});
+const baseline=process.env.ZETSLAY_PROXY_UI_BASELINE||path.join(root,'app'),stage=fs.mkdtempSync(path.join(os.tmpdir(),'zetslay-proxy-stage-'));execFileSync('python3',[path.join(root,'deploy/stage-proxy-sales-ui.py'),baseline,path.join(root,'app'),stage]);
+const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://fixture');let file=path.join(root,decodeURIComponent(u.pathname));if(u.pathname.endsWith('/'))file=path.join(file,'index.html');const staged=u.pathname==='/app/'?path.join(stage,'index.html'):u.pathname.startsWith('/app/')?path.join(stage,u.pathname.slice(5)):null;if(staged&&fs.existsSync(staged))file=staged;if((!file.startsWith(root+path.sep)&&!file.startsWith(stage+path.sep))||!fs.existsSync(file)||!fs.statSync(file).isFile()){res.statusCode=404;return res.end();}res.setHeader('content-type',file.endsWith('.html')?'text/html':file.endsWith('.js')?'application/javascript':file.endsWith('.css')?'text/css':'application/octet-stream');res.end(fs.readFileSync(file));});
 (async()=>{
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;
  const browser=await chromium.launch({headless:true,executablePath:process.env.ZETSLAY_TEST_BROWSER_PATH||undefined,args:['--no-sandbox','--disable-dev-shm-usage']});
@@ -12,7 +12,7 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://fixtu
   try{
   page.on('pageerror',e=>errors.push(e.message));await page.route('**/*',r=>r.request().url().startsWith(base)?r.continue():r.fulfill({status:401,contentType:'application/json',body:'{"error":{"code":"UNAUTHORIZED"}}'}));
   await page.route('**/legal/publication.json',r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({version:'fixture',hash:'fixture-publication',status:'active'})}));
-  await page.clock.install();await page.goto(base+'/app/#dashboard');await page.waitForFunction(()=>typeof proxyShopMarkup==='function'&&typeof storeToolsRoute==='function');
+  await page.clock.install();await page.goto(base+'/app/#dashboard');await page.waitForFunction(()=>typeof proxyShopMarkup==='function'&&typeof managedProxyLoad==='function');
   assert.equal(await page.evaluate(()=>location.hash),'#dashboard');
   await page.evaluate(()=>{
    sessionGeneration++;resetAccountData();authState.user={id:'proxy-test-user',email:'proxy@example.invalid'};authState.token='proxy-fixture';authState.workspace={id:'proxy-test-workspace',plan:{id:'start',active:true,activatedAt:'2026-01-01T00:00:00Z',expiresAt:'2099-01-01T00:00:00Z'},pluginLicenses:[]};
@@ -60,7 +60,7 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://fixtu
   });
   assert.equal(await page.locator('.sidebar-nav [data-view-target="proxy-shop"]').count(),0,'proxy is absent from sidebar');
   const invite=page.locator('[data-proxy-invite="dashboard"] [data-proxy-open]'),dialog=page.locator('dialog.ps-purchase-dialog');
-  await invite.waitFor();await page.screenshot({path:path.join(out,name+'-dashboard.png'),fullPage:false});
+  await invite.waitFor();assert.equal(await page.locator('[data-proxy-invite="dashboard"] .ps-invite-visual').count(),1);assert.ok(await page.locator('[data-proxy-invite="dashboard"]').evaluate(n=>n.scrollWidth<=n.clientWidth+1),'invitation fits viewport');await page.screenshot({path:path.join(out,name+'-dashboard.png'),fullPage:false});
   await invite.click();await dialog.locator('[data-ps-purchase]').waitFor();
   assert.match(await dialog.innerText(),/Германия/);assert.doesNotMatch(await dialog.innerText(),/DE_ISP01/);
   assert.equal(await page.evaluate(()=>proxyFixture.calls.filter(c=>c.path.endsWith('/purchase')).length),0,'opening checkout never buys');
@@ -93,6 +93,7 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://fixtu
   await page.evaluate(()=>proxyFixture.advance('checking'));await page.clock.runFor(2100);await page.waitForFunction(()=>proxyShopUi.data?.operations[0]?.status==='checking');
   await page.screenshot({path:path.join(out,name+'-checking.png'),fullPage:false});
   assert.match(await dialog.innerText(),/Первая проверка пройдена/);assert.doesNotMatch(await dialog.innerText(),/Прокси куплен|Магазин подключён/);
+  assert.match(await dialog.locator('.ps-progress-position').innerText(),/Этап 3 из 4/);assert.equal(await dialog.locator('.ps-progress-track .is-complete').count(),2);
   await page.evaluate(()=>proxyFixture.resolve());await page.waitForFunction(()=>!proxyShopUi.busy&&proxyShopUi.data?.operations[0]?.status==='delivered'&&managedProxyUi.data?.candidates?.length);
   assert.equal(await page.evaluate(()=>proxyShopUi.data.balanceMinor),5000);assert.equal(await page.evaluate(()=>proxyFixture.managed.current),null);
   assert.match(await dialog.innerText(),/Прокси куплен/);assert.doesNotMatch(await dialog.innerText(),/Магазин подключён/);
@@ -107,6 +108,8 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://fixtu
   assert.match(await dialog.innerText(),/Прокси продлён/);assert.doesNotMatch(await dialog.innerText(),/Проверяем доступность FunPay/);
   assert.equal(await page.evaluate(()=>proxyFixture.calls.filter(c=>c.path.endsWith('/purchase')).length),2,'lost response is reconciled without a new purchase');
   assert.equal(await page.evaluate(()=>proxyShopUi.data.balanceMinor),0);await dialog.evaluate(n=>n.scrollTop=0);await page.screenshot({path:path.join(out,name+'-renewed.png'),fullPage:false});
+  await page.evaluate(()=>{const op=proxyShopUi.data.operations[0];op.status='refunded';op.walletState='refunded';proxyShopRender();});
+  assert.match(await dialog.innerText(),/Средства возвращены/);assert.doesNotMatch(await dialog.innerText(),/Прокси продлён|Все этапы подтверждены/);assert.equal(await dialog.locator('.ps-progress-track .is-complete').count(),0);await dialog.evaluate(n=>n.scrollTop=0);await page.screenshot({path:path.join(out,name+'-refunded.png'),fullPage:false});
   assert.ok(await dialog.evaluate(n=>n.scrollWidth<=n.clientWidth+1),'all purchase states fit viewport');
   assert.equal(await page.evaluate(()=>JSON.stringify({...localStorage,...sessionStorage}).includes('sp_live_')),false);
   await page.evaluate(()=>clearSession());assert.equal(await page.locator('.ps-purchase-dialog').count(),0,'logout removes private checkout');assert.equal(await page.evaluate(()=>proxyShopUi.data),null);assert.equal(await page.evaluate(()=>proxyShopUi.quote),null);assert.deepEqual(errors,[]);

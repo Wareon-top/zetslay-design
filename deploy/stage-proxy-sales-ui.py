@@ -1,7 +1,7 @@
 """Install reseller UI while preserving local cabinet and payment behaviour."""
 from pathlib import Path
 import re, sys
-VERSION='20261023-proxy-modal-v2'
+VERSION='20261024-proxy-experience'
 ASSETS=['proxy-shop.js','proxy-shop.css','proxy-shop.test.mjs','managed-proxy-ui.js','managed-proxy-ui.css','managed-proxy-ui.test.mjs']
 
 def stage(local,incoming,out):
@@ -21,12 +21,18 @@ def stage(local,incoming,out):
  page=r'[ \t]*<section\b[^>]*data-view=["\']proxy-shop["\'][^>]*>\s*</section>'
  html=re.sub(page,'',html)
  if 'data-proxy-store' in html:raise ValueError('Не подтверждена старая страница прокси. Файлы не изменены.')
- for place,heading,title in [('dashboard','overview-heading','Прокси для вашего магазина'),('guide','kb-heading','Нужен прокси для подключения?')]:
-  if f'data-proxy-invite="{place}"' in html:continue
+ for place,heading in [('dashboard','overview-heading'),('guide','kb-heading')]:
+  invitation=rf'<section\b[^>]*data-proxy-invite="{place}"[^>]*>.*?</section>'
+  fresh=list(re.finditer(invitation,(incoming/'index.html').read_text(),re.S))
+  old=list(re.finditer(invitation,html,re.S))
+  if len(fresh)!=1 or len(old)>1:raise ValueError('Не подтверждена плашка предложения прокси. Файлы не изменены.')
+  if old:
+   html=html[:old[0].start()]+fresh[0][0]+html[old[0].end():]
+   continue
   pattern=rf'<header\b[^>]*class=["\']{heading}["\'][^>]*>.*?</header>'
   anchors=list(re.finditer(pattern,html,re.S))
   if len(anchors)!=1:raise ValueError('Не подтверждено место кнопки покупки. Файлы не изменены.')
-  invite=f'<section class="ps-invite" data-proxy-invite="{place}" aria-label="Прокси от ZetSlay"><span class="ps-invite-icon" aria-hidden="true"><svg><use href="#i-shield"/></svg></span><div><span class="ps-eyebrow">ПРОКСИ ОТ ZETSLAY</span><h2>{title}</h2><p>Купите в ZetSlay: оплата с баланса и проверка доступности FunPay перед выдачей.</p></div><button class="button button--primary" type="button" data-proxy-open>Купить прокси <span aria-hidden="true">↗</span></button></section>'
+  invite=fresh[0][0]
   html=html[:anchors[0].end()]+'\n            '+invite+html[anchors[0].end():]
  for name in ['proxy-shop.js','proxy-shop.css','managed-proxy-ui.js','managed-proxy-ui.css']:
   pattern=rf'<(?:script|link)\b[^>]*(?:src|href)=["\']{re.escape(name)}(?:\?[^"\']*)?["\'][^>]*(?:></script>|>)'
