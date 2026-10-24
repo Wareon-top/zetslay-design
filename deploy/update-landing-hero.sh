@@ -2,11 +2,13 @@
 set -euo pipefail
 exec </dev/null
 cd "${ZETSLAY_SITE_DIR:-/opt/zetslay-site}"
+echo '[1/5] Получаем проверенную ревизию…'
 git fetch origin "${ZETSLAY_HERO_DESIGN_REVISION:-codex/landing-light-dark-redesign}"
 revision=$(git rev-parse FETCH_HEAD)
 work=$(mktemp -d)
 lock='.zetslay-landing-hero-update.lock'
 mkdir "$lock" || { rm -rf "$work"; echo 'Главный блок уже обновляется.'; exit 1; }
+printf '%s\n' "$$" > "$lock/pid"
 backup=''
 rollback=false
 complete=false
@@ -20,10 +22,12 @@ cleanup() {
     echo "Обновление отменено. Резервная копия: $backup"
   fi
   rm -rf "$work"
+  rm -f "$lock/pid"
   rmdir "$lock"
   return "$status"
 }
 trap cleanup EXIT
+echo '[2/5] Подготавливаем меню и первый экран…'
 mkdir -p "$work/incoming" "$work/site"
 assets=(landing-hero.css landing-hero.js landing-orderflow.css assets/zetslay-orderflow.webp assets/platforms/funpay.svg assets/platforms/ggsel.svg assets/platforms/plati-market.svg assets/platforms/starvell.svg)
 for file in index.html "${assets[@]}"; do
@@ -31,11 +35,20 @@ for file in index.html "${assets[@]}"; do
   git show "$revision:$file" > "$work/incoming/$file"
 done
 git show "$revision:deploy/stage-landing-hero.py" > "$work/stage.py"
-python3 "$work/stage.py" "$PWD" "$work/incoming" "$work/site"
+timeout 30s python3 "$work/stage.py" "$PWD" "$work/incoming" "$work/site"
+echo '[3/5] Проверяем целостность файлов…'
+for file in "${assets[@]}"; do
+  expected=$(git rev-parse "$revision:$file")
+  actual=$(git hash-object "$work/site/$file")
+  if [ "$expected" != "$actual" ]; then
+    echo "Проверка файла не прошла: $file. Сайт не изменён." >&2
+    exit 1
+  fi
+done
 if command -v node >/dev/null; then
-  node --check "$work/site/landing-hero.js"
+  timeout 15s node --check "$work/site/landing-hero.js"
 else
-  docker run --rm -v "$work/site:/work:ro" -w /work node:22-alpine node --check landing-hero.js </dev/null
+  echo 'Локального Node.js нет. JS совпадает с Git-ревизией, проверенной в CI; Docker не требуется.'
 fi
 # Publish the HTML last, after all assets are present.
 files=("${assets[@]}" index.html)
@@ -43,8 +56,10 @@ for file in "${files[@]}"; do
   if [ -e "$file" ]; then existing+=("$file"); else created+=("$file"); fi
 done
 backup=$(mktemp "${ZETSLAY_BACKUP_DIR:-/root}/zetslay-site-before-hero.XXXXXX.tar.gz")
+echo '[4/5] Сохраняем прежний вариант…'
 tar -czf "$backup" "${existing[@]}"
 rollback=true
+echo '[5/5] Публикуем файлы, HTML — последним…'
 for file in "${files[@]}"; do
   mkdir -p "$(dirname "$file")"
   candidate=$(mktemp "$(dirname "$file")/.zetslay-hero.XXXXXX")

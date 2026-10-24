@@ -82,7 +82,7 @@ class LandingStageTests(unittest.TestCase):
             self.assertEqual((local / 'index.html').read_bytes(), before)
             self.assertFalse((root / 'out').exists())
 
-    def test_real_installer_backs_up_live_version_and_archive_restores_it(self):
+    def run_installer_roundtrip(self, without_node=False):
         with tempfile.TemporaryDirectory(dir=REPO.parent) as tmp:
             root = Path(tmp)
             local = self.fixture(root)
@@ -106,8 +106,19 @@ class LandingStageTests(unittest.TestCase):
             backup_dir = root / 'backups'
             backup_dir.mkdir()
             env = dict(os.environ, ZETSLAY_SITE_DIR=str(local), ZETSLAY_BACKUP_DIR=str(backup_dir))
-            result = subprocess.run(['bash', str(HERE / 'update-landing-hero.sh')], env=env, capture_output=True, text=True)
+            if without_node:
+                # Emulate the VPS: no host Node.js and no Docker dependency.
+                tools = root / 'tools'
+                tools.mkdir()
+                for name in ['git', 'python3', 'timeout', 'mktemp', 'mkdir', 'dirname', 'rm', 'rmdir', 'tar', 'gzip', 'cp', 'chmod', 'mv']:
+                    target = shutil.which(name)
+                    self.assertIsNotNone(target, name)
+                    (tools / name).symlink_to(target)
+                env['PATH'] = str(tools)
+            result = subprocess.run([shutil.which('bash'), str(HERE / 'update-landing-hero.sh')], env=env, capture_output=True, text=True, timeout=45)
             self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
+            if without_node:
+                self.assertIn('Docker не требуется', result.stdout)
             self.assertIn('data-landing-hero="orderflow"', (local / 'index.html').read_text())
             self.assertIn('VPS CUSTOM BRAND', (local / 'index.html').read_text())
             self.assertEqual((local / 'app.js').read_text(), 'DO NOT REPLACE THE CABINET')
@@ -119,6 +130,12 @@ class LandingStageTests(unittest.TestCase):
             self.assertEqual((local / 'index.html').read_bytes(), before)
             self.assertEqual((local / 'landing-hero.css').read_text(), 'LIVE ORIGINAL HERO')
             self.assertEqual((local / 'landing.css').read_text(), 'CUSTOM ORANGE BACKGROUND AND FONT')
+
+    def test_real_installer_backs_up_live_version_and_archive_restores_it(self):
+        self.run_installer_roundtrip()
+
+    def test_installer_without_host_node_or_docker_still_verifies_and_restores(self):
+        self.run_installer_roundtrip(without_node=True)
 
 if __name__ == '__main__':
     unittest.main()

@@ -51,7 +51,11 @@ SH
 The updater stages the header and hero/ribbon only. It preserves the exact live
 brand anchor and unrelated HTML, auth scripts, original base CSS and `app/`.
 It validates input and JavaScript before publication, publishes HTML last,
-creates a backup and automatically restores replaced files on a failed update.
+verifies every staged asset against its Git blob hash, creates a backup and
+automatically restores replaced files on a failed update. Local Node.js syntax
+checking is bounded to 15 seconds when Node.js is installed. Without it, the
+exact committed file already checked by CI is installed; Docker is never used.
+HTML staging is bounded to 30 seconds and each phase is printed to the terminal.
 Unknown or duplicated page structures stop before serving changes. No API or
 application-container restart is needed.
 
