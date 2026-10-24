@@ -22,7 +22,7 @@
 }
 .ps-invite[hidden] { display:none!important; }
 .ps-invite-visual { position:relative; flex:0 0 120px; width:120px; height:120px; overflow:hidden; border-radius:16px; background:#27272a; }
-.ps-invite-visual img { display:block; width:100%; height:100%; object-fit:cover; object-position:center; user-select:none; pointer-events:none; }
+.ps-invite-visual img { display:block; width:100%; height:100%; object-fit:contain; object-position:center; user-select:none; pointer-events:none; }
 .ps-invite-copy { display:flex; flex:1; flex-direction:column; gap:12px; min-width:0; }
 .ps-invite-header h2 { margin:0; padding-right:28px; color:#fafafa; font:500 14px/24px Inter,Arial,sans-serif; letter-spacing:0; }
 .ps-invite-header p { margin:4px 0 0; color:#a1a1aa; font:400 14px/20px Inter,Arial,sans-serif; }
