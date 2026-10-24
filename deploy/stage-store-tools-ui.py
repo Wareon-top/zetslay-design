@@ -8,6 +8,7 @@ def stage(local, incoming, output):
     assert len(re.findall(r'<script\b[^>]*src="app\.js\?',html))==1, 'Не подтверждён основной кабинет'
     app=(local/'app.js').read_text()
     for old,new in json.loads((incoming/'store-tools-app-patches.json').read_text()):
+        if old.startswith('const viewTitles = {') and re.search(r"['\"]store-tools['\"]\s*:",app): continue
         # A later automation update must not restore the obsolete combined form.
         if 'function connectionNeedsBotPassword()' in app and 'botPassword' in new: continue
         if new in app: continue
