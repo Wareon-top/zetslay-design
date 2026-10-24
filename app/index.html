@@ -65,6 +65,7 @@
 <link rel="stylesheet" href="bot-settings.css?v=20261023-bot-settings-v1">
 <link rel="stylesheet" href="account-signout.css?v=20261023-visible-signout">
   <link rel="stylesheet" href="cabinet-background.css?v=20261024-ascii">
+  <link rel="stylesheet" href="video-guide-banner.css?v=20261024-video-guide">
 </head>
   <body>
     <svg class="icon-sprite" aria-hidden="true">
@@ -179,6 +180,17 @@
                 <button class="button button--primary" type="button" data-overview-connect data-open-connect><svg><use href="#i-plus"/></svg><span data-overview-connect-label>Подключить FunPay</span></button>
               </div>
             </header>
+            <!-- zetslay-video-guide:dashboard:start -->
+            <section class="video-guide-banner" data-video-guide="dashboard" aria-labelledby="video-guide-dashboard-title">
+              <div class="video-guide-banner__art" aria-hidden="true"><img src="assets/video-guide-play.svg?v=20261024-video-guide" alt="" width="240" height="176" decoding="async"></div>
+              <div class="video-guide-banner__copy">
+                <p class="video-guide-banner__meta"><span>YouTube</span><i aria-hidden="true"></i><span>4 минуты · пошагово</span></p>
+                <h2 id="video-guide-dashboard-title">Как автоматизировать FunPay?</h2>
+                <p class="video-guide-banner__description">Подключите магазин с нуля: Telegram-бот, Golden Key, прокси и первый плагин — в одной видео-инструкции.</p>
+              </div>
+              <a class="video-guide-banner__action" href="https://youtu.be/EHlRSF1kd84?si=x8gIwNopXmyWE4w_" target="_blank" rel="noopener noreferrer" aria-label="Смотреть видео-инструкцию на YouTube (откроется в новой вкладке)"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="m7 4 9 6-9 6Z"/></svg><span>Смотреть инструкцию</span><svg class="video-guide-banner__arrow" aria-hidden="true" viewBox="0 0 20 20"><path d="M5 15 15 5M5 5h10v10"/></svg></a>
+            </section>
+            <!-- zetslay-video-guide:dashboard:end -->
             <section class="ps-invite" data-proxy-invite="dashboard" aria-label="Прокси от ZetSlay"><div class="ps-invite-visual"><img src="assets/proxy-offer.jpg" alt="" width="480" height="320" decoding="async"></div><div class="ps-invite-copy"><header class="ps-invite-header"><h2>Прокси для вашего магазина</h2><p>Купите прокси прямо в ZetSlay. Перед выдачей проверим доступность FunPay.</p></header><button class="ps-invite-close" type="button" data-proxy-invite-dismiss aria-label="Скрыть предложение прокси"><svg aria-hidden="true" viewBox="0 0 16 16"><path d="m4 4 8 8m0-8-8 8"/></svg></button><footer class="ps-invite-footer"><div><strong>Оплата с баланса</strong><span>Без автопродления</span></div><button class="ps-invite-buy" type="button" data-proxy-open>Купить прокси</button></footer></div></section>
             <div class="overview-context"><span class="overview-source" data-overview-source>Магазин не подключён</span><span data-overview-updated>Ожидает синхронизации</span><span class="overview-plan" data-overview-plan></span></div>
             <p class="overview-notice" data-overview-notice role="status" aria-live="polite" hidden></p>
@@ -344,6 +356,17 @@
           <section class="view" data-view="author" aria-label="Карточка автора" hidden><div data-author-page></div></section>
           <section class="view" data-view="guide" data-knowledge-base aria-labelledby="guide-title">
             <header class="kb-heading"><div><span class="kb-kicker">База знаний</span><h1 id="guide-title">Разберёмся вместе.</h1><p>От первого подключения до автоматизации магазина.<br>Найдите ответ и вернитесь к работе.</p></div><div class="kb-heading-symbol" aria-hidden="true"><svg><use href="#i-help"/></svg></div></header>
+            <!-- zetslay-video-guide:guide:start -->
+            <section class="video-guide-banner" data-video-guide="guide" aria-labelledby="video-guide-guide-title">
+              <div class="video-guide-banner__art" aria-hidden="true"><img src="assets/video-guide-play.svg?v=20261024-video-guide" alt="" width="240" height="176" decoding="async"></div>
+              <div class="video-guide-banner__copy">
+                <p class="video-guide-banner__meta"><span>YouTube</span><i aria-hidden="true"></i><span>4 минуты · пошагово</span></p>
+                <h2 id="video-guide-guide-title">Как автоматизировать FunPay?</h2>
+                <p class="video-guide-banner__description">Подключите магазин с нуля: Telegram-бот, Golden Key, прокси и первый плагин — в одной видео-инструкции.</p>
+              </div>
+              <a class="video-guide-banner__action" href="https://youtu.be/EHlRSF1kd84?si=x8gIwNopXmyWE4w_" target="_blank" rel="noopener noreferrer" aria-label="Смотреть видео-инструкцию на YouTube (откроется в новой вкладке)"><svg aria-hidden="true" viewBox="0 0 20 20"><path d="m7 4 9 6-9 6Z"/></svg><span>Смотреть инструкцию</span><svg class="video-guide-banner__arrow" aria-hidden="true" viewBox="0 0 20 20"><path d="M5 15 15 5M5 5h10v10"/></svg></a>
+            </section>
+            <!-- zetslay-video-guide:guide:end -->
             <section class="ps-invite" data-proxy-invite="guide" aria-label="Прокси от ZetSlay"><div class="ps-invite-visual"><img src="assets/proxy-offer.jpg" alt="" width="480" height="320" decoding="async"></div><div class="ps-invite-copy"><header class="ps-invite-header"><h2>Прокси для вашего магазина</h2><p>Купите прокси прямо в ZetSlay. Перед выдачей проверим доступность FunPay.</p></header><button class="ps-invite-close" type="button" data-proxy-invite-dismiss aria-label="Скрыть предложение прокси"><svg aria-hidden="true" viewBox="0 0 16 16"><path d="m4 4 8 8m0-8-8 8"/></svg></button><footer class="ps-invite-footer"><div><strong>Оплата с баланса</strong><span>Без автопродления</span></div><button class="ps-invite-buy" type="button" data-proxy-open>Купить прокси</button></footer></div></section>
             <div class="kb-search"><svg aria-hidden="true"><use href="#i-search"/></svg><label class="kb-sr-only" for="kb-search">Поиск по инструкциям</label><input id="kb-search" data-kb-search type="search" maxlength="160" autocomplete="off" placeholder="Например: прокси, привязка лота, KOSELL_UNAVAILABLE"><button type="button" data-kb-clear aria-label="Очистить поиск" hidden><svg aria-hidden="true"><use href="#i-close"/></svg></button><span class="kb-search-hint">По вопросам и кодам ошибок</span></div>
             <div data-kb-library>
@@ -547,6 +570,7 @@
 <script src="proxy-shop.js?v=20261024-proxy-reference-card" defer></script>
 <script src="bot-settings.js?v=20261023-bot-settings-v1" defer></script>
 <script src="cabinet-background.js?v=20261024-ascii" defer></script>
+<script src="video-guide-banner.js?v=20261024-video-guide" defer></script>
 </body>
 </html>
 
