@@ -31,5 +31,6 @@ jobs:
       - run: node --check landing-hero.js
       - run: node --test landing-hero.test.mjs landing-session.test.mjs project-validation.test.mjs
       - run: python3 deploy/stage-landing-hero.test.py
+      - run: python3 deploy/recover-landing-hero.test.py
       - run: bash -n deploy/update-landing-hero.sh
       - run: npm run validate

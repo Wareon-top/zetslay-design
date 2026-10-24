@@ -75,9 +75,18 @@ are outside this archive.
 
 ## Verification
 
+If the legacy Docker syntax check is still holding the shared update lock,
+`deploy/recover-landing-hero.py /opt/zetslay-site` identifies the old installer by
+its exact committed script bytes and the exact read-only Docker syntax-check
+arguments. It signals only that client, waits for the installer to exit, and
+clears the lock only after checking for active owners. Other active installers,
+unknown lock contents and a live PID cause a safe stop. It does not stop the
+Docker daemon or restart application containers.
+
 - `node --check landing-hero.js`
 - `node --test landing-hero.test.mjs landing-session.test.mjs project-validation.test.mjs`
 - `python3 deploy/stage-landing-hero.test.py`
+- `python3 deploy/recover-landing-hero.test.py`
 - `bash -n deploy/update-landing-hero.sh`
 - `npm run validate`
 
