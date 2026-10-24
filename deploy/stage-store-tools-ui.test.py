@@ -2,6 +2,15 @@ import importlib.util,json,tempfile,unittest
 from pathlib import Path
 spec=importlib.util.spec_from_file_location('stage',Path(__file__).with_name('stage-store-tools-ui.py'));mod=importlib.util.module_from_spec(spec);spec.loader.exec_module(mod)
 class StageTest(unittest.TestCase):
+ def test_separate_password_flow_is_preserved_by_later_automation_updates(self):
+  project=Path(__file__).resolve().parents[1]
+  with tempfile.TemporaryDirectory() as d:
+   root=Path(d);incoming=root/'incoming';incoming.mkdir()
+   for name in ['store-tools.js','store-tools.css','store-tools.test.mjs']:(incoming/name).write_bytes((project/'app'/name).read_bytes())
+   (incoming/'store-tools-app-patches.json').write_bytes((project/'deploy/store-tools-app-patches.json').read_bytes())
+   mod.stage(project/'app',incoming,root/'out')
+   self.assertEqual((root/'out/app.js').read_bytes(),(project/'app/app.js').read_bytes())
+   self.assertIn('app.js?v=20261024-bot-password-step',(root/'out/index.html').read_text())
  def test_preserves_local_assets_and_is_idempotent(self):
   with tempfile.TemporaryDirectory() as tmp:
    root=Path(tmp);local=root/'local';incoming=root/'incoming';first=root/'first';second=root/'second';local.mkdir();incoming.mkdir()
