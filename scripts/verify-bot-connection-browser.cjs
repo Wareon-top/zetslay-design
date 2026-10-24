@@ -18,14 +18,14 @@ try{for(const [name,viewport]of [['desktop',{width:1440,height:1000}],['mobile',
    if(p.startsWith('/api/v1/onboarding'))return structuredClone(f.snapshot);return{};
   };
   state.onboarding=structuredClone(connectFixture.snapshot);connectionStep=0;connectionBusy=false;connectionLoading=false;connectionLoadFailed=false;serviceBotUsername='fixture_service_bot';
-  setAuthModal(false);setModal(true);
+  if(typeof learningUi!=='undefined')learningUi.data={version:1,revision:1,welcomeSeen:true,status:'completed',step:5};renderAuthState();setAuthModal(false);setModal(true);
  });
  const modal=page.locator('.connect-modal'),next=modal.locator('[data-connect-next]');
  await modal.locator('[name=botToken]').waitFor();assert.equal(await modal.locator('[name=botPassword]').count(),0);
  await modal.locator('[name=botToken]').fill('FAKE_BOT_TOKEN_FOR_BROWSER');await next.click();await modal.locator('[name=botPassword]').waitFor();
  assert.equal(await modal.locator('[name=botToken]').count(),0);assert.match(await modal.innerText(),/Токен уже сохранён/);assert.equal(await modal.locator('[data-connection-step="2"]').isDisabled(),true);
  assert.deepEqual(await page.evaluate(()=>connectFixture.calls.filter(c=>c.path.endsWith('/telegram/bot')).map(c=>c.body)),[{token:'FAKE_BOT_TOKEN_FOR_BROWSER'}]);
- await modal.locator('[name=botPassword]').fill('DraftBotPassword123');await page.evaluate(()=>setModal(false));await page.evaluate(()=>setModal(true));await modal.locator('[name=botPassword]').waitFor();assert.equal(await modal.locator('[name=botPassword]').inputValue(),'');
+ await modal.locator('[name=botPassword]').fill('DraftBotPassword123');await page.evaluate(()=>setModal(false));await modal.waitFor({state:'hidden'});await page.evaluate(()=>setModal(true));await modal.locator('[name=botPassword]').waitFor();assert.equal(await modal.locator('[name=botPassword]').inputValue(),'');
  await modal.locator('[name=botPassword]').fill('NewBotPassword123');await modal.locator('[name=botPasswordConfirm]').fill('different');await next.click();assert.match(await modal.locator('[data-connect-error]').innerText(),/Пароли не совпадают/);assert.equal(await modal.locator('[name=botPassword]').inputValue(),'NewBotPassword123');
  await modal.locator('[name=botPasswordConfirm]').fill('NewBotPassword123');await next.click();await modal.locator('[data-connect-error]:not([hidden])').waitFor();assert.match(await modal.locator('[data-connect-error]').innerText(),/Проверочная ошибка/);
  await modal.locator('[name=botPassword]').fill('NewBotPassword123');await modal.locator('[name=botPasswordConfirm]').fill('NewBotPassword123');
@@ -33,6 +33,6 @@ try{for(const [name,viewport]of [['desktop',{width:1440,height:1000}],['mobile',
  await next.click();await page.waitForFunction(()=>state.onboarding.telegram.passwordConfigured===true);assert.equal(await modal.locator('[name=botPassword]').count(),0);await next.click();await page.waitForFunction(()=>Boolean(connectionStatus?.linkCode));assert.match(await modal.innerText(),/\/start 123456/);
  const calls=await page.evaluate(()=>connectFixture.calls);assert.equal(calls.filter(c=>c.path.endsWith('/telegram/bot')).length,1);const passwordCalls=calls.filter(c=>c.path==='/api/v1/bot-access/password');assert.equal(passwordCalls.length,2);assert.deepEqual(passwordCalls[1].body,{password:'NewBotPassword123',confirmPassword:'NewBotPassword123'});
  assert.ok(await modal.evaluate(n=>n.scrollWidth<=n.clientWidth+1),'link dialog fits viewport');await page.screenshot({path:path.join(out,name+'-link.png')});assert.deepEqual(errors,[]);
- }catch(e){await page.screenshot({path:path.join(out,name+'-failure.png')});throw e;}finally{await page.close();}
+ }catch(e){console.error('Fixture state:',await page.evaluate(()=>({user:!!authState.user,step:connectionStep,loading:connectionLoading,busy:connectionBusy,error:connectionError,snapshot:state.onboarding,hidden:document.querySelector('.connect-modal').hidden,classes:document.querySelector('.connect-modal').className,fields:[...document.querySelectorAll('.connect-modal input')].map(n=>n.name),calls:connectFixture.calls.map(c=>c.path)})));await page.screenshot({path:path.join(out,name+'-failure.png')});throw e;}finally{await page.close();}
 }console.log('Bot connection Chrome: token-only save, separate password, mismatch, retry, close/reopen, Telegram link and desktop/390/320px passed. Only local fixtures used.');
 }finally{await browser.close();server.close();fs.rmSync(stage,{recursive:true,force:true});}})().catch(e=>{console.error(e);server.close();process.exitCode=1;});
