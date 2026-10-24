@@ -4,7 +4,7 @@ import test from 'node:test';
 import vm from 'node:vm';
 
 const ui = readFileSync(new URL('./connection-wizard-ui.js', import.meta.url), 'utf8');
-const app = readFileSync(new URL('./app.js', import.meta.url), 'utf8').replace(/\ninit\(\);\s*$/, '');
+const app = readFileSync(new URL('./app.js', import.meta.url), 'utf8').replace(/^init\(\);\s*$/m, '');
 const html = readFileSync(new URL('./index.html', import.meta.url), 'utf8');
 const sourceModal = html.match(/<section class="connect-modal"[\s\S]*?<\/section>/)?.[0];
 assert.ok(sourceModal, 'existing connection dialog must be present');
@@ -96,6 +96,63 @@ function cabinet({ live = true, snapshot = null, step = 0 } = {}) {
 }
 const snapshot = (extra = {}) => ({ state: 'proxy_required', telegram: { botConfigured: true, linked: true },
   funPay: { credentialConfigured: true, proxyConfigured: false }, ...extra });
+
+test('token-only registration opens the separate password screen and never reads erased inputs', async () => {
+  const c = cabinet({ snapshot: { state:'telegram_bot_required', telegram:{}, funPay:{} } });
+  c.context.showToast=()=>{};
+  assert.equal(c.modal.querySelector('[name="botPassword"]'),null);
+  c.modal.querySelector('[name="botToken"]').value='FAKE_BOT_TOKEN_FOR_TEST';
+  const calls=[];
+  c.context.apiRequest=async(path,options)=>{calls.push({path,options});return {state:'telegram_link_pending',telegram:{botConfigured:true,passwordRequired:true,passwordConfigured:false},funPay:{}};};
+  await c.run('advanceConnectionWizard()');
+  assert.equal(calls[0].path,'/api/v1/onboarding/telegram/bot');
+  assert.equal(JSON.stringify(calls[0].options.body),JSON.stringify({token:'FAKE_BOT_TOKEN_FOR_TEST'}));
+  assert.equal(c.run('connectionStep'),1);
+  assert.equal(c.modal.querySelector('[name="botToken"]'),null);
+  assert.match(c.modal.querySelector('.connect-modal__body').innerHTML,/Токен уже сохранён/);
+  assert.equal(c.buttons()[1].getAttribute('aria-label'),'2. Создание пароля доступа к боту. Текущий этап');
+  c.modal.querySelector('[name="botPassword"]').value='NewBotPassword123';
+  c.modal.querySelector('[name="botPasswordConfirm"]').value='NewBotPassword123';
+  c.context.apiRequest=async(path,options)=>{calls.push({path,options});return path.endsWith('/password')?{configured:true}:{state:'telegram_link_pending',telegram:{botConfigured:true,passwordRequired:true,passwordConfigured:true},funPay:{}};};
+  await c.run('advanceConnectionWizard()');
+  assert.equal(calls[1].path,'/api/v1/bot-access/password');
+  assert.equal(JSON.stringify(calls[1].options.body),JSON.stringify({password:'NewBotPassword123',confirmPassword:'NewBotPassword123'}));
+  assert.equal(calls[1].options.authenticated,true);
+  assert.equal(calls[2].path,'/api/v1/onboarding');
+  assert.equal(c.run('connectionStep'),1);
+  assert.equal(c.modal.querySelector('[name="botPassword"]'),null);
+  assert.match(c.modal.querySelector('.connect-modal__body').innerHTML,/Привязка Telegram/);
+});
+test('unfinished password setup resumes without asking for the token and cannot jump to keys',async()=>{
+  const c=cabinet({snapshot:{state:'telegram_link_pending',telegram:{botConfigured:true,linked:true,passwordRequired:true,passwordConfigured:false},funPay:{}}});
+  c.run('connectionStep=wizardInitialStep();renderConnectionWizard()');
+  assert.equal(c.run('connectionStep'),1);c.clickStep(2);assert.equal(c.run('connectionStep'),1);
+  c.modal.querySelector('[name="botPassword"]').value='NewBotPassword123';
+  c.modal.querySelector('[name="botPasswordConfirm"]').value='different';
+  c.context.apiRequest=()=>{throw Error('no request for mismatching passwords');};
+  await c.run('advanceConnectionWizard()');
+  assert.equal(c.modal.querySelector('[data-connect-error]').textContent,'Пароли не совпадают.');
+  assert.equal(c.modal.querySelector('[name="botPassword"]').value,'NewBotPassword123');
+  c.run('setModal(false);setModal(true)');
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(c.modal.querySelector('[name="botPassword"]').value,'');
+});
+test('a failed password request stays retryable on the password screen without registering token again',async()=>{
+  const c=cabinet({snapshot:{state:'telegram_link_pending',telegram:{botConfigured:true,passwordRequired:true,passwordConfigured:false},funPay:{}},step:1});
+  c.context.showToast=()=>{};const calls=[];
+  c.context.apiRequest=async path=>{calls.push(path);throw Error('Не удалось сохранить пароль');};
+  c.modal.querySelector('[name="botPassword"]').value='NewBotPassword123';c.modal.querySelector('[name="botPasswordConfirm"]').value='NewBotPassword123';
+  await c.run('advanceConnectionWizard()');assert.deepEqual(calls,['/api/v1/bot-access/password']);assert.equal(c.run('connectionStep'),1);assert.equal(c.run('connectionBusy'),false);
+  assert.match(c.modal.querySelector('[data-connect-error]').textContent,/Не удалось сохранить/);assert.equal(c.modal.querySelector('[name="botToken"]'),null);
+});
+test('a late token response cannot apply to another signed-in account',async()=>{
+  const c=cabinet({snapshot:{state:'telegram_bot_required',telegram:{},funPay:{}}});c.context.showToast=()=>{};
+  c.modal.querySelector('[name="botToken"]').value='FAKE_BOT_TOKEN_FOR_TEST';let finish;
+  c.context.apiRequest=()=>new Promise(resolve=>{finish=resolve;});const pending=c.run('advanceConnectionWizard()');
+  c.run("authState.token='another-session';sessionGeneration++;state.onboarding=null;connectionStep=0;connectionBusy=false");
+  finish({state:'telegram_link_pending',telegram:{botConfigured:true,passwordRequired:true,passwordConfigured:false},funPay:{}});await pending;
+  assert.equal(c.run('state.onboarding'),null);assert.equal(c.run('connectionStep'),0);
+});
 
 test('uses the screenshot-style stepper and wraps each renderer once', () => {
   const c = cabinet({ snapshot: snapshot(), step: 3 });

@@ -3,11 +3,13 @@ function connectionWizardPresentationModel({ live, snapshot, step, frontier, loa
   const definitions = live
     ? [['Бот', 'Telegram-бот', 'send'], ['Привязка', 'Подтверждение Telegram', 'user'], ['Ключ', 'Golden Key', 'lock'], ['Прокси', 'Маршрут соединения', 'shield'], ['Проверка', 'Доступ к магазину', 'check']]
     : [['Аккаунт', 'Один аккаунт FunPay', 'user'], ['Ключ', 'Golden Key', 'lock'], ['Прокси', 'Маршрут соединения', 'shield'], ['Проверка', 'Доступ к магазину', 'check']];
+  const needsPassword = live && snapshot?.telegram?.passwordRequired === true && snapshot.telegram.passwordConfigured !== true;
+  if (needsPassword) definitions[1] = ['Пароль', 'Создание пароля доступа к боту', 'lock'];
   const current = Math.max(0, Math.min(Number.isInteger(step) ? step : 0, definitions.length - 1));
   const unavailable = Boolean(loading || failed || busy || resetting);
   const gated = live && (!snapshot || snapshot.state === 'plan_required');
   const known = live && !loading && !failed && !gated;
-  const saved = known ? [snapshot.telegram?.botConfigured === true, snapshot.telegram?.linked === true,
+  const saved = known ? [snapshot.telegram?.botConfigured === true, snapshot.telegram?.linked === true && !needsPassword,
     snapshot.funPay?.credentialConfigured === true, snapshot.funPay?.proxyConfigured === true,
     snapshot.state === 'connected_read_only' && Boolean(snapshot.funPay?.store)] : [];
   const limit = live ? (gated ? 0 : Math.max(0, Math.min(Number.isInteger(frontier) ? frontier : 0, definitions.length - 1))) : definitions.length - 1;

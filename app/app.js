@@ -1477,12 +1477,15 @@ const connectionDemoSteps = [
 const liveConnectionMode = () => Boolean(authState.user && API_BASE_URL);
 
 // Live wizard mirrors the backend onboarding journey:
-// bot token -> link code confirmation -> Golden Key -> proxy -> read-only preflight.
+// bot token -> password screen -> Telegram link -> Golden Key -> proxy -> preflight.
+function connectionNeedsBotPassword() {
+  return state.onboarding?.telegram?.passwordRequired === true && state.onboarding.telegram.passwordConfigured !== true;
+}
 const wizardInitialStep = () => {
   const onboarding = state.onboarding;
   if (!onboarding) return 0;
   if (!onboarding.telegram?.botConfigured) return 0;
-  if (!onboarding.telegram?.linked) return 1;
+  if (connectionNeedsBotPassword() || !onboarding.telegram?.linked) return 1;
   if (onboarding.state === 'blocked') return onboarding.funPay?.canRetryPreflight === true ? 4 : 2;
   if (!onboarding.funPay?.credentialConfigured) return 2;
   if (!onboarding.funPay?.proxyConfigured) return 3;
@@ -1555,8 +1558,10 @@ function renderConnectionWizard() {
     planRequired
       ? `<span class="connect-illustration">${icon('card')}<i></i></span><h3>Сначала активный тариф</h3><p>${onboarding?.demoPlanAvailable ? 'На этом сервере доступна демо-активация тарифа для проверки подключения.' : 'Тариф пока не активен. Подключение магазина станет доступно после активации тарифа ZetSlay.'}</p><div class="connection-checks"><span>Тариф <b>Не активен</b></span></div>`
       : linkedBot ? `<span class="connect-illustration">${icon('check')}<i></i></span><h3>Бот подключён</h3><p>Ваш бот ${escapeHtml(botName ? `@${botName}` : '')} уже привязан. Можно вернуться к следующим шагам.</p>`
-        : `<span class="connect-illustration">${icon('send')}<i></i></span><h3>${configuredBot ? 'Заменить Telegram-бота' : 'Ваш рабочий бот Telegram'}</h3><p>${configuredBot ? `Сейчас сохранён ${escapeHtml(botName ? `@${botName}` : 'бот')}. Новый Bot Token заменит его и сбросит выданный код привязки.` : 'Создайте бота через @BotFather и вставьте его Bot Token. Он будет отправлять уведомления вашего магазина.'}</p><div class="connection-form"><label>Bot Token<input type="password" name="botToken" minlength="10" maxlength="256" autocomplete="off" spellcheck="false" placeholder="123456789:AA..."></label><small>Токен отправится только в зашифрованный vault. Не передавайте его в Telegram.</small><label>Пароль для входа в рабочего бота<input type="password" name="botPassword" minlength="12" maxlength="256" autocomplete="new-password" placeholder="От 12 символов, буквы и цифры"></label><label>Повторите пароль<input type="password" name="botPasswordConfirm" minlength="12" maxlength="256" autocomplete="new-password"></label><small>Бот запросит этот пароль в личном чате владельца. Сменить его можно в «Автоматизация → Доступ к боту».</small></div>${configuredBot ? '<div class="connect-helper"><button type="button" data-connect-return>Вернуться к коду без замены</button></div>' : ''}`,
-    `<span class="connect-illustration">${icon('user')}<i></i></span><h3>${linkedBot ? 'Telegram привязан' : 'Привязка Telegram'}</h3><p>${linkedBot ? 'Подтверждение получено. Продолжайте подключение магазина.' : `Команду нужно отправить именно вашему боту ${escapeHtml(botName ? `@${botName}` : '')}. Сначала проверьте его связь и получите код.`}</p>${!linkedBot && linkCode ? `<div class="connection-store-badge"><span class="store-logo">TG</span><span><strong>/start ${escapeHtml(linkCode)}</strong><small>Код действует до ${escapeHtml(new Date(connectionStatus.expiresAt).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }))}; команда отправляется боту, не @BotFather.</small></span></div>` : ''}${!linkedBot ? `<div class="connect-helper">${botLink ? `<a href="${botLink}${linkCode ? `?start=${encodeURIComponent(linkCode)}` : ''}" target="_blank" rel="noopener noreferrer">Открыть @${escapeHtml(botName)} в Telegram</a>` : ''}${linkCode ? '<button type="button" data-connect-repair>Проверить webhook бота</button>' : ''}</div><div class="connection-checks"><span>Ответ бота <b>После /start проверьте подтверждение в чате</b></span></div>` : ''}`,
+        : `<span class="connect-illustration">${icon('send')}<i></i></span><h3>${configuredBot ? 'Заменить Telegram-бота' : 'Ваш рабочий бот Telegram'}</h3><p>${configuredBot ? `Сейчас сохранён ${escapeHtml(botName ? `@${botName}` : 'бот')}. Новый Bot Token заменит его и сбросит выданный код привязки.` : 'Создайте бота через @BotFather и вставьте его Bot Token. Он будет отправлять уведомления вашего магазина.'}</p><div class="connection-form"><label>Bot Token<input type="password" name="botToken" minlength="10" maxlength="256" autocomplete="off" spellcheck="false" placeholder="123456789:AA..."></label><small>Токен отправится только в зашифрованный vault. Не передавайте его в Telegram.</small></div>${configuredBot ? '<div class="connect-helper"><button type="button" data-connect-return>Вернуться к коду без замены</button></div>' : ''}`,
+    connectionNeedsBotPassword()
+      ? `<span class="connect-illustration">${icon('lock')}<i></i></span><h3>Создайте пароль доступа к боту</h3><p>Токен уже сохранён. Придумайте отдельный пароль для управления магазином через вашего Telegram-бота. Это новый пароль, а не пароль от Telegram или кабинета ZetSlay.</p><div class="connection-form"><label>Новый пароль<input type="password" name="botPassword" minlength="12" maxlength="256" autocomplete="new-password" spellcheck="false" placeholder="От 12 символов, буквы и цифры"></label><label>Повторите пароль<input type="password" name="botPasswordConfirm" minlength="12" maxlength="256" autocomplete="new-password" spellcheck="false"></label><small>После привязки Telegram бот попросит этот пароль для входа в управление. Позже его можно сменить в «Профиль → Рабочий Telegram-бот».</small></div>`
+      : `<span class="connect-illustration">${icon('user')}<i></i></span><h3>${linkedBot ? 'Telegram привязан' : 'Привязка Telegram'}</h3><p>${linkedBot ? 'Подтверждение получено. Продолжайте подключение магазина.' : `Команду нужно отправить именно вашему боту ${escapeHtml(botName ? `@${botName}` : '')}. Сначала проверьте его связь и получите код.`}</p>${!linkedBot && linkCode ? `<div class="connection-store-badge"><span class="store-logo">TG</span><span><strong>/start ${escapeHtml(linkCode)}</strong><small>Код действует до ${escapeHtml(new Date(connectionStatus.expiresAt).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }))}; команда отправляется боту, не @BotFather.</small></span></div>` : ''}${!linkedBot ? `<div class="connect-helper">${botLink ? `<a href="${botLink}${linkCode ? `?start=${encodeURIComponent(linkCode)}` : ''}" target="_blank" rel="noopener noreferrer">Открыть @${escapeHtml(botName)} в Telegram</a>` : ''}${linkCode ? '<button type="button" data-connect-repair>Проверить webhook бота</button>' : ''}</div><div class="connection-checks"><span>Ответ бота <b>После /start проверьте подтверждение в чате</b></span></div>` : ''}`,
     `<span class="connect-illustration">${icon('lock')}<i></i></span><h3>Golden Key</h3><p>${onboarding?.funPay?.credentialConfigured && connectionStep < initialStep ? 'Ключ уже сохранён в vault. Значение повторно не показывается.' : onboarding?.state === 'blocked' ? 'Предыдущая проверка остановлена. Укажите актуальный ключ и затем прокси для повторной проверки.' : 'Ключ отправляется напрямую в vault для вашего единственного аккаунта и не возвращается обратно.'}</p>${onboarding?.funPay?.credentialConfigured && connectionStep < initialStep ? '' : '<div class="connection-form"><label>Golden Key<input type="password" name="goldenKey" minlength="12" maxlength="4096" autocomplete="off" spellcheck="false" placeholder="Вставьте ключ один раз"></label><small>Не отправляйте Golden Key в Telegram или поддержку.</small></div>'}`,
     `<span class="connect-illustration">${icon('shield')}<i></i></span><h3>Обязательный прокси</h3><p>${onboarding?.funPay?.proxyConfigured && connectionStep < initialStep ? 'Прокси уже закреплён за магазином. Значение повторно не показывается.' : `Этот прокси будет использовать только worker <strong>${escapeHtml(worker)}</strong> для стабильного подключения.`}</p>${onboarding?.funPay?.proxyConfigured && connectionStep < initialStep ? '' : '<div class="connection-form"><label>Proxy URL<input type="password" name="proxyUrl" maxlength="2048" autocomplete="off" spellcheck="false" placeholder="host:port:login:password"></label><small>Формат: host:port:login:password или login:password@host:port — используется HTTP. Для выбора протокола укажите полный URL http://, https:// или socks5://. Адрес и пароль не появятся в ответе API.</small></div>'}`,
     `<span class="connect-illustration connect-illustration--success">${icon('check')}<i></i></span><h3>Read-only проверка</h3><p>ZetSlay проверит аккаунт, чтение заказов и чатов через закреплённый прокси. Лоты и баланс сейчас недоступны; данные на FunPay не изменяются.</p><div class="connection-checks">${checks.map((line) => `<span>${line.split(' <b>')[0]} <b>${line.split(' <b>')[1]}</b></span>`).join('')}<span>Live-действия <b>Отключены</b></span></div>`
@@ -1573,7 +1578,7 @@ function renderConnectionWizard() {
     if (state.proxyDiagnostics) body.innerHTML += formatProxyDiagnostics(state.proxyDiagnostics);
   }
   if (action) {
-    const labels = planRequired ? [onboarding?.demoPlanAvailable ? 'Активировать демо-тариф' : 'Тариф не активен'] : [configuredBot && !linkedBot ? 'Заменить бота' : 'Сохранить Bot Token', linkedBot ? 'Продолжить' : linkCode ? 'Проверить привязку' : 'Проверить бота и получить код', 'Сохранить Golden Key', 'Закрепить прокси', 'Запустить read-only проверку'];
+    const labels = planRequired ? [onboarding?.demoPlanAvailable ? 'Активировать демо-тариф' : 'Тариф не активен'] : [configuredBot && !linkedBot ? 'Заменить бота' : 'Сохранить Bot Token', connectionNeedsBotPassword() ? 'Сохранить пароль и продолжить' : linkedBot ? 'Продолжить' : linkCode ? 'Проверить привязку' : 'Проверить бота и получить код', 'Сохранить Golden Key', 'Закрепить прокси', 'Запустить read-only проверку'];
     action.disabled = connectionBusy || (planRequired && !onboarding?.demoPlanAvailable);
     action.innerHTML = `${connectionBusy ? 'Проверяем…' : connectionStep < initialStep && !(connectionStep === 0 && configuredBot && !linkedBot) ? 'Продолжить' : labels[connectionStep] || labels.at(-1)} ${icon('chevron-right')}`;
   }
@@ -1588,7 +1593,7 @@ async function refreshConnectionWizard() {
   try {
     await loadOnboarding();
     connectionStep = wizardInitialStep();
-    if (connectionStep === 1 && validConnectionCode()) startConnectionLinkPolling();
+    if (connectionStep === 1 && !connectionNeedsBotPassword() && validConnectionCode()) startConnectionLinkPolling();
   } catch (error) {
     connectionLoadFailed = true;
     connectionError = humanError(error);
@@ -1741,6 +1746,13 @@ async function advanceConnectionWizard() {
   if (connectionResetTarget) { await confirmConnectionReset(); return; }
   if (connectionLoadFailed || !state.onboarding) { await refreshConnectionWizard(); return; }
   const modal = document.querySelector('.connect-modal');
+  const scopeToken = authState.token, scopeGeneration = sessionGeneration;
+  const currentScope = () => scopeToken === authState.token && scopeGeneration === sessionGeneration;
+  const request = async (...args) => {
+    const response = await apiRequest(...args);
+    if (!currentScope()) throw Object.assign(new Error('Сессия изменилась.'), { code: 'CONNECTION_SCOPE_CHANGED' });
+    return response;
+  };
   const planRequired = state.onboarding?.state === 'plan_required';
   if (!planRequired && connectionStep < wizardInitialStep() &&
       !(connectionStep === 0 && state.onboarding.telegram?.botConfigured && !state.onboarding.telegram?.linked)) {
@@ -1749,11 +1761,20 @@ async function advanceConnectionWizard() {
     return;
   }
   let submittedValue = null;
+  let submittedPassword = null;
+  if (connectionStep === 1 && connectionNeedsBotPassword()) {
+    const password = modal.querySelector('[name="botPassword"]')?.value || '';
+    const confirmPassword = modal.querySelector('[name="botPasswordConfirm"]')?.value || '';
+    const error = !password ? 'Придумайте пароль доступа к боту.'
+      : password.length < 12 || password.length > 256 || !/[a-zа-я]/i.test(password) || !/[0-9]/.test(password)
+        ? 'Пароль должен содержать от 12 до 256 символов, буквы и цифры.'
+        : !confirmPassword ? 'Повторите новый пароль.' : password !== confirmPassword ? 'Пароли не совпадают.' : '';
+    if (error) { connectionError = error; const node = modal.querySelector('[data-connect-error]'); if (node) { node.textContent = error; node.hidden = false; } return; }
+    submittedPassword = { password, confirmPassword };
+  }
   if (connectionStep === 0 && !planRequired) {
     submittedValue = modal.querySelector('input[name="botToken"]')?.value;
     if (!submittedValue) { showToast('Введите Bot Token от @BotFather'); return; }
-    const password=modal.querySelector('[name="botPassword"]')?.value||'',confirm=modal.querySelector('[name="botPasswordConfirm"]')?.value||'';
-    if(password.length<12||!/[a-zа-я]/i.test(password)||!/[0-9]/.test(password)||password!==confirm){showToast('Задайте одинаковый пароль от 12 символов с буквами и цифрами.','error');return;}
   }
   if (connectionStep === 2) {
     submittedValue = modal.querySelector('input[name="goldenKey"]')?.value;
@@ -1768,7 +1789,7 @@ async function advanceConnectionWizard() {
   renderConnectionWizard();
   try {
     if (connectionStep === 0 && planRequired) {
-      const activated = await apiRequest('/api/v1/onboarding/demo-plan', { method: 'POST', authenticated: true, body: {} });
+      const activated = await request('/api/v1/onboarding/demo-plan', { method: 'POST', authenticated: true, body: {} });
       onboardingRevision += 1;
       authState.workspace = activated.workspace;
       state.onboarding = activated.onboarding;
@@ -1779,14 +1800,22 @@ async function advanceConnectionWizard() {
       return;
     }
     if (connectionStep === 0) {
-      state.onboarding = await apiRequest('/api/v1/onboarding/telegram/bot', { method: 'POST', authenticated: true, body: { token: submittedValue, password:modal.querySelector('[name="botPassword"]').value, confirmPassword:modal.querySelector('[name="botPasswordConfirm"]').value } });
+      state.onboarding = await request('/api/v1/onboarding/telegram/bot', { method: 'POST', authenticated: true, body: { token: submittedValue } });
       submittedValue = null;
       connectionStatus = null;
+      stopConnectionLinkPolling();
       showToast('Bot Token принят', 'success');
     } else if (connectionStep === 1) {
+      if (submittedPassword) {
+        await request('/api/v1/bot-access/password', { method: 'POST', authenticated: true, body: submittedPassword });
+        submittedPassword = null;
+        state.onboarding = await request('/api/v1/onboarding', { authenticated: true });
+        showToast('Пароль сохранён. Теперь подтвердите привязку Telegram.', 'success');
+        return;
+      }
       if (!validConnectionCode()) {
-        state.onboarding = await apiRequest('/api/v1/onboarding/telegram/webhook', { method: 'POST', authenticated: true, body: {} });
-        const issued = await apiRequest('/api/v1/onboarding/telegram/link-code', { method: 'POST', authenticated: true, body: {} });
+        state.onboarding = await request('/api/v1/onboarding/telegram/webhook', { method: 'POST', authenticated: true, body: {} });
+        const issued = await request('/api/v1/onboarding/telegram/link-code', { method: 'POST', authenticated: true, body: {} });
         connectionStatus = { linkCode: issued.code, expiresAt: issued.expiresAt, workspaceId: issued.onboarding.workspaceId };
         state.onboarding = issued.onboarding;
         startConnectionLinkPolling();
@@ -1794,7 +1823,7 @@ async function advanceConnectionWizard() {
         renderConnectionWizard();
         return;
       }
-      const status = await apiRequest('/api/v1/onboarding', { authenticated: true });
+      const status = await request('/api/v1/onboarding', { authenticated: true });
       state.onboarding = status;
       if (!status.telegram?.linked) {
         connectionError = 'Подтверждение ещё не получено. Отправьте команду своему боту и проверьте его ответ. При отсутствии ответа нажмите «Проверить webhook бота».';
@@ -1804,20 +1833,20 @@ async function advanceConnectionWizard() {
       connectionStatus = null;
       showToast('Telegram привязан', 'success');
     } else if (connectionStep === 2) {
-      state.onboarding = await apiRequest('/api/v1/onboarding/funpay/key', { method: 'POST', authenticated: true, body: { goldenKey: submittedValue } });
+      state.onboarding = await request('/api/v1/onboarding/funpay/key', { method: 'POST', authenticated: true, body: { goldenKey: submittedValue } });
       submittedValue = null;
       const field = modal.querySelector('input[name="goldenKey"]');
       if (field) field.value = '';
       showToast('Golden Key сохранён в vault', 'success');
     } else if (connectionStep === 3) {
-      state.onboarding = await apiRequest('/api/v1/onboarding/funpay/proxy', { method: 'POST', authenticated: true, body: { proxyUrl: submittedValue } });
+      state.onboarding = await request('/api/v1/onboarding/funpay/proxy', { method: 'POST', authenticated: true, body: { proxyUrl: submittedValue } });
       submittedValue = null;
       const field = modal.querySelector('input[name="proxyUrl"]');
       if (field) field.value = '';
       state.proxyDiagnostics = null;
       showToast('Прокси закреплён', 'success');
     } else if (connectionStep === 4) {
-      state.onboarding = await apiRequest('/api/v1/onboarding/funpay/preflight', { method: 'POST', authenticated: true, body: {} });
+      state.onboarding = await request('/api/v1/onboarding/funpay/preflight', { method: 'POST', authenticated: true, body: {} });
       await loadStoreFleet();
       let contentLoaded = true;
       try { await syncStoreContent({ silent: true }); } catch { contentLoaded = false; }
@@ -1828,11 +1857,13 @@ async function advanceConnectionWizard() {
     connectionStep += 1;
     showToast(`Шаг ${connectionStep + 1} из 5`, 'success');
   } catch (error) {
+    if (!currentScope()) return;
     connectionError = humanError(error);
     showToast(connectionError, 'error');
   } finally {
-    connectionBusy = false;
-    renderConnectionWizard();
+    submittedPassword = null;
+    submittedValue = null;
+    if (currentScope()) { connectionBusy = false; renderConnectionWizard(); }
   }
 }
 
