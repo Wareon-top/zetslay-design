@@ -19,6 +19,12 @@ class LoadingInstallerTests(unittest.TestCase):
         (root / 'app').mkdir();(root / 'deploy').mkdir()
         patches = json.loads((ROOT / 'deploy/proxy-shop-loading-patches.json').read_text())
         files = {name: (ROOT / 'app' / name).read_text() for name in m.FILES}
+        # Reconstruct the prior release so this legacy installer keeps testing
+        # its own supported input after the new checkout changes.
+        newer = ROOT / 'deploy/proxy-checkout-ui-patches.json'
+        if newer.exists():
+            for patch in reversed(json.loads(newer.read_text())):
+                files[patch['file']] = files[patch['file']].replace(patch['after'], patch['before'], 1)
         for patch in reversed(patches):
             self.assertEqual(files[patch['file']].count(patch['after']), 1, patch['name'])
             files[patch['file']] = files[patch['file']].replace(patch['after'], patch['before'], 1)

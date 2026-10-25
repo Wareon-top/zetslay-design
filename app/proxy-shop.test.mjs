@@ -93,3 +93,24 @@ test('a lost POST response cannot override delivery already confirmed by a live 
  const pending=h.run("proxyShopAction('purchase',proxyShopUi.request)");await h.run('proxyShopLoad()');assert.equal(h.run('proxyShopUi.request'),null);rejectPost(Error('response lost'));await pending;
  assert.equal(h.run('proxyShopUi.unknown'),false);assert.equal(h.run('proxyShopUi.error'),'');assert.equal(h.run('proxyShopUi.data.operations[0].status'),'delivered');
 });
+test('an ignored purchase abort stops waiting, retains the exact request and never resubmits automatically',async()=>{
+ const scheduled=new Map();let timer=0,posts=0,release;
+ const h=harness({setTimeout:(fn,ms)=>{const id=++timer;scheduled.set(id,{fn,ms});return id;},clearTimeout:id=>scheduled.delete(id),apiRequest:async(p,o)=>{if(o?.method==='POST'){posts++;return new Promise(r=>release=r);}return {...data,enabled:false};}});
+ h.run('proxyShopUi.data={enabled:true,balanceMinor:10000,operations:[]};proxyShopUi.catalog={locations:[]};proxyShopUi.request={requestId:"request-one",quoteId:"quote-one",confirmed:true}');
+ const pending=h.run("proxyShopAction('purchase',proxyShopUi.request)");[...scheduled.values()].find(t=>t.ms===20000).fn();await pending;
+ assert.equal(h.run('proxyShopUi.busy'),false);assert.equal(h.run('proxyShopUi.activeAction'),'');assert.equal(h.run('proxyShopUi.unknown'),true);assert.equal(h.run('proxyShopUi.request.requestId'),'request-one');assert.equal(posts,1);
+ release({operation:{id:'request-one',status:'delivered'}});await Promise.resolve();assert.equal(h.run('proxyShopUi.unknown'),true);
+});
+test('a stale operation stops animated waiting and automatic polling without claiming delivery or refund',()=>{
+ const h=harness({managedProxyUi:{data:null}});h.context.op={id:'pending-id',status:'checking',kind:'issue',months:1,priceMinor:5000,country:'DE',updatedAt:'2000-01-01T00:00:00Z'};
+ h.run('proxyShopUi.data={operations:[op]};proxyShopUi.modalOpId=op.id');const model=h.run('proxyShopProgressModel(op)');assert.equal(model.stalled,true);assert.equal(model.done,false);assert.equal(model.refunded,false);
+ const markup=h.run('proxyShopProgressMarkup(op)');assert.match(markup,/Заказ ещё проверяется/);assert.match(markup,/data-ps-reconcile/);assert.doesNotMatch(markup,/ps-step-spinner|ps-orbit/);h.run('proxyShopPoll()');assert.equal(h.timers.size,0);
+});
+test('a late failed POST cannot clear a new quote after its purchase was confirmed by status',async()=>{
+ let rejectOld;const h=harness({apiRequest:async(p,o)=>o?.method==='POST'?(p.endsWith('/quote')?{quote:q,publication:{version:'v',hash:'h'}}:new Promise((_,reject)=>rejectOld=reject)):{...data,operations:[{id:'request-one',status:'delivered'}]}});
+ h.run('proxyShopUi.data={...'+JSON.stringify(data)+'};proxyShopUi.catalog={locations:[]};proxyShopUi.request={requestId:"request-one"}');const old=h.run("proxyShopAction('purchase',proxyShopUi.request)");await h.run('proxyShopLoad()');assert.equal(h.run('proxyShopUi.busy'),false);
+ await h.run("proxyShopAction('quote',{kind:'issue',months:1,nodeId:5})");rejectOld(Error('late failure'));await old;assert.equal(h.run('proxyShopUi.quote.id'),'quote-one');assert.equal(h.run('proxyShopUi.error'),'');
+});
+test('an empty successful purchase response remains uncertain and does not clear the request',async()=>{
+ const h=harness({apiRequest:async(p,o)=>o?.method==='POST'?{}:{...data,enabled:false}});h.run('proxyShopUi.request={requestId:"request-one"}');await h.run("proxyShopAction('purchase',proxyShopUi.request)");assert.equal(h.run('proxyShopUi.unknown'),true);assert.equal(h.run('proxyShopUi.request.requestId'),'request-one');assert.equal(h.run('proxyShopUi.busy'),false);
+});

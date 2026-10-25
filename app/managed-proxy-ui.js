@@ -45,11 +45,11 @@ function managedProxyAdminMarkup(data,{busy=false,error=''}={}){
 }
 function managedProxyRenewFields(busy){return `<label>Новый срок у поставщика<input type="datetime-local" name="expiresAt" required></label><label class="mp-confirm"><input name="confirmed" type="checkbox" required>Прокси уже продлён у поставщика</label><button class="button button--primary" ${busy?'disabled':''}>Подтвердить срок</button>`;}
 function managedProxyCurrent(token,generation,revision){return Boolean(authState.user&&authState.token===token&&sessionGeneration===generation&&managedProxyUi.revision===revision);}
-async function managedProxyRead(path,options={}){
+async function managedProxyRead(path,options={}, {timeoutMs=25000,uncertain=false}={}){
   const controller=new AbortController();let timer;
   try{
     return await Promise.race([
-      new Promise((resolve,reject)=>{timer=setTimeout(()=>{const error=new Error('Сервер не ответил за 25 секунд. Повторите загрузку прокси.');error.code='REQUEST_TIMEOUT';reject(error);controller.abort();},25000);}),
+      new Promise((resolve,reject)=>{timer=setTimeout(()=>{const error=new Error(uncertain?'Ответ операции не получен. Проверьте сохранённый результат перед повтором.':'Сервер не ответил за 25 секунд. Повторите загрузку прокси.');error.code=uncertain?'REQUEST_RESULT_UNKNOWN':'REQUEST_TIMEOUT';reject(error);controller.abort();},timeoutMs);}),
       Promise.resolve(apiRequest(path,{...options,authenticated:true,signal:controller.signal})),
     ]);
   }finally{clearTimeout(timer);}
