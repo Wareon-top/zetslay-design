@@ -52,7 +52,15 @@ function challengeMfa(session){
 (function installAccountSecurity(){
  if(typeof acceptSession!=='function'||typeof renderProfile!=='function')return;
  const originalReset=resetAccountData;resetAccountData=function(...args){accountSecurityUi.request++;Object.assign(accountSecurityUi,{token:'',data:null,health:null,setup:null,codes:[],loading:false,busy:false,error:''});return originalReset(...args);};
- const originalAccept=acceptSession;acceptSession=async session=>originalAccept(session?.mfaRequired?await challengeMfa(session):session);
+ const originalAccept=acceptSession;acceptSession=async session=>{
+  const generation=typeof sessionGeneration==='number'?sessionGeneration:0,attempt=typeof authAttemptRevision==='number'?authAttemptRevision:0,token=authState.token;
+  const verified=session?.mfaRequired?await challengeMfa(session):session;
+  if(token!==authState.token||generation!==(typeof sessionGeneration==='number'?sessionGeneration:0)||attempt!==(typeof authAttemptRevision==='number'?authAttemptRevision:0)){
+   if(verified?.token)await fetch(`${API_BASE_URL}/api/v1/auth/logout`,{method:'POST',credentials:'include',headers:{authorization:`Bearer ${verified.token}`},signal:AbortSignal.timeout(12000)}).catch(()=>{});
+   throw Error('Вход отменён: аккаунт или способ входа уже изменился.');
+  }
+  return originalAccept(verified);
+ };
  const originalRender=renderProfile;renderProfile=function(...args){const result=originalRender(...args);renderAccountSecurity();return result;};
  const originalLoad=loadProfile;loadProfile=async function(...args){return Promise.all([originalLoad(...args),loadAccountSecurity()]);};
  document.addEventListener('click',event=>{

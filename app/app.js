@@ -82,6 +82,7 @@ const errorMessages = {
 };
 const humanError = (error) => errorMessages[error?.code] || (error?.message === 'Failed to fetch' ? 'Backend ZetSlay недоступен. Проверьте адрес API и состояние сервера.' : error?.message) || 'Не удалось выполнить действие.';
 let registrationEmail = '';
+let authAttemptRevision = 0;
 
 async function apiRequest(path, { method = 'GET', body, authenticated = false, signal } = {}) {
   if (!API_BASE_URL) { const error = new Error('API_URL_MISSING'); error.code = 'API_URL_MISSING'; throw error; }
@@ -90,7 +91,8 @@ async function apiRequest(path, { method = 'GET', body, authenticated = false, s
   if (body) headers['content-type'] = 'application/json';
   if (authenticated && authState.token) headers.authorization = `Bearer ${authState.token}`;
   const reading = method === 'GET' || method === 'HEAD';
-  const deadline = signal ? null : AbortSignal.timeout(reading ? 35000 : 120000);
+  const authRequest = /^\/api\/v1\/auth\//.test(path);
+  const deadline = signal ? null : AbortSignal.timeout(reading ? 35000 : authRequest ? 20000 : 120000);
   const requestSignal = signal || deadline;
   let response, payload;
   try {
@@ -98,13 +100,18 @@ async function apiRequest(path, { method = 'GET', body, authenticated = false, s
     payload = await response.json().catch(error => { if(requestSignal?.aborted)throw error; return {}; });
     if(requestSignal?.aborted)throw requestSignal.reason;
   } catch(error) {
-    if(deadline?.aborted){const failure=new Error(reading?'Чтение превысило время ожидания. Попробуйте обновить данные.':'Ответ сервера не получен вовремя. Операция могла завершиться: проверьте её состояние перед повтором.');failure.code=reading?'REQUEST_TIMEOUT':'REQUEST_RESULT_UNKNOWN';throw failure;}
+    if(deadline?.aborted){const failure=new Error(reading?'Чтение превысило время ожидания. Попробуйте обновить данные.':authRequest?'Сервер не ответил вовремя. Если вы создавали аккаунт, попробуйте войти с указанным email.':'Ответ сервера не получен вовремя. Операция могла завершиться: проверьте её состояние перед повтором.');failure.code=reading||authRequest?'REQUEST_TIMEOUT':'REQUEST_RESULT_UNKNOWN';throw failure;}
     throw error;
   }
   if (!response.ok) {
-    const error = new Error(payload.error?.message || 'Запрос отклонён');
-    error.code = payload.error?.code || `HTTP_${response.status}`;
+    const error = new Error(payload?.error?.message || 'Запрос отклонён');
+    error.code = payload?.error?.code || `HTTP_${response.status}`;
     if (authenticated && error.code === 'INVALID_SESSION' && requestToken === authState.token) clearSession();
+    throw error;
+  }
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload) || !Object.hasOwn(payload, 'data')) {
+    const error = new Error(reading ? 'Сервер вернул неполный ответ. Попробуйте обновить данные.' : 'Ответ операции не удалось подтвердить. Проверьте её состояние перед повтором.');
+    error.code = reading ? 'INVALID_API_RESPONSE' : 'REQUEST_RESULT_UNKNOWN';
     throw error;
   }
   return payload.data;
@@ -146,17 +153,23 @@ function renderAuthState() {
 }
 
 function setAuthMode(mode) {
+  authAttemptRevision++;
+  stopTelegramLoginPolling();
   authState.mode = mode === 'register' ? 'register' : 'login';
   const title = byId('auth-modal-title');
   const submit = document.querySelector('[data-auth-submit]');
   const password = document.querySelector('[data-auth-form] input[name="password"]');
+  const confirmRow = document.querySelector('[data-auth-confirm-row]');
+  const confirmation = document.querySelector('[data-auth-form] input[name="passwordConfirm"]');
+  if (confirmRow) confirmRow.hidden = authState.mode !== 'register';
+  if (confirmation) { confirmation.disabled = authState.mode !== 'register'; confirmation.required = authState.mode === 'register'; confirmation.value = ''; }
   const intro = document.querySelector('.auth-intro');
   const switchButton = document.querySelector('[data-auth-switch]');
   const switchCopy = document.querySelector('[data-auth-switch-copy]');
   if (title) title.textContent = authState.mode === 'register' ? 'Создать аккаунт' : 'Вход в кабинет';
   if (submit) submit.textContent = authState.mode === 'register' ? 'Зарегистрироваться' : 'Войти';
   if (intro) intro.textContent = authState.mode === 'register'
-    ? 'Укажите email и пароль. Письмо подтверждения сейчас не требуется — вход откроется сразу.'
+    ? 'Укажите email и придумайте пароль для управления магазином. После регистрации подскажем следующий шаг.'
     : 'Войдите, чтобы продолжить работу с вашим магазином.';
   if (switchButton) {
     switchButton.dataset.authMode = authState.mode === 'register' ? 'login' : 'register';
@@ -235,6 +248,8 @@ function resetAccountData() {
 }
 
 function clearSession() {
+  authAttemptRevision++;
+  stopTelegramLoginPolling();
   sessionGeneration++;
   stopConnectionLinkPolling();
   connectionStatus = null;
@@ -261,6 +276,8 @@ async function loadAccountData() {
 
 async function acceptSession(session) {
   if (!session?.token || !session?.user) throw new Error('Сервер не вернул сессию');
+  authAttemptRevision++;
+  stopTelegramLoginPolling();
   resetAccountData();
   authState.token = session.token;
   authState.user = session.user;
@@ -275,20 +292,33 @@ async function acceptSession(session) {
 async function submitAuth(form) {
   const message = form.querySelector('[data-auth-message]');
   const submit = form.querySelector('[data-auth-submit]');
-  const body = Object.fromEntries(new FormData(form));
+  if (submit.disabled) return;
+  const { passwordConfirm, ...body } = Object.fromEntries(new FormData(form));
   if (!form.reportValidity()) return;
+  if (authState.mode === 'register' && passwordConfirm !== undefined && passwordConfirm !== body.password) {
+    message.className = 'auth-message is-error'; message.textContent = 'Пароли не совпадают. Проверьте повтор пароля.'; return;
+  }
+  stopTelegramLoginPolling();
+  const revision = ++authAttemptRevision, generation = sessionGeneration;
+  const current = () => revision === authAttemptRevision && generation === sessionGeneration;
+  let registrationCreated = false;
   message.className = 'auth-message';
   message.textContent = 'Проверяем данные…';
   submit.disabled = true;
   try {
     if (authState.mode === 'register') {
       const registration = await apiRequest('/api/v1/auth/register', { method: 'POST', body });
-      form.reset();
+      if (!current()) return;
       if (!registration.verificationRequired) {
-        await acceptSession(await apiRequest('/api/v1/auth/login', { method: 'POST', body }));
+        registrationCreated = true;
+        const session = await apiRequest('/api/v1/auth/login', { method: 'POST', body });
+        if (!current()) return;
+        form.reset();
+        await acceptSession(session);
         showToast('Аккаунт создан. Добро пожаловать в кабинет.', 'success');
         return;
       }
+      form.reset();
       registrationEmail = body.email;
       setAuthMode('login');
       form.querySelector('input[name="email"]').value = body.email;
@@ -298,10 +328,20 @@ async function submitAuth(form) {
       return;
     }
     const session = await apiRequest('/api/v1/auth/login', { method: 'POST', body });
+    if (!current()) return;
     form.reset();
     await acceptSession(session);
     showToast('Вход выполнен через защищённый API', 'success');
   } catch (error) {
+    if (!current()) return;
+    if (registrationCreated) {
+      setAuthMode('login');
+      const email = form.querySelector('input[name="email"]');
+      if (email) email.value = body.email;
+      message.className = 'auth-message is-error';
+      message.textContent = 'Аккаунт создан, но автоматический вход не завершился. Введите пароль и нажмите «Войти».';
+      return;
+    }
     message.classList.add('is-error');
     message.textContent = humanError(error);
     if (['EMAIL_VERIFICATION_REQUIRED', 'EMAIL_DELIVERY_UNAVAILABLE'].includes(error?.code)) {
@@ -334,23 +374,36 @@ async function resendVerification(button) {
 }
 
 let telegramLoginTimer = null;
+let telegramLoginRevision = 0;
 
 function stopTelegramLoginPolling() {
-  if (telegramLoginTimer) { clearInterval(telegramLoginTimer); telegramLoginTimer = null; }
+  telegramLoginRevision++;
+  if (telegramLoginTimer) { clearTimeout(telegramLoginTimer); telegramLoginTimer = null; }
 }
 
 async function startTelegramLogin(button) {
+  if (button.disabled) return;
   const statusBox = document.querySelector('[data-telegram-login-status]');
   const link = document.querySelector('[data-telegram-login-link]');
+  const message = document.querySelector('[data-auth-message]');
+  stopTelegramLoginPolling();
+  const revision = telegramLoginRevision, attempt = ++authAttemptRevision, generation = sessionGeneration;
+  const current = () => revision === telegramLoginRevision && attempt === authAttemptRevision && generation === sessionGeneration && !authState.user;
+  if (statusBox) statusBox.hidden = true;
+  if (message) { message.className = 'auth-message'; message.textContent = ''; }
   button.disabled = true;
   try {
     const started = await apiRequest('/api/v1/auth/telegram/start', { method: 'POST', body: {} });
+    if (!current()) return;
+    const target = new URL(started.url);
+    if (target.protocol !== 'https:' || target.hostname !== 't.me' || !started.ticket) throw new Error('Не удалось получить ссылку входа Telegram. Повторите попытку.');
     if (link) link.href = started.url;
     if (statusBox) statusBox.hidden = false;
     window.open(started.url, '_blank', 'noopener');
-    stopTelegramLoginPolling();
     const deadline = Date.now() + 10 * 60 * 1000;
-    telegramLoginTimer = setInterval(async () => {
+    const pollOnce = async () => {
+      telegramLoginTimer = null;
+      if (!current()) return;
       if (Date.now() > deadline) {
         stopTelegramLoginPolling();
         if (statusBox) statusBox.hidden = true;
@@ -358,19 +411,27 @@ async function startTelegramLogin(button) {
         return;
       }
       try {
-        const poll = await apiRequest(`/api/v1/auth/telegram/poll?ticket=${encodeURIComponent(started.ticket)}`);
+        const poll = await apiRequest(`/api/v1/auth/telegram/poll?ticket=${encodeURIComponent(started.ticket)}`, { signal: AbortSignal.timeout(12000) });
+        if (!current()) return;
         if (poll.status === 'confirmed') {
-          stopTelegramLoginPolling();
           if (statusBox) statusBox.hidden = true;
           await acceptSession(poll);
           showToast('Вход через Telegram выполнен', 'success');
+          return;
         }
-      } catch {
+        if (poll.status !== 'pending') throw new Error('Ссылка входа больше не действует. Нажмите «Продолжить через Telegram» ещё раз.');
+      } catch (error) {
+        if (!current()) return;
         stopTelegramLoginPolling();
+        if (statusBox) statusBox.hidden = true;
+        if (message) { message.className = 'auth-message is-error'; message.textContent = 'Не удалось проверить вход через Telegram. Нажмите «Продолжить через Telegram» ещё раз.'; }
+        return;
       }
-    }, 2500);
+      if (current()) telegramLoginTimer = setTimeout(pollOnce, 2500);
+    };
+    telegramLoginTimer = setTimeout(pollOnce, 2500);
   } catch (error) {
-    showToast(humanError(error), 'error');
+    if (current()) { if (message) { message.className = 'auth-message is-error'; message.textContent = humanError(error); } showToast(humanError(error), 'error'); }
   } finally {
     button.disabled = false;
   }

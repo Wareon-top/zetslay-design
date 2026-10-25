@@ -9,7 +9,7 @@ const session=()=>({token:'restored',user:{id:'alice'},workspace:{id:'shop'},exp
 function fixture({legacy='',restore=async()=>session()}={}){
  const calls=[],events=new Map(),sessionClient={restore,migrate:async(base,token)=>{calls.push(['migrate',token]);return restore();},clearLegacy:()=>calls.push(['clearLegacy']),notify:type=>calls.push(['notify',type]),subscribe:fn=>events.set('auth',fn)};
  const c=vm.createContext({console,Date,AbortSignal,fetch:async()=>({ok:true,json:async()=>({data:{loggedOut:true}})}),API_BASE_URL:'https://api.zetslay.pro',authState:{token:legacy,user:null,workspace:null},sessionGeneration:0,window:{ZetSlaySession:sessionClient},resetAccountData:()=>calls.push(['reset']),renderAuthState:()=>calls.push(['render']),setAuthModal:value=>calls.push(['modal',value]),loadAccountData:async()=>calls.push(['load']),showToast:(...values)=>calls.push(['toast',...values]),setView:view=>calls.push(['view',view]),clearSession(){c.sessionGeneration++;Object.assign(c.authState,{token:'',user:null,workspace:null});calls.push(['clear']);}});
- vm.runInContext(authCode,c);return {c,calls,events,run:s=>vm.runInContext(s,c)};
+ vm.runInContext('let authAttemptRevision=0;function stopTelegramLoginPolling(){};'+authCode,c);return {c,calls,events,run:s=>vm.runInContext(s,c)};
 }
 test('a new tab with no stored token restores the cookie and never asks for a password',async()=>{
  const f=fixture();await f.run('restoreSession()');assert.equal(f.c.authState.user.id,'alice');assert.equal(f.c.authState.token,'restored');assert.ok(f.calls.some(x=>x[0]==='load'));assert.ok(!f.calls.some(x=>x[0]==='modal'&&x[1]));

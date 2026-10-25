@@ -1,4 +1,5 @@
 import {missingAppAnchors} from './project-routes.mjs';
+import {checkPublicLinks} from './public-links.mjs';
 import { readFile, access } from "node:fs/promises";
 import { execFile } from "node:child_process";
 import process from "node:process";
@@ -110,6 +111,8 @@ for (const file of textFiles) {
     if (secret.pattern.test(content)) errors.push(`Possible ${secret.name} detected in ${file}`);
   }
 }
+
+for (const {file,target} of await checkPublicLinks(process.cwd())) errors.push(`Broken public resource in ${file}: ${target}`);
 
 if (errors.length) {
   console.error("ZetSlay validation failed:\n");
