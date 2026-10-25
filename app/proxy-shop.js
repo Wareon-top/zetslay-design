@@ -52,11 +52,13 @@ function proxyShopModalMarkup(data){
  if(op||ui.activeAction==='purchase'||ui.unknown)return proxyShopProgressMarkup(op);
  const locations=ui.catalog?.locations||[],offer=locations.find(l=>String(l.nodeId)===ui.nodeId)||locations[0],ready=ui.data?.enabled&&offer;
  const candidate=data?.candidates?.find(r=>!r.expired&&r.state!=='retired');
- return `<div class="ps-modal-product"><span class="ps-product-globe" aria-hidden="true">${proxyShopGlobeIcon()}</span><div><span class="ps-eyebrow">ПРОКСИ ДЛЯ FUNPAY</span><h3>${proxyShopSafe(ready?proxyShopLocationName(offer):ui.data?.enabled===false?'Продажа недоступна':'Загружаем локации')}</h3><span class="ps-product-term">Без автопродления</span></div><div class="ps-product-price"><strong>${ready?proxyShopMoney(offer.monthlyPriceMinor):'—'}</strong><span>за 30 дней</span></div></div>
+ const loading=ui.loading||managedProxyUi.loading,error=managedProxyUi.error||ui.error;
+ return `<div class="ps-modal-product"><span class="ps-product-globe" aria-hidden="true">${proxyShopGlobeIcon()}</span><div><span class="ps-eyebrow">ПРОКСИ ДЛЯ FUNPAY</span><h3>${proxyShopSafe(ready?proxyShopLocationName(offer):loading?'Загружаем локации':error?'Не удалось загрузить прокси':ui.data?.enabled===false?'Продажа недоступна':ui.data?'Нет доступных локаций':'Прокси для магазина')}</h3><span class="ps-product-term">Без автопродления</span></div><div class="ps-product-price"><strong>${ready?proxyShopMoney(offer.monthlyPriceMinor):'—'}</strong><span>за 30 дней</span></div></div>
  <div class="ps-modal-benefits"><span><i aria-hidden="true">✓</i> Проверка FunPay перед выдачей</span><span><i aria-hidden="true">✓</i> Оплата с баланса сервиса</span></div><div class="ps-modal-balance"><span class="ps-balance-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18M7 15h3"/></svg></span><span>Баланс ZetSlay <strong>${proxyShopMoney(ui.data?.balanceMinor)}</strong></span><button type="button" class="ps-text-button" data-ps-topup ${ui.busy?'disabled':''}>Пополнить ↗</button></div>
  ${data?.current?`<div class="ps-current-note"><span>${data.current.expired?'Срок текущего прокси истёк':'Ваш текущий прокси'}</span><strong>До ${proxyShopDate(data.current.expiresAt)}</strong></div>`:''}
  ${candidate?`<div class="ps-activation"><h4>Прокси ожидает подключения</h4><p>Проверьте авторизацию магазина и завершите подключение.</p><button class="button button--primary" type="button" data-mp-action="activate" data-resource-id="${proxyShopSafe(candidate.id)}" ${managedProxyUi.busy||!data.canActivate?'disabled':''}>Проверить и подключить</button><button class="ps-text-button" type="button" data-ps-wizard>Продолжить настройку магазина →</button></div>`:''}
- ${data?proxyShopCheckoutMarkup(data):`<div class="ps-modal-loading" role="status"><span class="ps-step-spinner" aria-hidden="true"></span><p>${proxyShopSafe(managedProxyUi.error||'Проверяем доступность покупки…')}</p><button class="ps-text-button" type="button" data-ps-refresh>Повторить</button></div>`}
+ ${data?proxyShopCheckoutMarkup(data):`<div class="ps-modal-loading" role="${error?'alert':'status'}">${loading?'<span class="ps-step-spinner" aria-hidden="true"></span>':''}<p>${proxyShopSafe(error||(loading?'Проверяем доступность покупки…':'Не удалось загрузить состояние прокси. Повторите проверку.'))}</p><button class="ps-text-button" type="button" data-ps-refresh ${loading?'disabled':''}>Повторить</button></div>`}
+ ${data&&managedProxyUi.error?`<p class="mp-error" role="alert">${proxyShopSafe(managedProxyUi.error)}</p>`:''}
  ${ui.activeAction==='quote'?'<p class="ps-quote-loading" role="status"><i class="ps-step-spinner" aria-hidden="true"></i> Рассчитываем итоговую стоимость…</p>':''}
  ${data?.activePlan===false?'<button class="ps-text-button" type="button" data-ps-plan>Выбрать тариф для подключения →</button>':''}
  <p class="ps-modal-footnote">Прокси оплачивается отдельно от подписки. Авторизация магазина проверяется при подключении.</p>`;
@@ -78,7 +80,7 @@ function proxyShopClose(restore=true){
 }
 async function proxyShopPrepareQuote(){
  const ui=proxyShopUi,data=typeof managedProxyUi!=='undefined'?managedProxyUi.data:null;
- if(!proxyShopDialog.node?.open||ui.busy||ui.unknown||proxyShopSelectedOperation()||!ui.data?.enabled||!data)return;
+ if(!proxyShopDialog.node?.open||ui.busy||ui.loading||managedProxyUi.loading||ui.quote||ui.error||managedProxyUi.error||ui.unknown||proxyShopSelectedOperation()||!ui.data?.enabled||!data)return;
  const renew=ui.kind==='renew'&&proxyShopResources(data).length>0;
  if(!renew&&(data.candidates?.some(r=>!r.expired&&r.state!=='retired')||!data.activePlan))return;
  const offer=ui.catalog?.locations?.find(l=>String(l.nodeId)===ui.nodeId)||ui.catalog?.locations?.[0],resource=proxyShopResources(data).find(r=>r.id===ui.resourceId)||proxyShopResources(data)[0];
@@ -98,13 +100,20 @@ async function proxyShopOpen(opener){
  dialog.addEventListener('click',e=>{if(e.target===dialog)proxyShopClose();});
  proxyShopDialog.node=dialog;document.body.append(dialog);dialog.showModal();renderProxyShopModal();
  const scope=proxyShopScope(),epoch=ui.epoch;
- await Promise.all([managedProxyLoad(),proxyShopLoad({catalog:true})]);
+ await proxyShopRefresh();
  if(!proxyShopCurrent(scope,epoch)||proxyShopDialog.node!==dialog)return;
  if(!ui.busy&&!ui.unknown&&!proxyShopSelectedOperation()){
   const candidate=managedProxyUi.data?.candidates?.[0],delivered=ui.data?.operations?.find(o=>o.status==='delivered'&&candidate?.id===o.resourceId);
   if(delivered)ui.modalOpId=delivered.id;
   else if(managedProxyUi.data?.current?.supplier==='steelproxy')ui.kind='renew';
  }
+ renderProxyShopModal();await proxyShopPrepareQuote();
+}
+async function proxyShopRefresh(){
+ const ui=proxyShopUi,scope=proxyShopScope(),epoch=ui.epoch;
+ if(!scope||ui.busy||ui.loading||managedProxyUi.loading)return;
+ await Promise.allSettled([managedProxyLoad(),proxyShopLoad({catalog:true})]);
+ if(!proxyShopCurrent(scope,epoch))return;
  renderProxyShopModal();await proxyShopPrepareQuote();
 }
 function proxyShopInstallPage(){
@@ -129,7 +138,8 @@ function proxyShopCheckoutMarkup(data){
  const awaitingConnection=data.candidates?.some(r=>!r.expired&&r.state!=='retired');
  const kind=ui.kind==='renew'&&canRenew?'renew':data.current||data.configured?'replace':'issue';
  const latest=status.operations?.[0],recent=latest&&['delivered','refunded'].includes(latest.status)&&Date.now()-Date.parse(latest.createdAt)<10*60000?latest:null;
- const q=ui.quote,locked=ui.busy||!!pending||ui.unknown,price=locations.find(l=>String(l.nodeId)===ui.nodeId)?.monthlyPriceMinor??locations[0]?.monthlyPriceMinor;
+ const managedLoading=typeof managedProxyUi!=='undefined'&&managedProxyUi.loading,managedError=typeof managedProxyUi!=='undefined'&&managedProxyUi.error;
+ const q=ui.quote,locked=ui.busy||ui.loading||!!managedLoading||!!managedError||!!pending||ui.unknown,price=locations.find(l=>String(l.nodeId)===ui.nodeId)?.monthlyPriceMinor??locations[0]?.monthlyPriceMinor;
  return `<section class="proxy-shop" aria-label="Покупка прокси"><header><div><h3>${kind==='renew'?'Продлить прокси':'Купить прокси'}</h3><p>Оплата с внутреннего баланса ZetSlay. Автопродления нет.</p></div><span class="ps-wallet">Баланс <strong>${proxyShopMoney(status.balanceMinor)}</strong><button type="button" class="ps-text-button" data-ps-topup ${ui.busy?'disabled':''}>Пополнить</button></span></header>
  ${recent&&!pending?proxyShopOperation(recent):''}
  ${!status.enabled?'<p class="ps-hint">Продажа временно недоступна. История покупок и срок уже выданного прокси сохраняются.</p>':pending?proxyShopOperation(pending):awaitingConnection&&ui.kind!=='renew'?`<p class="ps-hint">Прокси уже приобретён и ожидает подключения. Нажмите «Проверить и подключить» выше.</p>${canRenew?'<button class="ps-text-button" type="button" data-ps-kind="renew">Продлить этот прокси</button>':''}`:`<form data-ps-selection><fieldset ${locked?'disabled':''}>${canRenew?`<div class="ps-kind" role="group" aria-label="Действие с прокси"><button type="button" data-ps-kind="renew" aria-pressed="${kind==='renew'}">Продлить</button><button type="button" data-ps-kind="${data.current||data.configured?'replace':'issue'}" aria-pressed="${kind!=='renew'}">Купить ${data.current?'новый адрес':'прокси'}</button></div>`:''}<div class="ps-fields">${kind==='renew'?`<label>Ваш прокси<select name="resourceId">${resources.map(r=>`<option value="${proxyShopSafe(r.id)}" ${ui.resourceId===r.id?'selected':''}>${proxyShopSafe(r.label)} · до ${proxyShopDate(r.expiresAt)}</option>`).join('')}</select></label>`:`<label>Локация<select name="nodeId" ${!locations.length?'disabled':''}>${locations.map(l=>`<option value="${l.nodeId}" ${String(l.nodeId)===ui.nodeId?'selected':''}>${proxyShopSafe(proxyShopLocationName(l))}</option>`).join('')||'<option>Нет доступных адресов</option>'}</select></label>`}<label>Срок<select name="months">${[1,2,3,6].map(n=>`<option value="${n}" ${ui.months===n?'selected':''}>${n*30} дней${kind==='renew'?' к текущему сроку':''}</option>`).join('')}</select></label></div>
@@ -137,6 +147,7 @@ function proxyShopCheckoutMarkup(data){
  ${kind==='replace'?'<p class="ps-hint">Новый адрес оплачивается отдельно. Текущее подключение сохранится до проверки и подключения нового.</p>':''}
  <div class="ps-selection-footer"><span>${Number.isSafeInteger(price)&&kind!=='renew'?proxyShopMoney(price)+' / 30 дней':'Сумма появится в расчёте'}</span><button class="button button--primary" type="submit" ${locked||kind!=='renew'&&!locations.length||kind!=='renew'&&!data.activePlan?'disabled':''}>${ui.busy?'Проверяем…':q?'Обновить расчёт':'Рассчитать стоимость'}</button></div>${!data.activePlan&&kind!=='renew'?'<p class="ps-hint">Для нового подключения активируйте пробный период или подписку.</p>':''}</fieldset></form>`}
  ${q&&!pending&&status.enabled?`<form class="ps-quote" data-ps-purchase><div><span>${q.kind==='renew'?'Продление':'Новый прокси'} · ${proxyShopSafe(proxyShopCountryName(q.country)||q.country)} · ${q.termDays} дней</span><strong>${proxyShopMoney(q.totalMinor)}</strong></div>${q.extendedExpiresAt?`<p>Новый срок: до ${proxyShopDate(q.extendedExpiresAt)}</p>`:''}<p>Расчёт действует до ${proxyShopDate(q.expiresAt)}. Оплата только с баланса ZetSlay.</p><label class="ps-consent"><input type="checkbox" name="confirmed" required ${ui.busy?'disabled':''}><span>Подтверждаю покупку и принимаю <a href="../legal/terms.html" target="_blank" rel="noopener">условия сервиса</a> и <a href="../legal/refunds.html" target="_blank" rel="noopener">правила оплаты и возвратов</a>.</span></label><button class="button button--primary" type="submit" ${locked||ui.unknown||status.balanceMinor<q.totalMinor?'disabled':''}>${ui.busy?'Выполняем покупку…':'Оплатить с баланса · '+proxyShopMoney(q.totalMinor)}</button>${status.balanceMinor<q.totalMinor?'<button class="ps-text-button" type="button" data-ps-topup>Пополнить баланс через Platega</button>':''}${ui.unknown?'<button class="ps-text-button" type="button" data-ps-refresh>Проверить результат покупки</button><button class="ps-text-button" type="button" data-ps-repeat>Повторить тот же запрос</button>':''}</form>`:''}
+ ${status.enabled&&!pending&&!awaitingConnection&&!locations.length&&!ui.loading&&!ui.error&&kind!=='renew'?'<p class="ps-hint">Сейчас нет доступных локаций. Повторите загрузку позже.</p>':''}
  ${ui.error?`<p class="mp-error" role="alert">${proxyShopSafe(ui.error)}</p>`:''}
  ${status.operations?.length?`<details class="ps-history"><summary>История покупок · ${status.operations.length}</summary>${status.operations.slice(0,10).filter(o=>o.id!==pending?.id).map(proxyShopOperation).join('')}</details>`:''}
  <footer><button class="ps-text-button" type="button" data-ps-refresh ${ui.loading||ui.busy?'disabled':''}>Обновить покупки</button><a href="https://t.me/zetslaysupport" target="_blank" rel="noopener">Помощь с прокси ↗</a></footer></section>`;
@@ -145,14 +156,14 @@ async function proxyShopLoad({catalog=false}={}){
  const scope=proxyShopScope();if(!scope||proxyShopUi.resetting)return;
  if(proxyShopUi.scope&&proxyShopUi.scope!==scope)proxyShopReset();
  if(proxyShopUi.loading)return;
- const epoch=proxyShopUi.epoch,revision=++proxyShopUi.loadRevision;const current=()=>proxyShopCurrent(scope,epoch)&&revision===proxyShopUi.loadRevision;proxyShopUi.scope=scope;proxyShopUi.loading=true;
+ const epoch=proxyShopUi.epoch,revision=++proxyShopUi.loadRevision;const current=()=>proxyShopCurrent(scope,epoch)&&revision===proxyShopUi.loadRevision;proxyShopUi.scope=scope;proxyShopUi.loading=true;proxyShopUi.error='';
  try{
-  const data=await apiRequest('/api/v1/proxy-shop',{authenticated:true});if(!current())return;
+  const data=await managedProxyRead('/api/v1/proxy-shop');if(!current())return;
   if(!Array.isArray(data.operations)||!Number.isSafeInteger(data.balanceMinor)||typeof data.enabled!=='boolean')throw Error('Не удалось подтвердить покупки прокси');
   const trackedId=proxyShopUi.request?.requestId||proxyShopUi.modalOpId,previous=proxyShopUi.data?.operations?.find(o=>o.id===trackedId)?.status;
   proxyShopUi.data=data;
   if(trackedId){const o=data.operations.find(x=>x.id===trackedId);if(o){proxyShopUi.unknown=false;if(['delivered','refunded'].includes(o.status)){proxyShopUi.quote=null;proxyShopUi.request=null;if(previous!==o.status&&typeof managedProxyLoad==='function')void managedProxyLoad();}}}
-  if(data.enabled&&(catalog||!proxyShopUi.catalog)){const list=await apiRequest('/api/v1/proxy-shop/catalog',{authenticated:true});if(!current())return;proxyShopUi.catalog=list;}
+  if(data.enabled&&(catalog||!proxyShopUi.catalog)){const list=await managedProxyRead('/api/v1/proxy-shop/catalog');if(!current())return;if(!Array.isArray(list?.locations))throw Error('Не удалось подтвердить список локаций');proxyShopUi.catalog=list;}
   if(!current())return;proxyShopUi.error='';
  }catch(e){if(current())proxyShopUi.error=e.code==='HTTP_404'?'Сначала установите серверное обновление продажи прокси.':e.message||'Покупки временно недоступны';}
  finally{if(current()){proxyShopUi.loading=false;proxyShopRender();proxyShopPoll();}}
@@ -160,13 +171,14 @@ async function proxyShopLoad({catalog=false}={}){
 function proxyShopPoll(){clearTimeout(proxyShopUi.poll);if(proxyShopUi.activeAction==='purchase'||proxyShopUi.unknown||proxyShopUi.data?.operations?.some(o=>!['delivered','refunded'].includes(o.status)))proxyShopUi.poll=setTimeout(()=>proxyShopLoad(),proxyShopUi.activeAction==='purchase'?2000:5000);}
 async function proxyShopAction(action,body){
  const scope=proxyShopScope();if(!scope||proxyShopUi.busy)return;const epoch=proxyShopUi.epoch;
+ if(action==='quote'){proxyShopUi.quote=null;proxyShopUi.request=null;}
  proxyShopUi.loadRevision++;proxyShopUi.loading=false;proxyShopUi.busy=true;proxyShopUi.activeAction=action;if(action==='purchase')proxyShopUi.modalOpId=body.requestId;proxyShopUi.error='';proxyShopRender();proxyShopPoll();
  try{
-  const result=await apiRequest('/api/v1/proxy-shop/'+action,{method:'POST',body,authenticated:true,signal:AbortSignal.timeout(200000)});
+  const result=action==='quote'?await managedProxyRead('/api/v1/proxy-shop/quote',{method:'POST',body}):await apiRequest('/api/v1/proxy-shop/'+action,{method:'POST',body,authenticated:true,signal:AbortSignal.timeout(200000)});
   if(!proxyShopCurrent(scope,epoch))return;
   if(action==='quote'){
    const q=result.quote; if(!q||!Number.isSafeInteger(q.totalMinor)||q.totalMinor<=0||q.currency!=='RUB'||!Number.isFinite(Date.parse(q.expiresAt)))throw Error('Не удалось подтвердить стоимость');
-   proxyShopUi.quote=q;proxyShopUi.request={requestId:crypto.randomUUID(),quoteId:q.id,confirmed:true,legalVersion:result.publication?.version,publicationHash:result.publication?.hash};proxyShopUi.unknown=false;
+   const request={requestId:crypto.randomUUID(),quoteId:q.id,confirmed:true,legalVersion:result.publication?.version,publicationHash:result.publication?.hash};proxyShopUi.quote=q;proxyShopUi.request=request;proxyShopUi.unknown=false;
    if(Number.isSafeInteger(result.balanceMinor)&&proxyShopUi.data)proxyShopUi.data.balanceMinor=result.balanceMinor;
   }else{
    if(result.operation&&proxyShopUi.data){const rows=proxyShopUi.data.operations||[],old=rows.find(o=>o.id===result.operation.id);if(!old||!['delivered','refunded'].includes(old.status))proxyShopUi.data.operations=[result.operation,...rows.filter(o=>o.id!==result.operation.id)];}
@@ -195,7 +207,7 @@ function proxyShopAdminMarkup(data){
  });
  document.addEventListener('click',e=>{const dismiss=e.target.closest?.('[data-proxy-invite-dismiss]');if(dismiss){const invite=dismiss.closest('[data-proxy-invite]'),heading=invite?.closest('[data-view]')?.querySelector('h1');if(invite)invite.hidden=true;if(heading){heading.setAttribute('tabindex','-1');heading.focus({preventScroll:true});}return;}const close=e.target.closest?.('[data-ps-close]');if(close){proxyShopClose();return;}const wizard=e.target.closest?.('[data-ps-wizard]');if(wizard){proxyShopClose(false);setModal(true);return;}if(e.target.closest?.('[data-ps-plan]')){proxyShopClose(false);setView('billing');return;}if(e.target.closest?.('[data-ps-new]')){proxyShopUi.modalOpId='';proxyShopUi.quote=null;proxyShopUi.request=null;proxyShopUi.error='';proxyShopRender();void proxyShopPrepareQuote();return;}const open=e.target.closest?.('[data-proxy-open]');if(open){e.preventDefault();void proxyShopOpen(open);return;}const b=e.target.closest?.('[data-ps-refresh],[data-ps-reconcile],[data-ps-kind],[data-ps-topup],[data-ps-admin-refresh],[data-ps-repeat]');if(!b||b.disabled)return;
   if(b.hasAttribute('data-ps-repeat')&&proxyShopUi.request&&proxyShopUi.unknown){void proxyShopAction('purchase',proxyShopUi.request);return;}
-  if(b.hasAttribute('data-ps-refresh')){void proxyShopLoad({catalog:true});return;}
+  if(b.hasAttribute('data-ps-refresh')){void proxyShopRefresh();return;}
   if(b.dataset.psReconcile){void proxyShopAction('reconcile',{operationId:b.dataset.psReconcile});return;}
   if(b.dataset.psKind&&!proxyShopUi.busy){proxyShopUi.kind=b.dataset.psKind;proxyShopUi.quote=null;proxyShopUi.request=null;proxyShopUi.unknown=false;proxyShopUi.modalOpId='';proxyShopRender();void proxyShopPrepareQuote();return;}
   if(b.hasAttribute('data-ps-topup')){proxyShopClose(false);if(typeof setModal==='function')setModal(false);setView('billing');void openBillingDialog('topup',document.querySelector('[data-billing-open="topup"]'));return;}

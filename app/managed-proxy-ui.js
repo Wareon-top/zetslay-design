@@ -45,13 +45,22 @@ function managedProxyAdminMarkup(data,{busy=false,error=''}={}){
 }
 function managedProxyRenewFields(busy){return `<label>Новый срок у поставщика<input type="datetime-local" name="expiresAt" required></label><label class="mp-confirm"><input name="confirmed" type="checkbox" required>Прокси уже продлён у поставщика</label><button class="button button--primary" ${busy?'disabled':''}>Подтвердить срок</button>`;}
 function managedProxyCurrent(token,generation,revision){return Boolean(authState.user&&authState.token===token&&sessionGeneration===generation&&managedProxyUi.revision===revision);}
+async function managedProxyRead(path,options={}){
+  const controller=new AbortController();let timer;
+  try{
+    return await Promise.race([
+      new Promise((resolve,reject)=>{timer=setTimeout(()=>{const error=new Error('Сервер не ответил за 25 секунд. Повторите загрузку прокси.');error.code='REQUEST_TIMEOUT';reject(error);controller.abort();},25000);}),
+      Promise.resolve(apiRequest(path,{...options,authenticated:true,signal:controller.signal})),
+    ]);
+  }finally{clearTimeout(timer);}
+}
 async function managedProxyLoad(admin=false){
   if(!authState.user||!authState.token||managedProxyUi.loading||admin&&!adminAllowed())return;
   if(managedProxyUi.token&&managedProxyUi.token!==authState.token)managedProxyReset();
   const token=authState.token,generation=sessionGeneration,revision=managedProxyUi.revision,loadRevision=++managedProxyUi.loadRevision;
   const current=()=>managedProxyCurrent(token,generation,revision)&&loadRevision===managedProxyUi.loadRevision;
-  managedProxyUi.token=token;managedProxyUi.generation=generation;managedProxyUi.loading=true;
-  try{const data=await apiRequest(admin?'/api/v1/admin/managed-proxies':'/api/v1/managed-proxy',{authenticated:true});if(current()){managedProxyUi[admin?'admin':'data']=data;managedProxyUi[admin?'adminError':'error']='';}}
+  managedProxyUi.token=token;managedProxyUi.generation=generation;managedProxyUi.loading=true;managedProxyUi[admin?'adminError':'error']='';
+  try{const data=await managedProxyRead(admin?'/api/v1/admin/managed-proxies':'/api/v1/managed-proxy');if(current()){if(!data||typeof data.activePlan!=='boolean'&&!admin)throw Error('Не удалось подтвердить состояние прокси');managedProxyUi[admin?'admin':'data']=data;managedProxyUi[admin?'adminError':'error']='';}}
   catch(e){if(current())managedProxyUi[admin?'adminError':'error']=e.code==='HTTP_404'?'Серверный модуль ещё не обновлён. Сначала установите обновление API.':e.message||'Не удалось получить состояние';}
   finally{if(current()){managedProxyUi.loading=false;managedProxyRender();}}
 }

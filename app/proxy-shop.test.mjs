@@ -9,8 +9,8 @@ const data={enabled:true,balanceMinor:10000,publication:{version:'v',hash:'h'},o
 const managed={source:'none',activePlan:true,configured:false,candidates:[],requests:[]};
 function harness(extra={}){
  const calls=[],timers=new Map();let id=0;
- const context=vm.createContext({Intl,Date,AbortSignal,console,authState:{user:{id:'one'},token:'one'},sessionGeneration:1,crypto:{randomUUID:()=> 'request-one'},escapeHtml:s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),setTimeout:fn=>{const n=++id;timers.set(n,fn);return n;},clearTimeout:id=>timers.delete(id),apiRequest:async(p,o)=>{calls.push([p,o]);return p.endsWith('/catalog')?{locations:[{nodeId:5,title:'Германия',country:'DE',monthlyPriceMinor:5000}]}:data;},...extra});
- const run=s=>vm.runInContext(s,context);run(source);return {context,run,calls,timers};
+ const context=vm.createContext({Intl,Date,AbortSignal,AbortController,console,authState:{user:{id:'one'},token:'one'},sessionGeneration:1,crypto:{randomUUID:()=> 'request-one'},escapeHtml:s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),setTimeout:fn=>{const n=++id;timers.set(n,fn);return n;},clearTimeout:id=>timers.delete(id),apiRequest:async(p,o)=>{calls.push([p,o]);return p.endsWith('/catalog')?{locations:[{nodeId:5,title:'Германия',country:'DE',monthlyPriceMinor:5000}]}:data;},...extra});
+ const run=s=>vm.runInContext(s,context);run(managedSource.slice(managedSource.indexOf('async function managedProxyRead('),managedSource.indexOf('async function managedProxyLoad(')));run(source);return {context,run,calls,timers};
 }
 test('purchase component shows server price, wallet, term, separate authorization and no automatic renewal',()=>{const h=harness({managed});h.context.data=data;h.run('proxyShopUi.data=data;proxyShopUi.catalog={locations:[{nodeId:5,title:"Германия",monthlyPriceMinor:5000}]}');const html=h.run('proxyShopCheckoutMarkup(managed)');assert.match(html,/50.*₽/);assert.match(html,/30 дней/);assert.match(html,/Автопродления нет/);assert.match(html,/Оплата с внутреннего баланса/);assert.doesNotMatch(html,/secret|vault:|X-API-Key/);});
 test('provider disabled does not invent prices or a purchase form',()=>{const h=harness({data:{...data,enabled:false},managed});h.run('proxyShopUi.data=data');const html=h.run('proxyShopCheckoutMarkup(managed)');assert.doesNotMatch(html,/data-ps-selection|data-ps-purchase/);assert.match(html,/Продажа временно недоступна/);});
@@ -37,6 +37,34 @@ test('purchase modal uses actual catalogue price and friendly country',()=>{
 test('all invitations open the checkout without inline payment controls',()=>{
  const h=harness({managed});for(const place of ['dashboard','guide']){h.context.place=place;const html=h.run('proxyShopInviteMarkup(place)');assert.match(html,/data-proxy-open/);assert.match(html,/Купить прокси/);assert.doesNotMatch(html,/data-view-target|data-ps-purchase/);}
  const inline=h.run('proxyShopMarkup(managed)');assert.match(inline,/data-proxy-open/);assert.doesNotMatch(inline,/data-ps-purchase|data-ps-selection/);
+});
+test('failed managed state has a visible error instead of an endless spinner; retry loads both dependencies without purchases',async()=>{
+ const h=harness({apiRequest:async path=>path==='/api/v1/managed-proxy'?managed:path.endsWith('/catalog')?{locations:[{nodeId:5,country:'DE',monthlyPriceMinor:5000}]}:data});
+ h.context.document={querySelectorAll:()=>[]};h.run(managedSource);h.run('managedProxyUi.error="Сбой чтения состояния";proxyShopUi.data={enabled:true,balanceMinor:10000,operations:[]}');
+ const failed=h.run('proxyShopModalMarkup(null)');assert.match(failed,/Сбой чтения состояния/);assert.match(failed,/role="alert"/);assert.doesNotMatch(failed,/ps-step-spinner|Загружаем локации/);
+ await h.run('proxyShopRefresh()');assert.equal(h.run('managedProxyUi.data.activePlan'),true);assert.equal(h.run('managedProxyUi.error'),'');assert.equal(h.run('proxyShopUi.loading'),false);assert.equal(h.run('proxyShopUi.catalog.locations.length'),1);
+ const ready=h.run('proxyShopModalMarkup(managedProxyUi.data)');assert.match(ready,/Германия|50.*₽/);assert.doesNotMatch(ready,/ps-step-spinner|Сбой чтения/);
+});
+test('catalogue rejection is visible and an empty successful catalogue has a final empty state',async()=>{
+ const h=harness({apiRequest:async path=>{if(path.endsWith('/catalog'))throw Error('Каталог недоступен');return data;}});h.context.document={querySelectorAll:()=>[]};h.run(managedSource);h.context.managed=managed;
+ await h.run('proxyShopLoad()');let html=h.run('proxyShopModalMarkup(managed)');assert.match(html,/Каталог недоступен/);assert.doesNotMatch(html,/Загружаем локации|ps-step-spinner/);
+ h.context.apiRequest=async path=>path.endsWith('/catalog')?{locations:[]}:data;await h.run('proxyShopLoad({catalog:true})');html=h.run('proxyShopModalMarkup(managed)');assert.match(html,/Нет доступных локаций/);assert.match(html,/Повторите загрузку позже/);assert.doesNotMatch(html,/Загружаем локации|ps-step-spinner/);
+});
+test('stalled price quote releases controls without claiming an uncertain purchase or retrying a POST',async()=>{
+ let release;const h=harness({apiRequest:()=>new Promise(r=>release=r)});const pending=h.run("proxyShopAction('quote',{kind:'issue',nodeId:5,months:1})");
+ assert.equal(h.run('proxyShopUi.busy'),true);[...h.timers.values()][0]();await pending;
+ assert.equal(h.run('proxyShopUi.busy'),false);assert.equal(h.run('proxyShopUi.unknown'),false);assert.equal(h.run('proxyShopUi.quote'),null);assert.match(h.run('proxyShopUi.error'),/25 секунд/);
+ release({quote:q});await Promise.resolve();assert.equal(h.run('proxyShopUi.quote'),null);
+});
+test('automatic quote waits for both loaders and does not retry a failed quote on redraw',async()=>{
+ const h=harness();h.run(managedSource);h.context.managed=managed;h.run('managedProxyUi.data=managed;proxyShopDialog.node={open:true};proxyShopUi.data={enabled:true};proxyShopUi.catalog={locations:[{nodeId:5}]};proxyShopUi.loading=true');
+ await h.run('proxyShopPrepareQuote()');assert.equal(h.calls.length,0);
+ h.run('proxyShopUi.loading=false;proxyShopUi.error="Ошибка расчёта"');await h.run('proxyShopPrepareQuote()');assert.equal(h.calls.length,0);
+});
+test('a failed quote cannot leave an old payable quote or a partially created request',async()=>{
+ const h=harness({crypto:{randomUUID:()=>{throw Error('Нет генератора номера запроса');}},apiRequest:async()=>({quote:q})});h.context.q=q;
+ h.run('proxyShopUi.quote=q;proxyShopUi.request={requestId:"old-request"}');await h.run("proxyShopAction('quote',{kind:'issue',nodeId:5,months:1})");
+ assert.equal(h.run('proxyShopUi.quote'),null);assert.equal(h.run('proxyShopUi.request'),null);assert.equal(h.run('proxyShopUi.busy'),false);assert.match(h.run('proxyShopUi.error'),/генератора/);
 });
 test('purchase stages advance only on observed backend status, not time or an HTTP response',()=>{
  const h=harness();const stage=status=>{h.context.op={status};return h.run('proxyShopProgressModel(op)');};
