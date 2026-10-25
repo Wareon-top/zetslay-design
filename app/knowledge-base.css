@@ -87,3 +87,15 @@
 @media(max-width:760px){.kb-reader-layout{display:flex;flex-direction:column}.kb-toc{position:static;order:-1;width:100%}.kb-toc nav{display:flex;gap:8px;flex-wrap:wrap}.kb-toc nav button{border:1px solid var(--line);border-radius:8px;padding:8px 10px}.kb-reader-help{display:none}.kb-article{width:100%;box-sizing:border-box;padding:24px}.kb-heading-symbol{width:80px;height:80px;border-radius:22px}.kb-heading-symbol svg{width:32px;height:32px}.kb-shortcut{padding:18px;min-height:150px}.kb-shortcut strong{font-size:15px}.kb-shortcut>span:last-of-type{padding-right:14px;font-size:11px}.kb-support{flex-wrap:wrap}.kb-support a{margin-left:54px}}
 @media(max-width:520px){.kb-heading-symbol{display:none}.kb-heading{margin-bottom:22px}.kb-heading p{font-size:13px}.kb-search{gap:10px;padding:12px;margin-bottom:18px}.kb-search input{font-size:13px}.kb-shortcuts{grid-template-columns:1fr;gap:10px;margin-bottom:20px}.kb-shortcut{min-height:0;padding:18px;gap:6px}.kb-shortcut strong{font-size:17px}.kb-shortcut>svg{bottom:24px}.kb-grid{grid-template-columns:1fr}.kb-categories{gap:6px;padding-bottom:18px;margin-bottom:18px}.kb-categories button{font-size:11px;padding:9px 10px}.kb-card{padding:20px}.kb-reader-bar{gap:8px}.kb-back{font-size:11px}.kb-article{padding:20px}.kb-article-body p,.kb-article-body li{font-size:13px}.kb-article h2{font-size:25px}.kb-lead{font-size:13px}.kb-article-body h3{font-size:17px}.kb-support{padding:20px}.kb-bottom-note{font-size:10px}}
 @media(prefers-reduced-motion:reduce){.kb-card,.kb-shortcut{transition:none}}
+
+/* Five essential guides: one starting point and three device instructions. */
+[data-kb-essential] [data-kb-results].kb-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+[data-kb-essential] [data-kb-results] > .kb-card:first-child { grid-column: 1 / -1; }
+[data-kb-essential] .kb-card { min-height: 168px; }
+[data-kb-essential] .kb-heading { margin-bottom: 24px; }
+@media (max-width: 640px) {
+ [data-kb-essential] [data-kb-results].kb-grid { grid-template-columns: minmax(0, 1fr); }
+ [data-kb-essential] .kb-card { min-height: 148px; }
+}
+
+[data-kb-essential] [data-learning-replay] { display: none; }

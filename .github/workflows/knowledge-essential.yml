@@ -1,0 +1,20 @@
+name: Verify essential knowledge base
+on:
+  push:
+    paths: ['app/knowledge-base*', 'deploy/*knowledge-base-essential*', '.github/workflows/knowledge-essential.yml']
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  guides:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test app/knowledge-base.test.mjs app/service-access-policy.test.mjs
+      - run: python3 deploy/stage-knowledge-base-essential.test.py
+      - run: bash -n deploy/update-knowledge-base-essential.sh
+      - run: node scripts/validate-project.mjs
