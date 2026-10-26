@@ -5,9 +5,10 @@ import {readFile} from 'node:fs/promises';
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
 const script=await readFile(new URL('../app/account-security.js',import.meta.url),'utf8');
 const css=await readFile(new URL('../app/passkeys.css',import.meta.url),'utf8');
-const browser=await chromium.launch({headless:true});
+const browser=await chromium.launch({headless:true,...(process.env.PASSKEY_CHROME?{executablePath:process.env.PASSKEY_CHROME}:{})});
 try{
  const context=await browser.newContext({viewport:{width:1100,height:1000}}),page=await context.newPage(),cdp=await context.newCDPSession(page);
+ page.setDefaultTimeout(15000);
  await cdp.send('WebAuthn.enable');
  await cdp.send('WebAuthn.addVirtualAuthenticator',{options:{protocol:'ctap2',transport:'internal',hasResidentKey:true,hasUserVerification:true,isUserVerified:true,automaticPresenceSimulation:true}});
  let enabled=false,credentialId='',verified=false,loginResponse=false;

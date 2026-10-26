@@ -12,5 +12,11 @@ jobs:
         with:
           node-version: 22
       - run: npm install --prefix "$RUNNER_TEMP/passkey-browser" --ignore-scripts --no-fund --save-exact playwright@1.62.1
-      - run: node "$RUNNER_TEMP/passkey-browser/node_modules/playwright/cli.js" install --with-deps chromium
+      - name: Select installed Chrome or install Chromium
+        run: |
+          if command -v google-chrome >/dev/null 2>&1; then
+            echo "PASSKEY_CHROME=$(command -v google-chrome)" >> "$GITHUB_ENV"
+          else
+            node "$RUNNER_TEMP/passkey-browser/node_modules/playwright/cli.js" install --with-deps chromium
+          fi
       - run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/passkey-browser/node_modules/playwright/index.mjs" node scripts/check-passkey-browser.mjs
