@@ -4,7 +4,8 @@
     "security/index.html": "46ec3ad1f92f824c234ee2cef1045190b76eaf890855d6909f815e0770234004",
     "security/security.css": "b2090d2ceb351612179b7d0ce3e5917675e4c3805afa4b51f77b32af86dd9e9d",
     "security/security.js": "607b8c03351ec7720e9103a4cb6d5d8e33ad8aa217bf3b8eaa42186ccd38bc87",
-    "security/brand.webp": "fbe0612e8693a25818c7599f174f419061a51914db896a362af892f43c2ca282"
+    "security/brand.webp": "fbe0612e8693a25818c7599f174f419061a51914db896a362af892f43c2ca282",
+    "landing-security.css": "83139a299c98639e0e2fdd49c603961b448ed8c565745c519e376c3bd05f5cd7"
   },
   "accountSecurityAccepted": [
     "0d05e0cb5e0790d4ad3b10c51fe15271e48669222ebd19d0fcd2ee06aee2e916",
@@ -42,5 +43,9 @@
     "targetSha256": "4f032dcf7a0747495a510518abf5d534cbb5019095514c9550a8af32aba815b3",
     "sourceContentReviewed": false,
     "strategy": "replace_entire_component_after_host_contract_and_verified_private_backup"
+  },
+  "landingSecurityFragment": {
+    "file": "landing-security.html",
+    "sha256": "ec316e55fa61e75fb06c374738dc230e9cd769744c5634793398889afeadbe45"
   }
 }

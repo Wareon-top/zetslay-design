@@ -4,6 +4,16 @@ HERE=Path(__file__).parent
 spec=importlib.util.spec_from_file_location('stage',HERE/'stage-trust-foundation.py');m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
 sha=lambda x:hashlib.sha256(x).hexdigest()
 class TrustUiTests(unittest.TestCase):
+ def test_landing_section_is_unique_preserves_surroundings_and_rejects_unknown_sections(self):
+  fragment=(HERE.parent/'landing-security.html').read_text();original='<html><head>PRIVATE_HEAD</head><body><main>VIDEO_BANNER PROXY_BANNER<section id="faq">FAQ</section></main>PRIVATE_OPERATOR</body></html>'
+  result=m.landing_security(original,fragment)
+  self.assertEqual(m.landing_security(result,fragment),result)
+  self.assertEqual(result.count('id="security"'),1);self.assertEqual(result.count('data-zetslay-security-style'),1)
+  self.assertIn('VIDEO_BANNER PROXY_BANNER',result);self.assertIn('PRIVATE_OPERATOR',result)
+  for bad in [original.replace('<main>','<main><section id="security"></section>'),'<html><head></head><body>unknown layout</body></html>',original+'<!-- zetslay-security:start -->']:
+   with self.assertRaises(ValueError):m.landing_security(bad,fragment)
+  self.assertIn('сервер использует расшифрованный ключ',fragment)
+  self.assertNotIn('100%',fragment);self.assertNotIn('<script',fragment)
  def test_observed_runtime_replacement_requires_exact_digest_size_target_and_host_contract(self):
   project=HERE.parent;actual=json.loads((HERE/'trust-ui-manifest.json').read_text())
   self.assertEqual(actual['accountSecurityReplacement']['sourceSha256'],'2eb3030b54c4fc28f68595627ad5d9d8296272f0c5370c93aeaceca199befba6')
@@ -20,6 +30,8 @@ class TrustUiTests(unittest.TestCase):
     if mode=='target':manifest['accountSecurityReplacement']['targetSha256']='0'*64
     (incoming/'trust-ui-manifest.json').write_text(json.dumps(manifest))
     for name in manifest['assets']:(incoming/name).write_bytes((project/name).read_bytes())
+    if manifest.get('landingSecurityFragment'):
+     name=manifest['landingSecurityFragment']['file'];(incoming/name).write_bytes((project/name).read_bytes())
     (local/'app/account-security.js').write_bytes(original)
     app=(project/'app/app.js').read_text()
     (local/'app/app.js').write_text(app.replace('function resetAccountData(', 'function incompatibleReset(') if mode=='host' else app)
@@ -45,12 +57,14 @@ class TrustUiTests(unittest.TestCase):
      root=Path(tmp);local,incoming,a,b=self.fixture(root)
      (incoming/'trust-ui-manifest.json').write_text(json.dumps(manifest))
      for name in manifest['assets']:(incoming/name).write_bytes((project/name).read_bytes())
+     if manifest.get('landingSecurityFragment'):
+      name=manifest['landingSecurityFragment']['file'];(incoming/name).write_bytes((project/name).read_bytes())
      (local/'app/account-security.js').write_bytes(variant)
      (local/'app/app.js').write_text('// '+''.join(p['before']+'\n// ' for p in manifest['appPatches'])+'KEEP_CURRENT_PROXY_REPAIR\n')
      m.stage(local,incoming,root/'out')
      self.assertEqual((root/'out/app/account-security.js').read_bytes(),(project/'app/account-security.js').read_bytes())
      self.assertIn(b'KEEP_CURRENT_PROXY_REPAIR',(root/'out/app/app.js').read_bytes())
-     self.assertEqual((root/'out/index.html').read_bytes().decode(),a.replace('<a href="/legal/">','<a href="/security/">Данные и безопасность</a> <a href="/legal/">'))
+     result=(root/'out/index.html').read_bytes().decode();fragment=(project/manifest['landingSecurityFragment']['file']).read_text();block='<!-- zetslay-security:start -->\n'+fragment.rstrip()+'\n<!-- zetslay-security:end -->\n';link='<link rel="stylesheet" href="landing-security.css?v=20261026-1" data-zetslay-security-style>\n';self.assertEqual(result.replace(block,'',1).replace(link,'',1),a.replace('<a href="/legal/">','<a href="/security/">Данные и безопасность</a> <a href="/legal/">'));self.assertLess(result.index('id="security"'),result.index('id="faq"'))
  def test_unknown_security_code_is_rejected_with_digest_without_echoing_source(self):
   manifest=json.loads((HERE/'trust-ui-manifest.json').read_text())
   for revision in manifest['accountSecurityBaselines']:
@@ -62,11 +76,11 @@ class TrustUiTests(unittest.TestCase):
   local=root/'local';incoming=root/'incoming';local.mkdir();incoming.mkdir();manifest={'assets':{},'accountSecurityAccepted':[],'appPatches':[{'before':'OLD_COPY','after':'HONEST_COPY'}]}
   for base in [local,incoming]:
    for path in ['app','security']:(base/path).mkdir()
-  root_html='<html><head></head><body>PRIVATE_OPERATOR_CANARY<a href="/legal/">Legal</a></body></html>\r\n'
+  root_html='<html><head></head><body><main><section id="faq"></section></main>PRIVATE_OPERATOR_CANARY<a href="/legal/">Legal</a></body></html>\r\n'
   app_html=root_html.replace('</body>','VIDEO_BANNER PROXY_BANNER<script src="app.js?v=old"></script><script src="account-security.js?v=old"></script></body>')
   (local/'index.html').write_bytes(root_html.encode());(local/'app/index.html').write_bytes(app_html.encode());(local/'app/app.js').write_bytes(b'// OLD_COPY\nconst keep="CURRENT_PROXY_REPAIR";\n');(local/'app/account-security.js').write_bytes(b'// before\n')
   (local/'app/profile.js').write_bytes(b'// HOST_PROFILE_MUST_REMAIN_UNCHANGED\n')
-  for name in ['app/account-security.js','security/index.html','security/security.css','security/security.js','security/brand.webp']:
+  for name in ['landing-security.css','app/account-security.js','security/index.html','security/security.css','security/security.js','security/brand.webp']:
    data=b'// after\n';(incoming/name).write_bytes(data);manifest['assets'][name]=sha(data)
   manifest['accountSecurityAccepted']=[sha(b'// before\n'),sha(b'// after\n')];(incoming/'trust-ui-manifest.json').write_text(json.dumps(manifest));return local,incoming,root_html,app_html
  def test_private_html_banners_other_assets_and_idempotency(self):
@@ -89,6 +103,7 @@ class TrustUiTests(unittest.TestCase):
   with tempfile.TemporaryDirectory() as tmp:
    root=Path(tmp);local,incoming,a,b=self.fixture(root);deploy=local/'deploy';deploy.mkdir();(deploy/'stage-trust-foundation.py').write_bytes((HERE/'stage-trust-foundation.py').read_bytes());(deploy/'trust-ui-manifest.json').write_bytes((incoming/'trust-ui-manifest.json').read_bytes())
    for name in json.loads((incoming/'trust-ui-manifest.json').read_text())['assets']:(local/name).write_bytes((incoming/name).read_bytes())
+   (local/'landing-security.html').write_text('<section>fixture fragment</section>')
    def git(*args):return subprocess.run(['git','-C',str(local),*args],check=True,capture_output=True,text=True).stdout.strip()
    git('init');git('config','user.email','fixture@example.invalid');git('config','user.name','Test');git('add','.');git('commit','-m','fixture');revision=git('rev-parse','HEAD');(local/'app/account-security.js').write_bytes(b'// before\n')
    # Simulate the first deployment of a new public section.

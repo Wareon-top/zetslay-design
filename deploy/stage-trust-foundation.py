@@ -41,12 +41,38 @@ def include(text,name,version):
  result,count=pattern.subn(lambda m:m[1]+name+'?v='+version+m[2],text)
  if count!=1:raise ValueError('Не подтверждено единственное подключение '+name)
  return result
+def landing_security(text,fragment):
+ start='<!-- zetslay-security:start -->';end='<!-- zetslay-security:end -->'
+ block=start+'\n'+fragment.rstrip()+'\n'+end
+ if start in text or end in text:
+  if text.count(start)!=1 or text.count(end)!=1 or text.index(start)>text.index(end):raise ValueError('Не подтверждены границы блока безопасности.')
+  text=text[:text.index(start)]+block+text[text.index(end)+len(end):]
+ else:
+  if re.search(r'''\bid\s*=\s*["']security["']''',text):raise ValueError('Раздел security уже существует с другим содержимым.')
+  anchors=list(re.finditer(r'''<section\b[^>]*\bid\s*=\s*["']faq["'][^>]*>''',text,re.I))
+  if len(anchors)==1:position=anchors[0].start()
+  elif not anchors and text.count('</main>')==1:position=text.index('</main>')
+  else:raise ValueError('Не подтверждено место раздела безопасности на главной.')
+  text=text[:position]+block+'\n'+text[position:]
+ link='<link rel="stylesheet" href="landing-security.css?v=20261026-1" data-zetslay-security-style>'
+ pattern=r'<link\b[^>]*\bdata-zetslay-security-style\b[^>]*>'
+ matches=list(re.finditer(pattern,text,re.I))
+ if len(matches)>1:raise ValueError('Повторяется стиль раздела безопасности.')
+ if matches:text=re.sub(pattern,lambda _:link,text,count=1,flags=re.I)
+ elif text.count('</head>')==1:text=text.replace('</head>',link+'\n</head>',1)
+ else:raise ValueError('Не подтверждён заголовок главной страницы.')
+ return text
 def stage(local,incoming,out):
  local,incoming,out=map(Path,(local,incoming,out));manifest=json.loads((incoming/'trust-ui-manifest.json').read_text());result={}
  for name,expected in manifest['assets'].items():
   data=(incoming/name).read_bytes()
   if sha(data)!=expected:raise ValueError('Повреждён файл '+name)
   result[name]=data
+ fragment=None
+ if manifest.get('landingSecurityFragment'):
+  entry=manifest['landingSecurityFragment'];data=(incoming/entry['file']).read_bytes()
+  if sha(data)!=entry['sha256']:raise ValueError('Повреждён блок безопасности главной страницы.')
+  fragment=data.decode('utf-8')
  old=(local/'app/account-security.js').read_bytes()
  mode=validate_security_script(old,manifest)
  app=(local/'app/app.js').read_bytes().decode('utf-8')
@@ -59,6 +85,7 @@ def stage(local,incoming,out):
   text=html if path.startswith('app/') else (local/path).read_bytes().decode('utf-8')
   before='<a href="/legal/">';after='<a href="/security/">Данные и безопасность</a> '+before
   text=replace_once(text,before,after,path)
+  if path=='index.html' and fragment is not None:text=landing_security(text,fragment)
   result[path]=text.encode('utf-8')
  out.mkdir(parents=True,exist_ok=True)
  for name,data in result.items():
