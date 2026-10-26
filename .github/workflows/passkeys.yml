@@ -1,0 +1,16 @@
+name: Passkey browser UX
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  chromium:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --prefix "$RUNNER_TEMP/passkey-browser" --ignore-scripts --no-fund --save-exact playwright@1.62.1
+      - run: node "$RUNNER_TEMP/passkey-browser/node_modules/playwright/cli.js" install --with-deps chromium
+      - run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/passkey-browser/node_modules/playwright/index.mjs" node scripts/check-passkey-browser.mjs

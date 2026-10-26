@@ -1,18 +1,20 @@
 {
   "assets": {
-    "app/account-security.js": "4f032dcf7a0747495a510518abf5d534cbb5019095514c9550a8af32aba815b3",
-    "security/index.html": "46ec3ad1f92f824c234ee2cef1045190b76eaf890855d6909f815e0770234004",
+    "app/account-security.js": "25e845eaf68f67f1af9d158867954d832ccc4833f40c4ef0e7dadc4c88c392e5",
+    "security/index.html": "f5037fd00fb0d6b2c06d306a03ef64dd5b99342369c616703757d15c6ccfe0af",
     "security/security.css": "b2090d2ceb351612179b7d0ce3e5917675e4c3805afa4b51f77b32af86dd9e9d",
     "security/security.js": "607b8c03351ec7720e9103a4cb6d5d8e33ad8aa217bf3b8eaa42186ccd38bc87",
     "security/brand.webp": "fbe0612e8693a25818c7599f174f419061a51914db896a362af892f43c2ca282",
-    "landing-security.css": "83139a299c98639e0e2fdd49c603961b448ed8c565745c519e376c3bd05f5cd7"
+    "landing-security.css": "83139a299c98639e0e2fdd49c603961b448ed8c565745c519e376c3bd05f5cd7",
+    "app/passkeys.css": "d20cca5d136c5e4807ce6a13bfbdb1f2aa9a7b4710a031ec802fa51a1ea9cd9e"
   },
   "accountSecurityAccepted": [
     "0d05e0cb5e0790d4ad3b10c51fe15271e48669222ebd19d0fcd2ee06aee2e916",
     "4f032dcf7a0747495a510518abf5d534cbb5019095514c9550a8af32aba815b3",
     "2c2371b3eaa309d906587a627f545476c5bb778b7db85931f5e91dffaff7f705",
     "14ad6aed6cf220e379202cf8b6de574f5adeed802bd6663bc9ce54e2bb5f741e",
-    "1b1e9286955210927951ff079f0fbdbece91d88b499133a04ab7986013887938"
+    "1b1e9286955210927951ff079f0fbdbece91d88b499133a04ab7986013887938",
+    "25e845eaf68f67f1af9d158867954d832ccc4833f40c4ef0e7dadc4c88c392e5"
   ],
   "appPatches": [
     {
@@ -35,17 +37,18 @@
     "1b1e9286955210927951ff079f0fbdbece91d88b499133a04ab7986013887938",
     "14ad6aed6cf220e379202cf8b6de574f5adeed802bd6663bc9ce54e2bb5f741e",
     "0d05e0cb5e0790d4ad3b10c51fe15271e48669222ebd19d0fcd2ee06aee2e916",
-    "4f032dcf7a0747495a510518abf5d534cbb5019095514c9550a8af32aba815b3"
+    "4f032dcf7a0747495a510518abf5d534cbb5019095514c9550a8af32aba815b3",
+    "25e845eaf68f67f1af9d158867954d832ccc4833f40c4ef0e7dadc4c88c392e5"
   ],
   "accountSecurityReplacement": {
     "sourceSha256": "2eb3030b54c4fc28f68595627ad5d9d8296272f0c5370c93aeaceca199befba6",
     "sourceBytes": 13436,
-    "targetSha256": "4f032dcf7a0747495a510518abf5d534cbb5019095514c9550a8af32aba815b3",
+    "targetSha256": "25e845eaf68f67f1af9d158867954d832ccc4833f40c4ef0e7dadc4c88c392e5",
     "sourceContentReviewed": false,
     "strategy": "replace_entire_component_after_host_contract_and_verified_private_backup"
   },
   "landingSecurityFragment": {
     "file": "landing-security.html",
-    "sha256": "ec316e55fa61e75fb06c374738dc230e9cd769744c5634793398889afeadbe45"
+    "sha256": "77bd06caaee3ea070603f378bdfb8bbc07244e29d8faa616912ef1f1858dffc7"
   }
 }

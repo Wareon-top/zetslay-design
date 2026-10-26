@@ -1,0 +1,10 @@
+.account-passkey{margin:22px 0;padding:22px;border:1px solid rgba(255,255,255,.1);border-radius:18px;background:linear-gradient(145deg,rgba(255,255,255,.035),transparent 70%),#131416}
+.account-passkey h3{margin:0 0 10px;font-size:19px;letter-spacing:-.02em}
+.account-passkey p{max-width:64ch;color:#aeb1b8;line-height:1.6}
+.account-passkey .profile-actions{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:14px 0}
+.account-passkey .profile-actions>span{flex:1;min-width:130px;color:#d8dbe1;font-size:14px}
+.account-passkey button{white-space:normal;text-align:center}
+.account-mfa-dialog{width:min(460px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;box-sizing:border-box}
+.account-mfa-dialog [data-mfa-passkey]{width:100%;margin:8px 0 18px;white-space:normal}
+.account-mfa-dialog .profile-actions{display:flex;flex-wrap:wrap;gap:10px}
+@media(max-width:600px){.account-passkey{padding:17px;border-radius:14px}.account-passkey .profile-actions>.button{flex:1 1 100%}}

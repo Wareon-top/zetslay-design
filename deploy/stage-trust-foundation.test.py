@@ -80,7 +80,7 @@ class TrustUiTests(unittest.TestCase):
   app_html=root_html.replace('</body>','VIDEO_BANNER PROXY_BANNER<script src="app.js?v=old"></script><script src="account-security.js?v=old"></script></body>')
   (local/'index.html').write_bytes(root_html.encode());(local/'app/index.html').write_bytes(app_html.encode());(local/'app/app.js').write_bytes(b'// OLD_COPY\nconst keep="CURRENT_PROXY_REPAIR";\n');(local/'app/account-security.js').write_bytes(b'// before\n')
   (local/'app/profile.js').write_bytes(b'// HOST_PROFILE_MUST_REMAIN_UNCHANGED\n')
-  for name in ['landing-security.css','app/account-security.js','security/index.html','security/security.css','security/security.js','security/brand.webp']:
+  for name in ['landing-security.css','app/passkeys.css','app/account-security.js','security/index.html','security/security.css','security/security.js','security/brand.webp']:
    data=b'// after\n';(incoming/name).write_bytes(data);manifest['assets'][name]=sha(data)
   manifest['accountSecurityAccepted']=[sha(b'// before\n'),sha(b'// after\n')];(incoming/'trust-ui-manifest.json').write_text(json.dumps(manifest));return local,incoming,root_html,app_html
  def test_private_html_banners_other_assets_and_idempotency(self):
@@ -88,7 +88,7 @@ class TrustUiTests(unittest.TestCase):
    root=Path(tmp);local,incoming,a,b=self.fixture(root);out=root/'out';m.stage(local,incoming,out)
    marker='<a href="/security/">Данные и безопасность</a> '
    self.assertEqual((out/'index.html').read_bytes().decode(),a.replace('<a href="/legal/">',marker+'<a href="/legal/">'))
-   self.assertEqual((out/'app/index.html').read_bytes().decode(),b.replace('<a href="/legal/">',marker+'<a href="/legal/">').replace('?v=old','?v=20261026-trust-foundation'))
+   self.assertEqual((out/'app/index.html').read_bytes().decode(),b.replace('<a href="/legal/">',marker+'<a href="/legal/">').replace('?v=old','?v=20261026-passkeys-1').replace('</head>','<link rel="stylesheet" href="passkeys.css?v=20261026-1" data-zetslay-passkeys-style>\n</head>'))
    self.assertIn(b'CURRENT_PROXY_REPAIR',(out/'app/app.js').read_bytes());m.stage(out,incoming,root/'twice');self.assertEqual((out/'app/app.js').read_bytes(),(root/'twice/app/app.js').read_bytes())
  def test_unknown_copy_duplicate_include_and_corrupt_asset_stop_before_output(self):
   for mode in ['copy','include','asset']:

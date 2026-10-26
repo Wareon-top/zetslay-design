@@ -80,7 +80,14 @@ def stage(local,incoming,out):
  if mode=='replace-observed':validate_host_contract(local,app,html)
  for patch in manifest['appPatches']:app=replace_once(app,patch['before'],patch['after'],'app.js')
  result['app/app.js']=app.encode('utf-8')
- for name in ['app.js','account-security.js']:html=include(html,name,'20261026-trust-foundation')
+ for name in ['app.js','account-security.js']:html=include(html,name,'20261026-passkeys-1')
+ if 'app/passkeys.css' in manifest['assets']:
+  style='<link rel="stylesheet" href="passkeys.css?v=20261026-1" data-zetslay-passkeys-style>'
+  matches=list(re.finditer(r'<link\b[^>]*\bdata-zetslay-passkeys-style\b[^>]*>',html,re.I))
+  if len(matches)>1:raise ValueError('Повторяется стиль ключей доступа.')
+  if matches:html=html[:matches[0].start()]+style+html[matches[0].end():]
+  elif html.count('</head>')==1:html=html.replace('</head>',style+'\n</head>',1)
+  else:raise ValueError('Не подтверждён заголовок кабинета.')
  for path in ['index.html','app/index.html']:
   text=html if path.startswith('app/') else (local/path).read_bytes().decode('utf-8')
   before='<a href="/legal/">';after='<a href="/security/">Данные и безопасность</a> '+before

@@ -6,7 +6,7 @@ site=${ZETSLAY_SITE_DIR:-/opt/zetslay-site}
 core=${ZETSLAY_CORE_DIR:-/opt/zetslay}
 cd "$site"
 design_revision=$(git rev-parse "${ZETSLAY_TRUST_REVISION:?Укажите ревизию сайта}^{commit}")
-core_revision=4c241a3aa0a12d78b8af682ef09e8f60332c0cb4
+core_revision=4e8d356face4495238939124ebf074ae86c9d58e
 [[ "$core_revision" =~ ^[a-f0-9]{40}$ ]] || { echo 'Нужен полный SHA проверенного обновления API.';exit 1; }
 git -C "$core" fetch origin "$core_revision"
 [ "$(git -C "$core" rev-parse "$core_revision^{commit}")" = "$core_revision" ] || exit 1
@@ -15,7 +15,7 @@ case "$state" in active|activating|deactivating) echo 'Обновление за
 job=$(mktemp -d /root/zetslay-trust-foundation-job.XXXXXX)
 mkdir "$job/core"
 for file in update-trust-foundation.py trust-foundation-patches.json trust-foundation-probe.mjs trust-runtime-inventory.mjs switch-steelproxy-direct.py check-steelproxy-readiness.py;do git -C "$core" show "$core_revision:deploy/$file" > "$job/core/$file";done
-for file in admin-access-policy.mjs safe-log.mjs;do git -C "$core" show "$core_revision:services/control-plane/src/$file" > "$job/core/$file";done
+for file in admin-access-policy.mjs safe-log.mjs account-security.mjs passkey-security.mjs passkey-verifier.mjs;do git -C "$core" show "$core_revision:services/control-plane/src/$file" > "$job/core/$file";done
 git show "$design_revision:deploy/update-trust-ui.sh" > "$job/update-ui.sh"
 printf '%s\n' "$core_revision" "$design_revision" > "$job/revisions"
 cat > "$job/apply.sh" <<'APPLY'
@@ -30,7 +30,7 @@ python3 -I -X "pycache_prefix=$job/pycache" "$job/core/update-trust-foundation.p
 cd "$site"
 ZETSLAY_SITE_DIR="$site" ZETSLAY_TRUST_REVISION="$design_revision" bash "$job/update-ui.sh"
 echo 'Готово: первый этап защиты установлен. Обновите кабинет через Ctrl+F5.'
-echo 'Владельцу: Профиль → Защита аккаунта → настройка 2FA → сохранить резервные коды → подтвердить защищённые действия новым кодом.'
+echo 'Владельцу: Профиль → Защита аккаунта → Подключить отпечаток / Face ID → сохранить резервные коды → Подтвердить отпечатком / Face ID.'
 echo 'До этого административные разделы будут закрыты. Обычный вход и настройка защиты доступны.'
 APPLY
 systemctl reset-failed zetslay-trust-foundation-repair.service >/dev/null 2>&1 || true

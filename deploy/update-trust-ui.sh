@@ -7,7 +7,7 @@ revision=$(git rev-parse "${ZETSLAY_TRUST_REVISION:?Укажите ревизи�
 exec 9>.zetslay-trust-ui.lock
 flock -n 9 || { echo 'Обновление безопасности сайта уже выполняется.';exit 1; }
 work=$(mktemp -d);backup='';publishing=false;candidate='';created_directory=false
-files=(landing-security.css app/account-security.js security/index.html security/security.css security/security.js security/brand.webp app/app.js index.html app/index.html)
+files=(landing-security.css app/passkeys.css app/account-security.js security/index.html security/security.css security/security.js security/brand.webp app/app.js index.html app/index.html)
 read_files=("${files[@]}" app/profile.js)
 cleanup(){
  status=$?
@@ -29,7 +29,7 @@ for file in "${read_files[@]}";do
  [ ! -L "$file" ] || { echo "Символическая ссылка вместо файла: $file";exit 1; }
  [ ! -e "$file" ] || cp -p -- "$file" "$work/local/$file"
 done
-for file in landing-security.css landing-security.html app/account-security.js security/index.html security/security.css security/security.js security/brand.webp;do
+for file in landing-security.css landing-security.html app/passkeys.css app/account-security.js security/index.html security/security.css security/security.js security/brand.webp;do
  git show "$revision:$file" > "$work/incoming/$file"
  [ "$(git hash-object "$work/incoming/$file")" = "$(git rev-parse "$revision:$file")" ] || exit 1
 done
