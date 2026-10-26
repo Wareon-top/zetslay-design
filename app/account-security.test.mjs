@@ -5,7 +5,7 @@ test('partial sync distinguishes plugin attention from a failed shop read',()=>{
  assert.match(html,/Магазин обновлён; одному из плагинов нужна проверка/);
  assert.doesNotMatch(html,/Фоновый опрос ещё не зафиксирован/);
 });
-function harness(){const context=vm.createContext({console,URL,Blob,setTimeout,document:{querySelector:()=>null,addEventListener(){}},window:{confirm:()=>true},escapeHtml:value=>String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;'),icon:()=>'',humanError:error=>error.message||error.code,authState:{token:'a',user:{id:'alice'}},apiRequest:async()=>({}),showToast(){}});vm.runInContext('function acceptSession(s){accepted.push(s);return s;} const accepted=[];function renderProfile(){};function resetAccountData(){};async function loadProfile(){};'+source,context);return {context,run:s=>vm.runInContext(s,context)};}
+function harness(){const context=vm.createContext({console,URL,Blob,setTimeout,AbortSignal,document:{querySelector:()=>null,addEventListener(){}},window:{confirm:()=>true},escapeHtml:value=>String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;'),icon:()=>'',humanError:error=>error.message||error.code,authState:{token:'a',user:{id:'alice'}},apiRequest:async()=>({}),showToast(){}});vm.runInContext('function acceptSession(s){accepted.push(s);return s;} const accepted=[];function renderProfile(){};function resetAccountData(){};async function loadProfile(){};'+source,context);return {context,run:s=>vm.runInContext(s,context)};}
 test('profile uses server session state and escapes device names without claiming live health',()=>{const a=harness();const html=a.run(`accountSecurityMarkup({enabled:true,recoveryRemaining:8,sessions:[{id:'hash',device:'<img onerror=x>',current:true,createdAt:'2026-10-06T12:00:00Z'}]},{status:'retrying',code:'PROXY_TIMEOUT'})`);assert.match(html,/&lt;img/);assert.doesNotMatch(html,/<img onerror/);assert.match(html,/Повтор после ошибки/);assert.match(html,/Резервных кодов: 8/);assert.match(html,/data-security-proof/);assert.doesNotMatch(html,/data-security-session="hash"/);});
 test('MFA challenge must finish before accepting a session',async()=>{const a=harness();let finish;a.context.proof=()=>new Promise(r=>finish=r);a.run('challengeMfa=proof');const pending=a.run("acceptSession({mfaRequired:true,challengeToken:'opaque'})");assert.equal(a.run('accepted.length'),0);finish({token:'real',user:{id:'alice'}});await pending;assert.equal(a.run('accepted[0].token'),'real');});
 test('cancelled proof cannot accept an authenticated session',async()=>{const a=harness();a.run("challengeMfa=async()=>{throw Error('cancelled')}");await assert.rejects(a.run('acceptSession({mfaRequired:true})'),/cancelled/);assert.equal(a.run('accepted.length'),0);});
@@ -18,3 +18,24 @@ test('an MFA response arriving after an account change cannot replace the newer 
 test('a late security response cannot expose the previous account sessions',async()=>{const a=harness();const resolves=[];a.context.request=()=>new Promise(r=>resolves.push(r));a.run('apiRequest=request');const pending=a.run('loadAccountSecurity()');a.run("authState.token='b';resetAccountData()");for(const resolve of resolves)resolve({enabled:true,sessions:[{device:'PRIVATE'}]});await pending;assert.equal(a.run('accountSecurityUi.data'),null);assert.equal(a.run('accountSecurityUi.loading'),false);});
 test('logout clears one-time enrollment secrets and recovery codes',()=>{const a=harness();a.run("accountSecurityUi.setup={secret:'PRIVATE'};accountSecurityUi.codes=['RECOVERY'];resetAccountData()");assert.equal(a.run('accountSecurityUi.setup'),null);assert.equal(a.run('accountSecurityUi.codes.length'),0);});
 test('security actions send the selected operation and only the current input to authenticated API',async()=>{const a=harness(),calls=[];a.context.request=async(path,opts)=>{calls.push({path,opts});return path.includes('sync-health')?{status:'not_observed'}:{enabled:false,sessions:[]};};a.run('apiRequest=request');await a.run("changeAccountSecurity('revoke',{sessionId:'session-hash',code:'one-time'})");assert.equal(calls[0].path,'/api/v1/account/security');assert.equal(calls[0].opts.authenticated,true);assert.equal(calls[0].opts.body.operation,'revoke');assert.equal(calls[0].opts.body.sessionId,'session-hash');assert.equal(calls[0].opts.body.code,'one-time');});
+
+test('owner sees mandatory MFA and cannot select disable; ordinary user retains the control',()=>{
+ const a=harness();const owner=a.run('accountSecurityMarkup({enabled:true,adminMfaRequired:true,sessions:[]},null)');
+ assert.match(owner,/Для административного доступа обязательны/);assert.doesNotMatch(owner,/data-security-action="disable"/);
+ assert.match(a.run('accountSecurityMarkup({enabled:true,adminMfaRequired:false,sessions:[]},null)'),/data-security-action="disable"/);
+});
+test('an old read cannot overwrite enrollment result and reads cannot start during a write',async()=>{
+ const a=harness();let resolveRead,reads=0;a.context.request=async(path,opts)=>{if(opts?.method==='POST')return {enabled:true,recoveryCodes:['ONE_TIME']};if(path.includes('sync-health'))return {};reads++;if(reads===1)return new Promise(r=>resolveRead=r);return {enabled:true,sessions:[]};};a.run('apiRequest=request');
+ const old=a.run('loadAccountSecurity()');await a.run("changeAccountSecurity('enable',{code:'123456'})");resolveRead({enabled:false,sessions:[]});await old;
+ assert.equal(a.run('accountSecurityUi.data.enabled'),true);assert.equal(a.run('accountSecurityUi.codes[0]'),'ONE_TIME');
+ a.run('accountSecurityUi.busy=true');await a.run('loadAccountSecurity()');assert.equal(reads,2);
+});
+test('accepted action with failed refresh retains recovery codes and warns before repeating',async()=>{
+ const a=harness();a.context.request=async(path,opts)=>{if(opts.method==='POST')return {recoveryCodes:['KEEP_ME']};throw Error('offline');};a.run('apiRequest=request');
+ await a.run("changeAccountSecurity('recovery',{code:'code'})");assert.equal(a.run('accountSecurityUi.codes[0]'),'KEEP_ME');assert.match(a.run('accountSecurityUi.error'),/Действие принято/);
+});
+test('late proof from a previous session cannot change messages, loading state or one-time codes',async()=>{
+ const a=harness();let resolve;a.context.request=()=>new Promise(r=>resolve=r);a.run('apiRequest=request');const old=a.run("changeAccountSecurity('enable',{code:'123456'})");
+ a.run("authState.token='b';resetAccountData();accountSecurityUi.error='current'");resolve({recoveryCodes:['OLD_PRIVATE']});await old;
+ assert.equal(a.run('accountSecurityUi.codes.length'),0);assert.equal(a.run('accountSecurityUi.error'),'current');assert.equal(a.run('accountSecurityUi.busy'),false);
+});

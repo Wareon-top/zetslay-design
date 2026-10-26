@@ -1,0 +1,15 @@
+name: Trust UI foundation
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  trust-ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test app/account-security.test.mjs app/admin-access.test.mjs app/admin-panel.test.mjs app/launch-auth.test.mjs security/security.test.mjs
+      - run: python3 deploy/stage-trust-foundation.test.py -v
+      - run: bash -n deploy/start-trust-foundation.sh deploy/update-trust-ui.sh
