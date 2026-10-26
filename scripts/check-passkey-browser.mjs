@@ -13,7 +13,7 @@ try{
  await cdp.send('WebAuthn.addVirtualAuthenticator',{options:{protocol:'ctap2',transport:'internal',hasResidentKey:true,hasUserVerification:true,isUserVerified:true,automaticPresenceSimulation:true}});
  let enabled=false,credentialId='',verified=false,loginResponse=false;
  const options=()=>({challenge:Buffer.alloc(32,7).toString('base64url'),timeout:120000,rpId:'zetslay.pro',userVerification:'required',allowCredentials:[{id:credentialId,type:'public-key',transports:['internal']}]});
- const markup=`<!doctype html><html><head><meta name="viewport" content="width=device-width"><style>body{background:#0c0d0f;color:#eee;font:16px system-ui;margin:24px}.profile-grid{max-width:780px;margin:auto}.button{padding:12px 17px;border:1px solid #444;border-radius:10px;background:#25282d;color:white;cursor:pointer}.button--primary{background:#b94b18}.profile-actions{display:flex;gap:10px;flex-wrap:wrap}.account-security-label{display:block;margin:14px 0}input{display:block;max-width:100%;padding:10px}dialog{background:#16181b;color:white;border:1px solid #444;border-radius:16px;padding:24px}dialog::backdrop{background:#0009}${css}</style></head><body><main data-profile><div class="profile-grid"></div></main><script>
+ const markup=`<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><style>body{background:#0c0d0f;color:#eee;font:16px system-ui;margin:24px}.profile-grid{max-width:780px;margin:auto}.button{padding:12px 17px;border:1px solid #444;border-radius:10px;background:#25282d;color:white;cursor:pointer}.button--primary{background:#b94b18}.profile-actions{display:flex;gap:10px;flex-wrap:wrap}.account-security-label{display:block;margin:14px 0}input{display:block;max-width:100%;padding:10px}dialog{background:#16181b;color:white;border:1px solid #444;border-radius:16px;padding:24px}dialog::backdrop{background:#0009}${css}</style></head><body><main data-profile><div class="profile-grid"></div></main><script>
  const authState={token:'synthetic-primary',user:{id:'synthetic-user'}};
  const API_BASE_URL='https://api.zetslay.pro';const accepted=[];
  const escapeHtml=v=>String(v).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;');
@@ -22,8 +22,8 @@ try{
  </script><script src="/account-security.js"></script></body></html>`;
  await context.route('**/*',async route=>{
   const request=route.request(),url=new URL(request.url());
-  if(url.href==='https://zetslay.pro/app/')return route.fulfill({contentType:'text/html',body:markup});
-  if(url.href==='https://zetslay.pro/account-security.js')return route.fulfill({contentType:'text/javascript',body:script});
+  if(url.href==='https://zetslay.pro/app/')return route.fulfill({contentType:'text/html; charset=utf-8',body:markup});
+  if(url.href==='https://zetslay.pro/account-security.js')return route.fulfill({contentType:'text/javascript; charset=utf-8',body:script});
   if(url.origin!=='https://api.zetslay.pro')return route.abort();
   const headers={'access-control-allow-origin':'https://zetslay.pro','access-control-allow-credentials':'true','access-control-allow-headers':'content-type,authorization','access-control-allow-methods':'GET,POST,OPTIONS'};
   if(request.method()==='OPTIONS')return route.fulfill({status:204,headers,body:''});
@@ -39,6 +39,7 @@ try{
   return route.fulfill({headers,contentType:'application/json',body:JSON.stringify({data})});
  });
  await page.goto('https://zetslay.pro/app/');await page.evaluate(()=>loadAccountSecurity());
+ const state=await page.evaluate(()=>({data:accountSecurityUi.data,error:accountSecurityUi.error}));assert.ok(state.data,state.error||'security state not loaded');
  await page.getByRole('button',{name:'Подключить отпечаток / Face ID',exact:true}).click();
  await page.getByText('Сохраните резервные коды',{exact:true}).waitFor();assert.ok(enabled);
  await page.getByRole('button',{name:'Я сохранил',exact:true}).click();
