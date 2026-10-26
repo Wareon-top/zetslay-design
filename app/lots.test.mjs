@@ -14,7 +14,7 @@ function harness(){
   const root={querySelector:node,querySelectorAll:s=>s==='[data-lots-status]'?buttons:s==='[data-lots-page]'?pages:[]};
   const dialog={open:false,querySelector:node,showModal(){this.open=true;},close(){this.open=false;}};
   const document={querySelector(s){return s==='[data-lots-workspace]'?root:s==='[data-lot-dialog]'?dialog:s==='meta[name="zetslay-api-base-url"]'?{content:'https://api.zetslay.pro'}:null;},querySelectorAll:()=>[],getElementById:()=>null,addEventListener(type,fn){(listeners[type]??=[]).push(fn);},body:{classList:{toggle(){}}}};
-  const context=vm.createContext({document,URL,URLSearchParams,Intl,location:{hash:'#lots',hostname:'zetslay.pro',search:''},sessionStorage:{getItem:()=>null},localStorage:{getItem:()=>null,removeItem(){}},window:{scrollTo(){},setTimeout(){}},history:{replaceState(){}},setInterval(){},clearInterval(){}});
+  const context=vm.createContext({AbortController,setTimeout,clearTimeout,document,URL,URLSearchParams,Intl,location:{hash:'#lots',hostname:'zetslay.pro',search:''},sessionStorage:{getItem:()=>null},localStorage:{getItem:()=>null,removeItem(){}},window:{scrollTo(){},setTimeout(){}},history:{replaceState(){}},setInterval(){},clearInterval(){}});
   vm.runInContext(source,context);const run=code=>vm.runInContext(code,context);
   run("authState.user={id:'owner'};authState.token='token';state.storeFleet={selectedStoreId:'123',stores:[{id:'123',status:'connected_read_only'}]};showToast=()=>{};");
   const model=(content,filters={})=>{context.content=content;context.filters=filters;return JSON.parse(JSON.stringify(run("buildLotsWorkspace(content,filters,'123')")));};
@@ -88,4 +88,35 @@ test('first visit starts one inventory request and unknown shop identity never e
  const a=harness();let scheduled=0;a.context.window.setTimeout=()=>scheduled++;a.root.hidden=false;
  a.render(snapshot([]));a.run('renderLots()');assert.equal(scheduled,1);
  const data=snapshot([lot(1)]);delete data.storeId;assert.equal(a.model(data).loaded,false);
+});
+test('first load displays completed categories while the remaining categories are still pending',async()=>{
+ const a=harness();a.render({...snapshot(null),availableResources:{lots:false}});let finish,calls=0;
+ a.context.request=async()=>{calls++;if(calls===1)return {storeId:'123',observedAt:'2026-10-26T10:00:00Z',categories:[{nodeId:'3'},{nodeId:'4'}]};if(calls===2)return {storeId:'123',nodeId:'3',observedAt:'2026-10-26T10:00:01Z',lots:[lot('12',{nodeId:'3'})]};return new Promise(r=>finish=r);};a.run('apiRequest=request');
+ const pending=a.run('refreshLotsWorkspace()');await new Promise(r=>setImmediate(r));
+ assert.equal(a.run('lotsPageState.busy'),true);assert.match(a.node('[data-lots-rows]').innerHTML,/Товар 12/);assert.match(a.node('[data-lots-list-count]').textContent,/Получено 1 лотов · категорий 1 из 2/);assert.equal(a.node('[data-lots-all]').textContent,'—');
+ finish({storeId:'123',nodeId:'4',observedAt:'2026-10-26T10:00:02Z',lots:[lot('13',{nodeId:'4'})]});await pending;
+ assert.equal(a.run('currentLotsModel().partial'),false);assert.equal(a.node('[data-lots-all]').textContent,'2');assert.equal(a.run('lotsPageState.busy'),false);
+});
+test('a stalled request stops on its own even if the request implementation ignores abort',async()=>{
+ const a=harness();a.render(snapshot([lot(1)]));a.run('LOTS_READ_LIMITS.requestMs=10;LOTS_READ_LIMITS.operationMs=100');a.context.request=()=>new Promise(()=>{});a.run('apiRequest=request');
+ await a.run('refreshLotsWorkspace()');assert.equal(a.run('lotsPageState.busy'),false);assert.equal(a.node('[data-lots-refresh]').disabled,false);assert.match(a.run('lotsPageState.error'),/FunPay не ответил вовремя/);assert.match(a.node('[data-lots-rows]').innerHTML,/Товар 1/);
+});
+test('the aggregate deadline bounds a slow multi-category load and retains the partial result honestly',async()=>{
+ const a=harness();a.render({...snapshot(null),availableResources:{lots:false}});a.run('LOTS_READ_LIMITS.operationMs=15;LOTS_READ_LIMITS.requestMs=100');let calls=0;
+ a.context.request=async()=>{calls++;if(calls===1)return {storeId:'123',observedAt:'2026-10-26T10:00:00Z',categories:[{nodeId:'3'},{nodeId:'4'}]};if(calls===2)return {storeId:'123',nodeId:'3',observedAt:'2026-10-26T10:00:01Z',lots:[lot('12',{nodeId:'3'})]};return new Promise(()=>{});};a.run('apiRequest=request');await a.run('refreshLotsWorkspace()');
+ assert.equal(a.run('lotsPageState.busy'),false);assert.equal(a.run('lotsPageState.inventory'),null);assert.equal(a.run('currentLotsModel().partial'),true);assert.match(a.node('[data-lots-alert-copy]').textContent,/только загруженная часть/);assert.equal(a.node('[data-lots-all]').textContent,'—');
+});
+test('transient connection contention retries GET only and does not discard the current inventory',async()=>{
+ const a=harness();a.render(snapshot([lot(1)]));a.run('LOTS_READ_LIMITS.backoffMs=1');let calls=0;
+ a.context.request=async(path,options)=>{calls++;assert.equal(options.method,undefined);assert.ok(options.signal);if(calls<3)throw Object.assign(Error('busy'),{code:'SYNC_BUSY'});return {storeId:'123',observedAt:'2026-10-26T10:00:00Z',categories:[]};};a.run('apiRequest=request');await a.run('refreshLotsWorkspace()');
+ assert.equal(calls,3);assert.equal(a.run('lotsPageState.error'),'');assert.equal(a.node('[data-lots-all]').textContent,'0');
+});
+test('manual cancellation releases loading controls and late replies cannot publish rows',async()=>{
+ const a=harness();a.render(snapshot([lot(1)]));let finish;a.context.request=()=>new Promise(r=>finish=r);a.run('apiRequest=request');const pending=a.run('refreshLotsWorkspace()');
+ a.event('click','[data-lots-cancel]');await pending;assert.equal(a.run('lotsPageState.busy'),false);assert.match(a.run('lotsPageState.error'),/остановлена/);
+ finish({storeId:'123',observedAt:'2026-10-26T10:00:00Z',categories:[]});await new Promise(r=>setImmediate(r));assert.equal(a.node('[data-lots-all]').textContent,'1');
+});
+test('logout cancels a pending read immediately without waiting for the network',async()=>{
+ const a=harness();a.render(snapshot([lot(1)]));let signal;a.context.request=(path,options)=>{signal=options.signal;return new Promise(()=>{});};a.run('apiRequest=request');const pending=a.run('refreshLotsWorkspace()');
+ a.run('sessionGeneration++;resetLotsWorkspace();authState.user=null;renderLots()');await pending;assert.equal(signal.aborted,true);assert.equal(a.run('lotsPageState.busy'),false);assert.doesNotMatch(a.node('[data-lots-rows]').innerHTML,/Товар 1/);
 });
