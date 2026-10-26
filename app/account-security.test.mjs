@@ -57,15 +57,30 @@ test('logout during a device ceremony aborts it and cannot register a key on a d
 test('cancelling the system prompt restores controls and does not post an enrollment',async()=>{
  const a=harness(),calls=[];a.context.request=async(path,opts)=>{calls.push(opts.body.operation);return {};};a.run('apiRequest=request');
  a.context.ceremony=async()=>{const e=Error('cancel');e.name='NotAllowedError';throw e;};a.run('passkeyCeremony=ceremony');await a.run("changeAccountSecurity('passkey-register')");
- assert.deepEqual(calls,['passkey-register-options']);assert.equal(a.run('accountSecurityUi.busy'),false);assert.match(a.run('accountSecurityUi.error'),/отменено/);
+ assert.deepEqual(calls,['passkey-register-options']);assert.equal(a.run('accountSecurityUi.busy'),false);assert.match(a.run('accountSecurityUi.error'),/Устройство не завершило подключение/);
 });
 test('credential binary conversion preserves bytes and requests browser user verification',async()=>{
  const a=harness();let call;a.context.PublicKeyCredential=function(){};a.context.window.isSecureContext=true;
- a.context.navigator={credentials:{create:async options=>{call=options;return {id:'AQID',rawId:Uint8Array.of(1,2,3).buffer,type:'public-key',response:{clientDataJSON:Uint8Array.of(4).buffer,attestationObject:Uint8Array.of(5).buffer,getTransports:()=>['internal']}};}}};
+ a.context.navigator={userActivation:{isActive:true},credentials:{create:async options=>{call=options;return {id:'AQID',rawId:Uint8Array.of(1,2,3).buffer,type:'public-key',response:{clientDataJSON:Uint8Array.of(4).buffer,attestationObject:Uint8Array.of(5).buffer,getTransports:()=>['internal']}};}}};
  const result=await a.run("passkeyCeremony({challenge:'AQID',user:{id:'BAU'},authenticatorSelection:{userVerification:'required'},excludeCredentials:[{id:'Bgc'}]},true)");
  assert.deepEqual([...call.publicKey.challenge],[1,2,3]);assert.deepEqual([...call.publicKey.user.id],[4,5]);assert.equal(call.publicKey.authenticatorSelection.userVerification,'required');assert.equal(result.response.attestationObject,'BQ');assert.equal(result.rawId,'AQID');
 });
 test('passkey controls are only advertised when the API supports them and key IDs are escaped',()=>{
  const a=harness();assert.equal(a.run('passkeyMarkup({})'),'');
  const html=a.run(`passkeyMarkup({passkeySupported:true,passkeys:[{id:'<img onerror="x">'}]})`);assert.match(html,/Подтвердить отпечатком/);assert.doesNotMatch(html,/<img/);
+});
+test('registration fills an empty display name without changing the server user handle or other options',()=>{
+ const a=harness();a.run("const raw={challenge:'AQID',user:{id:'BAU',name:'account-name',displayName:''},authenticatorSelection:{userVerification:'required'}};const converted=passkeyOptions(raw,true)");
+ assert.equal(a.run('converted.user.displayName'),'account-name');assert.equal(a.run('raw.user.displayName'),'');assert.deepEqual([...a.run('converted.user.id')],[4,5]);assert.equal(a.run('converted.authenticatorSelection.userVerification'),'required');
+ assert.equal(a.run("passkeyOptions({...raw,user:{...raw.user,displayName:'Existing name'}},true).user.displayName"),'Existing name');
+});
+test('a lost or unavailable activation defers WebAuthn until the fresh-click callback',async()=>{
+ const a=harness();let invoke,release,calls=0;a.context.PublicKeyCredential=function(){};a.context.window.isSecureContext=true;
+ a.context.navigator={userActivation:{isActive:false},credentials:{create:async()=>{calls++;return {id:'AQID',rawId:Uint8Array.of(1,2,3).buffer,type:'public-key',response:{clientDataJSON:Uint8Array.of(4).buffer,attestationObject:Uint8Array.of(5).buffer}};}}};
+ a.context.defer=(start)=>{invoke=start;return new Promise(r=>release=r);};a.run('passkeyFromFreshClick=defer');
+ const pending=a.run("passkeyCeremony({challenge:'AQID',user:{id:'BAU',name:'test'}},true)");assert.equal(calls,0);release(invoke());const result=await pending;assert.equal(calls,1);assert.equal(result.id,'AQID');
+});
+test('initial registration errors do not tell a user to use recovery codes that do not exist yet',()=>{
+ const a=harness();const first=a.run("passkeyError({name:'NotAllowedError'},true)");assert.match(first,/Резервные коды появятся после/);assert.doesNotMatch(first,/используйте резервный код/);
+ assert.match(a.run("passkeyError({name:'NotAllowedError'},false)"),/используйте резервный код/);
 });

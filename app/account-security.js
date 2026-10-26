@@ -3,16 +3,37 @@ function passkeyBytes(value){return Uint8Array.from(atob(value.replaceAll('-','+
 function passkeyBase64(value){return btoa(String.fromCharCode(...new Uint8Array(value))).replaceAll('+','-').replaceAll('/','_').replace(/=+$/,'');}
 function passkeyOptions(json,create){
  const options={...json,challenge:passkeyBytes(json.challenge)};
- if(create)options.user={...json.user,id:passkeyBytes(json.user.id)};
+ if(create)options.user={...json.user,id:passkeyBytes(json.user.id),displayName:typeof json.user.displayName==='string'&&json.user.displayName.trim()?json.user.displayName:json.user.name||'ZetSlay'};
  for(const field of ['allowCredentials','excludeCredentials'])if(json[field])options[field]=json[field].map(k=>({...k,id:passkeyBytes(k.id)}));
  return options;
+}
+function passkeyFromFreshClick(start,signal){
+ return new Promise((resolve,reject)=>{
+  const dialog=document.createElement('dialog');dialog.className='account-mfa-dialog';
+  dialog.innerHTML='<h2>Подтверждение на устройстве</h2><p>Запрос готов. Нажмите «Продолжить на устройстве», затем подтвердите Face ID, отпечатком или кодом блокировки.</p><div class="profile-actions"><button type="button" class="button button--primary" data-passkey-continue>Продолжить на устройстве</button><button type="button" class="button button--ghost" data-passkey-cancel>Отмена</button></div>';
+  let done=false;
+  const close=()=>{signal?.removeEventListener('abort',cancel);dialog.close();dialog.remove();};
+  const cancel=()=>{if(done)return;done=true;close();const error=Error('Подтверждение отменено.');error.name='AbortError';reject(error);};
+  dialog.addEventListener('cancel',event=>{event.preventDefault();cancel();});
+  dialog.querySelector('[data-passkey-cancel]').addEventListener('click',cancel);
+  dialog.querySelector('[data-passkey-continue]').addEventListener('click',()=>{
+   if(done)return;done=true;
+   // Start synchronously inside the native click, before awaiting anything.
+   try{const pending=start();close();Promise.resolve(pending).then(resolve,reject);}catch(error){close();reject(error);}
+  });
+  document.body.append(dialog);dialog.showModal();
+  if(signal?.aborted)cancel();else signal?.addEventListener('abort',cancel,{once:true});
+ });
 }
 async function passkeyCeremony(json,create,signal){
  if(!supportsPasskeys())throw Error('Для ключа доступа откройте ZetSlay в современном браузере по HTTPS. Устройство предложит отпечаток, Face ID или PIN.');
  const controller=new AbortController(),cancel=()=>controller.abort();
  if(signal?.aborted)controller.abort();else signal?.addEventListener('abort',cancel,{once:true});
  const timer=setTimeout(cancel,120000);let credential;
- try{credential=await navigator.credentials[create?'create':'get']({publicKey:passkeyOptions(json,create),signal:controller.signal});}
+ try{
+  const publicKey=passkeyOptions(json,create),start=()=>navigator.credentials[create?'create':'get']({publicKey,signal:controller.signal});
+  credential=await (navigator.userActivation?.isActive===true?start():passkeyFromFreshClick(start,controller.signal));
+ }
  finally{clearTimeout(timer);signal?.removeEventListener('abort',cancel);}
  if(!credential)throw Error('Подтверждение на устройстве отменено.');
  const response={clientDataJSON:passkeyBase64(credential.response.clientDataJSON)};
@@ -20,7 +41,7 @@ async function passkeyCeremony(json,create,signal){
  else{response.authenticatorData=passkeyBase64(credential.response.authenticatorData);response.signature=passkeyBase64(credential.response.signature);response.userHandle=credential.response.userHandle?passkeyBase64(credential.response.userHandle):null;}
  return {id:credential.id,rawId:passkeyBase64(credential.rawId),type:credential.type,response,clientExtensionResults:credential.getClientExtensionResults?.()||{},authenticatorAttachment:credential.authenticatorAttachment};
 }
-function passkeyError(error){return ['NotAllowedError','AbortError'].includes(error.name)?'Подтверждение отменено или время ожидания истекло. Можно повторить или использовать резервный код.':error.name==='InvalidStateError'?'Этот ключ доступа уже подключён. Используйте кнопку подтверждения.':humanError(error);}
+function passkeyError(error,enrolling=false){return ['NotAllowedError','AbortError'].includes(error.name)?enrolling?'Устройство не завершило подключение. Повторите и подтвердите системное окно. На iPhone проверьте «Пароли и связка ключей iCloud» и код блокировки; открывайте сайт напрямую в Safari. Резервные коды появятся после успешного подключения.':'Подтверждение не завершено. Повторите на устройстве, где сохранён ключ доступа, или используйте резервный код.':error.name==='InvalidStateError'?'Этот ключ доступа уже подключён. Используйте кнопку подтверждения.':humanError(error);}
 function passkeyMarkup(model){
  if(!model.passkeySupported)return '';
  const keys=model.passkeys||[];
@@ -72,7 +93,7 @@ async function changeAccountSecurity(operation,extra={}){
   const data=await apiRequest('/api/v1/account/security',{authenticated:true,signal:AbortSignal.timeout(15000)});
   if(current())accountSecurityUi.data=data;
  }catch(error){
-  if(current())accountSecurityUi.error=!posting?passkeyError(error):accepted?'Действие принято, но обновить состояние не удалось. Обновите состояние перед повтором.':(['TimeoutError','AbortError','REQUEST_RESULT_UNKNOWN'].includes(error.name)||error.code==='REQUEST_RESULT_UNKNOWN')?'Ответ не получен вовремя. Обновите состояние перед повтором: действие могло завершиться.':passkeyError(error);
+  if(current())accountSecurityUi.error=!posting?passkeyError(error,operation==='passkey-register'):accepted?'Действие принято, но обновить состояние не удалось. Обновите состояние перед повтором.':(['TimeoutError','AbortError','REQUEST_RESULT_UNKNOWN'].includes(error.name)||error.code==='REQUEST_RESULT_UNKNOWN')?'Ответ не получен вовремя. Обновите состояние перед повтором: действие могло завершиться.':passkeyError(error,operation==='passkey-register');
  }finally{if(current()){accountSecurityUi.passkeyAbort=null;accountSecurityUi.busy=false;renderAccountSecurity();}}
 }
 
