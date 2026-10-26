@@ -6,7 +6,7 @@ site=${ZETSLAY_SITE_DIR:-/opt/zetslay-site}
 core=${ZETSLAY_CORE_DIR:-/opt/zetslay}
 cd "$site"
 design_revision=$(git rev-parse "${ZETSLAY_TRUST_REVISION:?Укажите ревизию сайта}^{commit}")
-core_revision=b0d23ef750cd5c12a263a20be331d0bf3d5b5460
+core_revision=4c241a3aa0a12d78b8af682ef09e8f60332c0cb4
 [[ "$core_revision" =~ ^[a-f0-9]{40}$ ]] || { echo 'Нужен полный SHA проверенного обновления API.';exit 1; }
 git -C "$core" fetch origin "$core_revision"
 [ "$(git -C "$core" rev-parse "$core_revision^{commit}")" = "$core_revision" ] || exit 1
