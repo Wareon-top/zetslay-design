@@ -5,7 +5,7 @@ import {readFileSync} from 'node:fs';
 const code=readFileSync(new URL('./kosell-storefront.js',import.meta.url),'utf8');
 const form={nodeId:'2500',categoryTitle:'Game · Аккаунты',fingerprint:'a'.repeat(64),currency:'RUB',fields:{'fields[platform]':'steam'},missing:[],controls:[{name:'fields[platform]',label:'Платформа',kind:'select',required:true,options:[{value:'',label:'Выбрать'},{value:'steam',label:'Steam'}]}]};
 const sources={products:[{id:1,name:'<img onerror=x>',nodeId:'2500',availableAccounts:5},{id:2,name:'Unmatched game',nodeId:null}],categories:[{nodeId:'2500',game:'Game',name:'Аккаунты'}],preparation:null};
-function fixture(){const root={innerHTML:''},feedback={textContent:'',setAttribute(){}},handlers={},calls=[];const ctx=vm.createContext({console,Date,Set,Map,Promise,Number,Object,String,Array,Math,setTimeout:fn=>{queueMicrotask(fn);return 1;},authState:{token:'account-one'},sessionGeneration:1,kosellUi:{status:{storeId:'42',config:{markupPercent:20,manageOffers:true}}},kosellCatalogMarkup:()=>'<section>legacy template editor</section>',escapeHtml:s=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;'),kosellMoney:(n,c)=>(n/100).toFixed(2)+' '+c,humanError:e=>e.message,validateKosellCatalogPlan:p=>p&&Array.isArray(p.items)&&typeof p.token==='string',loadKosellStatus:async()=>{},document:{addEventListener:(type,fn)=>(handlers[type]||=[]).push(fn),querySelector:selector=>selector==='[data-kosell-storefront]'?root:selector==='[data-sf-feedback]'?feedback:null},apiRequest:async(path,options)=>{calls.push({path,options});return path.endsWith('/category')?structuredClone(form):structuredClone(sources);}});vm.runInContext(code,ctx);return{ctx,root,feedback,handlers,calls,run:s=>vm.runInContext(s,ctx)};}
+function fixture(){const root={innerHTML:''},feedback={textContent:'',setAttribute(){}},handlers={},calls=[];const ctx=vm.createContext({console,Date,Set,Map,Promise,AbortController,clearTimeout,Number,Object,String,Array,Math,setTimeout:(fn,ms)=>{if(ms!==1000&&ms!==1200)return setTimeout(fn,ms);queueMicrotask(fn);return 1;},authState:{token:'account-one'},sessionGeneration:1,kosellUi:{status:{storeId:'42',config:{markupPercent:20,manageOffers:true}}},kosellCatalogMarkup:()=>'<section>legacy template editor</section>',escapeHtml:s=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;'),kosellMoney:(n,c)=>(n/100).toFixed(2)+' '+c,humanError:e=>e.message,validateKosellCatalogPlan:p=>p&&Array.isArray(p.items)&&typeof p.token==='string',loadKosellStatus:async()=>{},document:{addEventListener:(type,fn)=>(handlers[type]||=[]).push(fn),querySelector:selector=>selector==='[data-kosell-storefront]'?root:selector==='[data-sf-feedback]'?feedback:null},apiRequest:async(path,options)=>{calls.push({path,options});return path.endsWith('/category')?structuredClone(form):structuredClone(sources);}});vm.runInContext(code,ctx);return{ctx,root,feedback,handlers,calls,run:s=>vm.runInContext(s,ctx)};}
 async function selected(){const f=fixture();await f.run('sfLoad()');await f.run('sfSelect(1,true)');f.run('sfState().reviewed=true');return f;}
 const plan={token:'confirmed-plan',expiresAt:Date.now()+300000,currency:'RUB',activate:false,items:[{productId:1,productName:'<svg onload=x>',nodeId:'2500',categoryTitle:'Game · Аккаунты',hours:24,costMinor:100,priceMinor:120}],skipped:[]};
 test('new catalogue offers searchable game selection, exact categories and optional legacy templates',async()=>{const f=await selected(),html=f.run('kosellCatalogMarkup(kosellUi.status)');assert.match(html,/создавать лоты-образцы больше не нужно/);assert.match(html,/data-sf-search/);assert.match(html,/data-sf-category="1"/);assert.match(html,/Game · Аккаунты/);assert.match(html,/legacy template editor/);assert.doesNotMatch(html,/<img onerror/);assert.equal(f.run('sfEntryReady(sfState().entries[0])'),true);assert.equal(f.calls.some(c=>/offer-preview/.test(c.path)),false);});
@@ -80,7 +80,7 @@ test('switching account during bulk selection discards the old catalogue and lat
 
 test('a 250-step plan waits a full minute at step 15 and resumes the same revision without restarting or creating',async()=>{
  const f=await selected();let revision=0,limited=false,waitTicks=0;const sent=[];
- f.ctx.setTimeout=(fn,ms)=>{if(ms===1000){waitTicks++;assert.match(f.root.innerHTML,/Продолжим автоматически через/);}queueMicrotask(fn);return 1;};
+ f.ctx.setTimeout=(fn,ms)=>{if(ms>=60000)return setTimeout(fn,ms);if(ms===1000){waitTicks++;assert.match(f.root.innerHTML,/Продолжим автоматически через/);}queueMicrotask(fn);return 1;};
  f.ctx.apiRequest=async(path,options)=>{
   sent.push({path,body:structuredClone(options?.body)});
   if(path.endsWith('/start'))return{token:'saved-250',state:'preparing',revision:0,completed:0,total:250};
@@ -92,17 +92,50 @@ test('a 250-step plan waits a full minute at step 15 and resumes the same revisi
  await f.run('sfPrepare()');assert.equal(revision,250);assert.equal(waitTicks,60);assert.equal(sent.filter(c=>c.path.endsWith('/start')).length,1);assert.equal(sent.filter(c=>c.path.endsWith('/step')&&c.body.revision===15).length,2);assert.equal(f.run('sfState().busy'),false);assert.equal(f.run('sfState().wait'),null);assert.equal(f.run('sfState().plan.token'),plan.token);assert.equal(sent.some(c=>c.path.endsWith('/offer-confirm')),false);
 });
 test('persistent limits stop after five waits and retain a resumable preparation',async()=>{
- const f=await selected();let attempts=0,ticks=0;f.ctx.setTimeout=(fn,ms)=>{if(ms===1000)ticks++;queueMicrotask(fn);return 1;};
+ const f=await selected();let attempts=0,ticks=0;f.ctx.setTimeout=(fn,ms)=>{if(ms>=60000)return setTimeout(fn,ms);if(ms===1000)ticks++;queueMicrotask(fn);return 1;};
  f.ctx.apiRequest=async path=>{if(path.endsWith('/start'))return{token:'saved',state:'preparing',revision:15,completed:15,total:250};attempts++;throw Object.assign(Error('Limit'),{code:'RATE_LIMITED'});};
  await f.run('sfPrepare()');assert.equal(attempts,6);assert.equal(ticks,300);assert.equal(f.run('sfState().preparation.revision'),15);assert.equal(f.run('sfState().busy'),false);assert.match(f.root.innerHTML,/Прогресс сохранён/);assert.match(f.root.innerHTML,/data-sf-action="resume"/);
 });
+test('a stalled category read stops the batch, retains selected games and allows retry',async()=>{
+ const f=fixture();await f.run('sfLoad()');f.run('SF_READ_LIMITS.requestMs=15');let calls=0,signal;
+ f.ctx.entries=[1,2].map(productId=>({productId,productName:'Game',nodeId:'2500',form:null,fields:{}}));f.run('sfState().entries=entries');
+ f.ctx.apiRequest=(path,options)=>{calls++;signal=options.signal;return new Promise(()=>{});};await f.run('sfRetryFields()');
+ assert.equal(calls,1);assert.equal(signal.aborted,true);assert.equal(f.run('sfState().busy'),false);assert.equal(f.run('sfState().entries.length'),2);assert.equal(f.run('sfState().entries[0].loading'),false);assert.match(f.run('sfState().entries[0].error'),/не ответил вовремя/);assert.match(f.root.innerHTML,/Загрузить недостающие параметры/);
+});
+test('a shared supplier outage stops the remaining category reads and stays visible after selecting all',async()=>{
+ const f=fixture();await f.run('sfLoad()');allGames(f,3);let calls=0;
+ f.ctx.apiRequest=async()=>{calls++;throw Object.assign(Error('Поставщик временно не отвечает'),{code:'KOSELL_TIMEOUT'});};
+ await f.run('sfSelectProducts(true)');assert.equal(calls,1);assert.equal(f.run('sfState().entries.length'),3);assert.equal(f.run('sfState().busy'),false);assert.ok(f.run('sfState().error'));assert.equal(f.feedback.textContent,f.run('sfState().error'));assert.doesNotMatch(f.feedback.textContent,/Добавлено игр/);
+});
+test('a stalled plan step keeps its token and revision and never creates or restarts preparation',async()=>{
+ const f=await selected();f.run('SF_READ_LIMITS.requestMs=15');const sent=[];
+ f.ctx.apiRequest=(path,options)=>{sent.push(path);if(path.endsWith('/start'))return Promise.resolve({token:'saved',state:'preparing',revision:7,completed:7,total:250});return new Promise(()=>{});};await f.run('sfPrepare()');
+ assert.equal(f.run('sfState().busy'),false);assert.equal(f.run('sfState().preparation.token'),'saved');assert.equal(f.run('sfState().preparation.revision'),7);assert.equal(sent.filter(p=>p.endsWith('/start')).length,1);assert.equal(sent.filter(p=>p.endsWith('/step')).length,1);assert.ok(!sent.some(p=>p.includes('offer-confirm')));assert.match(f.root.innerHTML,/Проверить сохранённый прогресс/);assert.match(f.root.innerHTML,/Продолжить подготовку/);
+});
+test('a server repeatedly returning the same preparing revision cannot keep the UI spinning forever',async()=>{
+ const f=await selected();let calls=0;f.ctx.apiRequest=async path=>{if(path.endsWith('/step'))calls++;return {token:'saved',state:'preparing',revision:7,completed:7,total:250};};await f.run('sfPrepare()');assert.equal(calls,3);assert.equal(f.run('sfState().busy'),false);assert.equal(f.run('sfState().preparation.revision'),7);assert.match(f.run('sfState().error'),/не продвинулся/);
+});
+test('cancellation releases a category wait immediately even when the network ignores abort',async()=>{
+ const f=fixture();await f.run('sfLoad()');let signal;f.ctx.apiRequest=(path,options)=>{signal=options.signal;return new Promise(()=>{});};const pending=f.run('sfSelectProducts(true)');await new Promise(setImmediate);await f.run('sfCancel()');await pending;assert.equal(signal.aborted,true);assert.equal(f.run('sfState().busy'),false);assert.equal(f.run('sfState().entries[0].loading'),false);
+});
+test('recovering a saved ready plan is GET only, retains selected fields and does not authorize creation',async()=>{
+ const f=await selected(),before=f.run('JSON.stringify(sfState().entries)');const calls=[];
+ f.ctx.apiRequest=async(path,options)=>{calls.push({path,options});return {storeId:'42',storefrontPreparation:{token:'saved',revision:9,state:'ready',completed:9,total:9,plan}};};await f.run('sfRecoverPreparation()');assert.equal(calls.length,1);assert.equal(calls[0].options.method,undefined);assert.equal(calls[0].path,'/api/v1/plugins/kosell-rent/status');assert.equal(f.run('sfState().plan.token'),plan.token);assert.equal(f.run('JSON.stringify(sfState().entries)'),before);assert.match(f.root.innerHTML,/Создать лоты/);
+});
+test('recovering after a lost start finds the saved draft without repeating start or steps',async()=>{
+ const f=await selected();f.run('sfState().preparation=null;sfState().error="timeout"');f.ctx.apiRequest=async path=>{assert.equal(path,'/api/v1/plugins/kosell-rent/status');return {storeId:'42',storefrontPreparation:{token:'saved-start',revision:3,state:'preparing',completed:3,total:250}};};await f.run('sfRecoverPreparation()');assert.equal(f.run('sfState().preparation.token'),'saved-start');assert.equal(f.run('sfState().preparation.revision'),3);assert.match(f.root.innerHTML,/Продолжить подготовку/);
+});
+test('foreign or stale recovery results cannot populate another store or session',async()=>{
+ const f=await selected();f.ctx.apiRequest=async()=>({storeId:'another',storefrontPreparation:{token:'foreign',state:'ready',revision:1,plan}});await f.run('sfRecoverPreparation()');assert.equal(f.run('sfState().plan'),null);assert.match(f.run('sfState().error'),/не подтвердил магазин/);
+ let resolve;f.ctx.apiRequest=()=>new Promise(r=>resolve=r);const pending=f.run('sfRecoverPreparation()');f.ctx.authState.token='new';f.ctx.sessionGeneration++;resolve({storeId:'42',storefrontPreparation:{token:'old',state:'ready',revision:1,plan}});await pending;assert.equal(f.run('sfState().plan'),null);
+});
 test('cancelling during the limit countdown sends no further preparation steps',async()=>{
- const f=await selected();let stepCalls=0,release;f.ctx.setTimeout=(fn,ms)=>{if(ms===1000)release=fn;else queueMicrotask(fn);return 1;};
+ const f=await selected();let stepCalls=0,release;f.ctx.setTimeout=(fn,ms)=>{if(ms>=60000)return setTimeout(fn,ms);if(ms===1000)release=fn;else queueMicrotask(fn);return 1;};
  f.ctx.apiRequest=async path=>{if(path.endsWith('/start'))return{token:'saved',state:'preparing',revision:15,completed:15,total:250};if(path.endsWith('/cancel'))return{};stepCalls++;throw Object.assign(Error('Limit'),{code:'RATE_LIMITED'});};
  const pending=f.run('sfPrepare()');await new Promise(setImmediate);assert.match(f.root.innerHTML,/Продолжим автоматически через 60 с/);await f.run('sfCancel()');release();await pending;assert.equal(stepCalls,1);assert.equal(f.run('sfState().preparation.state'),'cancelled');assert.equal(f.run('sfState().wait'),null);assert.doesNotMatch(f.root.innerHTML,/Продолжим автоматически/);
 });
 test('changing account during a limit wait discards old progress without further API requests',async()=>{
- const f=await selected();let stepCalls=0,release;f.ctx.setTimeout=(fn,ms)=>{if(ms===1000)release=fn;else queueMicrotask(fn);return 1;};
+ const f=await selected();let stepCalls=0,release;f.ctx.setTimeout=(fn,ms)=>{if(ms>=60000)return setTimeout(fn,ms);if(ms===1000)release=fn;else queueMicrotask(fn);return 1;};
  f.ctx.apiRequest=async path=>{if(path.endsWith('/start'))return{token:'old',state:'preparing',revision:15,completed:15,total:250};stepCalls++;throw Object.assign(Error('Limit'),{code:'RATE_LIMITED'});};
  const pending=f.run('sfPrepare()');await new Promise(setImmediate);f.ctx.authState.token='new-account';f.ctx.sessionGeneration++;release();await pending;assert.equal(stepCalls,1);assert.equal(f.run('sfState().preparation'),null);assert.equal(f.run('sfState().entries.length'),0);
 });
