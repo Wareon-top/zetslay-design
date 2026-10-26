@@ -35,5 +35,12 @@
     "14ad6aed6cf220e379202cf8b6de574f5adeed802bd6663bc9ce54e2bb5f741e",
     "0d05e0cb5e0790d4ad3b10c51fe15271e48669222ebd19d0fcd2ee06aee2e916",
     "4f032dcf7a0747495a510518abf5d534cbb5019095514c9550a8af32aba815b3"
-  ]
+  ],
+  "accountSecurityReplacement": {
+    "sourceSha256": "2eb3030b54c4fc28f68595627ad5d9d8296272f0c5370c93aeaceca199befba6",
+    "sourceBytes": 13436,
+    "targetSha256": "4f032dcf7a0747495a510518abf5d534cbb5019095514c9550a8af32aba815b3",
+    "sourceContentReviewed": false,
+    "strategy": "replace_entire_component_after_host_contract_and_verified_private_backup"
+  }
 }
