@@ -45,3 +45,9 @@ Public `/security/` explains Golden Key, encrypted storage and runtime decryptio
 A footer link is added to the installed landing and cabinet. The stager preserves all other HTML bytes and banners. It changes only the two reviewed key-handling phrases in the current `app.js`, preserving other installed repairs. Account-security UI hides owner MFA disable, explains the mandatory policy and binds all async writes/reads to the current session and mutation revision. Reads cannot overwrite enrollment results; recovery codes survive an accepted action with failed refresh. Requests have 15-second deadlines and ambiguous outcomes do not invite automatic replay.
 
 Local UI checks: 33 passed. Stager checks: 5 passed, including rollback after a mid-publish failure. JavaScript/Python/shell syntax checks passed. Real browser layout review and production installation remain unconfirmed.
+
+## Installer compatibility correction
+
+The initial production attempt stopped in UI preflight because the security asset was not in the narrow accepted digest list. API switching and public site writes had not started. The installer now recognizes all four reviewed historical security UI releases (20261006 initial, partial health labels, weekly-cookie logout handling, and launch-auth isolation), plus the new release. BOM/CRLF/trailing-newline transport variants are normalized only for this known-content comparison. Unknown edited code still fails closed and reports only SHA256/byte count. Incoming asset hashes remain exact.
+
+Regression coverage includes the actual four historical source fixtures, transport variants, rejection without printing unknown source, preservation of private HTML/banners/current proxy code, preflight without writes and rollback on a mid-publish failure. Seven installer test cases passed locally.

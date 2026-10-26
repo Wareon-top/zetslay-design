@@ -4,6 +4,29 @@ HERE=Path(__file__).parent
 spec=importlib.util.spec_from_file_location('stage',HERE/'stage-trust-foundation.py');m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
 sha=lambda x:hashlib.sha256(x).hexdigest()
 class TrustUiTests(unittest.TestCase):
+ def test_real_historical_releases_and_transport_variants_upgrade_without_touching_private_html(self):
+  project=HERE.parent;manifest=json.loads((HERE/'trust-ui-manifest.json').read_text())
+  for revision,digest in manifest['accountSecurityBaselines'].items():
+   baseline=(HERE/'fixtures/trust-security'/(revision+'.js')).read_bytes()
+   self.assertEqual(sha(baseline),digest)
+   for variant in [baseline,baseline.replace(b'\n',b'\r\n'),b'\xef\xbb\xbf'+baseline,baseline.rstrip(b'\n'),baseline+b'\n\n']:
+    with self.subTest(revision=revision,sha=sha(variant)),tempfile.TemporaryDirectory() as tmp:
+     root=Path(tmp);local,incoming,a,b=self.fixture(root)
+     (incoming/'trust-ui-manifest.json').write_text(json.dumps(manifest))
+     for name in manifest['assets']:(incoming/name).write_bytes((project/name).read_bytes())
+     (local/'app/account-security.js').write_bytes(variant)
+     (local/'app/app.js').write_text('// '+''.join(p['before']+'\n// ' for p in manifest['appPatches'])+'KEEP_CURRENT_PROXY_REPAIR\n')
+     m.stage(local,incoming,root/'out')
+     self.assertEqual((root/'out/app/account-security.js').read_bytes(),(project/'app/account-security.js').read_bytes())
+     self.assertIn(b'KEEP_CURRENT_PROXY_REPAIR',(root/'out/app/app.js').read_bytes())
+     self.assertEqual((root/'out/index.html').read_bytes().decode(),a.replace('<a href="/legal/">','<a href="/security/">Данные и безопасность</a> <a href="/legal/">'))
+ def test_unknown_security_code_is_rejected_with_digest_without_echoing_source(self):
+  manifest=json.loads((HERE/'trust-ui-manifest.json').read_text())
+  for revision in manifest['accountSecurityBaselines']:
+   baseline=(HERE/'fixtures/trust-security'/(revision+'.js')).read_bytes()
+   changed=baseline+b'\n// CANARY_PRIVATE_VALUE\n'
+   with self.assertRaisesRegex(ValueError,'SHA256='+sha(changed)) as failure:m.validate_security_script(changed,manifest)
+   self.assertNotIn('CANARY_PRIVATE_VALUE',str(failure.exception))
  def fixture(self,root):
   local=root/'local';incoming=root/'incoming';local.mkdir();incoming.mkdir();manifest={'assets':{},'accountSecurityAccepted':[],'appPatches':[{'before':'OLD_COPY','after':'HONEST_COPY'}]}
   for base in [local,incoming]:

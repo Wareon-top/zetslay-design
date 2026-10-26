@@ -3,6 +3,13 @@ import hashlib,json,re,sys
 from pathlib import Path
 
 def sha(value):return hashlib.sha256(value).hexdigest()
+def normalized_script(value):
+ # Transport differences only; arbitrary edits still fail the reviewed-content check.
+ return value.removeprefix(b'\xef\xbb\xbf').replace(b'\r\n',b'\n').rstrip(b'\n')+b'\n'
+def validate_security_script(value,manifest):
+ if sha(value) in manifest['accountSecurityAccepted']:return
+ if sha(normalized_script(value)) in manifest.get('accountSecurityNormalizedAccepted',[]):return
+ raise ValueError('Не распознана версия настроек защиты. SHA256='+sha(value)+'; bytes='+str(len(value))+'. Сайт не изменён.')
 def replace_once(text,before,after,label):
  if text.count(after)==1:return text
  if text.count(before)!=1:raise ValueError('Не распознан участок '+label+'. Сайт не изменён.')
@@ -19,7 +26,7 @@ def stage(local,incoming,out):
   if sha(data)!=expected:raise ValueError('Повреждён файл '+name)
   result[name]=data
  old=(local/'app/account-security.js').read_bytes()
- if sha(old) not in manifest['accountSecurityAccepted']:raise ValueError('Не распознана версия настроек защиты.')
+ validate_security_script(old,manifest)
  app=(local/'app/app.js').read_bytes().decode('utf-8')
  for patch in manifest['appPatches']:app=replace_once(app,patch['before'],patch['after'],'app.js')
  result['app/app.js']=app.encode('utf-8')
@@ -33,4 +40,6 @@ def stage(local,incoming,out):
  out.mkdir(parents=True,exist_ok=True)
  for name,data in result.items():
   p=out/name;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(data)
-if __name__=='__main__':stage(*sys.argv[1:])
+if __name__=='__main__':
+ try:stage(*sys.argv[1:])
+ except ValueError as error:raise SystemExit(str(error))
