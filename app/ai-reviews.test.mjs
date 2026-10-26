@@ -9,3 +9,20 @@ test('late status completion and mutation cannot populate the next session or ov
 });
 test('key submitted only to authenticated settings and cleared immediately; no storage/Telegram leaks',async()=>{const f=fixture();f.run('aiReviewsUi.session="owner";');const input={value:'TEST_SECRET_ONLY'},fieldset={};const form={values:{provider:'groq',key:'TEST_SECRET_ONLY'},matches:s=>s.includes('[data-ai-key]'),querySelector:s=>s==='[name="key"]'?input:fieldset,closest:()=>form};f.listeners.submit({target:form,preventDefault(){}});await new Promise(r=>setImmediate(r));assert.equal(input.value,'');assert.equal(f.calls[0][0],'/api/v1/plugins/ai-reviews/settings');assert.equal(f.calls[0][1].authenticated,true);assert.equal(f.calls[0][1].body.key,'TEST_SECRET_ONLY');assert.doesNotMatch(f.run('JSON.stringify(aiReviewsUi)'),/TEST_SECRET_ONLY/);assert.doesNotMatch(code,/localStorage|sessionStorage|console\.(log|error)/);});
 test('catalog rarity and subscription gates assign AI Reviews to Ultra and match trial eligibility',()=>{const f=fixture();vm.runInContext(readFileSync(new URL('./plugin-rarity.js',import.meta.url),'utf8'),f.c);assert.equal(f.run('pluginRarity({id:"zetslay.ai-reviews"}).key'),'ultra');const access=readFileSync(new URL('./subscription-access.js',import.meta.url),'utf8');vm.runInContext(access.slice(0,access.indexOf('async function subscriptionLoad')),f.c);for(const [id,allowed] of [['trial_3d',true],['pro',true],['maximum',true],['start',false],['growth',false]]){f.c.planId=id;f.run('authState.workspace={plan:{id:planId,active:true,expiresAt:"2099-01-01T00:00:00Z"}}');assert.equal(f.run('subscriptionPluginAllowed("zetslay.ai-reviews")'),allowed,id);}f.run('authState.workspace.plan.active=false');assert.equal(f.run('subscriptionPluginAllowed("zetslay.ai-reviews")'),false);const page=readFileSync(new URL('./plugin-page.js',import.meta.url),'utf8');assert.match(page,/aiReviewsMarkup\(plugin\)/);});
+
+test('Ultra audit: old read cannot overwrite new settings or unlock the mutation',async()=>{
+ const f=fixture();f.run('aiReviewsUi.session="owner";');const resolves=[];f.c.apiRequest=()=>new Promise(r=>resolves.push(r));
+ const read=f.run('loadAIReviewsStatus()'),write=f.run('aiReviewsRequest("settings",{config:{}},null)');
+ resolves[0]({...status,marker:'old'});await read;assert.equal(f.run('aiReviewsUi.busy'),true);assert.equal(f.run('aiReviewsUi.status'),null);
+ resolves[1]({...status,marker:'saved'});await write;assert.equal(f.run('aiReviewsUi.status.marker'),'saved');assert.equal(f.run('aiReviewsUi.busy'),false);
+});
+test('Ultra audit: accepted action with failed refresh never invites a repeat',async()=>{
+ const f=fixture();f.run('aiReviewsUi.session="owner";');let calls=0;f.c.apiRequest=async()=>{if(calls++===0)return {accepted:true};throw Error('read failed');};
+ await f.run('aiReviewsRequest("action",{action:"approve",orderId:"AB"},null)');
+ assert.match(f.run('aiReviewsUi.message'),/Действие принято/);assert.match(f.run('aiReviewsUi.message'),/перед повтором/);assert.equal(f.run('aiReviewsUi.busy'),false);assert.equal(calls,2);
+});
+test('Ultra audit: session change during post-action refresh cannot write status or success into another account',async()=>{
+ const f=fixture();f.run('aiReviewsUi.session="owner";');let resolve;f.c.apiRequest=async(path)=>path.endsWith('/action')?{accepted:true}:new Promise(r=>resolve=r);
+ const write=f.run('aiReviewsRequest("action",{action:"skip",orderId:"AB"},null)');await new Promise(r=>setImmediate(r));f.run('authState.token="other";resetAIReviewsUi();');resolve(status);await write;
+ assert.equal(f.run('aiReviewsUi.status'),null);assert.equal(f.run('aiReviewsUi.message'),'');assert.equal(f.run('aiReviewsUi.busy'),false);
+});

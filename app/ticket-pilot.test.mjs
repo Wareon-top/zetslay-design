@@ -8,3 +8,9 @@ test('a newer filter request wins over a slow prior page response',async()=>{con
 test('integration uses Ultra presentation/access, private reset and the dedicated draft workspace',()=>{assert.match(read('./plugin-rarity.js'),/'zetslay.ticket-pilot':'ultra'/);assert.match(read('./subscription-access.js'),/'zetslay.ticket-pilot':2/);assert.match(read('./plugin-page.js'),/ticketPilotMarkup\(plugin\)/);assert.match(read('./app.js'),/resetTicketPilotUi\(\)/);assert.doesNotMatch(code,/localStorage|sessionStorage|PHPSESSID\s*=/);});
 
 test('a busy initial server response waits for the scheduled refresh instead of issuing an immediate request loop',()=>{const c=harness();let queued=0;c.queueMicrotask=()=>queued++;vm.runInContext("ticketPilotUi.notice='Исполнитель проверяет данные.';ticketPilotMarkup({id:'zetslay.ticket-pilot',installed:true})",c);assert.equal(queued,0);});
+
+test('Ultra audit: a read begun before settings save cannot replace saved settings',async()=>{
+ const resolves=[];const c=harness(()=>new Promise(r=>resolves.push(r))),read=vm.runInContext('loadTicketPilot()',c),write=vm.runInContext('tpRequest("settings",{config:{}})',c);
+ const old=status();old.installation.config.ageHours=24;resolves[0](old);await read;assert.equal(vm.runInContext('ticketPilotUi.status',c),null);
+ const saved=status();saved.installation.config.ageHours=48;resolves[1](saved);await new Promise(r=>setImmediate(r));resolves[2](saved);await write;assert.equal(vm.runInContext('ticketPilotUi.status.installation.config.ageHours',c),48);
+});

@@ -1,6 +1,6 @@
 /* AI Reviews: authenticated, account-scoped drafts; keys never enter storage. */
-const aiReviewsUi={session:null,generation:0,loading:false,busy:false,status:null,message:''};
-function resetAIReviewsUi(){Object.assign(aiReviewsUi,{session:authState.token,generation:aiReviewsUi.generation+1,loading:false,busy:false,status:null,message:''});}
+const aiReviewsUi={session:null,generation:0,revision:0,loading:false,busy:false,status:null,message:''};
+function resetAIReviewsUi(){Object.assign(aiReviewsUi,{session:authState.token,generation:aiReviewsUi.generation+1,revision:aiReviewsUi.revision+1,loading:false,busy:false,status:null,message:''});}
 const aiReviewsLabels={watching:'Ждём подходящий отзыв',drafted:'Черновик готов',generating:'Генерация',generation_failed:'Генерация остановлена',sent:'Ответ опубликован',sending:'Отправляется',uncertain:'Результат неизвестен · повтор запрещён',skipped:'Пропущен',ignored:'Отзыв существовал до включения',cancelled:'Заказ исключён'};
 function aiReviewsMarkup(plugin){
   if(plugin.id!=='zetslay.ai-reviews'||!plugin.installed)return '';
@@ -25,19 +25,25 @@ function aiReviewsMarkup(plugin){
   </section>`;
 }
 async function loadAIReviewsStatus(){
-  if(!authState.token)return;if(aiReviewsUi.session!==authState.token)resetAIReviewsUi();if(aiReviewsUi.loading)return;
-  const token=authState.token,generation=aiReviewsUi.generation;aiReviewsUi.loading=true;
-  try{const s=await apiRequest('/api/v1/plugins/ai-reviews/status',{authenticated:true});if(token===authState.token&&generation===aiReviewsUi.generation){if(s.busy){aiReviewsUi.message='Обработка продолжается. Повторите обновление через несколько секунд.';}else{aiReviewsUi.status=s;aiReviewsUi.message='';}}}
-  catch(e){if(token===authState.token&&generation===aiReviewsUi.generation)aiReviewsUi.message=humanError(e);}
-  finally{if(token===authState.token&&generation===aiReviewsUi.generation){aiReviewsUi.loading=false;renderPluginPage();}}
+  if(!authState.token)return;if(aiReviewsUi.session!==authState.token)resetAIReviewsUi();if(aiReviewsUi.loading||aiReviewsUi.busy)return;
+  const token=authState.token,generation=aiReviewsUi.generation,revision=++aiReviewsUi.revision;aiReviewsUi.loading=true;
+  const current=()=>token===authState.token&&generation===aiReviewsUi.generation&&revision===aiReviewsUi.revision;
+  try{const s=await apiRequest('/api/v1/plugins/ai-reviews/status',{authenticated:true});if(current()){if(s.busy){aiReviewsUi.message='Обработка продолжается. Повторите обновление через несколько секунд.';}else{aiReviewsUi.status=s;aiReviewsUi.message='';}}}
+  catch(e){if(current())aiReviewsUi.message=humanError(e);}
+  finally{if(current()){aiReviewsUi.loading=false;renderPluginPage();}}
 }
 async function aiReviewsRequest(path,body,element){
-  if(aiReviewsUi.busy||aiReviewsUi.session!==authState.token)return;
-  const token=authState.token,generation=aiReviewsUi.generation;aiReviewsUi.busy=true;
+  if(!authState.token||aiReviewsUi.busy||aiReviewsUi.session!==authState.token)return;
+  const token=authState.token,generation=aiReviewsUi.generation,revision=++aiReviewsUi.revision;aiReviewsUi.busy=true;aiReviewsUi.loading=false;
+  const current=()=>token===authState.token&&generation===aiReviewsUi.generation&&revision===aiReviewsUi.revision;
   const fieldset=element?.closest('form')?.querySelector('fieldset');if(fieldset)fieldset.disabled=true;else if(element)element.disabled=true;
-  try{const result=await apiRequest('/api/v1/plugins/ai-reviews/'+path,{method:'POST',authenticated:true,body});if(token!==authState.token||generation!==aiReviewsUi.generation)return;if(result.installation)aiReviewsUi.status=result;else await loadAIReviewsStatus();aiReviewsUi.message=path==='action'?'Действие сохранено. Публикация пройдёт повторную проверку.':'Настройки сохранены.';}
-  catch(e){if(token===authState.token&&generation===aiReviewsUi.generation)aiReviewsUi.message=humanError(e);}
-  finally{if(token===authState.token&&generation===aiReviewsUi.generation){aiReviewsUi.busy=false;renderPluginPage();}}
+  let accepted=false;
+  try{const result=await apiRequest('/api/v1/plugins/ai-reviews/'+path,{method:'POST',authenticated:true,body});accepted=true;if(!current())return;
+    const status=result.installation?result:await apiRequest('/api/v1/plugins/ai-reviews/status',{authenticated:true});if(!current())return;
+    if(status.busy){aiReviewsUi.message='Действие принято. Обработка продолжается — обновите журнал через несколько секунд.';}
+    else{aiReviewsUi.status=status;aiReviewsUi.message=path==='action'?'Действие сохранено. Публикация пройдёт повторную проверку.':'Настройки сохранены.';}
+  }catch(e){if(current())aiReviewsUi.message=accepted?'Действие принято, но состояние не удалось обновить. Обновите журнал перед повтором.':humanError(e);}
+  finally{if(current()){aiReviewsUi.busy=false;renderPluginPage();}}
 }
 document.addEventListener('submit',event=>{
   if(!event.target.matches('[data-ai-key],[data-ai-settings]'))return;event.preventDefault();const f=new FormData(event.target);
