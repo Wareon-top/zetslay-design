@@ -1,9 +1,9 @@
 {
   "assets": {
-    "app/account-security.js": "be121173e755bd5a309885b2c9828c16cda17dbd961da5751657a7f2650ca72f",
-    "security/index.html": "f5037fd00fb0d6b2c06d306a03ef64dd5b99342369c616703757d15c6ccfe0af",
+    "app/account-security.js": "49ca9130ae2603cd377617364f2d07c877247c8593f0a874a63485360832b095",
+    "security/index.html": "4412ee685be785ee57fe0fff154ebc5c3692c4475b4c1ad8ae0e4c0fb62d4fb3",
     "security/security.css": "b2090d2ceb351612179b7d0ce3e5917675e4c3805afa4b51f77b32af86dd9e9d",
-    "security/security.js": "607b8c03351ec7720e9103a4cb6d5d8e33ad8aa217bf3b8eaa42186ccd38bc87",
+    "security/security.js": "e1662dbefaf864bfdf6b4645952c02fb91aa4bd11a975e8bb3b28fa12904e18b",
     "security/brand.webp": "fbe0612e8693a25818c7599f174f419061a51914db896a362af892f43c2ca282",
     "landing-security.css": "83139a299c98639e0e2fdd49c603961b448ed8c565745c519e376c3bd05f5cd7",
     "app/passkeys.css": "d20cca5d136c5e4807ce6a13bfbdb1f2aa9a7b4710a031ec802fa51a1ea9cd9e"
@@ -15,7 +15,8 @@
     "14ad6aed6cf220e379202cf8b6de574f5adeed802bd6663bc9ce54e2bb5f741e",
     "1b1e9286955210927951ff079f0fbdbece91d88b499133a04ab7986013887938",
     "25e845eaf68f67f1af9d158867954d832ccc4833f40c4ef0e7dadc4c88c392e5",
-    "be121173e755bd5a309885b2c9828c16cda17dbd961da5751657a7f2650ca72f"
+    "be121173e755bd5a309885b2c9828c16cda17dbd961da5751657a7f2650ca72f",
+    "49ca9130ae2603cd377617364f2d07c877247c8593f0a874a63485360832b095"
   ],
   "appPatches": [
     {
@@ -45,7 +46,7 @@
   "accountSecurityReplacement": {
     "sourceSha256": "2eb3030b54c4fc28f68595627ad5d9d8296272f0c5370c93aeaceca199befba6",
     "sourceBytes": 13436,
-    "targetSha256": "be121173e755bd5a309885b2c9828c16cda17dbd961da5751657a7f2650ca72f",
+    "targetSha256": "49ca9130ae2603cd377617364f2d07c877247c8593f0a874a63485360832b095",
     "sourceContentReviewed": false,
     "strategy": "replace_entire_component_after_host_contract_and_verified_private_backup"
   },

@@ -80,7 +80,7 @@ def stage(local,incoming,out):
  if mode=='replace-observed':validate_host_contract(local,app,html)
  for patch in manifest['appPatches']:app=replace_once(app,patch['before'],patch['after'],'app.js')
  result['app/app.js']=app.encode('utf-8')
- for name in ['app.js','account-security.js']:html=include(html,name,'20261026-passkeys-2')
+ for name in ['app.js','account-security.js']:html=include(html,name,'20261027-admin-hour-1')
  if 'app/passkeys.css' in manifest['assets']:
   style='<link rel="stylesheet" href="passkeys.css?v=20261026-1" data-zetslay-passkeys-style>'
   matches=list(re.finditer(r'<link\b[^>]*\bdata-zetslay-passkeys-style\b[^>]*>',html,re.I))

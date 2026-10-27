@@ -21,7 +21,7 @@ test('security actions send the selected operation and only the current input to
 
 test('owner sees mandatory MFA and cannot select disable; ordinary user retains the control',()=>{
  const a=harness();const owner=a.run('accountSecurityMarkup({enabled:true,adminMfaRequired:true,sessions:[]},null)');
- assert.match(owner,/Для административного доступа обязательны/);assert.doesNotMatch(owner,/data-security-action="disable"/);
+ assert.match(owner,/Для административного доступа нужна 2FA/);assert.doesNotMatch(owner,/data-security-action="disable"/);
  assert.match(a.run('accountSecurityMarkup({enabled:true,adminMfaRequired:false,sessions:[]},null)'),/data-security-action="disable"/);
 });
 test('an old read cannot overwrite enrollment result and reads cannot start during a write',async()=>{
@@ -84,3 +84,5 @@ test('initial registration errors do not tell a user to use recovery codes that 
  const a=harness();const first=a.run("passkeyError({name:'NotAllowedError'},true)");assert.match(first,/Резервные коды появятся после/);assert.doesNotMatch(first,/используйте резервный код/);
  assert.match(a.run("passkeyError({name:'NotAllowedError'},false)"),/используйте резервный код/);
 });
+
+test('owner sees the server-reported hour while legacy API and ordinary accounts keep five-minute wording',()=>{const a=harness();const html=a.run('accountSecurityMarkup({enabled:true,adminMfaRequired:true,adminProofMaxAgeSeconds:3600,passkeySupported:true,passkeys:[{id:"key"}],sessions:[]},null)');assert.match(html,/админке подтверждается на 1 час/);assert.match(html,/изменения защиты аккаунта подтверждение действует 5 минут/);assert.doesNotMatch(html,/каждые 5 минут/);assert.doesNotMatch(a.run('accountSecurityMarkup({enabled:true,adminMfaRequired:true,sessions:[]},null)'),/1 час/);assert.doesNotMatch(a.run('accountSecurityMarkup({enabled:true,adminMfaRequired:false,adminProofMaxAgeSeconds:3600,sessions:[]},null)'),/1 час/);});

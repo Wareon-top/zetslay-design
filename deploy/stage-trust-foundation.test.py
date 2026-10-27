@@ -88,7 +88,7 @@ class TrustUiTests(unittest.TestCase):
    root=Path(tmp);local,incoming,a,b=self.fixture(root);out=root/'out';m.stage(local,incoming,out)
    marker='<a href="/security/">Данные и безопасность</a> '
    self.assertEqual((out/'index.html').read_bytes().decode(),a.replace('<a href="/legal/">',marker+'<a href="/legal/">'))
-   self.assertEqual((out/'app/index.html').read_bytes().decode(),b.replace('<a href="/legal/">',marker+'<a href="/legal/">').replace('?v=old','?v=20261026-passkeys-2').replace('</head>','<link rel="stylesheet" href="passkeys.css?v=20261026-1" data-zetslay-passkeys-style>\n</head>'))
+   self.assertEqual((out/'app/index.html').read_bytes().decode(),b.replace('<a href="/legal/">',marker+'<a href="/legal/">').replace('?v=old','?v=20261027-admin-hour-1').replace('</head>','<link rel="stylesheet" href="passkeys.css?v=20261026-1" data-zetslay-passkeys-style>\n</head>'))
    self.assertIn(b'CURRENT_PROXY_REPAIR',(out/'app/app.js').read_bytes());m.stage(out,incoming,root/'twice');self.assertEqual((out/'app/app.js').read_bytes(),(root/'twice/app/app.js').read_bytes())
  def test_unknown_copy_duplicate_include_and_corrupt_asset_stop_before_output(self):
   for mode in ['copy','include','asset']:
