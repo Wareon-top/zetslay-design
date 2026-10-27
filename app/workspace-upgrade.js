@@ -82,7 +82,7 @@ function createWorkspaceEventFeed({ui,scope,request,changed,timeoutMs=15000}){
   if(activeView()!=='events')return;eventsShell();const root=document.querySelector('[data-ws-events]');if(!root)return;
   const error=root.querySelector('[data-ws-error]');error.hidden=!(ui.error||ui.readError);error.textContent=ui.readError||ui.error;
   const unread=ui.data?.unread,attention=ui.data?.attention;
-  root.querySelector('[data-ws-summary]').textContent=ui.data?`${unread?`${unread} новых`:'Все события прочитаны'}${attention?` · требуют внимания: ${attention}`:''}`:'Сообщения, заказы и результаты работы магазина';
+  root.querySelector('[data-ws-summary]').textContent=ui.data?`${unread?`Новых событий: ${unread}`:'Все события прочитаны'}${attention?` · требуют внимания: ${attention}`:''}`:'Сообщения, заказы и результаты работы магазина';
   for(const b of root.querySelectorAll('[data-ws-filter]'))b.setAttribute('aria-pressed',String(b.dataset.wsFilter===ui.filter));
   for(const b of root.querySelectorAll('[data-ws-category]'))b.setAttribute('aria-pressed',String(b.dataset.wsCategory===ui.kind));
   for(const [name,n] of [['new',unread],['attention',attention]]){const el=root.querySelector(`[data-ws-count="${name}"]`);el.hidden=!n;el.textContent=n>99?'99+':String(n||0);}

@@ -13,7 +13,7 @@ class EventUiTests(unittest.TestCase):
   with tempfile.TemporaryDirectory() as d:
    local,inc,out,html=self.fixture(Path(d));m.stage(local,inc,out);result=(out/'index.html').read_text()
    for token in ['PRIVATE_OPERATOR','PRIVATE_LEGAL','VIDEO_BANNER','PROXY_BANNER']:self.assertIn(token,result)
-   self.assertIn('event-center.css?v=20261027-events-1',result);self.assertEqual((out/'workspace-upgrade.css').read_text(),'/* CURRENT_LOCAL_THEME */');self.assertEqual((local/'index.html').read_text(),html)
+   self.assertIn('event-center.css?v=20261027-events-2',result);self.assertEqual((out/'workspace-upgrade.css').read_text(),'/* CURRENT_LOCAL_THEME */');self.assertEqual((local/'index.html').read_text(),html)
    out2=Path(d)/'out2';m.stage(out,inc,out2);self.assertEqual(result,(out2/'index.html').read_text())
  def test_missing_original_module_can_be_bootstrapped(self):
   with tempfile.TemporaryDirectory() as d:
@@ -44,6 +44,6 @@ class EventUiTests(unittest.TestCase):
      bin=root/'bin';bin.mkdir();mv=bin/'mv';mv.write_text('#!/bin/bash\ncase "$*" in *event-center.css*) exit 23;; esac\nexec /bin/mv "$@"\n');mv.chmod(0o755);env['PATH']=str(bin)+':'+env['PATH']
     r=subprocess.run(['bash',str(ROOT/'deploy/update-event-center-ui.sh')],env=env,capture_output=True,text=True,timeout=20)
     if fail:self.assertNotEqual(r.returncode,0);self.assertEqual((repo/'app/index.html').read_text(),html);self.assertFalse((repo/'app/event-center.css').exists())
-    else:self.assertEqual(r.returncode,0,r.stdout+r.stderr);self.assertEqual((repo/'app/event-center.css').stat().st_mode&0o777,0o644);self.assertIn('20261027-events-1',(repo/'app/index.html').read_text())
+    else:self.assertEqual(r.returncode,0,r.stdout+r.stderr);self.assertEqual((repo/'app/event-center.css').stat().st_mode&0o777,0o644);self.assertIn('20261027-events-2',(repo/'app/index.html').read_text())
     self.assertEqual((repo/'app/workspace-upgrade.css').read_text(),'/* CURRENT_LOCAL_THEME */');self.assertEqual(next(backup.iterdir()).stat().st_mode&0o777,0o600)
 if __name__=='__main__':unittest.main()

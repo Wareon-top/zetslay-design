@@ -1,11 +1,12 @@
 {
-  "version": "20261027-events-1",
+  "version": "20261027-events-2",
   "acceptedWorkspaceScripts": [
     "56b247af82ebf703d25becd6f4d890a07a83751f3b3acd60990b43361253c9ab",
-    "c3337da0784bc0e58a9b45fcb8fc16bfb9eefeb2f9d93a1947e908215152e559"
+    "c3337da0784bc0e58a9b45fcb8fc16bfb9eefeb2f9d93a1947e908215152e559",
+    "3e2e67e8ebedf8707d1a9b37852ad6a7df921c55646985729681058e8c0ac880"
   ],
   "assets": {
-    "workspace-upgrade.js": "c3337da0784bc0e58a9b45fcb8fc16bfb9eefeb2f9d93a1947e908215152e559",
+    "workspace-upgrade.js": "3e2e67e8ebedf8707d1a9b37852ad6a7df921c55646985729681058e8c0ac880",
     "workspace-upgrade.css": "6a92d10daca0d3ea8b796680ae9e3fbdf97d3bb4deefe45d0034402eb9296bc6",
     "event-center.css": "45203ad29059f4f647ca98005a43186c549ace34df3d9e22ba6fcff45dc19d21"
   }
