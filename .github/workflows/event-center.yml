@@ -1,0 +1,32 @@
+name: Event centre experience
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  feed-and-install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test app/event-center.test.mjs app/workspace-upgrade.test.mjs app/overview.test.mjs app/orders.test.mjs app/messages.test.mjs app/proxy-shop.test.mjs
+      - run: python3 deploy/stage-event-center.test.py -v
+      - run: bash -n deploy/update-event-center-ui.sh deploy/start-event-center.sh
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --prefix "$RUNNER_TEMP/event-browser" --ignore-scripts --no-fund --save-exact playwright@1.62.1
+      - name: Select installed Chrome or install Chromium
+        run: |
+          if command -v google-chrome >/dev/null 2>&1; then
+            echo "EVENT_CENTER_CHROME=$(command -v google-chrome)" >> "$GITHUB_ENV"
+          else
+            node "$RUNNER_TEMP/event-browser/node_modules/playwright/cli.js" install --with-deps chromium
+          fi
+      - run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/event-browser/node_modules/playwright/index.mjs" EVENT_CENTER_VISUAL_LOG=true node scripts/check-event-center-browser.mjs
