@@ -1,0 +1,23 @@
+{
+  "version": "20261028-base-automation-1",
+  "assets": {
+    "store-tools.js": "194d99930281d2770f5b48c461a69dd5d6b5b5ad052bc86e8c3379eb8f8bc65b",
+    "store-tools.css": "f6d8fd7423dfc0fd4fc5567e91a6fa132d53b78d0b0e0a19df1f1c245f1c1ca9",
+    "basic-automation.js": "49c0320f1705a09267a7d64c06987c9f0df24fed6db61af6feda85c467b02b92",
+    "basic-automation.css": "7f874ae598d50dd582c1fa069d2dfdf3114171b4dbedca146e1ab7e4c572f24a"
+  },
+  "accepted": {
+    "store-tools.js": [
+      "194d99930281d2770f5b48c461a69dd5d6b5b5ad052bc86e8c3379eb8f8bc65b"
+    ],
+    "store-tools.css": [
+      "59766c069afb5ec2144588d4cad54dd65b5f922ba18190f93db1e466a4adc8e4"
+    ],
+    "basic-automation.js": [
+      "49c0320f1705a09267a7d64c06987c9f0df24fed6db61af6feda85c467b02b92"
+    ],
+    "basic-automation.css": [
+      "7f874ae598d50dd582c1fa069d2dfdf3114171b4dbedca146e1ab7e4c572f24a"
+    ]
+  }
+}
