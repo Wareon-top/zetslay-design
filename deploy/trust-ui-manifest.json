@@ -5,7 +5,7 @@
     "security/security.css": "b2090d2ceb351612179b7d0ce3e5917675e4c3805afa4b51f77b32af86dd9e9d",
     "security/security.js": "e1662dbefaf864bfdf6b4645952c02fb91aa4bd11a975e8bb3b28fa12904e18b",
     "security/brand.webp": "fbe0612e8693a25818c7599f174f419061a51914db896a362af892f43c2ca282",
-    "landing-security.css": "83139a299c98639e0e2fdd49c603961b448ed8c565745c519e376c3bd05f5cd7",
+    "landing-security.css": "628aa8eafed49a495006d93cfc6d74b5f194ac5dcfd7b51bb028fdbe1d75a896",
     "app/passkeys.css": "d20cca5d136c5e4807ce6a13bfbdb1f2aa9a7b4710a031ec802fa51a1ea9cd9e"
   },
   "accountSecurityAccepted": [
@@ -52,6 +52,6 @@
   },
   "landingSecurityFragment": {
     "file": "landing-security.html",
-    "sha256": "77bd06caaee3ea070603f378bdfb8bbc07244e29d8faa616912ef1f1858dffc7"
+    "sha256": "4f17e50fd2d52ad698617e145719786ab6e4530ee9ce7d6441f9ea7cf0a32165"
   }
 }
