@@ -22,4 +22,10 @@ class BasicUITests(unittest.TestCase):
     else:(local/'store-tools.js').write_text('// UNKNOWN MODIFIED VERSION')
     with self.assertRaises(ValueError):module.stage(local,incoming,out)
     self.assertFalse(out.exists())
+ def test_launcher_bundles_the_security_dependencies_and_immutable_core_revision(self):
+  import re
+  text=(HERE/'start-basic-automation.sh').read_text();self.assertRegex(text,r'(?m)^core_revision=[a-f0-9]{40}$')
+  match=re.search(r'for file in ([^;]+);do git -C "\$core" show "\$core_revision:services/control-plane/src/\$file"',text)
+  self.assertIsNotNone(match);files=set(match[1].split());self.assertTrue({'admin-access-policy.mjs','account-security.mjs','passkey-security.mjs','passkey-verifier.mjs','safe-log.mjs','basic-automation.mjs','basic-team.mjs','basic-bot-console.mjs'}<=files)
+  self.assertIn('trust-foundation-patches.json',text);self.assertIn('trust-foundation-probe.mjs',text)
 if __name__=='__main__':unittest.main()

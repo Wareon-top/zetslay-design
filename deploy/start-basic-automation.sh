@@ -6,14 +6,14 @@ site=${ZETSLAY_SITE_DIR:-/opt/zetslay-site}
 core=${ZETSLAY_CORE_DIR:-/opt/zetslay}
 cd "$site"
 design_revision=$(git rev-parse "${ZETSLAY_BASIC_AUTOMATION_REVISION:?Укажите ревизию исправления}^{commit}")
-core_revision=d4fcceb37217a7ff59e7f2a2a1a828d7a41117ab
+core_revision=5c46aa7d907208f2f67dd1beffe8c2fb83cc4f4b
 git -C "$core" fetch origin "$core_revision"
 state=$(systemctl show zetslay-basic-automation-update.service -p ActiveState --value 2>/dev/null || true)
 case "$state" in active|activating|deactivating) echo 'Обновление меню бота уже выполняется.';exit 1;; esac
 job=$(mktemp -d /root/zetslay-basic-automation-job.XXXXXX)
 mkdir "$job/core"
-for file in update-basic-automation.py basic-automation-probe.mjs basic-automation-patches.json basic-automation-schema.sql update-trust-foundation.py trust-foundation-patches.json trust-foundation-probe.mjs switch-steelproxy-direct.py check-steelproxy-readiness.py;do git -C "$core" show "$core_revision:deploy/$file" > "$job/core/$file";done
-for file in basic-automation.mjs basic-team.mjs basic-bot-console.mjs;do git -C "$core" show "$core_revision:services/control-plane/src/$file" > "$job/core/$file";done
+for file in update-basic-automation.py basic-automation-probe.mjs basic-automation-patches.json basic-automation-schema.sql update-trust-foundation.py trust-foundation-patches.json trust-foundation-probe.mjs switch-steelproxy-direct.py check-steelproxy-readiness.py trust-runtime-inventory.mjs;do git -C "$core" show "$core_revision:deploy/$file" > "$job/core/$file";done
+for file in basic-automation.mjs basic-team.mjs basic-bot-console.mjs account-security.mjs admin-access-policy.mjs safe-log.mjs passkey-security.mjs passkey-verifier.mjs;do git -C "$core" show "$core_revision:services/control-plane/src/$file" > "$job/core/$file";done
 git show "$design_revision:deploy/update-basic-automation-ui.sh" > "$job/update-ui.sh"
 printf '%s\n' "$core_revision" "$design_revision" > "$job/revisions"
 cat > "$job/apply.sh" <<'APPLY'
