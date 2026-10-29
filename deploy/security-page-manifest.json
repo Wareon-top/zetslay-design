@@ -1,0 +1,13 @@
+{
+  "version": "20261028-page-1",
+  "assets": {
+    "security/index.html": "96d4a90f68cdb6d3cc87573c25fdb3d3a3ea12075d7742e7f859b8db11edd5c8",
+    "security/security.css": "488234dab49cde326235b6278fae61be0f94370d7f2dd64c0762ffd4f142bb89",
+    "security/security.js": "e1662dbefaf864bfdf6b4645952c02fb91aa4bd11a975e8bb3b28fa12904e18b"
+  },
+  "sourceHtmlAccepted": [
+    "4412ee685be785ee57fe0fff154ebc5c3692c4475b4c1ad8ae0e4c0fb62d4fb3",
+    "f5037fd00fb0d6b2c06d306a03ef64dd5b99342369c616703757d15c6ccfe0af",
+    "96d4a90f68cdb6d3cc87573c25fdb3d3a3ea12075d7742e7f859b8db11edd5c8"
+  ]
+}

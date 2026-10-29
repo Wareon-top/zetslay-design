@@ -1,0 +1,14 @@
+.app-shell .account-signout {
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  width:100%; min-height:44px; padding:10px 12px;
+  border:1px solid var(--line); border-radius:12px;
+  background:transparent; color:var(--muted); font:600 12px/1.5 Inter,Arial,sans-serif;
+  text-align:center; cursor:pointer; transition:color .15s,background .15s,border-color .15s;
+}
+.app-shell .account-signout svg { width:18px; height:18px; flex-shrink:0; }
+.app-shell .account-signout:hover:not(:disabled) {
+  color:var(--white); background:var(--surface-2); border-color:var(--line-strong);
+}
+.app-shell .account-signout:focus-visible { outline:2px solid var(--yellow); outline-offset:3px; }
+.app-shell .account-signout:disabled { opacity:.55; cursor:wait; }
+@media(prefers-reduced-motion:reduce) { .app-shell .account-signout { transition:none; } }

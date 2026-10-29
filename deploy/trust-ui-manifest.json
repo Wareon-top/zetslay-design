@@ -1,0 +1,57 @@
+{
+  "assets": {
+    "app/account-security.js": "49ca9130ae2603cd377617364f2d07c877247c8593f0a874a63485360832b095",
+    "security/index.html": "96d4a90f68cdb6d3cc87573c25fdb3d3a3ea12075d7742e7f859b8db11edd5c8",
+    "security/security.css": "488234dab49cde326235b6278fae61be0f94370d7f2dd64c0762ffd4f142bb89",
+    "security/security.js": "e1662dbefaf864bfdf6b4645952c02fb91aa4bd11a975e8bb3b28fa12904e18b",
+    "security/brand.webp": "fbe0612e8693a25818c7599f174f419061a51914db896a362af892f43c2ca282",
+    "landing-security.css": "628aa8eafed49a495006d93cfc6d74b5f194ac5dcfd7b51bb028fdbe1d75a896",
+    "app/passkeys.css": "d20cca5d136c5e4807ce6a13bfbdb1f2aa9a7b4710a031ec802fa51a1ea9cd9e"
+  },
+  "accountSecurityAccepted": [
+    "0d05e0cb5e0790d4ad3b10c51fe15271e48669222ebd19d0fcd2ee06aee2e916",
+    "4f032dcf7a0747495a510518abf5d534cbb5019095514c9550a8af32aba815b3",
+    "2c2371b3eaa309d906587a627f545476c5bb778b7db85931f5e91dffaff7f705",
+    "14ad6aed6cf220e379202cf8b6de574f5adeed802bd6663bc9ce54e2bb5f741e",
+    "1b1e9286955210927951ff079f0fbdbece91d88b499133a04ab7986013887938",
+    "25e845eaf68f67f1af9d158867954d832ccc4833f40c4ef0e7dadc4c88c392e5",
+    "be121173e755bd5a309885b2c9828c16cda17dbd961da5751657a7f2650ca72f",
+    "49ca9130ae2603cd377617364f2d07c877247c8593f0a874a63485360832b095"
+  ],
+  "appPatches": [
+    {
+      "before": "'Нет ключа в PostgreSQL'",
+      "after": "'В базе — зашифрованное значение'"
+    },
+    {
+      "before": "text: 'Ключ передаётся только защищённому API, шифруется в vault и никогда не возвращается в интерфейс.'",
+      "after": "text: 'Golden Key — доступ к сессии FunPay. В базе хранится зашифрованное значение, а сервер расшифровывает его для работы. Облачный режим требует доверия оператору.'"
+    }
+  ],
+  "accountSecurityBaselines": {
+    "15139efc093cd0947bf76a853fe44db9b14b2d40": "2c2371b3eaa309d906587a627f545476c5bb778b7db85931f5e91dffaff7f705",
+    "74f50b276c40875d12a079848617f10123703fae": "14ad6aed6cf220e379202cf8b6de574f5adeed802bd6663bc9ce54e2bb5f741e",
+    "bd077ed9ff6adc9ca9d25c55274eb9441aaba6c6": "1b1e9286955210927951ff079f0fbdbece91d88b499133a04ab7986013887938",
+    "eda1737d461d96801067415c4ccf7d81cb8ed325": "0d05e0cb5e0790d4ad3b10c51fe15271e48669222ebd19d0fcd2ee06aee2e916"
+  },
+  "accountSecurityNormalizedAccepted": [
+    "2c2371b3eaa309d906587a627f545476c5bb778b7db85931f5e91dffaff7f705",
+    "1b1e9286955210927951ff079f0fbdbece91d88b499133a04ab7986013887938",
+    "14ad6aed6cf220e379202cf8b6de574f5adeed802bd6663bc9ce54e2bb5f741e",
+    "0d05e0cb5e0790d4ad3b10c51fe15271e48669222ebd19d0fcd2ee06aee2e916",
+    "4f032dcf7a0747495a510518abf5d534cbb5019095514c9550a8af32aba815b3",
+    "25e845eaf68f67f1af9d158867954d832ccc4833f40c4ef0e7dadc4c88c392e5",
+    "be121173e755bd5a309885b2c9828c16cda17dbd961da5751657a7f2650ca72f"
+  ],
+  "accountSecurityReplacement": {
+    "sourceSha256": "2eb3030b54c4fc28f68595627ad5d9d8296272f0c5370c93aeaceca199befba6",
+    "sourceBytes": 13436,
+    "targetSha256": "49ca9130ae2603cd377617364f2d07c877247c8593f0a874a63485360832b095",
+    "sourceContentReviewed": false,
+    "strategy": "replace_entire_component_after_host_contract_and_verified_private_backup"
+  },
+  "landingSecurityFragment": {
+    "file": "landing-security.html",
+    "sha256": "4f17e50fd2d52ad698617e145719786ab6e4530ee9ce7d6441f9ea7cf0a32165"
+  }
+}

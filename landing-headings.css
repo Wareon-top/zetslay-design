@@ -1,0 +1,12 @@
+/* Remove section labels while preserving the main heading and body copy. */
+#main .section-kicker,
+#main .access-eyebrow {
+  display: none;
+}
+#main .section-intro h2,
+#main .features-showcase__intro h2,
+#main .faq-heading h2,
+#main .closing h2,
+#main .access-panel h3 {
+  margin-top: 0;
+}

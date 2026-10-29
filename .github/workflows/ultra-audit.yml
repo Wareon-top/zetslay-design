@@ -1,0 +1,18 @@
+name: Ultra plugin UI audit
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  ultra-ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Session isolation, accepted operations and stale-response regressions
+        run: node --test app/ai-reviews.test.mjs app/robux-relay.test.mjs app/ticket-pilot.test.mjs
+      - name: Preserve installed HTML and recover from a mid-install failure
+        run: python3 deploy/stage-ultra-audit.test.py -v
+      - name: Installer syntax
+        run: bash -n deploy/start-ultra-audit.sh deploy/update-ultra-ui.sh

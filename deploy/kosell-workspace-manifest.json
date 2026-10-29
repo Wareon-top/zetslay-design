@@ -1,0 +1,23 @@
+{
+  "version": "20261029-kosell-3",
+  "assets": {
+    "kosell-rent.js": "64dab3818035c31c3375d993f1c2c3ce11e64462b5b21b31a450741c2b52afca",
+    "kosell-storefront.js": "b21fffb4730c4b63741894ee795c845fbcdfbc4dbc90f059e44b9e95538ae2b8",
+    "kosell-workspace.css": "bc56ae6067a3349f2b66dcae29710457585d224b28468b29a342ed08a3f7045a"
+  },
+  "accepted": {
+    "kosell-rent.js": [
+      "64dab3818035c31c3375d993f1c2c3ce11e64462b5b21b31a450741c2b52afca",
+      "c739df1c302b5437c24a99568222e806bba1637719d8acfd7fa9d1605f1544fa"
+    ],
+    "kosell-storefront.js": [
+      "b21fffb4730c4b63741894ee795c845fbcdfbc4dbc90f059e44b9e95538ae2b8",
+      "f1d983fcc98164f560117e326790f61f3ce368af384063282b9fb63a28b00e37",
+      "0df51bc9443b4ba15e57d638a9df4f9e5b0b39691b8aa0d73718c1357252ab96"
+    ],
+    "kosell-workspace.css": [
+      "bc56ae6067a3349f2b66dcae29710457585d224b28468b29a342ed08a3f7045a",
+      "c1be9012cdf950afe36e427b2971e06a34380ae8d9ef6784c8434e94737ed3ca"
+    ]
+  }
+}

@@ -1,0 +1,39 @@
+name: Verify landing first screen
+on:
+  push:
+    paths:
+      - 'index.html'
+      - 'landing-hero*'
+      - 'landing-orderflow.css'
+      - 'assets/zetslay-orderflow.webp'
+      - 'deploy/*landing-hero*'
+      - 'deploy/*landing-background*'
+      - '.github/workflows/landing-hero.yml'
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'landing-hero*'
+      - 'landing-orderflow.css'
+      - 'deploy/*landing-hero*'
+      - 'deploy/*landing-background*'
+permissions:
+  contents: read
+jobs:
+  first-screen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: node --check landing-hero.js
+      - run: node --test landing-hero.test.mjs landing-session.test.mjs project-validation.test.mjs
+      - run: python3 deploy/stage-landing-hero.test.py
+      - run: python3 deploy/stage-landing-background.test.py
+      - run: python3 deploy/recover-landing-hero.test.py
+      - run: bash -n deploy/update-landing-hero.sh deploy/update-landing-background.sh
+      - run: npm run validate

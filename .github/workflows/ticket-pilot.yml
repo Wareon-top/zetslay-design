@@ -1,0 +1,33 @@
+name: Verify Ticket Pilot
+on:
+  push:
+    paths:
+      - 'app/ticket-pilot*'
+      - 'app/plugin-page.js'
+      - 'deploy/*ticket-pilot*'
+      - 'scripts/verify-ticket-pilot-browser.cjs'
+      - '.github/workflows/ticket-pilot.yml'
+permissions:
+  contents: read
+jobs:
+  ticket-pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test app/ticket-pilot.test.mjs app/tariff-catalog.test.mjs
+      - run: python3 deploy/stage-ticket-pilot.test.py
+      - name: Verify workspace and safe sending flow in Chrome
+        run: |
+          browser_deps="$RUNNER_TEMP/ticket-pilot-browser"
+          npm install --prefix "$browser_deps" --no-save --ignore-scripts playwright@1.56.1
+          ZETSLAY_PLAYWRIGHT_MODULE="$browser_deps/node_modules/playwright" ZETSLAY_TEST_BROWSER_PATH="$(command -v google-chrome)" ZETSLAY_BROWSER_OUTPUT="$RUNNER_TEMP/ticket-pilot-previews" node scripts/verify-ticket-pilot-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ticket-pilot-previews
+          path: ${{ runner.temp }}/ticket-pilot-previews/
+          retention-days: 7
