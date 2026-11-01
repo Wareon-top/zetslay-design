@@ -1,0 +1,90 @@
+name: Verify cabinet and landing
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: node --test --test-concurrency=2 --test-reporter=tap app/*.test.mjs *.test.mjs
+      - run: python3 deploy/stage-bot-connection.test.py
+      - run: python3 deploy/stage-reliability.test.py
+      - run: python3 deploy/stage-managed-proxy.test.py
+      - run: node scripts/validate-project.mjs
+      - run: python3 deploy/stage-messages-workspace.test.py
+      - run: python3 deploy/stage-messages-ui.test.py
+      - run: python3 deploy/stage-priority-orders.test.py
+      - run: python3 deploy/stage-service-access-policy.test.py
+      - run: python3 deploy/stage-order-chronology.test.py
+
+      - run: python3 deploy/stage-financial-report.test.py
+
+      - run: python3 deploy/stage-platega.test.py
+
+      - run: python3 deploy/stage-payment-confirmation.test.py
+      - name: Verify confirmation tickets in desktop and mobile Chrome
+        run: |
+          browser_deps="$RUNNER_TEMP/zetslay-ticket-browser"
+          npm install --prefix "$browser_deps" --no-save --ignore-scripts playwright@1.56.1
+          ZETSLAY_PLAYWRIGHT_MODULE="$browser_deps/node_modules/playwright" ZETSLAY_TEST_BROWSER_PATH="$(command -v google-chrome)" ZETSLAY_BROWSER_OUTPUT="$RUNNER_TEMP/zetslay-ticket-screenshots" node scripts/verify-payment-confirmation-browser.cjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: confirmation-ticket-previews
+          path: ${{ runner.temp }}/zetslay-ticket-screenshots/
+          retention-days: 7
+
+      - run: python3 deploy/stage-auto-refresh.test.py
+      - name: Verify automatic updates in the real cabinet
+        run: |
+          ZETSLAY_PLAYWRIGHT_MODULE="$RUNNER_TEMP/zetslay-ticket-browser/node_modules/playwright" ZETSLAY_TEST_BROWSER_PATH="$(command -v google-chrome)" node scripts/verify-auto-refresh-browser.cjs
+      - run: python3 deploy/build-subscription-pricing.py . --check
+      - run: python3 deploy/stage-tariff-catalog.test.py
+      - run: python3 deploy/summarize-tariff-checks.test.py
+      - run: node --test deploy/landing-pricing.test.mjs
+      - run: python3 deploy/stage-launch-announcement.test.py
+  launch-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify launch notice in the real cabinet on desktop and mobile
+        run: |
+          browser_deps="$RUNNER_TEMP/zetslay-launch-browser"
+          npm install --prefix "$browser_deps" --no-save --ignore-scripts playwright@1.56.1
+          ZETSLAY_PLAYWRIGHT_MODULE="$browser_deps/node_modules/playwright" ZETSLAY_TEST_BROWSER_PATH="$(command -v google-chrome)" ZETSLAY_BROWSER_OUTPUT="$RUNNER_TEMP/zetslay-launch-screenshots" ZETSLAY_LAUNCH_INLINE_PREVIEW=1 node scripts/verify-launch-announcement-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: launch-announcement-previews
+          path: ${{ runner.temp }}/zetslay-launch-screenshots/
+          retention-days: 7
+  tariff-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify current tariff catalogue in desktop and mobile Chrome
+        run: |
+          browser_deps="$RUNNER_TEMP/zetslay-tariff-browser"
+          npm install --prefix "$browser_deps" --no-save --ignore-scripts playwright@1.56.1
+          ZETSLAY_PLAYWRIGHT_MODULE="$browser_deps/node_modules/playwright" ZETSLAY_TEST_BROWSER_PATH="$(command -v google-chrome)" ZETSLAY_BROWSER_OUTPUT="$RUNNER_TEMP/zetslay-tariff-screenshots" node scripts/verify-tariff-catalog-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: current-tariff-previews
+          path: ${{ runner.temp }}/zetslay-tariff-screenshots/
+          retention-days: 7

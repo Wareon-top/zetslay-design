@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /app/
+Disallow: /legal/archive/
+
+Sitemap: https://zetslay.pro/sitemap.xml

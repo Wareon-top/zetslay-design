@@ -1,0 +1,87 @@
+/* Meteor beam follows the existing rarity badge, including newly rendered cards.
+   Only the two-pixel rim is painted; covers, content and hit areas stay intact. */
+@property --plugin-beam-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+:root {
+  --plugin-tier-common: #d7dbe4;
+  --plugin-tier-advanced: #b6d5ff;
+  --plugin-tier-ultra: #f5c451;
+  --plugin-tier-legendary: #d7c6ff;
+}
+
+/* The cabinet's orange accent must not recolor the yellow ultra tier. */
+.plugin-rarity--ultra {
+  border-color: var(--plugin-tier-ultra);
+  background: var(--plugin-tier-ultra);
+  color: #251900;
+}
+
+:is(.plugin-catalog .plugin-card, .landing-plugin-card) {
+  position: relative;
+  isolation: isolate;
+  --plugin-frame-color: var(--plugin-tier-common);
+}
+
+.plugin-catalog .plugin-card:has(.plugin-rarity--advanced) {
+  --plugin-frame-color: var(--plugin-tier-advanced);
+}
+.plugin-catalog .plugin-card:has(.plugin-rarity--ultra) {
+  --plugin-frame-color: var(--plugin-tier-ultra);
+}
+.plugin-catalog .plugin-card:has(.plugin-rarity--legendary) {
+  --plugin-frame-color: var(--plugin-tier-legendary);
+}
+
+/* Public showcase uses the colors of its own rarity labels. */
+.landing-plugin-card:has(.landing-plugin-rarity--common) { --plugin-frame-color: #add3c8; }
+.landing-plugin-card:has(.landing-plugin-rarity--advanced) { --plugin-frame-color: #a7c9ee; }
+.landing-plugin-card:has(.landing-plugin-rarity--ultra) { --plugin-frame-color: #edc77f; }
+.landing-plugin-card:has(.landing-plugin-rarity--legendary) { --plugin-frame-color: #ccb5ee; }
+
+/* Without masking support, keep the original static border. */
+@supports (mask-composite: exclude) or (-webkit-mask-composite: xor) {
+  :is(.plugin-catalog .plugin-card, .landing-plugin-card)::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    padding: 2px;
+    border-radius: inherit;
+    pointer-events: none;
+    background: conic-gradient(
+      from var(--plugin-beam-angle),
+      transparent 0deg 210deg,
+      var(--plugin-frame-color) 320deg 338deg,
+      transparent 360deg
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: .85;
+    animation: plugin-meteor-orbit 4s linear infinite;
+  }
+  :is(.plugin-catalog .plugin-card, .landing-plugin-card):nth-child(4n + 2)::before { animation-delay: -1s; }
+  :is(.plugin-catalog .plugin-card, .landing-plugin-card):nth-child(4n + 3)::before { animation-delay: -2s; }
+  :is(.plugin-catalog .plugin-card, .landing-plugin-card):nth-child(4n)::before { animation-delay: -3s; }
+  :is(.plugin-catalog .plugin-card, .landing-plugin-card):is(:hover, :focus-within)::before { opacity: 1; }
+}
+
+@keyframes plugin-meteor-orbit {
+  to { --plugin-beam-angle: 360deg; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(.plugin-catalog .plugin-card, .landing-plugin-card)::before {
+    animation: none;
+    background: var(--plugin-frame-color);
+    opacity: .45;
+  }
+}
+@media (forced-colors: active) {
+  :is(.plugin-catalog .plugin-card, .landing-plugin-card)::before { display: none; }
+}

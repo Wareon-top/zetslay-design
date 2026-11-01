@@ -1,0 +1,34 @@
+name: Verify separate bot password setup
+on:
+  push:
+    paths:
+      - 'app/app.js'
+      - 'app/connection-wizard*'
+      - 'deploy/*bot-connection*'
+      - 'scripts/verify-bot-connection-browser.cjs'
+      - '.github/workflows/bot-connection.yml'
+permissions:
+  contents: read
+jobs:
+  connection:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test app/app.test.mjs app/connection-wizard-ui.test.mjs
+      - run: python3 deploy/stage-bot-connection.test.py
+      - run: bash -n deploy/update-bot-connection-ui.sh deploy/start-bot-connection-repair.sh
+      - name: Verify the actual connection dialog in Chrome
+        run: |
+          browser_deps="$RUNNER_TEMP/zetslay-connection-browser"
+          npm install --prefix "$browser_deps" --no-save --ignore-scripts playwright@1.56.1
+          ZETSLAY_PLAYWRIGHT_MODULE="$browser_deps/node_modules/playwright" ZETSLAY_TEST_BROWSER_PATH="$(command -v google-chrome)" ZETSLAY_BROWSER_OUTPUT="$RUNNER_TEMP/bot-connection-previews" node scripts/verify-bot-connection-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bot-connection-previews
+          path: ${{ runner.temp }}/bot-connection-previews/
+          retention-days: 7

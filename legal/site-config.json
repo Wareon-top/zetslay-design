@@ -1,0 +1,16 @@
+{
+  "status": "active",
+  "operatorType": "Самозанятый (НПД)",
+  "operatorName": "Гильманов Джалиль Дильшатович",
+  "inn": "026416567354",
+  "postalAddress": "",
+  "legalEmail": "",
+  "legalTelegram": "@zetslaysupport",
+  "hostingLocation": "Германия",
+  "providers": [],
+  "retentionSchedule": "По цели обработки и обязательным срокам закона; запросы исполняются оператором",
+  "localizationReviewed": false,
+  "approved": true,
+  "approvedVersion": "2026-10-16-v1",
+  "effectiveFrom": "2026-10-16"
+}

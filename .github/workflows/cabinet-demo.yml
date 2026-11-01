@@ -1,0 +1,37 @@
+name: Verify cabinet design and onboarding
+on:
+  push:
+    paths:
+      - 'app/cabinet-demo*'
+      - 'app/subscription-access*'
+      - 'app/learning*'
+      - 'app/sidebar-trial*'
+      - 'deploy/*cabinet-polish*'
+      - 'deploy/*subscription-access*'
+      - 'scripts/verify-cabinet-demo-browser.cjs'
+      - '.github/workflows/cabinet-demo.yml'
+permissions:
+  contents: read
+jobs:
+  cabinet-demo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test app/learning.test.mjs app/cabinet-demo.test.mjs app/subscription-access.test.mjs app/sidebar-trial.test.mjs app/billing.test.mjs app/service-access-policy.test.mjs
+      - run: python3 deploy/stage-subscription-access-ui.test.py
+      - run: python3 deploy/stage-cabinet-polish-ui.test.py
+      - name: Verify welcome, tour, preview and trial in desktop and mobile Chrome
+        run: |
+          browser_deps="$RUNNER_TEMP/zetslay-demo-browser"
+          npm install --prefix "$browser_deps" --no-save --ignore-scripts playwright@1.56.1
+          ZETSLAY_PLAYWRIGHT_MODULE="$browser_deps/node_modules/playwright" ZETSLAY_TEST_BROWSER_PATH="$(command -v google-chrome)" ZETSLAY_BROWSER_OUTPUT="$RUNNER_TEMP/cabinet-demo-previews" node scripts/verify-cabinet-demo-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cabinet-demo-previews
+          path: ${{ runner.temp }}/cabinet-demo-previews/
+          retention-days: 7

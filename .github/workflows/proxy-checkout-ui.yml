@@ -1,0 +1,21 @@
+name: Verify bounded proxy checkout UI
+on:
+  push:
+    paths: ['app/*proxy*.js', 'app/*proxy*.test.mjs', 'deploy/*proxy-checkout*', 'deploy/stage-proxy-shop-loading.test.py', '.github/workflows/proxy-checkout-ui.yml']
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  checkout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test app/proxy-shop.test.mjs app/managed-proxy-ui.test.mjs
+      - run: python3 deploy/stage-proxy-checkout-ui.test.py
+      - run: python3 deploy/stage-proxy-shop-loading.test.py
+      - run: bash -n deploy/start-proxy-checkout-repair.sh deploy/update-proxy-checkout-ui.sh
+      - run: npm run validate

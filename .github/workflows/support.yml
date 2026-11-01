@@ -1,0 +1,33 @@
+name: Verify support workspace
+on:
+  push:
+    paths:
+      - 'app/support*'
+      - 'app/admin-panel*'
+      - 'deploy/*support*'
+      - 'scripts/verify-support-browser.cjs'
+      - '.github/workflows/support.yml'
+permissions:
+  contents: read
+jobs:
+  support:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test app/support.test.mjs app/admin-panel.test.mjs app/admin-finance.test.mjs
+      - run: python3 deploy/stage-support.test.py
+      - name: Verify customer and staff conversations in Chrome
+        run: |
+          browser_deps="$RUNNER_TEMP/zetslay-support-browser"
+          npm install --prefix "$browser_deps" --no-save --ignore-scripts playwright@1.56.1
+          ZETSLAY_PLAYWRIGHT_MODULE="$browser_deps/node_modules/playwright" ZETSLAY_TEST_BROWSER_PATH="$(command -v google-chrome)" ZETSLAY_BROWSER_OUTPUT="$RUNNER_TEMP/support-previews" node scripts/verify-support-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: support-previews
+          path: ${{ runner.temp }}/support-previews/
+          retention-days: 7

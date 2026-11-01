@@ -1,0 +1,24 @@
+name: Verify video guide card
+on:
+  push:
+    paths:
+      - 'app/index.html'
+      - 'app/video-guide-banner*'
+      - 'app/assets/video-guide-play.svg'
+      - 'deploy/*video-guide*'
+      - '.github/workflows/video-guide.yml'
+permissions:
+  contents: read
+jobs:
+  card:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: python3 deploy/stage-video-guide.test.py
+      - run: bash -n deploy/update-video-guide.sh
+      - run: node --check app/video-guide-banner.js
+      - run: npm run validate

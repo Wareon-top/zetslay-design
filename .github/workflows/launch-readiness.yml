@@ -1,0 +1,20 @@
+name: Verify launch readiness fixes
+on:
+  push:
+    paths: ['app/app.js', 'app/launch-readiness.css', 'deploy/check-launch-public.py', 'app/account-security.js', 'app/*test.mjs', 'deploy/*launch-readiness*', 'deploy/start-launch-readiness.sh', 'scripts/public-links*', 'scripts/validate-project.mjs', 'robots.txt', 'sitemap.xml', 'legal/terms.html', '.github/workflows/launch-readiness.yml']
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  readiness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test app/*.test.mjs *.test.mjs scripts/public-links.test.mjs deploy/landing-pricing.test.mjs
+      - run: python3 deploy/stage-launch-readiness.test.py
+      - run: bash -n deploy/start-launch-readiness.sh deploy/update-launch-readiness-ui.sh
+      - run: npm run validate

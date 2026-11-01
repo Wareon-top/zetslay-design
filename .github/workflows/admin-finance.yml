@@ -1,0 +1,32 @@
+name: Verify project income panel
+on:
+  push:
+    paths:
+      - 'app/admin-finance*'
+      - 'app/admin-panel*'
+      - 'deploy/*admin-finance*'
+      - 'scripts/verify-admin-finance-browser.cjs'
+      - '.github/workflows/admin-finance.yml'
+permissions:
+  contents: read
+jobs:
+  finance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test app/admin-finance.test.mjs app/admin-panel.test.mjs
+      - run: python3 deploy/stage-admin-finance.test.py
+      - name: Verify project income in real Chromium
+        run: |
+          browser_deps="$RUNNER_TEMP/zetslay-finance-browser"
+          npm install --prefix "$browser_deps" --no-save --ignore-scripts playwright@1.56.1
+          ZETSLAY_PLAYWRIGHT_MODULE="$browser_deps/node_modules/playwright" ZETSLAY_TEST_BROWSER_PATH="$(command -v google-chrome)" ZETSLAY_BROWSER_OUTPUT="$RUNNER_TEMP/finance-previews" node scripts/verify-admin-finance-browser.cjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: admin-finance-previews
+          path: ${{ runner.temp }}/finance-previews/
+          retention-days: 7

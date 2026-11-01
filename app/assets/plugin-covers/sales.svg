@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-labelledby="title">
+<title id="title">ZetSlay — Продажи</title>
+<rect width="960" height="540" fill="#101216"/>
+<defs><pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse"><path d="M48 0H0v48" fill="none" stroke="#1a1d24" stroke-width="1"/></pattern></defs>
+<rect width="960" height="540" fill="url(#grid)"/>
+<path d="M448 80v380M80 410h790" stroke="#252a34" fill="none"/>
+<rect x="64" y="56" width="126" height="32" rx="8" fill="#181b22" stroke="#2a2f38"/>
+<text x="127" y="77" text-anchor="middle" fill="#9ca3af" font-family="Inter,Arial,sans-serif" font-size="11" font-weight="600" letter-spacing="2">ZETSLAY</text>
+<text x="66" y="313" fill="#f5f6f8" font-family="Manrope,Arial,sans-serif" font-size="44" font-weight="700" letter-spacing="-1">Продажи</text>
+<text x="68" y="348" fill="#747d8c" font-family="Inter,Arial,sans-serif" font-size="12" letter-spacing="3">PLUGIN COLLECTION</text>
+<g transform="translate(96 126) scale(.56)" fill="none" stroke="#a78bfa" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M32 46h80l-7 72H39l-7-72Z"/><path d="M52 52V36a20 20 0 0 1 40 0v16"/></g>
+<rect x="512" y="143" width="286" height="242" rx="24" fill="#151820" stroke="#2b313d"/>
+<rect x="552" y="113" width="286" height="242" rx="24" fill="#1a1e27" stroke="#323948"/>
+<rect x="576" y="137" width="64" height="64" rx="17" fill="#12151b" stroke="#a78bfa" stroke-opacity=".5"/>
+<g transform="translate(584 145) scale(.34)" fill="none" stroke="#a78bfa" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M32 46h80l-7 72H39l-7-72Z"/><path d="M52 52V36a20 20 0 0 1 40 0v16"/></g>
+<circle cx="800" cy="159" r="4" fill="#a78bfa"/>
+<path d="M578 229h152M578 246h212M578 263h174" stroke="#3c4350" stroke-width="8" stroke-linecap="round"/>
+<rect x="576" y="292" width="152" height="36" rx="9" fill="#11141a" stroke="#353d4b"/>
+<path d="M594 310h70" stroke="#a78bfa" stroke-width="4" stroke-linecap="round"/>
+<path d="m700 304 6 6-6 6" fill="none" stroke="#a78bfa" stroke-width="2"/>
+<circle cx="856" cy="390" r="24" fill="#171b22" stroke="#323948"/>
+<path d="M847 390h18M856 381v18" stroke="#a78bfa" stroke-width="2" stroke-linecap="round"/>
+<text x="68" y="466" fill="#586271" font-family="Inter,Arial,sans-serif" font-size="11" letter-spacing="1">MODULE / SALES</text>
+</svg>

@@ -1,0 +1,95 @@
+{
+  "acceptedSha256": [
+    "a06f110e1219781be582eaefe8ec2e9e7b5ba0ebaeb7bad296aca3ecabe9fb0a",
+    "f1d983fcc98164f560117e326790f61f3ce368af384063282b9fb63a28b00e37"
+  ],
+  "acceptedGitBlobs": [
+    "f27975eecf2dc22cc6fa7574e3ffe7fd95291d5a",
+    "b76fdf5250b264af6919c04fb2e5bb043e50ea36",
+    "b3d69102ee9c8a2688fb87d1d3908b5ea15788d6",
+    "a7b1cb3564e91a81210b2203723c0b2e04c927cd",
+    "078009b51cf1211e77d2c4219d93670f6e4d58c9",
+    "cfb85194f2cfe29bfba456e37b22d57ce3b391d0",
+    "e53e00aef6538a9048f4478454180fb18d01ae57",
+    "bf0b6796062a8ea2c4c80fdc7bc676dd773d265e",
+    "a92f880bcaa8335c80804483d1b6d01c75e66cdb",
+    "fb686d62f4da2a5660ad6910cb8acb98fc09296c",
+    "b0278a1321d9cf97ae396acda331b1acf412226b",
+    "4a07c2c37d6199cad8b2214dd5c2252c94921572",
+    "7e05b15ac92bacaeb196be9cbfaea0c3360e08e6",
+    "03d6ad05631a21ff31d140c6691c6fadd4425e36"
+  ],
+  "repositorySources": [
+    {
+      "revision": "c6a042ad64898d6f848b81f9e4d9e97bf4c5fc8d",
+      "blob": "f27975eecf2dc22cc6fa7574e3ffe7fd95291d5a",
+      "chars": 47593
+    },
+    {
+      "revision": "75507b528ee4e5285f018f6c6a7ea3430017e5e6",
+      "blob": "b76fdf5250b264af6919c04fb2e5bb043e50ea36",
+      "chars": 43941
+    },
+    {
+      "revision": "c7d75884fdcfac9bdcf91a1bd5d97e0f9a38add0",
+      "blob": "b3d69102ee9c8a2688fb87d1d3908b5ea15788d6",
+      "chars": 40016
+    },
+    {
+      "revision": "a2d1ddfd5fbdceabdbc20e0d91fd2acec2505089",
+      "blob": "a7b1cb3564e91a81210b2203723c0b2e04c927cd",
+      "chars": 39990
+    },
+    {
+      "revision": "f15d7ddcc3e780bc9e3fcef8da0c8ca035f1df79",
+      "blob": "078009b51cf1211e77d2c4219d93670f6e4d58c9",
+      "chars": 38339
+    },
+    {
+      "revision": "aa08b8659dafc529400b43dc127788100dec9a96",
+      "blob": "cfb85194f2cfe29bfba456e37b22d57ce3b391d0",
+      "chars": 30671
+    },
+    {
+      "revision": "7294e712e1bee0f8c49d209a067f157079e62ea2",
+      "blob": "e53e00aef6538a9048f4478454180fb18d01ae57",
+      "chars": 30676
+    },
+    {
+      "revision": "d20f499ad3244aac57a78ebcd6e2e9b5d1f9fd8d",
+      "blob": "bf0b6796062a8ea2c4c80fdc7bc676dd773d265e",
+      "chars": 27827
+    },
+    {
+      "revision": "1565605ff8e190b853706d342d35aa80df48f236",
+      "blob": "a92f880bcaa8335c80804483d1b6d01c75e66cdb",
+      "chars": 26176
+    },
+    {
+      "revision": "f8588f4c8fb310fd9e85b1abcd86e717a1f8222d",
+      "blob": "fb686d62f4da2a5660ad6910cb8acb98fc09296c",
+      "chars": 26084
+    },
+    {
+      "revision": "21ca341100eea129ba46203a8e49d8d0f052aac8",
+      "blob": "b0278a1321d9cf97ae396acda331b1acf412226b",
+      "chars": 24344
+    },
+    {
+      "revision": "22548ae97c9ad8ee71cf78eea58ffde320ae9a3c",
+      "blob": "4a07c2c37d6199cad8b2214dd5c2252c94921572",
+      "chars": 21720
+    },
+    {
+      "revision": "1ee98d4013a68f302344f88b4948fbecab1fae1b",
+      "blob": "7e05b15ac92bacaeb196be9cbfaea0c3360e08e6",
+      "chars": 19478
+    },
+    {
+      "revision": "305db4ef08664e127aa0308f3fec2e55972fd4a5",
+      "blob": "03d6ad05631a21ff31d140c6691c6fadd4425e36",
+      "chars": 19474
+    }
+  ],
+  "targetSha256": "f1d983fcc98164f560117e326790f61f3ce368af384063282b9fb63a28b00e37"
+}

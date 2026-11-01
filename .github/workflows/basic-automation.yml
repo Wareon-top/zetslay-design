@@ -1,0 +1,16 @@
+name: Base automation interface and installer
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  interface-and-install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test app/basic-automation.test.mjs app/store-tools.test.mjs
+      - run: python3 deploy/stage-basic-automation.test.py -v
+      - run: bash -n deploy/start-basic-automation.sh deploy/update-basic-automation-ui.sh

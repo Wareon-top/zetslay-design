@@ -1,0 +1,25 @@
+name: Lots loading repair
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test app/lots.test.mjs app/lot-management.test.mjs app/lot-raise.test.mjs
+      - run: python3 deploy/stage-lots-loading.test.py -v
+      - run: bash -n deploy/update-lots-loading.sh
+      - run: npm install --prefix "$RUNNER_TEMP/lots-browser" --ignore-scripts --no-fund --save-exact playwright@1.62.1
+      - name: Select installed Chrome or install Chromium
+        run: |
+          if command -v google-chrome >/dev/null 2>&1; then
+            echo "LOTS_CHROME=$(command -v google-chrome)" >> "$GITHUB_ENV"
+          else
+            node "$RUNNER_TEMP/lots-browser/node_modules/playwright/cli.js" install --with-deps chromium
+          fi
+      - run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/lots-browser/node_modules/playwright/index.mjs" node scripts/check-lots-loading-browser.mjs

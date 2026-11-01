@@ -1,0 +1,23 @@
+name: Verify proxy checkout loading
+on:
+  push:
+    paths:
+      - 'app/*proxy*.js'
+      - 'app/*proxy*.test.mjs'
+      - 'deploy/*proxy-shop-loading*'
+      - '.github/workflows/proxy-shop-loading.yml'
+permissions:
+  contents: read
+jobs:
+  checkout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test app/proxy-shop.test.mjs app/managed-proxy-ui.test.mjs
+      - run: python3 deploy/stage-proxy-shop-loading.test.py
+      - run: bash -n deploy/update-proxy-shop-loading.sh
+      - run: npm run validate

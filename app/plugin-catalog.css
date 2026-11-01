@@ -1,0 +1,78 @@
+/* Compact catalog. Cover proportions and original uploaded files are preserved. */
+.view.plugin-catalog {
+  --catalog-bg:#12141a; --catalog-border:#292d36; --catalog-muted:#989eab;
+  width:min(1320px,100%); font-family:Inter,Arial,sans-serif;
+  container-name:plugin-catalog; container-type:inline-size;
+}
+.plugin-catalog .view-heading { gap:16px; margin-bottom:18px; }
+.plugin-catalog .view-heading h1 { margin:0; font-size:28px; line-height:1.2; letter-spacing:-.045em; }
+.plugin-catalog .view-heading p { margin:7px 0 0; font-size:12px; line-height:1.5; }
+.plugin-catalog .view-heading__actions { display:flex; align-items:center; justify-content:flex-end; gap:12px; flex-wrap:wrap; }
+.plugin-catalog .catalog-count { display:flex; flex-wrap:wrap; gap:6px; font-size:10px; }
+.plugin-catalog .catalog-count span,.plugin-catalog .catalog-count strong { padding:6px 9px; border-radius:7px; border-color:var(--catalog-border); }
+.plugin-catalog .cat-pills { flex-wrap:nowrap; gap:6px; margin-bottom:12px; padding-bottom:3px; overflow-x:auto; scrollbar-width:thin; }
+.plugin-catalog .cat-pills button { flex-shrink:0; min-height:34px; padding:0 12px; gap:6px; border-radius:8px; border-color:var(--catalog-border); background:var(--catalog-bg); font-size:11px; font-weight:500; }
+.plugin-catalog .cat-pills button.is-active { border-color:#e9ebef; background:#e9ebef; color:#17191f; }
+.plugin-catalog .cat-pills svg { width:13px; height:13px; }
+.plugin-catalog .catalog-hero { display:flex; align-items:center; gap:14px; margin-bottom:10px; padding:13px 16px; border-color:var(--catalog-border); border-radius:10px; background:var(--catalog-bg); box-shadow:none; }
+.plugin-catalog .catalog-hero h2 { flex-shrink:0; margin:0; font-size:13px; font-weight:600; letter-spacing:-.02em; }
+.plugin-catalog .catalog-hero p { margin:0; padding-left:14px; border-left:1px solid #393d47; color:var(--catalog-muted); font-size:11px; line-height:1.5; }
+.plugin-catalog .catalog-search { display:grid; grid-template-columns:minmax(0,1fr) minmax(150px,190px) minmax(150px,190px); gap:12px; align-items:end; margin-bottom:16px; padding:14px 16px; border:1px solid var(--catalog-border); border-radius:10px; background:var(--catalog-bg); box-shadow:none; }
+.plugin-catalog .catalog-search > div,.plugin-catalog .catalog-filter { display:grid; min-width:0; gap:7px; }
+.plugin-catalog .catalog-search .panel-label { color:var(--catalog-muted); font-size:10px; letter-spacing:0; text-transform:none; }
+.plugin-catalog .search-field--wide { width:100%; max-width:none; min-height:38px; border:1px solid #303540; border-radius:8px; background:#0e1015; }
+.plugin-catalog .search-field input { width:100%; min-width:0; color:#e6e9ef; font-size:12px; }
+.plugin-catalog .search-field svg { width:15px; height:15px; color:#818897; }
+.plugin-catalog select.catalog-select { width:100%; min-width:0; min-height:38px; padding:8px 10px; border:1px solid #303540; border-radius:8px; background:#0e1015; color:#c4cad5; font:400 11px/1.4 Inter,Arial,sans-serif; }
+.plugin-catalog .plugin-grid { display:grid; grid-template-columns:minmax(0,1fr); align-items:stretch; gap:12px; }
+.plugin-catalog .plugin-card { min-width:0; min-height:0; padding:8px; border:1px solid var(--catalog-border); border-radius:12px; background:var(--catalog-bg); box-shadow:none; transition:border-color .18s,transform .18s; }
+.plugin-catalog .plugin-card:hover { border-color:#4b5363; transform:translateY(-2px); }
+.plugin-catalog .plugin-card__cover { aspect-ratio:4 / 2.9; border:1px solid #252a34; border-radius:8px; background:#0b0d12; }
+.plugin-catalog .plugin-card__cover img { width:100%; height:100%; object-fit:contain; object-position:center; }
+.plugin-catalog .plugin-card__cover > .plugin-rarity { top:7px; right:7px; gap:5px; min-height:24px; max-width:calc(100% - 14px); padding:3px 7px; border-radius:7px; font-size:9px; line-height:1.4; }
+.plugin-catalog .plugin-rarity__symbol { font-size:11px; }
+.plugin-catalog .plugin-card__cover-meta { min-height:26px; margin:6px 2px 0; }
+.plugin-catalog .plugin-card__cover-meta .plugin-cover__edit { width:26px; height:26px; border-radius:7px; }
+.plugin-catalog .plugin-card__body { gap:8px; padding:12px 4px 4px; }
+.plugin-catalog .plugin-card__body h3 { display:-webkit-box; min-height:38px; margin:0; overflow:hidden; -webkit-box-orient:vertical; -webkit-line-clamp:2; font-size:14px; line-height:1.35; font-weight:600; letter-spacing:-.025em; }
+.plugin-catalog .plugin-card__title-link { overflow-wrap:anywhere; }
+.plugin-catalog .plugin-card__body > p { display:-webkit-box; min-height:33px; max-height:33px; margin:0; overflow:hidden; -webkit-box-orient:vertical; -webkit-line-clamp:2; color:var(--catalog-muted); font-size:11px; line-height:1.5; }
+.plugin-catalog .plugin-card__body > .plugin-permissions { gap:4px; margin:0 0 3px; }
+.plugin-catalog .plugin-permissions span { padding:3px 5px; border-color:#292f39; border-radius:5px; color:#979eac; font-size:9px; line-height:1.4; }
+.plugin-catalog .plugin-card__bottom { gap:8px; margin-top:auto; padding-top:10px; border-color:#292f39; }
+.plugin-catalog .plugin-card__price small { color:#848c9d; font-size:9px; letter-spacing:0; text-transform:none; }
+.plugin-catalog .plugin-card__price strong { margin-top:3px; font-size:14px; line-height:1.3; }
+.plugin-catalog .plugin-card__bottom .plugin-card__status { max-width:55%; color:#a3aab7; font-size:10px; line-height:1.4; text-align:right; }
+.plugin-catalog .plugin-card__navigation { gap:6px; padding-top:10px; }
+.plugin-catalog .plugin-card__navigation > a,.plugin-catalog .plugin-card__navigation > button { min-width:0; min-height:34px; gap:5px; padding:7px 8px; border-radius:7px; font-size:10px; line-height:1.35; }
+.plugin-catalog .plugin-card__navigation svg { width:12px; height:12px; flex-shrink:0; }
+.plugin-catalog :is(button,a,select,input):focus-visible { outline:2px solid #e0e5ef; outline-offset:3px; }
+.plugin-catalog .content-empty { min-height:160px; border:1px dashed var(--catalog-border); border-radius:12px; }
+@container plugin-catalog (min-width:430px) { .plugin-catalog .plugin-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@container plugin-catalog (min-width:660px) { .plugin-catalog .plugin-grid { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+@container plugin-catalog (min-width:900px) { .plugin-catalog .plugin-grid { grid-template-columns:repeat(4,minmax(0,1fr)); } }
+@container plugin-catalog (min-width:1160px) { .plugin-catalog .plugin-grid { grid-template-columns:repeat(5,minmax(0,1fr)); } }
+@container plugin-catalog (max-width:659px) {
+  .plugin-catalog .catalog-search { grid-template-columns:repeat(2,minmax(0,1fr)); padding:12px; gap:12px 10px; }
+  .plugin-catalog .catalog-search > div { grid-column:1 / -1; }
+  .plugin-catalog .catalog-hero { align-items:flex-start; flex-direction:column; gap:5px; }
+  .plugin-catalog .catalog-hero p { padding-left:0; border-left:0; }
+  .plugin-catalog .view-heading { flex-wrap:wrap; gap:10px; }
+  .plugin-catalog .view-heading__actions { justify-content:flex-start; }
+  .plugin-catalog .view-heading h1 { font-size:25px; }
+  .plugin-catalog .plugin-card__navigation > a,.plugin-catalog .plugin-card__navigation > button { min-height:40px; }
+  .plugin-catalog .cat-pills button { min-height:40px; }
+}
+@container plugin-catalog (max-width:429px) {
+  .plugin-catalog .plugin-grid { gap:14px; }
+  .plugin-catalog .plugin-card { padding:10px; }
+  .plugin-catalog .plugin-card__body h3 { min-height:0; font-size:16px; }
+  .plugin-catalog .plugin-card__body > p { font-size:12px; min-height:36px; max-height:36px; }
+  .plugin-catalog .plugin-card__navigation > a,.plugin-catalog .plugin-card__navigation > button { min-height:42px; font-size:12px; }
+}
+/* A conservative layout if container queries are unavailable. */
+@supports not (container-type:inline-size) {
+  .plugin-catalog .plugin-grid { grid-template-columns:repeat(auto-fill,minmax(min(100%,214px),1fr)); }
+  @media(max-width:900px) { .plugin-catalog .catalog-search { grid-template-columns:1fr; } }
+}
+@media(prefers-reduced-motion:reduce) { .plugin-catalog .plugin-card { transition:none; } .plugin-catalog .plugin-card:hover { transform:none; } }

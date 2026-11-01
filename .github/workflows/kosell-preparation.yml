@@ -1,0 +1,25 @@
+name: Kosell preparation loading
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  preparation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test app/kosell-storefront.test.mjs app/kosell-rent.test.mjs
+      - run: python3 deploy/stage-kosell-preparation.test.py -v
+      - run: bash -n deploy/update-kosell-preparation.sh
+      - run: npm install --prefix "$RUNNER_TEMP/kosell-browser" --ignore-scripts --no-fund --save-exact playwright@1.62.1
+      - name: Select installed Chrome or install Chromium
+        run: |
+          if command -v google-chrome >/dev/null 2>&1; then
+            echo "KOSELL_CHROME=$(command -v google-chrome)" >> "$GITHUB_ENV"
+          else
+            node "$RUNNER_TEMP/kosell-browser/node_modules/playwright/cli.js" install --with-deps chromium
+          fi
+      - run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/kosell-browser/node_modules/playwright/index.mjs" node scripts/check-kosell-preparation-browser.mjs

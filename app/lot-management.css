@@ -1,0 +1,34 @@
+.inventory-row-actions .inventory-edit-action { width:auto; min-width:86px; padding:7px 10px; gap:5px; border:1px solid var(--line,#e6e8f0); border-radius:9px; display:inline-flex; align-items:center; font-size:11px; }
+.inventory-row-actions .inventory-delete-action { color:var(--red,#d74758); }
+.lot-editor { width:min(720px,calc(100vw - 24px)); max-height:calc(100dvh - 32px); padding:0; border:1px solid var(--line,#e6e8f0); border-radius:20px; color:var(--white,#1d2233); background:var(--surface,#ffffff); box-shadow:0 28px 90px #0008; overflow:auto; }
+.lot-editor::backdrop { background:#090b10a3; backdrop-filter:blur(7px); }
+.lot-editor-heading { display:flex; justify-content:space-between; gap:16px; padding:24px 26px 18px; border-bottom:1px solid var(--line,#e6e8f0); }
+.lot-editor-heading span,.lot-editor-meta,.lot-editor-copy,.lot-editor-note,.lot-delete-product small { color:var(--muted,#979daa); font-size:12px; line-height:1.65; }
+.lot-editor-heading h2 { margin:5px 0 0; font-size:22px; letter-spacing:-.5px; }
+.lot-editor form,.lot-editor-loading { padding:22px 26px; }
+.lot-editor-meta { display:flex; justify-content:space-between; margin-bottom:19px; }
+.lot-editor-language { border:0; padding:0; margin:0; min-width:0; }
+.lot-editor-language legend { margin-bottom:12px; font-size:12px; font-weight:650; }
+.lot-editor-field { display:grid; gap:8px; margin-bottom:15px; font-size:12px; }
+.lot-editor-field input,.lot-editor-field textarea { width:100%; box-sizing:border-box; padding:11px 12px; border-radius:10px; border:1px solid var(--line,#e6e8f0); background:var(--surface-2,#f0f1f7); color:inherit; font:inherit; font-size:13px; line-height:1.55; }
+.lot-editor-field textarea { resize:vertical; min-height:76px; }
+.lot-editor-field :is(input,textarea):focus-visible { outline:2px solid var(--violet,#7d6cf0); outline-offset:2px; }
+.lot-editor-field :disabled { opacity:.65; }
+.lot-editor-english { border:1px solid var(--line,#e6e8f0); border-radius:12px; margin:4px 0 20px; padding:13px 15px; }
+.lot-editor-english summary { cursor:pointer; font-size:12px; font-weight:600; }
+.lot-editor-english[open] .lot-editor-language { padding-top:18px; }
+.lot-editor-numbers { display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:center; }
+.lot-editor-confirm { display:flex; align-items:flex-start; gap:10px; font-size:13px; line-height:1.6; }
+.lot-editor-confirm input { margin-top:4px; accent-color:var(--violet,#7d6cf0); width:16px; height:16px; flex-shrink:0; }
+.lot-editor-note { margin:14px 0 0; }
+.lot-editor-footer { display:flex; justify-content:flex-end; gap:10px; margin-top:24px; border-top:1px solid var(--line,#e6e8f0); padding-top:20px; }
+.lot-editor-danger { background:#be2840!important; color:#fff!important; border-color:#be2840!important; }
+.lot-editor-error { margin:18px 26px 0; padding:12px 15px; color:var(--red,#d74758); background:#e11d4810; border:1px solid #e11d4833; border-radius:10px; font-size:12px; line-height:1.6; }
+.lot-delete-product { display:flex; gap:14px; align-items:center; padding:16px; background:#ffffff04; border:1px solid var(--line,#e6e8f0); border-radius:12px; }
+.lot-delete-product svg { width:24px; height:24px; }.lot-delete-product div { display:grid; gap:5px; }.lot-delete-product strong { font-size:14px; overflow-wrap:anywhere; }
+.lot-operations { margin-top:22px; padding:20px; border:1px solid var(--line,#e6e8f0); border-radius:16px; background:var(--surface,#ffffff); }
+.lot-operations[hidden] { display:none; }.lot-operations header { display:flex; align-items:center; justify-content:space-between; gap:14px; }.lot-operations h3 { font-size:14px; margin:0; }
+.lot-operation-list { display:grid; margin-top:14px; gap:10px; }.lot-operation-list article { display:flex; justify-content:space-between; align-items:center; gap:14px; padding-top:10px; border-top:1px solid var(--line,#e6e8f0); }.lot-operation-list article div { display:grid; gap:5px; }.lot-operation-list strong { font-size:12px; }.lot-operation-status { font-size:11px; color:var(--muted,#979daa); }.lot-operation-status.is-done { color:var(--green,#189b68); }.lot-operation-status:is(.is-unknown,.is-failed) { color:#a16207; }.lot-operation-list button { font-size:11px; }
+@media(max-width:640px) { .lot-editor-heading { padding:20px; }.lot-editor form,.lot-editor-loading { padding:18px 20px; }.lot-editor-numbers { grid-template-columns:1fr; gap:0; }.lot-editor-footer { flex-wrap:wrap; }.lot-editor-footer button { flex:1; }.lot-editor-error { margin-left:20px; margin-right:20px; }.lot-operation-list article { align-items:flex-start; flex-direction:column; } }
+
+.lot-detail-actions { display:flex; gap:10px; margin:18px 0 12px; }.lot-detail-actions button { flex:1; }

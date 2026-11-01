@@ -1,0 +1,20 @@
+name: Verify workspace design and events UI
+on:
+  push:
+    paths: ['app/workspace-upgrade*', 'deploy/*workspace*', '.github/workflows/workspace-upgrade.yml']
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  workspace:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test app/workspace-upgrade.test.mjs app/overview.test.mjs app/orders.test.mjs app/messages.test.mjs app/service-access-policy.test.mjs app/proxy-shop.test.mjs
+      - run: python3 deploy/stage-workspace-upgrade.test.py
+      - run: bash -n deploy/start-workspace-upgrade.sh deploy/update-workspace-ui.sh
+      - run: npm run validate

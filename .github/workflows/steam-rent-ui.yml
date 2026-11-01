@@ -1,0 +1,32 @@
+name: Verify Steam Rent workspace
+on:
+  push:
+    paths:
+      - 'app/steam-rent*'
+      - 'deploy/*steam-rent*'
+      - 'scripts/verify-steam-rent-browser.cjs'
+      - '.github/workflows/steam-rent-ui.yml'
+permissions:
+  contents: read
+jobs:
+  steam-rent:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test app/steam-rent.test.mjs
+      - run: python3 deploy/stage-steam-rent-ui.test.py
+      - name: Verify rental management in desktop and mobile Chrome
+        run: |
+          browser_deps="$RUNNER_TEMP/zetslay-steam-rent-browser"
+          npm install --prefix "$browser_deps" --no-save --ignore-scripts playwright@1.56.1
+          ZETSLAY_PLAYWRIGHT_MODULE="$browser_deps/node_modules/playwright" ZETSLAY_TEST_BROWSER_PATH="$(command -v google-chrome)" ZETSLAY_BROWSER_OUTPUT="$RUNNER_TEMP/steam-rent-previews" node scripts/verify-steam-rent-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: steam-rent-previews
+          path: ${{ runner.temp }}/steam-rent-previews/
+          retention-days: 7

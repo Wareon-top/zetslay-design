@@ -1,0 +1,28 @@
+name: Verify site-wide brand
+on:
+  push:
+    paths:
+      - 'index.html'
+      - 'app/index.html'
+      - 'site-brand.css'
+      - 'favicon.ico'
+      - 'apple-touch-icon.png'
+      - 'assets/zetslay-logo.webp'
+      - 'legal/*.html'
+      - 'deploy/*site-brand*'
+      - '.github/workflows/site-brand.yml'
+permissions:
+  contents: read
+jobs:
+  brand:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: python3 deploy/stage-site-brand.test.py
+      - run: bash -n deploy/update-site-brand.sh
+      - run: node --test app/legal.test.mjs app/legal-acceptance.test.mjs
+      - run: npm run validate

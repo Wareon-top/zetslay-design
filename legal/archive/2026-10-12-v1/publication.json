@@ -1,0 +1,26 @@
+{
+  "version": "2026-10-12-v1",
+  "status": "active",
+  "effectiveFrom": "2026-10-12",
+  "effectiveRule": "С момента размещения на сайте, не ранее 12 октября 2026 года",
+  "hash": "03a2b39ae1c55b43d8a979c5ebc48965858338583d4bf016f5f39648c16d5819",
+  "operatorName": "Гильманов Джалиль Дильшатович",
+  "operatorInn": "026416567354",
+  "contactTelegram": "@zetslaysupport",
+  "contactEmail": null,
+  "hostingCountry": "Германия",
+  "localizationReviewed": false,
+  "processorNamesVerified": false,
+  "paymentsEnabled": false,
+  "documents": [
+    "offer",
+    "privacy",
+    "processing",
+    "public-profile",
+    "cookies",
+    "refunds",
+    "data-processing",
+    "automation-rules",
+    "acceptable-use"
+  ]
+}

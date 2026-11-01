@@ -1,0 +1,23 @@
+{
+  "revision": "2026.11.01.4",
+  "patches": {
+    "app/admin-panel.js": [
+      {
+        "before": "const adminUi = { token:'', generation:0, revision:0, tab:'overview', overview:null, list:null, detail:null, busy:false, error:'', filters:{query:'',access:'all',plan:'all',connection:'all',sync:'all',offset:0} };\nfunction adminAllowed() { return Boolean(authState.token && authState.user?.telegramUserId === '5062414502'); }\n",
+        "after": "const adminUi = { token:'', generation:0, revision:0, supportLink:'', tab:'overview', overview:null, list:null, detail:null, busy:false, error:'', filters:{query:'',access:'all',plan:'all',connection:'all',sync:'all',offset:0} };\nfunction adminAllowed() { return Boolean(authState.token && authState.user?.telegramUserId === '5062414502'); }\n"
+      },
+      {
+        "before": "  if(typeof supportReset==='function')supportReset('admin');\n  adminUi.revision++; Object.assign(adminUi,{token:'',generation:0,overview:null,list:null,detail:null,busy:false,error:'',tab:'overview',filters:{query:'',access:'all',plan:'all',connection:'all',sync:'all',offset:0}});\n  const root=document.querySelector('[data-admin-root]'); if(root)root.innerHTML='';\n",
+        "after": "  if(typeof supportReset==='function')supportReset('admin');\n  adminUi.revision++; Object.assign(adminUi,{token:'',generation:0,overview:null,list:null,detail:null,busy:false,error:'',supportLink:'',tab:'overview',filters:{query:'',access:'all',plan:'all',connection:'all',sync:'all',offset:0}});\n  const root=document.querySelector('[data-admin-root]'); if(root)root.innerHTML='';\n"
+      },
+      {
+        "before": "  if(!adminAllowed()){adminAccess();return;}\n  if(kind==='all' && adminUi.detail){kind='detail';id=adminUi.detail.user.id;}\n",
+        "after": "  if(!adminAllowed()){adminAccess();return;}\n  const link=typeof location.search==='string'?new URLSearchParams(location.search).get('support_ticket'):null;\n  const requested=kind==='all'&&/^st_[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(link||'')&&adminUi.supportLink!==link?link:null;\n  if(requested){adminUi.tab='support';adminUi.detail=null;}\n  if(kind==='all' && adminUi.detail){kind='detail';id=adminUi.detail.user.id;}\n"
+      },
+      {
+        "before": "    if(kind==='detail') {const detail=await apiRequest('/api/v1/admin/users/'+encodeURIComponent(id),{authenticated:true});if(current())adminUi.detail=detail;}\n    else if(adminUi.tab==='support') {await loadSupport('admin');}\n    else if(adminUi.tab==='finance') {const data=await apiRequest('/api/v1/admin/finance?'+adminFinanceQuery(),{authenticated:true});if(current())adminFinanceUi.report=data;}\n",
+        "after": "    if(kind==='detail') {const detail=await apiRequest('/api/v1/admin/users/'+encodeURIComponent(id),{authenticated:true});if(current())adminUi.detail=detail;}\n    else if(adminUi.tab==='support') {await loadSupport('admin');if(current()&&requested){await supportOpen('admin',requested);if(current()&&supportUi.admin.ticket?.id===requested)adminUi.supportLink=requested;}}\n    else if(adminUi.tab==='finance') {const data=await apiRequest('/api/v1/admin/finance?'+adminFinanceQuery(),{authenticated:true});if(current())adminFinanceUi.report=data;}\n"
+      }
+    ]
+  }
+}
