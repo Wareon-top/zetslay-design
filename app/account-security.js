@@ -4,7 +4,7 @@ function passkeyBase64(value){return btoa(String.fromCharCode(...new Uint8Array(
 function passkeyOptions(json,create){
  const options={...json,challenge:passkeyBytes(json.challenge)};
  if(create)options.user={...json.user,id:passkeyBytes(json.user.id),displayName:typeof json.user.displayName==='string'&&json.user.displayName.trim()?json.user.displayName:json.user.name||'ZetSlay'};
- for(const field of ['allowCredentials','excludeCredentials'])if(json[field])options[field]=json[field].map(k=>({...k,id:passkeyBytes(k.id)}));
+ for(const field of ['allowCredentials','excludeCredentials'])if(json[field])options[field]=json[field].map(k=>{const value={...k,id:passkeyBytes(k.id)};if(!create)delete value.transports;return value;});
  return options;
 }
 function passkeyFromFreshClick(start,signal){
@@ -25,14 +25,14 @@ function passkeyFromFreshClick(start,signal){
   if(signal?.aborted)cancel();else signal?.addEventListener('abort',cancel,{once:true});
  });
 }
-async function passkeyCeremony(json,create,signal){
+async function passkeyCeremony(json,create,signal,fromUserClick=false){
  if(!supportsPasskeys())throw Error('Для ключа доступа откройте ZetSlay в современном браузере по HTTPS. Устройство предложит отпечаток, Face ID или PIN.');
  const controller=new AbortController(),cancel=()=>controller.abort();
  if(signal?.aborted)controller.abort();else signal?.addEventListener('abort',cancel,{once:true});
  const timer=setTimeout(cancel,120000);let credential;
  try{
   const publicKey=passkeyOptions(json,create),start=()=>navigator.credentials[create?'create':'get']({publicKey,signal:controller.signal});
-  credential=await (navigator.userActivation?.isActive===true?start():passkeyFromFreshClick(start,controller.signal));
+  credential=await (fromUserClick||navigator.userActivation?.isActive===true?start():passkeyFromFreshClick(start,controller.signal));
  }
  finally{clearTimeout(timer);signal?.removeEventListener('abort',cancel);}
  if(!credential)throw Error('Подтверждение на устройстве отменено.');
@@ -41,7 +41,7 @@ async function passkeyCeremony(json,create,signal){
  else{response.authenticatorData=passkeyBase64(credential.response.authenticatorData);response.signature=passkeyBase64(credential.response.signature);response.userHandle=credential.response.userHandle?passkeyBase64(credential.response.userHandle):null;}
  return {id:credential.id,rawId:passkeyBase64(credential.rawId),type:credential.type,response,clientExtensionResults:credential.getClientExtensionResults?.()||{},authenticatorAttachment:credential.authenticatorAttachment};
 }
-function passkeyError(error,enrolling=false){return ['NotAllowedError','AbortError'].includes(error.name)?enrolling?'Устройство не завершило подключение. Повторите и подтвердите системное окно. На iPhone проверьте «Пароли и связка ключей iCloud» и код блокировки; открывайте сайт напрямую в Safari. Резервные коды появятся после успешного подключения.':'Подтверждение не завершено. Повторите на устройстве, где сохранён ключ доступа, или используйте резервный код.':error.name==='InvalidStateError'?'Этот ключ доступа уже подключён. Используйте кнопку подтверждения.':humanError(error);}
+function passkeyError(error,enrolling=false){return ['NotAllowedError','AbortError'].includes(error.name)?enrolling?'Устройство не завершило подключение. Повторите и подтвердите системное окно. На iPhone проверьте «Пароли и связка ключей iCloud» и код блокировки; открывайте сайт напрямую в Safari. Резервные коды появятся после успешного подключения.':'Браузер не завершил подтверждение ключом. Повторите запрос. На iPhone откройте zetslay.pro/app/ напрямую в Safari. Если ключ недоступен, используйте резервный код.':error.name==='InvalidStateError'?'Этот ключ доступа уже подключён. Используйте кнопку подтверждения.':humanError(error);}
 function accountProofHint(model){return model?.adminMfaRequired&&model.adminProofMaxAgeSeconds===3600?'Доступ к админке подтверждается на 1 час. Для изменения защиты аккаунта подтверждение действует 5 минут.':'Подтверждение защищённых действий действует 5 минут.';}
 function passkeyMarkup(model){
  if(!model.passkeySupported)return '';
@@ -100,24 +100,64 @@ async function changeAccountSecurity(operation,extra={}){
 function challengeMfa(session){
  return new Promise((resolve,reject)=>{
   const dialog=document.createElement('dialog');dialog.className='account-mfa-dialog';
-  dialog.innerHTML=`<form><h2>Подтвердите вход</h2><p>Подтвердите вход на своём устройстве или введите резервный код${session.totpAvailable===false?'':' / код из приложения'}.</p>${session.passkeyAvailable?'<button class="button button--primary" type="button" data-mfa-passkey>Войти с отпечатком / Face ID</button>':''}<label class="account-security-label">Код<input name="code" type="password" required maxlength="32" autocomplete="one-time-code" autofocus></label><p role="alert" data-mfa-error></p><div class="profile-actions"><button class="button button--primary" type="submit">Войти</button><button class="button button--ghost" type="button" data-mfa-cancel>Отмена</button></div></form>`;
-  const close=()=>{dialog.close();dialog.remove();};let busy=false,done=false;const controller=new AbortController();
-  const cancel=()=>{if(done)return;done=true;controller.abort();close();reject(Error('Вход отменён.'));};
-  dialog.addEventListener('cancel',event=>{event.preventDefault();cancel();});dialog.querySelector('[data-mfa-cancel]').addEventListener('click',cancel);
-  const login=async(usePasskey=false)=>{if(busy||done)return;busy=true;dialog.querySelectorAll('button').forEach(b=>{if(!b.hasAttribute('data-mfa-cancel'))b.disabled=true;});
-   const field=dialog.querySelector('[name="code"]'),code=field.value;field.value='';
+  const hasPasskey=Boolean(session.passkeyAvailable),supported=hasPasskey&&supportsPasskeys();
+  dialog.innerHTML=`<form><h2>Подтвердите вход</h2><p>${hasPasskey?'Используйте сохранённый ключ доступа. Устройство предложит Face ID, отпечаток или код блокировки.':'Введите код из приложения или одноразовый резервный код.'}</p>${hasPasskey?'<button class="button button--primary" type="button" data-mfa-passkey disabled>Подготовка подтверждения…</button><p role="status" aria-live="polite" data-mfa-status></p>':''}<p role="alert" data-mfa-error></p><details class="mfa-code-method" data-mfa-code${hasPasskey?'':' open'}><summary>${session.totpAvailable===false?'Войти по резервному коду':'Войти с помощью кода'}</summary><label class="account-security-label">${session.totpAvailable===false?'Одноразовый резервный код':'Код из приложения или резервный код'}<input name="code" type="password" required maxlength="32" autocomplete="one-time-code"></label><button class="button button--primary" type="submit">Подтвердить код</button></details>${hasPasskey?'<details class="mfa-device-help"><summary>Не появляется окно подтверждения?</summary><p>Откройте <a href="https://zetslay.pro/app/" target="_blank" rel="noopener noreferrer">zetslay.pro/app/</a> напрямую в Safari на iPhone или в другом браузере с поддержкой ключей доступа.</p><p>Ключ должен быть доступен на устройстве или через способ, предложенный браузером. Если ключ недоступен, войдите по резервному коду. Его можно вставить из сохранённых кодов.</p></details>':''}<div class="profile-actions"><button class="button button--ghost" type="button" data-mfa-cancel>Отмена</button></div></form>`;
+  const field=dialog.querySelector('[name="code"]'),button=dialog.querySelector('[data-mfa-passkey]'),status=dialog.querySelector('[data-mfa-status]'),errorBox=dialog.querySelector('[data-mfa-error]');
+  let busy=false,done=false,preparing=false,options=null,optionsAt=0,expiryTimer;
+  const controller=new AbortController();
+  const close=()=>{clearTimeout(expiryTimer);options=null;controller.abort();dialog.close();dialog.remove();};
+  const cancel=()=>{if(done)return;done=true;close();reject(Error('Вход отменён.'));};
+  const controls=()=>{
+   dialog.querySelectorAll('button').forEach(b=>{if(!b.hasAttribute('data-mfa-cancel'))b.disabled=busy;});
+   if(button){button.disabled=busy||preparing||!supported;button.textContent=busy?'Ожидаем подтверждение…':preparing?'Подготовка подтверждения…':options?'Подтвердить ключом доступа':'Повторить подготовку ключа';}
+  };
+  const request=async(path,body)=>{
+   const abort=new AbortController(),cancelRequest=()=>abort.abort();
+   controller.signal.addEventListener('abort',cancelRequest,{once:true});
+   if(controller.signal.aborted)abort.abort();
+   const timer=setTimeout(cancelRequest,15000);
+   try{return await apiRequest(path,{method:'POST',signal:abort.signal,body});}
+   catch(error){if(abort.signal.aborted){const failure=Error('Не удалось дождаться ответа сервера. Повторите запрос.');failure.code='REQUEST_TIMEOUT';throw failure;}throw error;}
+   finally{clearTimeout(timer);controller.signal.removeEventListener('abort',cancelRequest);}
+  };
+  const prepare=async(preserveError=false)=>{
+   if(done||preparing||!supported)return;preparing=true;options=null;clearTimeout(expiryTimer);controls();
+   status.textContent='Готовим безопасное подтверждение входа…';if(!preserveError)errorBox.textContent='';
+   try{
+    const next=await request('/api/v1/auth/passkey/options',{challengeToken:session.challengeToken});
+    if(done)return;options=next;optionsAt=Date.now();status.textContent='Нажмите кнопку выше, затем подтвердите вход в системном окне.';
+    // Server options expire in two minutes. Refresh only on another explicit tap.
+    expiryTimer=setTimeout(()=>{options=null;if(!done&&!busy){status.textContent='Запрос устарел. Обновите его кнопкой выше.';controls();}},90000);
+   }catch(error){if(!done){status.textContent='';errorBox.textContent=passkeyError(error);}}
+   finally{preparing=false;if(!done)controls();}
+  };
+  const login=async(usePasskey=false)=>{
+   if(busy||done)return;
+   if(usePasskey&&(!options||Date.now()-optionsAt>=90000)){await prepare();return;}
+   // The options are already loaded. No fetch or await before invoking WebAuthn
+   // from this click, including on Safari versions without userActivation.
+   const ready=options;options=null;clearTimeout(expiryTimer);busy=true;controls();errorBox.textContent='';
+   const code=field.value;field.value='';
+   if(status)status.textContent=usePasskey?'Подтвердите вход в окне устройства.':'Проверяем код…';
+   let failed=false;
    try{
     let passkeyResponse;
-    if(usePasskey){const options=await apiRequest('/api/v1/auth/passkey/options',{method:'POST',signal:AbortSignal.timeout(15000),body:{challengeToken:session.challengeToken}});if(done)return;passkeyResponse=await passkeyCeremony(options,false,controller.signal);if(done)return;}
-    const result=await apiRequest('/api/v1/auth/mfa',{method:'POST',signal:AbortSignal.timeout(15000),body:{challengeToken:session.challengeToken,...(usePasskey?{passkeyResponse}:{code})}});
-    if(done){if(result.token)await fetch(`${API_BASE_URL}/api/v1/auth/logout`,{method:'POST',credentials:'include',headers:{authorization:`Bearer ${result.token}`},signal:AbortSignal.timeout(12000)}).catch(()=>{});return;}done=true;close();resolve(result);
+    if(usePasskey){passkeyResponse=await passkeyCeremony(ready,false,controller.signal,true);if(done)return;}
+    const result=await request('/api/v1/auth/mfa',{challengeToken:session.challengeToken,...(usePasskey?{passkeyResponse}:{code})});
+    if(done){if(result.token){const abort=new AbortController(),timer=setTimeout(()=>abort.abort(),12000);try{await fetch(`${API_BASE_URL}/api/v1/auth/logout`,{method:'POST',credentials:'include',headers:{authorization:`Bearer ${result.token}`},signal:abort.signal}).catch(()=>{});}finally{clearTimeout(timer);}}return;}
+    done=true;close();resolve(result);
+   }catch(error){if(!done){failed=true;errorBox.textContent=passkeyError(error);if(!usePasskey){dialog.querySelector('[data-mfa-code]').open=true;field.focus();}}}
+   finally{
+    busy=false;if(!done){if(status)status.textContent='';controls();if(failed&&supported)void prepare(true);}
    }
-   catch(error){if(!done){dialog.querySelector('[data-mfa-error]').textContent=passkeyError(error);field.focus();}}
-   finally{busy=false;if(!done)dialog.querySelectorAll('button').forEach(b=>b.disabled=false);}
   };
-  dialog.querySelector('[data-mfa-passkey]')?.addEventListener('click',()=>login(true));
-  dialog.querySelector('form').addEventListener('submit',event=>{event.preventDefault();login(false);
-  });document.body.append(dialog);dialog.showModal();
+  dialog.addEventListener('cancel',event=>{event.preventDefault();cancel();});dialog.querySelector('[data-mfa-cancel]').addEventListener('click',cancel);
+  button?.addEventListener('click',()=>login(true));
+  dialog.querySelector('form').addEventListener('submit',event=>{event.preventDefault();void login(false);});
+  document.body.append(dialog);dialog.showModal();
+  if(supported)void prepare();
+  else if(hasPasskey){button.textContent='Ключ доступа недоступен в этом браузере';status.textContent='Откройте сайт напрямую в Safari или используйте резервный код.';}
+  else field.focus();
  });
 }
 (function installAccountSecurity(){

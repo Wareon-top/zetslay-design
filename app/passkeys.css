@@ -7,4 +7,11 @@
 .account-mfa-dialog{width:min(460px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;box-sizing:border-box}
 .account-mfa-dialog [data-mfa-passkey]{width:100%;margin:8px 0 18px;white-space:normal}
 .account-mfa-dialog .profile-actions{display:flex;flex-wrap:wrap;gap:10px}
+.account-mfa-dialog [data-mfa-status]{font-size:14px;line-height:1.5;color:#b9bdc5}
+.account-mfa-dialog .mfa-code-method,.account-mfa-dialog .mfa-device-help{margin:18px 0;padding-top:14px;border-top:1px solid #34363c}
+.account-mfa-dialog summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:600;line-height:1.5}
+.account-mfa-dialog input{font-size:16px}
+.account-mfa-dialog button{min-height:44px}
+.account-mfa-dialog .mfa-device-help p{font-size:14px;line-height:1.6}
+.account-mfa-dialog .mfa-device-help a{color:#ffab72;overflow-wrap:anywhere}
 @media(max-width:600px){.account-passkey{padding:17px;border-radius:14px}.account-passkey .profile-actions>.button{flex:1 1 100%}}

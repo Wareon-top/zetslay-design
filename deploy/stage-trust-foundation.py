@@ -80,9 +80,9 @@ def stage(local,incoming,out):
  if mode=='replace-observed':validate_host_contract(local,app,html)
  for patch in manifest['appPatches']:app=replace_once(app,patch['before'],patch['after'],'app.js')
  result['app/app.js']=app.encode('utf-8')
- for name in ['app.js','account-security.js']:html=include(html,name,'20261027-admin-hour-1')
+ for name in ['app.js','account-security.js']:html=include(html,name,'20261101-mobile-login-1')
  if 'app/passkeys.css' in manifest['assets']:
-  style='<link rel="stylesheet" href="passkeys.css?v=20261026-1" data-zetslay-passkeys-style>'
+  style='<link rel="stylesheet" href="passkeys.css?v=20261101-mobile-login-1" data-zetslay-passkeys-style>'
   matches=list(re.finditer(r'<link\b[^>]*\bdata-zetslay-passkeys-style\b[^>]*>',html,re.I))
   if len(matches)>1:raise ValueError('Повторяется стиль ключей доступа.')
   if matches:html=html[:matches[0].start()]+style+html[matches[0].end():]
