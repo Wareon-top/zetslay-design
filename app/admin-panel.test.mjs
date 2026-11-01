@@ -8,6 +8,17 @@ const css=readFileSync(new URL('./admin-panel.css',import.meta.url),'utf8');
 test('partial plugin failure has an explicit owner label',()=>{
  const h=harness();assert.equal(h.run("adminLabel('partial')"),'Ошибка отдельного плагина');
 });
+test('owner support link opens the requested ticket once and keeps later finance navigation usable',async()=>{
+ const h=harness(),id='st_12345678-1234-4234-8234-123456789abc',opened=[];h.c.location.search='?support_ticket='+id;
+ h.c.supportUi={admin:{ticket:null}};h.c.loadSupport=async mode=>opened.push(['list',mode]);h.c.supportOpen=async(mode,ticket)=>{opened.push(['thread',ticket]);h.c.supportUi.admin.ticket={id:ticket};};h.c.supportMarkup=()=>'';
+ await h.run('adminLoad()');assert.equal(h.run('adminUi.tab'),'support');assert.equal(opened.at(-1)[1],id);assert.equal(h.run('adminUi.supportLink'),id);
+ h.c.adminFinanceQuery=()=>'';h.c.adminFinanceUi={};h.c.adminFinanceMarkup=()=>'';await h.run("adminUi.tab='finance';adminLoad()");assert.equal(h.run('adminUi.tab'),'finance');assert.equal(opened.filter(x=>x[0]==='thread').length,1);
+ h.run('adminReset()');assert.equal(h.run('adminUi.supportLink'),'');
+});
+test('support links cannot authorize another user or inject an arbitrary ticket route',async()=>{
+ const h=harness();let opened=0;h.c.loadSupport=async()=>opened++;h.c.location.search='?support_ticket=https://attacker.test';await h.run('adminLoad()');assert.equal(opened,0);
+ h.c.location.search='?support_ticket=st_12345678-1234-4234-8234-123456789abc';h.c.authState.user.telegramUserId='123';await h.run('adminLoad()');assert.equal(opened,0);
+});
 function harness() {
  const root={innerHTML:''},nav={hidden:true},listeners={},calls=[];
  const c=vm.createContext({authState:{token:'owner-token',user:{telegramUserId:'5062414502'}},sessionGeneration:1,state:{plugins:[]},location:{hash:'#admin'},URLSearchParams,Intl,Date,

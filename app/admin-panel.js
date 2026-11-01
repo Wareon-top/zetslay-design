@@ -1,9 +1,9 @@
-const adminUi = { token:'', generation:0, revision:0, tab:'overview', overview:null, list:null, detail:null, busy:false, error:'', filters:{query:'',access:'all',plan:'all',connection:'all',sync:'all',offset:0} };
+const adminUi = { token:'', generation:0, revision:0, supportLink:'', tab:'overview', overview:null, list:null, detail:null, busy:false, error:'', filters:{query:'',access:'all',plan:'all',connection:'all',sync:'all',offset:0} };
 function adminAllowed() { return Boolean(authState.token && authState.user?.telegramUserId === '5062414502'); }
 function adminReset() {
   if(typeof adminFinanceReset==='function')adminFinanceReset();
   if(typeof supportReset==='function')supportReset('admin');
-  adminUi.revision++; Object.assign(adminUi,{token:'',generation:0,overview:null,list:null,detail:null,busy:false,error:'',tab:'overview',filters:{query:'',access:'all',plan:'all',connection:'all',sync:'all',offset:0}});
+  adminUi.revision++; Object.assign(adminUi,{token:'',generation:0,overview:null,list:null,detail:null,busy:false,error:'',supportLink:'',tab:'overview',filters:{query:'',access:'all',plan:'all',connection:'all',sync:'all',offset:0}});
   const root=document.querySelector('[data-admin-root]'); if(root)root.innerHTML='';
   document.querySelectorAll('[data-admin-nav]').forEach(n=>n.hidden=true);
 }
@@ -45,13 +45,16 @@ function renderAdminPanel() {
 }
 async function adminLoad(kind='all',id='') {
   if(!adminAllowed()){adminAccess();return;}
+  const link=typeof location.search==='string'?new URLSearchParams(location.search).get('support_ticket'):null;
+  const requested=kind==='all'&&/^st_[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(link||'')&&adminUi.supportLink!==link?link:null;
+  if(requested){adminUi.tab='support';adminUi.detail=null;}
   if(kind==='all' && adminUi.detail){kind='detail';id=adminUi.detail.user.id;}
   const token=authState.token,generation=sessionGeneration,revision=++adminUi.revision;
   const current=()=>adminAllowed()&&token===authState.token&&generation===sessionGeneration&&revision===adminUi.revision;
   adminUi.token=token;adminUi.generation=generation;adminUi.busy=true;adminUi.error='';renderAdminPanel();
   try {
     if(kind==='detail') {const detail=await apiRequest('/api/v1/admin/users/'+encodeURIComponent(id),{authenticated:true});if(current())adminUi.detail=detail;}
-    else if(adminUi.tab==='support') {await loadSupport('admin');}
+    else if(adminUi.tab==='support') {await loadSupport('admin');if(current()&&requested){await supportOpen('admin',requested);if(current()&&supportUi.admin.ticket?.id===requested)adminUi.supportLink=requested;}}
     else if(adminUi.tab==='finance') {const data=await apiRequest('/api/v1/admin/finance?'+adminFinanceQuery(),{authenticated:true});if(current())adminFinanceUi.report=data;}
     else if(adminUi.tab==='overview') {const data=await apiRequest('/api/v1/admin/overview',{authenticated:true});if(current())adminUi.overview=data;}
     else { const filters={...adminUi.filters};
