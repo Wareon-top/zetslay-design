@@ -15,3 +15,4 @@ jobs:
       - run: npm run test:upgrade
       - run: npm run validate
       - run: python3 deploy/stage-competitive-release.test.py -v
+      - run: bash -n deploy/start-competitive-release.sh
