@@ -33,6 +33,17 @@ class PublicRelease(unittest.TestCase):
    with self.assertRaises(ValueError):stage.stage(site,ROOT,Path(temp)/'out')
    self.assertFalse((Path(temp)/'out').exists())
  @unittest.skipIf(os.name!='posix','Linux VPS installer')
+ def test_concurrent_edit_during_staging_stops_before_backup_and_install(self):
+  with tempfile.TemporaryDirectory() as temp:
+   site=self.fixture(temp);real_stage=installer.module.stage;calls=[]
+   def changing_stage(*args):
+    result=real_stage(*args);calls.append(True)
+    if len(calls)==2:(site/'index.html').write_bytes(b'CONCURRENT_SITE_EDIT')
+    return result
+   with patch.object(installer.module,'stage',side_effect=changing_stage):
+    with self.assertRaises(ValueError):installer.apply(site,ROOT,temp,install=True)
+   self.assertEqual((site/'index.html').read_bytes(),b'CONCURRENT_SITE_EDIT');self.assertFalse(list(Path(temp).glob('zetslay-before-public-upgrade-*')))
+ @unittest.skipIf(os.name!='posix','Linux VPS installer')
  def test_partial_install_restores_old_files_and_removes_new_assets(self):
   with tempfile.TemporaryDirectory() as temp:
    site=self.fixture(temp);before={str(path.relative_to(site)):path.read_bytes() for path in site.rglob('*') if path.is_file()};real_replace=os.replace;calls=[]
