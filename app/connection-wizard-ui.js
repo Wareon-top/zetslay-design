@@ -52,6 +52,10 @@ function connectionWizardPresentationModel({ live, snapshot, step, frontier, loa
   summary.className = 'connection-step-summary';
   summary.innerHTML = '<span id="connection-wizard-status" data-connection-summary role="status" aria-live="polite" aria-atomic="true"></span><span data-connection-saved></span>';
   body.before(summary);
+  const preparation = document.createElement('details');
+  preparation.className = 'connection-preparation';
+  preparation.innerHTML = '<summary>Что понадобится и что оплачивается отдельно</summary><p>Активный пробный период или подписка, персональный Telegram-бот, ключ FunPay и закреплённый прокси. Прокси, закупки и внешние API не входят в стоимость подписки. Цены проверяются в кабинете перед покупкой.</p><p>После проверки чтения магазин подключён, но отправка сообщений и выдача включаются отдельно.</p><a href="/docs/funpay-connect/" target="_blank" rel="noopener">Инструкция подключения</a> · <a href="/pricing/" target="_blank" rel="noopener">Стоимость доступа</a>';
+  summary.before(preparation);
 
   const controls = document.createElement('div');
   controls.className = 'connection-controls';

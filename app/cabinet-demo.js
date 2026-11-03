@@ -5,7 +5,8 @@ const cabinetDemoSteps = [['dashboard','Посмотрите продажи','pe
 let cabinetDemoSession = null;
 const demoEsc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const demoMoney = minor => new Intl.NumberFormat('ru-RU', {style:'currency',currency:'RUB',minimumFractionDigits:0,maximumFractionDigits:2}).format(minor / 100);
-const demoScope = () => authState.user?.id && authState.token ? `${authState.user.id}:${authState.token}` : '';
+const cabinetPublicDemo = () => document.querySelector?.('[data-public-demo]') || null;
+const demoScope = () => cabinetPublicDemo() ? 'public-demo' : authState.user?.id && authState.token ? `${authState.user.id}:${authState.token}` : '';
 function cabinetDemoReset(){ cabinetDemoSession = null; }
 function cabinetDemoData(){
   const scope = demoScope();
@@ -103,11 +104,13 @@ function cabinetDemoExperience(view,{trial,busy,error}){
   <footer class="demo-footer"><details><summary>Что входит в доступ</summary><p>В пробном периоде: обычные, продвинутые и ультра плагины. Легендарные — в тарифе «Максимум». Для подключения, синхронизации и работы плагинов нужен активный тариф или пробный период. Бессрочная покупка плагина не заменяет подписку. Товары поставщиков и внешние API оплачиваются отдельно.</p></details><button type="button" data-access-promo>Есть промокод?</button></footer></div>`;
 }
 function cabinetDemoRender(gate,focusId){
+  if(gate.hasAttribute?.('data-public-demo')){document.dispatchEvent(new CustomEvent('zetslay:demo-render',{detail:{focusId}}));return;}
   if(typeof subscriptionApply==='function') subscriptionApply();
   if(focusId) gate.querySelector(`[id="${focusId}"]`)?.focus({preventScroll:true});
 }
 function cabinetDemoComplete(key){const d=cabinetDemoData();if(!d.completed.includes(key))d.completed.push(key);}
 function cabinetDemoEventGate(target){
+  const publicGate=target.closest?.('[data-public-demo]');if(publicGate)return publicGate;
   if(!demoScope()||typeof subscriptionActive!=='function'||subscriptionActive())return null;
   const gate=target.closest?.('[data-access-gate]');return gate?.querySelector('.demo-experience')?gate:null;
 }

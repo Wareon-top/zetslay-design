@@ -1,0 +1,18 @@
+name: Competitive release
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  demo-and-staging:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm run check:guides
+      - run: npm run test:upgrade
+      - run: npm run validate
+      - run: python3 deploy/stage-competitive-release.test.py -v
+      - run: bash -n deploy/start-competitive-release.sh

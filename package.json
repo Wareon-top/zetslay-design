@@ -4,6 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build:guides": "node scripts/build-public-guides.mjs",
+    "check:guides": "node scripts/build-public-guides.mjs --check",
+    "test:upgrade": "node --test demo/public-demo.test.mjs app/automation-preview.test.mjs app/cabinet-demo.test.mjs app/connection-wizard-ui.test.mjs scripts/public-links.test.mjs",
     "validate": "node scripts/validate-project.mjs",
     "serve": "node scripts/serve.mjs"
   },
