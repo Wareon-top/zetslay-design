@@ -2,7 +2,7 @@
   "version": "20261103-diagnostics-1",
   "assets": {
     "app/diagnostics-model.js": "3df512f0de5f5241cc6254976a5a1aea24a6329b484db047c5cfa25e13e6cd4c",
-    "app/diagnostics-ui.js": "e1ca21b167930ec1e4f1e057131b667b6d6af5bac42bbebafcef82570db8b50b",
+    "app/diagnostics-ui.js": "d13e22652b9a5db2519072a5f52c692b68ca4f3cd4692563802ac5319369074f",
     "app/diagnostics-center.js": "cd52bc3544a21ccc99fb82da05b061793a3246453afae30426884b96da46b615",
     "app/diagnostics-center.css": "6334690b278a27d8592953e41e4f92ca88c71a34087c1020b8023248527579fe",
     "demo/diagnostics-demo.js": "7bcf506858f724e9decfbcdb13bd002bfe73722d662a49c3007a6d7285f5ea5b",
