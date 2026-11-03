@@ -1,0 +1,19 @@
+name: Diagnostics release
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  focused:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: node --test app/diagnostics-model.test.mjs demo/public-demo.test.mjs
+      - run: python3 deploy/stage-diagnostics.test.py
