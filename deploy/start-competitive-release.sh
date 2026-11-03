@@ -5,7 +5,7 @@ umask 077
 site=${ZETSLAY_SITE_DIR:-/opt/zetslay-site}
 core=${ZETSLAY_CORE_DIR:-/opt/zetslay}
 design_revision=${1:?Укажите фиксированный SHA frontend}
-core_revision=ecc337d8ea0ba6b76261f27aa4bf21e2e14365ba
+core_revision=bc04a43978b8a9a5ea262ea2d3f5ce90ea7ced02
 [[ "$design_revision" =~ ^[a-f0-9]{40}$ ]] || { echo 'Нужен полный SHA frontend.'; exit 1; }
 for command in git python3 systemd-run systemctl curl; do command -v "$command" >/dev/null || { echo "Не найден $command"; exit 1; }; done
 for directory in "$site" "$core"; do git -C "$directory" rev-parse --git-dir >/dev/null; done
