@@ -1,10 +1,15 @@
-import importlib.util,os,shutil,tempfile,unittest
+import importlib.util,os,shutil,tempfile,unittest,subprocess,json
 from pathlib import Path
 from unittest.mock import patch
 HERE=Path(__file__).parent;ROOT=HERE.parent
 def load(name):
  spec=importlib.util.spec_from_file_location(name,HERE/(name+'.py'));module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module);return module
 stage=load('stage-competitive-release');installer=load('apply-competitive-release')
+# Exercise the first release against its pinned assets; later releases own newer demo files.
+frozen=tempfile.TemporaryDirectory();frozen_root=Path(frozen.name)
+for name in [*json.loads((ROOT/'deploy/competitive-release.json').read_text(encoding='utf8'))['assets'],'index.html','app/index.html','robots.txt','sitemap.xml','app/cabinet-demo.js','app/connection-wizard-ui.js','deploy/competitive-release.json']:
+ target=frozen_root/name;target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(subprocess.check_output(['git','show','c5e383ee321fe3627c2490cb21e9d988ca97e34e:'+name],cwd=ROOT))
+ROOT=frozen_root
 class PublicRelease(unittest.TestCase):
  def fixture(self,folder):
   site=Path(folder)/'site';site.mkdir()

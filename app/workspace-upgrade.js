@@ -102,7 +102,7 @@ function createWorkspaceEventFeed({ui,scope,request,changed,timeoutMs=15000}){
   if(detailHadFocus)detail.querySelector('[data-ws-detail-heading]')?.focus({preventScroll:true});
   const total=ui.dataKey===feed.key()?ui.data?.total||0:0;root.querySelector('[data-ws-pagination]').innerHTML=`<span>${total?`${ui.offset+1}–${Math.min(ui.offset+rows.length,total)} из ${total}`:'Нет событий'}</span><span><button type="button" data-ws-page="prev" ${ui.offset===0||ui.loading?'disabled':''} aria-label="Предыдущие события">${icon('arrow-left')}</button><button type="button" data-ws-page="next" ${ui.dataKey!==feed.key()||ui.data?.nextOffset==null||ui.loading?'disabled':''} aria-label="Следующие события">${icon('arrow-right')}</button></span>`;
  }
- function renderTasks(){const root=document.querySelector('[data-ws-tasks]');if(!root)return;const connected=selectedStore()?.status==='connected_read_only';const tasks=[];
+ function renderTasks(){const root=document.querySelector('[data-ws-tasks]');if(!root)return;if(window.ZetSlayDiagnostics?.renderSummary(root))return;const connected=selectedStore()?.status==='connected_read_only';const tasks=[];
   if(!connected)tasks.push({title:'Подключите магазин FunPay',note:'Завершите настройку, чтобы получать заказы и сообщения.',target:'connect',symbol:'shield'});
   else if(!state.storeContent?.observedAt)tasks.push({title:'Ожидаем первую синхронизацию',note:'Получим данные подключённого магазина.',target:'refresh',symbol:'clock'});
   if(authState.user&&!authState.workspace?.plan?.active)tasks.push({title:'Выберите доступ к сервису',note:'Пробный период или подписка для работы автоматизации.',target:'billing',symbol:'card'});

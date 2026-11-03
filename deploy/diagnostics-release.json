@@ -1,0 +1,28 @@
+{
+  "version": "20261103-diagnostics-1",
+  "assets": {
+    "app/diagnostics-model.js": "3df512f0de5f5241cc6254976a5a1aea24a6329b484db047c5cfa25e13e6cd4c",
+    "app/diagnostics-ui.js": "e1ca21b167930ec1e4f1e057131b667b6d6af5bac42bbebafcef82570db8b50b",
+    "app/diagnostics-center.js": "cd52bc3544a21ccc99fb82da05b061793a3246453afae30426884b96da46b615",
+    "app/diagnostics-center.css": "6334690b278a27d8592953e41e4f92ca88c71a34087c1020b8023248527579fe",
+    "demo/diagnostics-demo.js": "7bcf506858f724e9decfbcdb13bd002bfe73722d662a49c3007a6d7285f5ea5b",
+    "demo/demo.js": "d6a5579f53c7d757b1e307997d685c8f4db0191b0eb6cb04b85417221bb04982",
+    "demo/index.html": "9fb184d4108c10d4eb1d4e9c073830ab2731c368537071e34ee482de9c5d1ff6"
+  },
+  "accepted": {
+    "demo/demo.js": [
+      "8aaad18cfb848f97c7a910bb032ab74cf8bb87012c4260c7e68fe70b9eb0f241"
+    ],
+    "demo/index.html": [
+      "cf6eda6cd3784320d4016421b64cab8a3e155e62e9273e490beea7cfa9aaed83"
+    ]
+  },
+  "patches": {
+    "app/workspace-upgrade.js": [
+      {
+        "before": "  const total=ui.dataKey===feed.key()?ui.data?.total||0:0;root.querySelector('[data-ws-pagination]').innerHTML=`<span>${total?`${ui.offset+1}–${Math.min(ui.offset+rows.length,total)} из ${total}`:'Нет событий'}</span><span><button type=\"button\" data-ws-page=\"prev\" ${ui.offset===0||ui.loading?'disabled':''} aria-label=\"Предыдущие события\">${icon('arrow-left')}</button><button type=\"button\" data-ws-page=\"next\" ${ui.dataKey!==feed.key()||ui.data?.nextOffset==null||ui.loading?'disabled':''} aria-label=\"Следующие события\">${icon('arrow-right')}</button></span>`;\n }\n function renderTasks(){const root=document.querySelector('[data-ws-tasks]');if(!root)return;const connected=selectedStore()?.status==='connected_read_only';const tasks=[];\n  if(!connected)tasks.push({title:'Подключите магазин FunPay',note:'Завершите настройку, чтобы получать заказы и сообщения.',target:'connect',symbol:'shield'});\n  else if(!state.storeContent?.observedAt)tasks.push({title:'Ожидаем первую синхронизацию',note:'Получим данные подключённого магазина.',target:'refresh',symbol:'clock'});\n",
+        "after": "  const total=ui.dataKey===feed.key()?ui.data?.total||0:0;root.querySelector('[data-ws-pagination]').innerHTML=`<span>${total?`${ui.offset+1}–${Math.min(ui.offset+rows.length,total)} из ${total}`:'Нет событий'}</span><span><button type=\"button\" data-ws-page=\"prev\" ${ui.offset===0||ui.loading?'disabled':''} aria-label=\"Предыдущие события\">${icon('arrow-left')}</button><button type=\"button\" data-ws-page=\"next\" ${ui.dataKey!==feed.key()||ui.data?.nextOffset==null||ui.loading?'disabled':''} aria-label=\"Следующие события\">${icon('arrow-right')}</button></span>`;\n }\n function renderTasks(){const root=document.querySelector('[data-ws-tasks]');if(!root)return;if(window.ZetSlayDiagnostics?.renderSummary(root))return;const connected=selectedStore()?.status==='connected_read_only';const tasks=[];\n  if(!connected)tasks.push({title:'Подключите магазин FunPay',note:'Завершите настройку, чтобы получать заказы и сообщения.',target:'connect',symbol:'shield'});\n  else if(!state.storeContent?.observedAt)tasks.push({title:'Ожидаем первую синхронизацию',note:'Получим данные подключённого магазина.',target:'refresh',symbol:'clock'});\n"
+      }
+    ]
+  }
+}
