@@ -1,5 +1,7 @@
 # ZetSlay
 
+Current implementation and the November upgrade are documented in [the release notes](docs/COMPETITIVE_RELEASE_2026-11-03.md). The Stage 0 status and promotion model below describe the early foundation and must not be used to infer the current deployment or reset the working branches to main.
+
 ZetSlay is an independent seller-tech product for managing and automating a FunPay store. The approved visual baseline is the seller-tech landing page in `index.html`; the product application and backend will be developed as separate surfaces without redesigning that baseline.
 
 The source repository is private. Public deployment contains only the built marketing or product artefacts intended for users.

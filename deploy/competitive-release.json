@@ -1,0 +1,35 @@
+{
+  "version": "20261103-competitive-1",
+  "baseline": "d37e6b1c66dd7553b4b1c2b649dc8a3603edcabb",
+  "assets": {
+    "public-product.css": "de047a924626cf6f97f78cebf3d1617c8320cb52981a426ca8a970174a6feadf",
+    "demo/index.html": "cf6eda6cd3784320d4016421b64cab8a3e155e62e9273e490beea7cfa9aaed83",
+    "demo/demo.css": "67427bdfa9ce715faaddfa68350b9fbc89024dc60b16fe4f8de2905ec6d90d4d",
+    "demo/demo.js": "8aaad18cfb848f97c7a910bb032ab74cf8bb87012c4260c7e68fe70b9eb0f241",
+    "docs/index.html": "ba2bbc84d798caa3681b684f8a16c18abe52df784eca350719404d69c3567cf7",
+    "docs/funpay-connect/index.html": "bec1b18ff31f7afd8b34fa5e7a0661e3c743edd368510c46919d9bcff9d4c48d",
+    "docs/auto-delivery/index.html": "bd26c1d605570bd87ace092d82fcfa2a4d15bd0aaff2679bdbc3bee85ac9b3fa",
+    "docs/troubleshooting/index.html": "99a5833a66289f0955085b13f9b42ecaefd56faf7b267a67fa42b4212a17ec2e",
+    "pricing/index.html": "15448aa19f1367d76fec72a72163996ff59dcbb554cd33091c39f4225b76ebdb",
+    "app/automation-preview.js": "53f54ef71b49c6be0729c6e3d51da1e4031d84151df524a2f205e6d7728a8cee",
+    "app/automation-preview.css": "c971671987e73f21f471a318cb10a7b00693c0b1b8b537634a44189482dec3cd"
+  },
+  "patches": {
+    "app/cabinet-demo.js": [
+      {
+        "before": "let cabinetDemoSession = null;\nconst demoEsc = value => String(value ?? '').replace(/[&<>\"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',\"'\":'&#39;'}[c]));\nconst demoMoney = minor => new Intl.NumberFormat('ru-RU', {style:'currency',currency:'RUB',minimumFractionDigits:0,maximumFractionDigits:2}).format(minor / 100);\nconst demoScope = () => authState.user?.id && authState.token ? `${authState.user.id}:${authState.token}` : '';\nfunction cabinetDemoReset(){ cabinetDemoSession = null; }\nfunction cabinetDemoData(){\n  const scope = demoScope();\n",
+        "after": "let cabinetDemoSession = null;\nconst demoEsc = value => String(value ?? '').replace(/[&<>\"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',\"'\":'&#39;'}[c]));\nconst demoMoney = minor => new Intl.NumberFormat('ru-RU', {style:'currency',currency:'RUB',minimumFractionDigits:0,maximumFractionDigits:2}).format(minor / 100);\nconst cabinetPublicDemo = () => document.querySelector?.('[data-public-demo]') || null;\nconst demoScope = () => cabinetPublicDemo() ? 'public-demo' : authState.user?.id && authState.token ? `${authState.user.id}:${authState.token}` : '';\nfunction cabinetDemoReset(){ cabinetDemoSession = null; }\nfunction cabinetDemoData(){\n  const scope = demoScope();\n"
+      },
+      {
+        "before": "  <footer class=\"demo-footer\"><details><summary>Что входит в доступ</summary><p>В пробном периоде: обычные, продвинутые и ультра плагины. Легендарные — в тарифе «Максимум». Для подключения, синхронизации и работы плагинов нужен активный тариф или пробный период. Бессрочная покупка плагина не заменяет подписку. Товары поставщиков и внешние API оплачиваются отдельно.</p></details><button type=\"button\" data-access-promo>Есть промокод?</button></footer></div>`;\n}\nfunction cabinetDemoRender(gate,focusId){\n  if(typeof subscriptionApply==='function') subscriptionApply();\n  if(focusId) gate.querySelector(`[id=\"${focusId}\"]`)?.focus({preventScroll:true});\n}\nfunction cabinetDemoComplete(key){const d=cabinetDemoData();if(!d.completed.includes(key))d.completed.push(key);}\nfunction cabinetDemoEventGate(target){\n  if(!demoScope()||typeof subscriptionActive!=='function'||subscriptionActive())return null;\n  const gate=target.closest?.('[data-access-gate]');return gate?.querySelector('.demo-experience')?gate:null;\n}\n",
+        "after": "  <footer class=\"demo-footer\"><details><summary>Что входит в доступ</summary><p>В пробном периоде: обычные, продвинутые и ультра плагины. Легендарные — в тарифе «Максимум». Для подключения, синхронизации и работы плагинов нужен активный тариф или пробный период. Бессрочная покупка плагина не заменяет подписку. Товары поставщиков и внешние API оплачиваются отдельно.</p></details><button type=\"button\" data-access-promo>Есть промокод?</button></footer></div>`;\n}\nfunction cabinetDemoRender(gate,focusId){\n  if(gate.hasAttribute?.('data-public-demo')){document.dispatchEvent(new CustomEvent('zetslay:demo-render',{detail:{focusId}}));return;}\n  if(typeof subscriptionApply==='function') subscriptionApply();\n  if(focusId) gate.querySelector(`[id=\"${focusId}\"]`)?.focus({preventScroll:true});\n}\nfunction cabinetDemoComplete(key){const d=cabinetDemoData();if(!d.completed.includes(key))d.completed.push(key);}\nfunction cabinetDemoEventGate(target){\n  const publicGate=target.closest?.('[data-public-demo]');if(publicGate)return publicGate;\n  if(!demoScope()||typeof subscriptionActive!=='function'||subscriptionActive())return null;\n  const gate=target.closest?.('[data-access-gate]');return gate?.querySelector('.demo-experience')?gate:null;\n}\n"
+      }
+    ],
+    "app/connection-wizard-ui.js": [
+      {
+        "before": "  summary.className = 'connection-step-summary';\n  summary.innerHTML = '<span id=\"connection-wizard-status\" data-connection-summary role=\"status\" aria-live=\"polite\" aria-atomic=\"true\"></span><span data-connection-saved></span>';\n  body.before(summary);\n\n  const controls = document.createElement('div');\n  controls.className = 'connection-controls';\n",
+        "after": "  summary.className = 'connection-step-summary';\n  summary.innerHTML = '<span id=\"connection-wizard-status\" data-connection-summary role=\"status\" aria-live=\"polite\" aria-atomic=\"true\"></span><span data-connection-saved></span>';\n  body.before(summary);\n  const preparation = document.createElement('details');\n  preparation.className = 'connection-preparation';\n  preparation.innerHTML = '<summary>Что понадобится и что оплачивается отдельно</summary><p>Активный пробный период или подписка, персональный Telegram-бот, ключ FunPay и закреплённый прокси. Прокси, закупки и внешние API не входят в стоимость подписки. Цены проверяются в кабинете перед покупкой.</p><p>После проверки чтения магазин подключён, но отправка сообщений и выдача включаются отдельно.</p><a href=\"/docs/funpay-connect/\" target=\"_blank\" rel=\"noopener\">Инструкция подключения</a> · <a href=\"/pricing/\" target=\"_blank\" rel=\"noopener\">Стоимость доступа</a>';\n  summary.before(preparation);\n\n  const controls = document.createElement('div');\n  controls.className = 'connection-controls';\n"
+      }
+    ]
+  }
+}
