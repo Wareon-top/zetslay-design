@@ -45,10 +45,6 @@
   "patches": {
     "index.html": [
       {
-        "before": "  <link rel=\"stylesheet\" href=\"session-ui.css?v=20261012-week-session\">\n  <link rel=\"stylesheet\" href=\"landing-orderflow.css?v=20261024-ascii\">\n</head>\n<body id=\"top\" data-landing-theme=\"orderflow\">\n",
-        "after": "  <link rel=\"stylesheet\" href=\"session-ui.css?v=20261012-week-session\">\n  <link rel=\"stylesheet\" href=\"landing-orderflow.css?v=20261024-ascii\">\n  <link rel=\"stylesheet\" href=\"assets/ui-foundation.css?v=20261103-design\">\n  <link rel=\"stylesheet\" href=\"site-design.css?v=20261103-design\">\n</head>\n<body id=\"top\" data-landing-theme=\"orderflow\">\n"
-      },
-      {
         "before": "      </div>\n      <div class=\"shell hero-inner\">\n        <div class=\"hero-connections\" aria-label=\"FunPay, Telegram и ZetSlay\">\n          <span class=\"hero-connection\" title=\"FunPay\"><img src=\"assets/platforms/funpay.svg\" width=\"22\" height=\"22\" alt=\"FunPay\"></span>\n",
         "after": "      </div>\n      <div class=\"shell hero-inner\">\n        <div class=\"studio-hero-copy\">\n        <div class=\"hero-connections\" aria-label=\"FunPay, Telegram и ZetSlay\">\n          <span class=\"hero-connection\" title=\"FunPay\"><img src=\"assets/platforms/funpay.svg\" width=\"22\" height=\"22\" alt=\"FunPay\"></span>\n"
       },

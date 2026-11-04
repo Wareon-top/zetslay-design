@@ -10,7 +10,11 @@ for name in assets:
  data['assets'][name]=digest((ROOT/name).read_bytes())
  if not name.endswith('workspace-design.css') and not name.startswith('assets/') and name!='site-design.css':data['accepted'][name]=[digest(old(name))]
 name='index.html';before=old(name).decode().splitlines(True);after=(ROOT/name).read_text(encoding='utf8').splitlines(True);ops=[]
-for group in difflib.SequenceMatcher(None,before,after).get_grouped_opcodes(2):ops.append({'before':''.join(before[group[0][1]:group[-1][2]]),'after':''.join(after[group[0][3]:group[-1][4]])})
+for group in difflib.SequenceMatcher(None,before,after).get_grouped_opcodes(2):
+ previous=''.join(before[group[0][1]:group[-1][2]]);updated=''.join(after[group[0][3]:group[-1][4]])
+ # Styles are appended structurally so installed security/SEO tags retain their exact bytes.
+ if '</head>' in previous:continue
+ ops.append({'before':previous,'after':updated})
 data['patches'][name]=ops
 target=ROOT/'deploy/workspace-design.json';text=json.dumps(data,ensure_ascii=False,indent=2)+'\n'
 if '--check' in sys.argv:

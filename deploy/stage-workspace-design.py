@@ -25,7 +25,11 @@ def design(local,source):
   if current.exists() and helpers.digest(current.read_bytes().replace(b'\r\n',b'\n')) not in [target,*m['accepted'].get(name,[])]:raise ValueError('Независимые изменения '+name+'. Автоматическая замена остановлена.')
   if name in m['accepted'] and not current.exists():raise ValueError('Сначала требуется предыдущий пакет: '+name)
   result[name]=data
- for name,ops in m['patches'].items():result[name]=helpers.patch(helpers.read(local/name),ops,name).encode('utf8')
+ for name,ops in m['patches'].items():
+  html=helpers.patch(helpers.read(local/name),ops,name)
+  if name=='index.html':
+   for css in ['assets/ui-foundation.css','site-design.css']:html=helpers.asset(html,css,m['version'],'link')
+  result[name]=html.encode('utf8')
  app=helpers.read(local/'app/index.html')
  if len(re.findall(r'\bsrc=["\'](?:\./)?diagnostics-center\.js(?:\?[^"\']*)?["\']',app))!=1:raise ValueError('Сначала требуется пакет диагностики')
  for name in ['../assets/ui-foundation.css','workspace-design.css']:app=helpers.asset(app,name,m['version'],'link')

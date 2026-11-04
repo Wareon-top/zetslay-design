@@ -32,6 +32,11 @@ class DesignTests(unittest.TestCase):
    site=self.fixture(temp);(site/'demo/demo.js').write_text('// independent source');out=Path(temp)/'out'
    with self.assertRaisesRegex(ValueError,'Независимые'):stage.stage(site,ROOT,out)
    self.assertFalse(out.exists())
+ def test_installed_security_styles_and_seo_tags_do_not_break_landing_overlay(self):
+  with tempfile.TemporaryDirectory() as temp:
+   site=self.fixture(temp);p=site/'index.html';extra='<meta property="og:image" content="https://zetslay.pro/assets/zetslay-orderflow.webp">\n<link rel="stylesheet" href="landing-security.20261028.css" data-zetslay-security-style>\n';p.write_bytes(p.read_bytes().replace(b'</head>',extra.encode()+b'</head>'))
+   before=p.read_bytes();result=stage.stage(site,ROOT,Path(temp)/'out');html=result['index.html'].decode('utf8');self.assertTrue(extra in html,'Installed security and SEO tags must be preserved');self.assertEqual(html.count('assets/ui-foundation.css'),1);self.assertEqual(html.count('site-design.css'),1);self.assertEqual(p.read_bytes(),before)
+   stage.write(site,result);self.assertEqual(result,stage.stage(site,ROOT,Path(temp)/'again'))
  def test_pinned_prerequisites_compose_without_writing_the_live_site(self):
   with tempfile.TemporaryDirectory() as temp:
    site=self.fixture(temp,'c5e383ee321fe3627c2490cb21e9d988ca97e34e');second=Path(temp)/'second';frozen(second,BASE);before=(site/'app/index.html').read_bytes();result=stage.stage(site,ROOT,Path(temp)/'out',second=second)
