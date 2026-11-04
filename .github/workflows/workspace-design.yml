@@ -19,6 +19,7 @@ jobs:
       - run: node --test workspace-design.test.mjs app/cabinet-demo.test.mjs demo/public-demo.test.mjs app/diagnostics-model.test.mjs
       - run: python3 scripts/build-workspace-design-manifest.py --check
       - run: python3 deploy/stage-workspace-design.test.py
+      - run: python3 deploy/rollback-workspace-design.test.py
       - run: bash -n deploy/start-design-release.sh
       - name: Check responsive layouts, money, keyboard navigation and cabinet screens
         run: |
