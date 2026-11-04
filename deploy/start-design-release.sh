@@ -8,8 +8,8 @@ revision=${1:?Укажите полный SHA frontend}
 [[ "$revision" =~ ^[a-f0-9]{40}$ ]] || { echo 'Нужен полный SHA frontend.'; exit 1; }
 first=c5e383ee321fe3627c2490cb21e9d988ca97e34e
 second=bf3f875f8ce03f5e6328ce2a1fb0a8820b62a2ab
-core_first=4434c7ba54f548976a8584c8071114fd9bc469c6
-core_second=4434c7ba54f548976a8584c8071114fd9bc469c6
+core_first=68c0d428f3b025d982d07c886b4274adb20d1af0
+core_second=68c0d428f3b025d982d07c886b4274adb20d1af0
 for command in git python3 systemd-run systemctl curl tar; do command -v "$command" >/dev/null || { echo "Не найден $command"; exit 1; }; done
 unit=zetslay-design-upgrade
 state=$(systemctl show "$unit.service" -p ActiveState --value 2>/dev/null || true)
