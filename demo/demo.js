@@ -14,6 +14,7 @@ function renderPublicDemo(focusId){
  document.getElementById('preview-periods').innerHTML=['dashboard','orders','finance'].includes(publicDemoView)?cabinetDemoPeriods(publicDemoView):'';
  document.getElementById('preview-content').innerHTML=publicDemoView==='diagnostics'?'<div data-public-diagnostics></div>':publicDemoView==='automation'?publicRuleMarkup():publicDemoView==='connection'?publicConnectionMarkup():cabinetDemoBody(publicDemoView);
  if(publicDemoView==='diagnostics'&&typeof mountPublicDiagnostics==='function')publicDiagnosticsPanel=mountPublicDiagnostics(document.querySelector('[data-public-diagnostics]'));
+ if(publicDemoView==='dashboard')document.querySelector('#preview-content .demo-metrics')?.insertAdjacentHTML('afterend','<section class="studio-attention" aria-label="Учебные примеры текущих проблем"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m12 3 10 18H2L12 3ZM12 9v5M12 17h.01"/></svg><div><strong>Сначала — то, что требует проверки</strong><p>Учебные примеры: неизвестный исход закупки, нехватка товара и соединение.</p></div><button type="button" data-preview-view="diagnostics">Проверить причины →</button></section>');
  document.getElementById('preview-notice').textContent=cabinetDemoData().notice;
  if(focusId)document.getElementById(focusId)?.focus({preventScroll:true});
 }

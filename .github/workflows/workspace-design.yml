@@ -1,0 +1,33 @@
+name: Workspace design release
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  design:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: node --test workspace-design.test.mjs app/cabinet-demo.test.mjs demo/public-demo.test.mjs app/diagnostics-model.test.mjs
+      - run: python3 scripts/build-workspace-design-manifest.py --check
+      - run: python3 deploy/stage-workspace-design.test.py
+      - run: bash -n deploy/start-design-release.sh
+      - name: Check responsive layouts, money, keyboard navigation and cabinet screens
+        run: |
+          browser_deps="$RUNNER_TEMP/zetslay-design-browser"
+          npm install --prefix "$browser_deps" --no-save --ignore-scripts playwright@1.56.1
+          ZETSLAY_PLAYWRIGHT_MODULE="$browser_deps/node_modules/playwright" ZETSLAY_TEST_BROWSER_PATH="$(command -v google-chrome)" ZETSLAY_BROWSER_OUTPUT="$RUNNER_TEMP/zetslay-design-screenshots" node scripts/verify-workspace-design-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: workspace-design-screenshots
+          path: ${{ runner.temp }}/zetslay-design-screenshots/
+          retention-days: 7

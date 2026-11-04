@@ -19,6 +19,10 @@
   <script src="/app/diagnostics-model.js?v=20261103" defer></script>
   <script src="/app/diagnostics-ui.js?v=20261103" defer></script>
   <script src="diagnostics-demo.js?v=20261103" defer></script>
+  <link rel="stylesheet" href="/assets/ui-foundation.css?v=20261103-design">
+  <link rel="stylesheet" href="/site-design.css?v=20261103-design">
+  <link rel="stylesheet" href="workspace-design.css?v=20261103-design">
+  <script src="/assets/workspace-navigation.js?v=20261103-design" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#demo-main">Перейти к содержанию</a>
@@ -41,9 +45,9 @@
     <div class="preview-main">
       <header class="preview-topbar"><span class="preview-label">Знакомство с ZetSlay</span><a class="product-button" href="/app/?auth=register">Подключить свой магазин</a></header>
       <main id="demo-main" tabindex="-1">
-        <div class="preview-heading"><div><p class="product-eyebrow">Учебный кабинет</p><h1 id="preview-title">Обзор магазина</h1><p id="preview-description"></p></div><button type="button" class="product-button product-button--quiet" data-demo-reset>Сбросить пример</button></div>
+        <div class="preview-heading"><div><p class="product-eyebrow">Учебный кабинет</p><h1 id="preview-title">Обзор магазина</h1><p id="preview-description"></p></div><div class="preview-heading-actions"><div class="demo-section-heading" id="preview-periods"></div><button type="button" class="product-button product-button--quiet" data-demo-reset>Сбросить пример</button></div></div>
         <div class="preview-disclosure"><span class="preview-dot"></span><p>Данные вымышлены. Продажи, сообщения и изменения лотов не связаны с реальным магазином.</p></div>
-        <div class="demo-experience"><div class="demo-section-heading" id="preview-periods"></div><div class="demo-content" id="preview-content"></div><p class="demo-notice" id="preview-notice" role="status" aria-live="polite"></p></div>
+        <div class="demo-experience"><div class="demo-content" id="preview-content"></div><p class="demo-notice" id="preview-notice" role="status" aria-live="polite"></p></div>
         <section class="preview-next"><div><h2>Проверьте привычную задачу</h2><p>Выберите период, ответьте учебному покупателю или проверьте правило до включения.</p></div><div><button type="button" data-preview-view="messages">Попробовать ответ</button><button type="button" data-preview-view="automation">Проверить правило →</button></div></section>
         <footer class="product-footer"><span>Пример кабинета · изменения сбрасываются при обновлении страницы</span><a href="/security/">Данные и безопасность</a></footer>
       </main>

@@ -1,0 +1,75 @@
+{
+  "version": "20261104-design-1",
+  "baseline": "bf3f875f8ce03f5e6328ce2a1fb0a8820b62a2ab",
+  "assets": {
+    "assets/ui-foundation.css": "fd57d04d2a8714dadeddd1434e441fa7910e296c223238952762749e0860a76a",
+    "assets/workspace-navigation.js": "8e405589a97c022374eca6c7a6bf7d02290124ee294d20c9d2229b803e25513c",
+    "site-design.css": "44a38cfe131b05a39f025f8b012e75b9ef029dd7fdd593771752f4efc349d1fd",
+    "app/workspace-design.css": "8a8c6b4072c8b04f6afa731f3e79a86dd181593654d815376954f44e4ef45576",
+    "demo/workspace-design.css": "7bbdb5c1eb11638ae6bb8c59ad66bd34cb818a03762c4135713f856728a52793",
+    "app/cabinet-demo.js": "f7b25a6a90773957b6eaba80595463f732bf138b376e47201b0b6793cae1cc0c",
+    "demo/demo.js": "e05bc20d08ab63d675ce04ff06d59ecf58ba3cdad509a572f09ac712dfac973f",
+    "demo/index.html": "8bdfbc7cf5f95289c4ba30991ecaaeeb442de91d29a5d484278d963a311a58e7",
+    "docs/index.html": "be0323a5c5fe913e8acd79faa1609249d927432519f6289f019fd4d4fccc22b2",
+    "docs/funpay-connect/index.html": "f096b931b181a14642917b28080172ed35ac92549b31e7714b0c429312beecde",
+    "docs/auto-delivery/index.html": "4716770ff8513bd6f8d998b990430c9390168e93bed6bfacac40d395d48c6c78",
+    "docs/troubleshooting/index.html": "4302de8d24228ee7217915bc48cd7cad33e4a4e5cdd44cff76e536d5d36ec2bd",
+    "pricing/index.html": "10216ffce8b0aa3528d0953f56bcf1c85879a835ccc91b0342fb454fcecd784d"
+  },
+  "accepted": {
+    "app/cabinet-demo.js": [
+      "085e5c03ac1477ff84bbb3c93f4884b102437a9aaaf1541a5ab9d7ab843469ed"
+    ],
+    "demo/demo.js": [
+      "d6a5579f53c7d757b1e307997d685c8f4db0191b0eb6cb04b85417221bb04982"
+    ],
+    "demo/index.html": [
+      "9fb184d4108c10d4eb1d4e9c073830ab2731c368537071e34ee482de9c5d1ff6"
+    ],
+    "docs/index.html": [
+      "ba2bbc84d798caa3681b684f8a16c18abe52df784eca350719404d69c3567cf7"
+    ],
+    "docs/funpay-connect/index.html": [
+      "bec1b18ff31f7afd8b34fa5e7a0661e3c743edd368510c46919d9bcff9d4c48d"
+    ],
+    "docs/auto-delivery/index.html": [
+      "bd26c1d605570bd87ace092d82fcfa2a4d15bd0aaff2679bdbc3bee85ac9b3fa"
+    ],
+    "docs/troubleshooting/index.html": [
+      "99a5833a66289f0955085b13f9b42ecaefd56faf7b267a67fa42b4212a17ec2e"
+    ],
+    "pricing/index.html": [
+      "15448aa19f1367d76fec72a72163996ff59dcbb554cd33091c39f4225b76ebdb"
+    ]
+  },
+  "patches": {
+    "index.html": [
+      {
+        "before": "  <link rel=\"stylesheet\" href=\"session-ui.css?v=20261012-week-session\">\n  <link rel=\"stylesheet\" href=\"landing-orderflow.css?v=20261024-ascii\">\n</head>\n<body id=\"top\" data-landing-theme=\"orderflow\">\n",
+        "after": "  <link rel=\"stylesheet\" href=\"session-ui.css?v=20261012-week-session\">\n  <link rel=\"stylesheet\" href=\"landing-orderflow.css?v=20261024-ascii\">\n  <link rel=\"stylesheet\" href=\"assets/ui-foundation.css?v=20261103-design\">\n  <link rel=\"stylesheet\" href=\"site-design.css?v=20261103-design\">\n</head>\n<body id=\"top\" data-landing-theme=\"orderflow\">\n"
+      },
+      {
+        "before": "      </div>\n      <div class=\"shell hero-inner\">\n        <div class=\"hero-connections\" aria-label=\"FunPay, Telegram и ZetSlay\">\n          <span class=\"hero-connection\" title=\"FunPay\"><img src=\"assets/platforms/funpay.svg\" width=\"22\" height=\"22\" alt=\"FunPay\"></span>\n",
+        "after": "      </div>\n      <div class=\"shell hero-inner\">\n        <div class=\"studio-hero-copy\">\n        <div class=\"hero-connections\" aria-label=\"FunPay, Telegram и ZetSlay\">\n          <span class=\"hero-connection\" title=\"FunPay\"><img src=\"assets/platforms/funpay.svg\" width=\"22\" height=\"22\" alt=\"FunPay\"></span>\n"
+      },
+      {
+        "before": "        <div class=\"hero-actions\"><a data-session-start class=\"button hero-start\" href=\"app/?auth=register\"><span data-session-start-label>Начать работу</span> <svg class=\"hero-action-icon\" width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M7 17 17 7M7 7h10v10\"/></svg></a><a class=\"hero-guide\" href=\"demo/\">Посмотреть демо <svg class=\"hero-action-icon\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m9 5 7 7-7 7\"/></svg></a></div>\n        <a data-session-guest class=\"hero-login\" href=\"app/?auth=login\">Уже есть аккаунт? Войти</a>\n      </div>\n    </section>\n",
+        "after": "        <div class=\"hero-actions\"><a data-session-start class=\"button hero-start\" href=\"app/?auth=register\"><span data-session-start-label>Начать работу</span> <svg class=\"hero-action-icon\" width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M7 17 17 7M7 7h10v10\"/></svg></a><a class=\"hero-guide\" href=\"demo/\">Посмотреть демо <svg class=\"hero-action-icon\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m9 5 7 7-7 7\"/></svg></a></div>\n        <a data-session-guest class=\"hero-login\" href=\"app/?auth=login\">Уже есть аккаунт? Войти</a>\n        <p class=\"studio-hero-note\"><span>72 часа на знакомство</span><span>Без автосписаний</span><span>От 149 ₽ / 30 дней</span></p>\n        </div>\n        <div class=\"studio-product\" aria-label=\"Учебный пример кабинета ZetSlay\">\n          <div class=\"studio-product-top\"><span class=\"studio-product-brand\">ZetSlay / Control</span><span>Учебный пример</span></div>\n          <div class=\"studio-product-layout\">\n            <nav class=\"studio-product-nav\" aria-label=\"Посмотреть раздел в демо\"><small>МАГАЗИН FUNPAY</small><a href=\"demo/#dashboard\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z\"/></svg>Обзор</a><a href=\"demo/#orders\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M5 7h14v14H5zM9 7V3h6v4\"/></svg>Заказы</a><a href=\"demo/#messages\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M3 4h18v13H9l-6 4V4Z\"/></svg>Сообщения</a><a href=\"demo/#diagnostics\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"m12 3 10 18H2L12 3ZM12 9v5M12 17h.01\"/></svg>Проблемы</a><a href=\"demo/#automation\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"m13 2-9 12h7l-1 8 10-12h-7l1-8\"/></svg>Правила</a></nav>\n            <div class=\"studio-product-body\">\n              <header><div><h2>Обзор магазина</h2><p>Главное за последние 7 дней</p></div><span class=\"studio-product-live\">Пример данных</span></header>\n              <div class=\"studio-product-stats\"><div><small>Продажи</small><strong>7 930 ₽</strong><em>Без возвратов</em></div><div><small>Заказы</small><strong>8</strong><em>За период</em></div><div><small>После расходов</small><strong>2 583 ₽</strong><em>В примере</em></div></div>\n              <div class=\"studio-product-chart\"><div><span>Динамика продаж</span><span>Неделя · ₽</span></div><svg viewBox=\"0 0 340 100\" preserveAspectRatio=\"none\" role=\"img\" aria-label=\"Вымышленная динамика продаж для знакомства с интерфейсом\"><defs><linearGradient id=\"studio-area\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#f5aa72\" stop-opacity=\".22\"/><stop offset=\"1\" stop-color=\"#f5aa72\" stop-opacity=\"0\"/></linearGradient></defs><path d=\"M0 25H340M0 55H340M0 85H340\" fill=\"none\" stroke=\"#ffffff0b\"/><path d=\"M0 76 45 68 88 78 131 45 174 58 217 41 260 48 303 13 340 25V100H0Z\" fill=\"url(#studio-area)\"/><path d=\"M0 76 45 68 88 78 131 45 174 58 217 41 260 48 303 13 340 25\" fill=\"none\" stroke=\"#f5aa72\" stroke-width=\"2.2\" stroke-linejoin=\"round\"/><circle cx=\"303\" cy=\"13\" r=\"3.5\" fill=\"#f5aa72\"/></svg><footer><span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span></footer></div>\n              <div class=\"studio-product-order\"><span>FP</span><div><strong>Игровой ключ · #DEMO-011</strong><small>Учебный заказ · 1 490 ₽</small></div><span>Завершён</span></div>\n            </div>\n          </div>\n          <div class=\"studio-product-bottom\"><span>Данные вымышлены</span><a href=\"demo/\">Открыть интерактивный демо →</a></div>\n        </div>\n      </div>\n    </section>\n"
+      }
+    ]
+  },
+  "heads": [
+    "legal/acceptable-use.html",
+    "legal/automation-rules.html",
+    "legal/cookies.html",
+    "legal/data-processing.html",
+    "legal/index.html",
+    "legal/offer.html",
+    "legal/privacy.html",
+    "legal/processing.html",
+    "legal/public-profile.html",
+    "legal/refunds.html",
+    "legal/terms.html",
+    "security/index.html"
+  ]
+}

@@ -1,0 +1,41 @@
+/* ZetSlay / interface foundations. The same materials from the first visit to the last order. */
+:root {
+  --zs-canvas:#111315;
+  --zs-rail:#151719;
+  --zs-surface:#1a1d20;
+  --zs-raised:#202428;
+  --zs-hover:#282d32;
+  --zs-line:#30363b;
+  --zs-line-strong:#485159;
+  --zs-text:#f3f4f5;
+  --zs-muted:#b2b9c0;
+  --zs-subtle:#949ea8;
+  --zs-accent:#f5aa72;
+  --zs-accent-hover:#ffc393;
+  --zs-accent-soft:#32271f;
+  --zs-positive:#88d6b0;
+  --zs-negative:#f5a1a7;
+  --zs-info:#a7c9f4;
+  --zs-radius:12px;
+  --zs-control-radius:8px;
+  --zs-shadow:0 16px 50px #0003;
+  --zs-font:Inter,Arial,sans-serif;
+  --bg:var(--zs-canvas);--surface:var(--zs-surface);--surface-2:var(--zs-raised);--surface-3:var(--zs-hover);
+  --white:var(--zs-text);--muted:var(--zs-muted);--muted-2:var(--zs-subtle);
+  --line:var(--zs-line);--line-strong:var(--zs-line-strong);--yellow:var(--zs-accent);--accent:var(--zs-accent);
+  --green:var(--zs-positive);--red:var(--zs-negative);--blue:var(--zs-info);--ink:#24180f;
+  color-scheme:dark;
+}
+html{scrollbar-color:var(--zs-line-strong) var(--zs-canvas)}
+body{font-family:var(--zs-font);font-feature-settings:"cv02","cv03","cv04","cv11";-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+button,input,select,textarea{font-family:inherit}
+button,a,input,select,textarea,summary{-webkit-tap-highlight-color:transparent}
+:is(button,a,input,select,textarea,summary,[tabindex]):focus-visible{outline:2px solid var(--zs-accent);outline-offset:4px}
+::selection{background:#f5aa7240;color:var(--zs-text)}
+button{touch-action:manipulation}
+button:disabled{cursor:not-allowed}
+button:not(:disabled),a,summary{transition:background-color .16s ease,border-color .16s ease,color .16s ease}
+input,textarea,select{accent-color:var(--zs-accent)}
+input::placeholder,textarea::placeholder{color:var(--zs-subtle);opacity:1}
+input[type=checkbox],input[type=radio]{min-width:18px;min-height:18px}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}

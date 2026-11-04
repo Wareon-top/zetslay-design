@@ -2,10 +2,14 @@ import importlib.util,json,subprocess,tempfile,unittest
 from pathlib import Path
 HERE=Path(__file__).parent;ROOT=HERE.parent
 spec=importlib.util.spec_from_file_location('stage',HERE/'stage-diagnostics.py');stage=importlib.util.module_from_spec(spec);spec.loader.exec_module(stage)
+# The diagnostics updater is tested with its reviewed assets, independently of later design changes.
+REPOSITORY=ROOT;frozen=tempfile.TemporaryDirectory();ROOT=Path(frozen.name)
+for name in [*json.loads((REPOSITORY/'deploy/diagnostics-release.json').read_text(encoding='utf8'))['assets'],'deploy/diagnostics-release.json']:
+ p=ROOT/name;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(subprocess.check_output(['git','show','bf3f875f8ce03f5e6328ce2a1fb0a8820b62a2ab:'+name],cwd=REPOSITORY))
 class StageTests(unittest.TestCase):
  def fixture(self,site):
   for name in ['app/index.html','demo/index.html','demo/demo.js','app/workspace-upgrade.js']:
-   path=site/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(subprocess.check_output(['git','show','c5e383ee321fe3627c2490cb21e9d988ca97e34e:'+name],cwd=ROOT))
+   path=site/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(subprocess.check_output(['git','show','c5e383ee321fe3627c2490cb21e9d988ca97e34e:'+name],cwd=REPOSITORY))
   p=site/'app/index.html';p.write_text(p.read_text(encoding='utf8').replace('</body>','<script src="independent-runtime.js" defer></script></body>'),encoding='utf8')
  def test_preserves_runtime_and_is_idempotent(self):
   with tempfile.TemporaryDirectory() as temp:
