@@ -48,7 +48,7 @@ class DesignTests(unittest.TestCase):
    original=(site/'app/index.html').read_bytes();result=stage.stage(site,ROOT,Path(temp)/'out',first,second)
    self.assertIn('robots.txt',result);self.assertIn(b'workspace-design.css',result['app/index.html']);self.assertIn(b'diagnostics-center.js',result['app/index.html']);self.assertEqual(original,(site/'app/index.html').read_bytes())
  @unittest.skipIf(os.name!='posix','Linux VPS installer')
- def test_concurrent_edit_and_partial_write_restore_only_our_changes(self):
+ def test_partial_write_restores_only_our_changes(self):
   with tempfile.TemporaryDirectory() as temp:
    site=self.fixture(temp);before={str(p.relative_to(site)):p.read_bytes() for p in site.rglob('*') if p.is_file()};real=installer.os.replace;calls=[]
    def failing(a,b):
@@ -58,4 +58,15 @@ class DesignTests(unittest.TestCase):
    with patch.object(installer.os,'replace',side_effect=failing):
     with self.assertRaises(OSError):installer.apply(site,ROOT,temp,install=True)
    after={str(p.relative_to(site)):p.read_bytes() for p in site.rglob('*') if p.is_file() and not p.name.startswith('.zetslay-')};self.assertEqual(before,after)
+ @unittest.skipIf(os.name!='posix','Linux VPS installer')
+ def test_concurrent_edit_stops_before_backup(self):
+  with tempfile.TemporaryDirectory() as temp:
+   site=self.fixture(temp);real=installer.module.stage;calls=[]
+   def changing(*args,**kwargs):
+    result=real(*args,**kwargs);calls.append(True)
+    if len(calls)==2:(site/'app/index.html').write_bytes(b'CONCURRENT_RUNTIME_EDIT')
+    return result
+   with patch.object(installer.module,'stage',side_effect=changing):
+    with self.assertRaisesRegex(ValueError,'изменились'):installer.apply(site,ROOT,temp,install=True)
+   self.assertEqual((site/'app/index.html').read_bytes(),b'CONCURRENT_RUNTIME_EDIT');self.assertFalse(list(Path(temp).glob('zetslay-before-design-*')))
 if __name__=='__main__':unittest.main()
