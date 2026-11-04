@@ -3,6 +3,8 @@ from pathlib import Path
 HERE=Path(__file__).parent
 spec=importlib.util.spec_from_file_location('stage',HERE/'stage-trust-foundation.py');m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
 sha=lambda x:hashlib.sha256(x).hexdigest()
+# Keep the historical security-page target independent of the later design overlay.
+def release_asset(project,name):return (HERE/'fixtures/security-page-20261028.html' if name=='security/index.html' else project/name).read_bytes()
 class TrustUiTests(unittest.TestCase):
  def test_landing_section_is_unique_preserves_surroundings_and_rejects_unknown_sections(self):
   fragment=(HERE.parent/'landing-security.html').read_text();original='<html><head>PRIVATE_HEAD</head><body><main>VIDEO_BANNER PROXY_BANNER<section id="faq">FAQ</section></main>PRIVATE_OPERATOR</body></html>'
@@ -29,9 +31,9 @@ class TrustUiTests(unittest.TestCase):
     if mode=='size':manifest['accountSecurityReplacement']['sourceBytes']+=1
     if mode=='target':manifest['accountSecurityReplacement']['targetSha256']='0'*64
     (incoming/'trust-ui-manifest.json').write_text(json.dumps(manifest))
-    for name in manifest['assets']:(incoming/name).write_bytes((project/name).read_bytes())
+    for name in manifest['assets']:(incoming/name).write_bytes(release_asset(project,name))
     if manifest.get('landingSecurityFragment'):
-     name=manifest['landingSecurityFragment']['file'];(incoming/name).write_bytes((project/name).read_bytes())
+     name=manifest['landingSecurityFragment']['file'];(incoming/name).write_bytes(release_asset(project,name))
     (local/'app/account-security.js').write_bytes(original)
     app=(project/'app/app.js').read_text()
     (local/'app/app.js').write_text(app.replace('function resetAccountData(', 'function incompatibleReset(') if mode=='host' else app)
@@ -56,9 +58,9 @@ class TrustUiTests(unittest.TestCase):
     with self.subTest(revision=revision,sha=sha(variant)),tempfile.TemporaryDirectory() as tmp:
      root=Path(tmp);local,incoming,a,b=self.fixture(root)
      (incoming/'trust-ui-manifest.json').write_text(json.dumps(manifest))
-     for name in manifest['assets']:(incoming/name).write_bytes((project/name).read_bytes())
+     for name in manifest['assets']:(incoming/name).write_bytes(release_asset(project,name))
      if manifest.get('landingSecurityFragment'):
-      name=manifest['landingSecurityFragment']['file'];(incoming/name).write_bytes((project/name).read_bytes())
+      name=manifest['landingSecurityFragment']['file'];(incoming/name).write_bytes(release_asset(project,name))
      (local/'app/account-security.js').write_bytes(variant)
      (local/'app/app.js').write_text('// '+''.join(p['before']+'\n// ' for p in manifest['appPatches'])+'KEEP_CURRENT_PROXY_REPAIR\n')
      m.stage(local,incoming,root/'out')

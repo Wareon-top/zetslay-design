@@ -2,13 +2,15 @@ import importlib.util,json,hashlib,os,subprocess,tempfile,unittest
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 spec=importlib.util.spec_from_file_location('security_page',ROOT/'deploy/stage-security-page.py');m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
+# This updater owns the pinned October security page; the design overlay is a later release.
+def release_asset(name):return (ROOT/'deploy/fixtures/security-page-20261028.html' if name=='security/index.html' else ROOT/name).read_bytes()
 class SecurityPageTests(unittest.TestCase):
  def fixture(self,root):
   local,incoming,out=[root/n for n in ['local','incoming','out']]
   for p in [local,incoming]:(p/'security').mkdir(parents=True)
   old=b'<html><head><title>Known old public security page</title></head><body>OLD_PAGE</body></html>\n'
   (local/'security/index.html').write_bytes(old);(local/'security/security.css').write_bytes(b'OLD_CSS');(local/'security/security.js').write_bytes(b'OLD_JS')
-  for name in m.FILES:(incoming/name).write_bytes((ROOT/name).read_bytes())
+  for name in m.FILES:(incoming/name).write_bytes(release_asset(name))
   manifest=json.loads((ROOT/'deploy/security-page-manifest.json').read_text());manifest['sourceHtmlAccepted'].append(hashlib.sha256(m.normalized(old)).hexdigest())
   (incoming/'security-page-manifest.json').write_text(json.dumps(manifest));return local,incoming,out,old
  def test_recognized_page_and_transport_variants_are_staged_without_writing_source(self):
@@ -19,7 +21,7 @@ class SecurityPageTests(unittest.TestCase):
     if mode=='bom':old=b'\xef\xbb\xbf'+old
     (local/'security/index.html').write_bytes(old);m.stage(local,inc,out)
     self.assertEqual((local/'security/index.html').read_bytes(),old)
-    for name in m.FILES:self.assertEqual((out/name).read_bytes(),(ROOT/name).read_bytes())
+    for name in m.FILES:self.assertEqual((out/name).read_bytes(),release_asset(name))
     m.stage(out,inc,Path(d)/'again');self.assertEqual((out/'security/index.html').read_bytes(),(Path(d)/'again/security/index.html').read_bytes())
  def test_unknown_page_or_corrupt_incoming_asset_refuses_before_writing(self):
   for mode in ['unknown','css','js','html']:
@@ -29,11 +31,16 @@ class SecurityPageTests(unittest.TestCase):
     else:(inc/('security/'+{'css':'security.css','js':'security.js','html':'index.html'}[mode])).write_bytes(b'corrupt')
     with self.assertRaises(ValueError):m.stage(local,inc,out)
     self.assertFalse(out.exists())
- def test_current_and_deployed_legacy_pages_are_supported(self):
+ def test_reviewed_and_deployed_legacy_pages_are_supported(self):
   manifest=json.loads((ROOT/'deploy/security-page-manifest.json').read_text())
   self.assertIn('4412ee685be785ee57fe0fff154ebc5c3692c4475b4c1ad8ae0e4c0fb62d4fb3',manifest['sourceHtmlAccepted'])
   self.assertGreaterEqual(len(manifest['sourceHtmlAccepted']),3)
-  self.assertIn(hashlib.sha256(m.normalized((ROOT/'security/index.html').read_bytes())).hexdigest(),manifest['sourceHtmlAccepted'])
+  self.assertIn(hashlib.sha256(m.normalized(release_asset('security/index.html'))).hexdigest(),manifest['sourceHtmlAccepted'])
+ def test_legacy_release_does_not_overwrite_the_new_design(self):
+  with tempfile.TemporaryDirectory() as d:
+   local,inc,out,_old=self.fixture(Path(d));(local/'security/index.html').write_bytes((ROOT/'security/index.html').read_bytes())
+   with self.assertRaises(ValueError):m.stage(local,inc,out)
+   self.assertFalse(out.exists())
  def test_install_preflight_and_mid_publish_failure_preserve_other_pages(self):
   for mode in ['install','preflight','rollback']:
    with self.subTest(mode=mode),tempfile.TemporaryDirectory() as d:
