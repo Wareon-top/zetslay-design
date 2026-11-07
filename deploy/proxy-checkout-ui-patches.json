@@ -27,7 +27,10 @@
     "file": "proxy-shop.js",
     "name": "proxyShopRefresh",
     "before": "async function proxyShopRefresh(){\n const ui=proxyShopUi,scope=proxyShopScope(),epoch=ui.epoch;\n if(!scope||ui.busy||ui.loading||managedProxyUi.loading)return;\n await Promise.allSettled([managedProxyLoad(),proxyShopLoad({catalog:true})]);\n if(!proxyShopCurrent(scope,epoch))return;\n renderProxyShopModal();await proxyShopPrepareQuote();\n}",
-    "after": "async function proxyShopRefresh(){\n const ui=proxyShopUi,scope=proxyShopScope(),epoch=ui.epoch;\n if(!scope||ui.busy||ui.loading||managedProxyUi.loading)return;\n ui.pollStartedAt=Date.now();\n await Promise.allSettled([managedProxyLoad(),proxyShopLoad({catalog:true})]);\n if(!proxyShopCurrent(scope,epoch))return;\n renderProxyShopModal();await proxyShopPrepareQuote();\n}"
+    "after": "async function proxyShopRefresh(){\n const ui=proxyShopUi,scope=proxyShopScope(),epoch=ui.epoch;\n if(!scope||ui.busy)return;\n ui.pollStartedAt=Date.now();\n const loads=[managedProxyLoad(),proxyShopLoad({catalog:true})];\n renderProxyShopModal();\n await Promise.allSettled(loads);\n if(!proxyShopCurrent(scope,epoch))return;\n renderProxyShopModal();await proxyShopPrepareQuote();\n}",
+    "beforeAlternatives": [
+      "async function proxyShopRefresh(){\n const ui=proxyShopUi,scope=proxyShopScope(),epoch=ui.epoch;\n if(!scope||ui.busy||ui.loading||managedProxyUi.loading)return;\n ui.pollStartedAt=Date.now();\n await Promise.allSettled([managedProxyLoad(),proxyShopLoad({catalog:true})]);\n if(!proxyShopCurrent(scope,epoch))return;\n renderProxyShopModal();await proxyShopPrepareQuote();\n}"
+    ]
   },
   {
     "file": "proxy-shop.js",

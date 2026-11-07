@@ -4,7 +4,7 @@ import json
 import re
 import sys
 
-VERSION = '20261025-proxy-checkout'
+VERSION = '20261107-proxy-checkout'
 FILES = ('managed-proxy-ui.js', 'proxy-shop.js')
 
 
@@ -15,10 +15,13 @@ def stage(local, incoming, out):
         name, before, after = patch['file'], patch['before'], patch['after']
         if name not in files:
             raise ValueError('Неизвестный модуль. Файлы не изменены.')
-        if files[name].count(before) == 1:
-            files[name] = files[name].replace(before, after, 1)
-        elif files[name].count(after) != 1:
+        variants = [before, *patch.get('beforeAlternatives', [])]
+        if files[name].count(after) == 1 and not any(v in files[name].replace(after, '', 1) for v in variants):
+            continue
+        occurrences = [files[name].count(v) for v in variants]
+        if sum(occurrences) != 1 or after in files[name]:
             raise ValueError('Модуль отличается в блоке ' + patch['name'] + '. Файлы не изменены.')
+        files[name] = files[name].replace(variants[occurrences.index(1)], after, 1)
     html = (local / 'index.html').read_text()
     positions = []
     for name in FILES:

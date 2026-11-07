@@ -112,9 +112,11 @@ async function proxyShopOpen(opener){
 }
 async function proxyShopRefresh(){
  const ui=proxyShopUi,scope=proxyShopScope(),epoch=ui.epoch;
- if(!scope||ui.busy||ui.loading||managedProxyUi.loading)return;
+ if(!scope||ui.busy)return;
  ui.pollStartedAt=Date.now();
- await Promise.allSettled([managedProxyLoad(),proxyShopLoad({catalog:true})]);
+ const loads=[managedProxyLoad(),proxyShopLoad({catalog:true})];
+ renderProxyShopModal();
+ await Promise.allSettled(loads);
  if(!proxyShopCurrent(scope,epoch))return;
  renderProxyShopModal();await proxyShopPrepareQuote();
 }
