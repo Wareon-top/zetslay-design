@@ -45,6 +45,25 @@ test('failed managed state has a visible error instead of an endless spinner; re
  await h.run('proxyShopRefresh()');assert.equal(h.run('managedProxyUi.data.activePlan'),true);assert.equal(h.run('managedProxyUi.error'),'');assert.equal(h.run('proxyShopUi.loading'),false);assert.equal(h.run('proxyShopUi.catalog.locations.length'),1);
  const ready=h.run('proxyShopModalMarkup(managedProxyUi.data)');assert.match(ready,/Германия|50.*₽/);assert.doesNotMatch(ready,/ps-step-spinner|Сбой чтения/);
 });
+test('opening checkout loads the catalogue while the profile is already loading its proxy', async () => {
+ const calls = [];
+ let finishManagedLoad;
+ const h = harness({apiRequest: async path => {
+  calls.push(path);
+  if (path === '/api/v1/managed-proxy') return new Promise(resolve => { finishManagedLoad = resolve; });
+  if (path.endsWith('/catalog')) return {locations:[{nodeId:35,country:'DE',monthlyPriceMinor:5000}]};
+  return data;
+ }});
+ h.context.document = {querySelectorAll: () => []};
+ h.run(managedSource);
+ const profileLoad = h.run('managedProxyLoad()');
+ await h.run('proxyShopRefresh()');
+ assert.deepEqual(calls, ['/api/v1/managed-proxy', '/api/v1/proxy-shop', '/api/v1/proxy-shop/catalog']);
+ assert.equal(h.run('proxyShopUi.catalog.locations[0].nodeId'), 35);
+ finishManagedLoad(managed);
+ await profileLoad;
+ assert.match(h.run('proxyShopModalMarkup(managedProxyUi.data)'), /Германия/);
+});
 test('catalogue rejection is visible and an empty successful catalogue has a final empty state',async()=>{
  const h=harness({apiRequest:async path=>{if(path.endsWith('/catalog'))throw Error('Каталог недоступен');return data;}});h.context.document={querySelectorAll:()=>[]};h.run(managedSource);h.context.managed=managed;
  await h.run('proxyShopLoad()');let html=h.run('proxyShopModalMarkup(managed)');assert.match(html,/Каталог недоступен/);assert.doesNotMatch(html,/Загружаем локации|ps-step-spinner/);
