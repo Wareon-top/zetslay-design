@@ -55,14 +55,26 @@ async function managedProxyRead(path,options={}, {timeoutMs=25000,uncertain=fals
   }finally{clearTimeout(timer);}
 }
 async function managedProxyLoad(admin=false){
-  if(!authState.user||!authState.token||managedProxyUi.loading||admin&&!adminAllowed())return;
-  if(managedProxyUi.token&&managedProxyUi.token!==authState.token)managedProxyReset();
-  const token=authState.token,generation=sessionGeneration,revision=managedProxyUi.revision,loadRevision=++managedProxyUi.loadRevision;
-  const current=()=>managedProxyCurrent(token,generation,revision)&&loadRevision===managedProxyUi.loadRevision;
+  if (!authState.user || !authState.token || admin && !adminAllowed()) return;
+  const token = authState.token;
+  const generation = sessionGeneration;
+  if (managedProxyUi.token && managedProxyUi.token !== token) managedProxyReset();
+  if (managedProxyUi.loading && managedProxyUi.generation === generation) return;
+
+  const revision = managedProxyUi.revision;
+  const loadRevision = ++managedProxyUi.loadRevision;
+  const ownsLoading = () => revision === managedProxyUi.revision && loadRevision === managedProxyUi.loadRevision;
+  const current = () => ownsLoading() && managedProxyCurrent(token,generation,revision);
   managedProxyUi.token=token;managedProxyUi.generation=generation;managedProxyUi.loading=true;managedProxyUi[admin?'adminError':'error']='';
   try{const data=await managedProxyRead(admin?'/api/v1/admin/managed-proxies':'/api/v1/managed-proxy');if(current()){if(!data||typeof data.activePlan!=='boolean'&&!admin)throw Error('Не удалось подтвердить состояние прокси');managedProxyUi[admin?'admin':'data']=data;managedProxyUi[admin?'adminError':'error']='';}}
   catch(e){if(current())managedProxyUi[admin?'adminError':'error']=e.code==='HTTP_404'?'Серверный модуль ещё не обновлён. Сначала установите обновление API.':e.message||'Не удалось получить состояние';}
-  finally{if(current()){managedProxyUi.loading=false;managedProxyRender();}}
+  finally {
+    // Session refresh invalidates the response, but the request still owns its loading flag.
+    if (ownsLoading()) {
+      managedProxyUi.loading = false;
+      managedProxyRender();
+    }
+  }
 }
 function managedProxyRender(){
   if(!authState.user)return;

@@ -4,7 +4,7 @@ import json
 import re
 import sys
 
-VERSION = '20261107-proxy-checkout'
+VERSION = '20261107-proxy-checkout-session'
 FILES = ('managed-proxy-ui.js', 'proxy-shop.js')
 
 
