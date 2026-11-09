@@ -163,6 +163,17 @@ function setAuthMode(mode) {
   const confirmation = document.querySelector('[data-auth-form] input[name="passwordConfirm"]');
   if (confirmRow) confirmRow.hidden = authState.mode !== 'register';
   if (confirmation) { confirmation.disabled = authState.mode !== 'register'; confirmation.required = authState.mode === 'register'; confirmation.value = ''; }
+  const ageRow = document.querySelector('[data-auth-age-row]');
+  const ageInput = ageRow?.querySelector('input');
+  const registering = authState.mode === 'register';
+  if (ageRow && ageInput) {
+    ageRow.hidden = !registering;
+    ageInput.disabled = !registering;
+    ageInput.required = registering;
+    ageInput.checked = false;
+  }
+  const telegramLabel = document.querySelector('[data-telegram-label]');
+  if (telegramLabel) telegramLabel.textContent = registering ? 'Создать через Telegram' : 'Продолжить через Telegram';
   const intro = document.querySelector('.auth-intro');
   const switchButton = document.querySelector('[data-auth-switch]');
   const switchCopy = document.querySelector('[data-auth-switch-copy]');
@@ -293,7 +304,7 @@ async function submitAuth(form) {
   const message = form.querySelector('[data-auth-message]');
   const submit = form.querySelector('[data-auth-submit]');
   if (submit.disabled) return;
-  const { passwordConfirm, ...body } = Object.fromEntries(new FormData(form));
+  const { passwordConfirm, ageConfirmed, ...body } = Object.fromEntries(new FormData(form));
   if (!form.reportValidity()) return;
   if (authState.mode === 'register' && passwordConfirm !== undefined && passwordConfirm !== body.password) {
     message.className = 'auth-message is-error'; message.textContent = 'Пароли не совпадают. Проверьте повтор пароля.'; return;
@@ -307,7 +318,7 @@ async function submitAuth(form) {
   submit.disabled = true;
   try {
     if (authState.mode === 'register') {
-      const registration = await apiRequest('/api/v1/auth/register', { method: 'POST', body });
+      const registration = await apiRequest('/api/v1/auth/register', { method: 'POST', body: { ...body, ageConfirmed: ageConfirmed === 'yes' } });
       if (!current()) return;
       if (!registration.verificationRequired) {
         registrationCreated = true;
@@ -383,6 +394,8 @@ function stopTelegramLoginPolling() {
 
 async function startTelegramLogin(button) {
   if (button.disabled) return;
+  const age = document.querySelector('[data-auth-age-row] input');
+  if (authState.mode === 'register' && age && !age.reportValidity()) return;
   const statusBox = document.querySelector('[data-telegram-login-status]');
   const link = document.querySelector('[data-telegram-login-link]');
   const message = document.querySelector('[data-auth-message]');
@@ -393,7 +406,7 @@ async function startTelegramLogin(button) {
   if (message) { message.className = 'auth-message'; message.textContent = ''; }
   button.disabled = true;
   try {
-    const started = await apiRequest('/api/v1/auth/telegram/start', { method: 'POST', body: {} });
+    const started = await apiRequest('/api/v1/auth/telegram/start', { method: 'POST', body: {ageConfirmed: authState.mode === 'register' && age?.checked === true} });
     if (!current()) return;
     const target = new URL(started.url);
     if (target.protocol !== 'https:' || target.hostname !== 't.me' || !started.ticket) throw new Error('Не удалось получить ссылку входа Telegram. Повторите попытку.');
@@ -413,6 +426,16 @@ async function startTelegramLogin(button) {
       try {
         const poll = await apiRequest(`/api/v1/auth/telegram/poll?ticket=${encodeURIComponent(started.ticket)}`, { signal: AbortSignal.timeout(12000) });
         if (!current()) return;
+        if (poll.status === 'age_required') {
+          if (statusBox) statusBox.hidden = true;
+          setAuthMode('register');
+          if (message) {
+            message.className = 'auth-message is-error';
+            message.textContent = 'Подтвердите возраст и нажмите «Создать через Telegram».';
+          }
+          age?.focus();
+          return;
+        }
         if (poll.status === 'confirmed') {
           if (statusBox) statusBox.hidden = true;
           await acceptSession(poll);

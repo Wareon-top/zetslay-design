@@ -16,6 +16,16 @@ test('request presentation escapes user and operator content and keeps admin con
 test('late legal requests cannot replace another account or expose the previous admin inbox',async()=>{const f=cabinet();let resolve;f.c.apiRequest=()=>new Promise(r=>resolve=r);const promise=f.run('loadLegalRequests()');f.run("authState.token='other';resetLegalUi()");resolve({admin:true,requests:[row]});await promise;assert.equal(f.run('legalUi.data'),null);assert.equal(f.run('legalUi.admin'),null);assert.equal(f.run('legalUi.loading'),false);});
 test('a lost submit response retains draft and idempotency key, double click performs one request',async()=>{const f=cabinet();let reject,calls=[];f.c.apiRequest=(path,options)=>{calls.push({path,options});return new Promise((_,r)=>reject=r);};const status={textContent:'',isConnected:true},button={disabled:false};let resets=0;f.c.FormData=class{get(k){return k==='type'?'deletion':'draft text';}};f.c.form={reportValidity:()=>true,querySelector:()=>status,querySelectorAll:()=>[button],reset:()=>resets++};const pending=f.run('submitLegalRequest(form)');await f.run('submitLegalRequest(form)');assert.equal(calls.length,1);assert.equal(calls[0].options.authenticated,true);reject(Error('Connection interrupted'));await pending;assert.equal(resets,0);assert.equal(button.disabled,false);assert.equal(f.run('legalUi.attempt.key'),calls[0].options.body.requestKey);assert.equal(status.textContent,'Connection interrupted');});
 test('terminal request cannot offer administrative changes and invalid ids never become routes',()=>{const f=cabinet();f.c.row={...row,status:'answered'};assert.doesNotMatch(f.run('legalRequestMarkup(row,true)'),/data-legal-decision/);f.c.row={...row,id:'../../admin'};assert.equal(f.run('legalRequestMarkup(row,true)'),'');});
+test('deletion link selects the topic without submitting an operation',()=>{
+ const f=cabinet();f.c.URLSearchParams=URLSearchParams;
+ f.c.location={search:'?legal=deletion'};
+ const html=f.run('legalCabinetMarkup()');
+ assert.match(html,/<option value="deletion" selected>/);
+ assert.match(html,/data-legal-deletion-help/);
+ assert.match(html,/весь аккаунт или конкретные данные/);
+ f.c.location={search:'?legal=unknown'};
+ assert.doesNotMatch(f.run('legalCabinetMarkup()'),/<option value="deletion" selected>/);
+});
 test('background profile redraw preserves the request draft only for the same authenticated account',()=>{
  const panel={draft:'UNSENT_PRIVATE_TEXT',querySelector:()=>null},profile={innerHTML:'PROFILE',child:panel,querySelector(){return this.child;},contains(p){return this.child===p;},appendChild(p){this.child=p;},insertAdjacentHTML(){this.child={draft:'',querySelector:()=>null};}};
  const document={querySelector:s=>s==='[data-profile]'?profile:s==='[data-legal-cabinet]'?profile.child:null,addEventListener(){}};

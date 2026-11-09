@@ -21,8 +21,9 @@ def publication(data, config):
     return {'version':data['version'],'status':data['status'],'effectiveFrom':data.get('effectiveFrom'),
         'effectiveRule':data.get('effectiveRule'),'hash':hashlib.sha256(resolved.encode()).hexdigest(),
         'operatorName':config.get('operatorName'),'operatorInn':config.get('inn'),'contactTelegram':config.get('legalTelegram'),
-        'contactEmail':config.get('legalEmail') or None,'hostingCountry':'Германия','localizationReviewed':config.get('localizationReviewed') is True,
-        'processorNamesVerified':bool(config.get('providers')),'paymentsEnabled':False,'documents':[d['id'] for d in data['documents']]}
+        'contactEmail':config.get('legalEmail') or None,'hostingCountry':config.get('hostingLocation') or None,'localizationReviewed':config.get('localizationReviewed') is True,
+        'processorNamesVerified':bool(config.get('providers')),'paymentsEnabled':None if config.get('paymentAvailabilitySource')=='api' else False,
+        'documents':[d['id'] for d in data['documents']]}
 
 def support_contact(config):
     handle=config.get('legalTelegram','').strip()
@@ -53,7 +54,7 @@ def update_operator_footer(text,config):
     return text[:m.start()]+footer+text[m.end():]
 
 def build(root):
-    root=Path(root);data=json.loads((root/'documents.json').read_text());config=json.loads((root/'site-config.json').read_text())
+    root=Path(root);data=json.loads((root/'documents.json').read_text(encoding='utf-8'));config=json.loads((root/'site-config.json').read_text(encoding='utf-8'))
     release=publication(data,config);active=release['status']=='active'
     esc=lambda s:html.escape(str(s),quote=True)
     contact=support_contact(config)
@@ -91,8 +92,8 @@ def build(root):
             if entry.is_dir() and re.fullmatch(r'\d{4}-\d{2}-\d{2}-(?:v\d+|draft-\d+)',entry.name):
                 links+='<a class="legal-button" href="/legal/archive/'+esc(entry.name)+'/index.html">Архив редакции '+esc(entry.name)+'</a>'
     home=f'<div class="legal-hero"><span class="legal-eyebrow">ZetSlay / Документы</span><h1>Правила, данные<br>и ваши права.</h1><p>Условия доступа, границы автоматизации, расходы, обработка данных и понятный порядок обращений.</p><div class="legal-meta"><span>Редакция {esc(data["version"])}</span><span>{esc(data["date"])}</span></div></div>{notice}<div class="legal-actions">{contact}</div><div class="legal-grid">{cards}</div>{independence}<section class="legal-operator" id="operator"><h2>Оператор проекта</h2><dl>{facts}</dl></section><section class="legal-operator"><h2>Обращения и запросы</h2><p>Пользователь может направить запрос о данных, удалении аккаунта, отзыве согласия, инциденте, оплате или претензии через профиль. Ответ сохраняется в кабинете.</p><p>Отправка обращения не запускает автоматическое удаление или возврат. Для обращений лиц без аккаунта или с утраченным доступом используйте контакт поддержки, указанный ниже.</p><p>Срок зависит от основания запроса: например, сведения об обработке — 10 рабочих дней по ст. 20 152-ФЗ; отдельные денежные требования потребителя — 10 дней по ст. 31 закона о защите потребителей. Номер заявки не переносит начало обязательного срока на дату решения оператора.</p><div class="legal-actions"><a class="legal-button legal-button--primary" href="/app/#profile">Перейти к обращениям</a><button class="legal-button" data-privacy-settings type="button">Настройки cookies</button></div></section>'
-    (root/'index.html').write_text(page('Юридическая информация',home))
-    (root/'publication.json').write_text(json.dumps(release,ensure_ascii=False,indent=2)+'\n')
+    (root/'index.html').write_text(page('Юридическая информация',home),encoding='utf-8')
+    (root/'publication.json').write_text(json.dumps(release,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
     for d in docs:
         toc='<nav class="legal-toc" aria-label="Содержание"><strong>В этом документе</strong>'+''.join(f'<a href="#section-{n+1}">{esc(s["title"])}</a>' for n,s in enumerate(d['sections']))+'<a href="/legal/">← Все документы</a></nav>'
         def contents(s):
@@ -107,7 +108,8 @@ def build(root):
                 parts.append(f'<div class="legal-table-wrap" tabindex="0" role="region" aria-label="{esc(s["title"])}"><table><caption>{esc(s["title"])}</caption><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table></div>')
             return ''.join(parts)
         article=''.join(f'<section id="section-{n+1}"><h2>{esc(s["title"])}</h2>'+contents(s)+'</section>' for n,s in enumerate(d['sections']))
-        body=f'<div class="legal-hero"><span class="legal-eyebrow">ZetSlay / Документы</span><h1>{esc(d["title"])}</h1><p>{esc(d["summary"])}</p><div class="legal-meta"><span>Редакция {esc(data["version"])}</span><span>{esc(data["date"])}</span></div></div>{notice}<div class="legal-actions"><button class="legal-button" type="button" data-legal-print>Печать / PDF</button><a class="legal-button" href="/app/#profile">Направить обращение</a>{contact}</div><div class="legal-layout">{toc}<article class="legal-article">{article}</article></div>'
-        (root/f'{d["id"]}.html').write_text(page(d['title'],body))
+        request_link='/app/?legal=deletion#profile' if d['id']=='data-rights' else '/app/#profile'
+        body=f'<div class="legal-hero"><span class="legal-eyebrow">ZetSlay / Документы</span><h1>{esc(d["title"])}</h1><p>{esc(d["summary"])}</p><div class="legal-meta"><span>Редакция {esc(data["version"])}</span><span>{esc(data["date"])}</span></div></div>{notice}<div class="legal-actions"><button class="legal-button" type="button" data-legal-print>Печать / PDF</button><a class="legal-button" href="{request_link}">Направить обращение</a>{contact}</div><div class="legal-layout">{toc}<article class="legal-article">{article}</article></div>'
+        (root/f'{d["id"]}.html').write_text(page(d['title'],body),encoding='utf-8')
 
 if __name__=='__main__':build(sys.argv[1])

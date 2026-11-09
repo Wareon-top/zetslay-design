@@ -37,7 +37,7 @@
     <link rel="stylesheet" href="billing-pricing.css?v=20261017-ticket-pilot-catalog">
     <link rel="stylesheet" href="billing.css?v=20261006-finances">
   <link rel="stylesheet" href="../assets/fonts/fonts.css?v=20261007-local">
-  <link rel="stylesheet" href="../legal/legal.css?v=20261008-legal-2">
+  <link rel="stylesheet" href="../legal/legal.css?v=20261109-privacy-controls">
     <link rel="stylesheet" href="stars-relay.css?v=20261008-stars-relay">
       <link rel="stylesheet" href="admin-panel.css?v=20261008-admin-panel">
       <link rel="stylesheet" href="robux-relay.css?v=20261009-robux-relay">
@@ -480,7 +480,7 @@
         <span class="auth-content__eyebrow"><i></i> Защищённый доступ</span>
         <h2 id="auth-modal-title">Вход в кабинет</h2>
         <p class="auth-intro">Войдите, чтобы продолжить работу с вашим магазином.</p>
-        <button class="button button--telegram button--wide" type="button" data-telegram-login data-auth-only><span class="auth-telegram-icon" aria-hidden="true"></span> Продолжить через Telegram</button>
+        <button class="button button--telegram button--wide" type="button" data-telegram-login data-auth-only><span class="auth-telegram-icon" aria-hidden="true"></span><span data-telegram-label>Продолжить через Telegram</span></button>
         <div class="auth-divider" data-auth-only><span>или через email</span></div>
         <form class="auth-form" data-auth-form>
           <label>Email<input name="email" type="email" autocomplete="email" required placeholder="name@example.com"></label>
@@ -489,6 +489,10 @@
               <input name="password" type="password" autocomplete="current-password" minlength="12" maxlength="256" required placeholder="Не менее 12 символов">
               <button type="button" data-password-toggle aria-label="Показать пароль" aria-pressed="false"><svg><use href="#i-eye"/></svg></button>
             </span>
+          </label>
+          <label class="auth-age-row" data-auth-age-row hidden>
+            <input type="checkbox" name="ageConfirmed" value="yes" disabled>
+            <span>Подтверждаю, что мне исполнилось 18 лет</span>
           </label>
           <div class="auth-message" data-auth-message aria-live="polite"></div>
           <button class="auth-resend" type="button" data-auth-resend hidden>Отправить письмо подтверждения повторно</button>
@@ -505,8 +509,8 @@
           <div><strong data-auth-session-email></strong><small>Защищённая сессия активна</small></div>
           <button class="button button--ghost" type="button" data-auth-logout>Выйти</button>
         </div>
-        <p class="auth-legal">Секреты FunPay вводятся только после входа в защищённом мастере подключения.</p>
-        <nav class="legal-links" data-auth-legal-links aria-label="Документы аккаунта"><a href="/legal/offer.html">Оферта</a><a href="/legal/privacy.html">Конфиденциальность</a><a href="/legal/processing.html">Отдельное согласие</a><a href="/legal/">Все документы</a></nav>
+        <p class="auth-legal" data-auth-only>Используем email или Telegram для создания и защиты аккаунта. Подробности в <a href="/legal/privacy.html">политике конфиденциальности</a>. Секреты FunPay вводятся только после входа в защищённом мастере подключения.</p>
+        <nav class="legal-links" data-auth-legal-links aria-label="Документы аккаунта"><a href="/legal/offer.html">Оферта</a><a href="/legal/privacy.html">Конфиденциальность</a><a href="/legal/">Все документы</a><button type="button" data-privacy-settings>Настройки cookies</button></nav>
       </div>
     </section>
 
@@ -522,7 +526,7 @@
     <script src="priority-orders.js?v=20261015-orders-periods" defer></script>
     <script src="plugin-page.js?v=20261020-steam-rent-workspace" defer></script>
     <script src="messages.js?v=20261014-messages-workspace" defer></script>
-    <script src="profile.js?v=20261023-bot-settings-v1" defer></script>
+    <script src="profile.js?v=20261109-privacy-controls" defer></script>
     <script src="lots.js?v=20261013-lot-management" defer></script>
     <script src="lot-raise.js?v=20261020-lot-raise" defer></script>
     <script src="lot-management.js?v=20261013-lot-management" defer></script>
@@ -537,7 +541,7 @@
     <script src="support.js?v=20261020-support-bubbles" defer></script>
     <script src="admin-panel.js?v=20261017-support-workspace" defer></script>
     <script src="../session-client.js?v=20261012-week-session" defer></script>
-    <script src="app.js?v=20261023-proxy-modal-v2" defer></script>
+    <script src="app.js?v=20261109-privacy-controls" defer></script>
     <script src="messages-actions.js?v=20261014-messages-workspace" defer></script>
     <script src="plugin-detail-ui.js?v=20261006-plugin-details" defer></script>
     <script src="connection-wizard-ui.js?v=20261006-guided-connect" defer></script>
@@ -545,8 +549,8 @@
     <script src="billing-pricing.js?v=20261017-ticket-pilot-catalog" defer></script>
     <script src="billing.js?v=20261017-ticket-pilot-catalog" defer></script>
     <script src="plugin-purchase-options.js?v=20261109-stars-relay-purchase" defer></script>
-  <script src="../legal/privacy-controls.js?v=20261008-legal-2" defer></script>
-  <script src="legal-cabinet.js?v=20261012-legal-publication" defer></script>
+  <script src="../legal/privacy-controls.js?v=20261109-privacy-controls" defer></script>
+  <script src="legal-cabinet.js?v=20261109-privacy-controls" defer></script>
   <script src="knowledge-base.js?v=20261015-subscription-navigation" defer></script>
   <script src="sidebar-trial.js?v=20261010-sidebar-trial-states" defer></script>
 <script src="steam-rent.js?v=20261020-steam-rent-workspace" defer></script>
