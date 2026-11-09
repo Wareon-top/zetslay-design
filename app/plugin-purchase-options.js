@@ -17,6 +17,26 @@ function pluginPurchaseModel(plugin, pricing = typeof ZetSlayPricing === 'object
 
 function pluginPurchaseOptionsMarkup(plugin) {
   const model = pluginPurchaseModel(plugin);
+  const starsRelay = plugin.id === 'zetslay.stars-relay';
+  const owned = typeof authState !== 'undefined' && authState.workspace?.pluginLicenses?.includes(plugin.id) === true;
+  if (owned) {
+    const accessBlocked = typeof subscriptionPluginAllowed === 'function' && !subscriptionPluginAllowed(plugin.id);
+    const accessNote = starsRelay ? 'Для работы с купленной лицензией нужен действующий платный тариф ZetSlay. Подойдёт любой.'
+      : 'Откройте подписку и проверьте доступ к плагину.';
+    const nextStep = !model.available ? 'Модуль сейчас недоступен.'
+      : accessBlocked ? accessNote
+      : plugin.active ? 'Настройки плагина доступны на этой странице.'
+      : plugin.installed ? 'Включите плагин и откройте его настройки.'
+      : 'Нажмите «Установить и включить», затем настройте плагин на этой странице.';
+    return `<div class="plugin-purchase-options" aria-label="Бессрочная лицензия">
+      <section class="plugin-purchase-option plugin-purchase-option--lifetime">
+        <span class="plugin-page-eyebrow">Бессрочная лицензия</span>
+        <h2>Лицензия уже куплена</h2>
+        <p>${nextStep} Повторная покупка не требуется.</p>
+        ${model.available && accessBlocked ? '<a class="button button--ghost button--wide" href="#billing">Открыть подписку</a>' : ''}
+      </section>
+    </div>`;
+  }
   const safe = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
   const plan = model.plan;
   return `<div class="plugin-purchase-options" aria-label="Варианты доступа к плагину">
@@ -24,7 +44,7 @@ function pluginPurchaseOptionsMarkup(plugin) {
       <div class="plugin-purchase-option__heading"><span>Разовая покупка</span><strong>Без продления лицензии</strong></div>
       <h2>Плагин навсегда</h2><div class="plugin-page-price">${safe(model.price)}${model.amount > 0 ? '<small>один раз</small>' : ''}</div>
       <p>${model.amount === 0 ? 'Лицензия на этот плагин — без отдельной оплаты. Для его работы нужен активный доступ к сервису.' : 'Разовая покупка закрепляет бессрочную лицензию на этот плагин. Повторно оплачивать лицензию не нужно.'}</p>
-      <p class="plugin-purchase-option__requires-access"><strong>Для работы нужна активная подписка ZetSlay.</strong> Это условие действует и для плагинов, купленных навсегда. Подойдёт также действующий пробный период с учётом доступных в нём редкостей.</p>
+      <p class="plugin-purchase-option__requires-access"><strong>Для работы нужна активная подписка ZetSlay.</strong> ${starsRelay ? 'С бессрочной лицензией Stars Relay подойдёт любой платный тариф. В пробный период Stars Relay недоступен.' : 'Это условие действует и для плагинов, купленных навсегда. Подойдёт также действующий пробный период с учётом доступных в нём редкостей.'}</p>
       ${model.amount === 0 && model.available ? '<p class="plugin-purchase-option__availability">Этот модуль можно установить бесплатно.</p>' : `<button class="button button--primary button--wide" type="button" ${model.available&&model.amount>0?`data-plugin-buy="${safe(plugin.id)}"`:'disabled'}>${!model.available ? 'Пока недоступен' : 'Купить навсегда с баланса'}</button><p class="plugin-purchase-option__availability">${!model.available ? 'Покупка станет доступна после публикации модуля.' : 'Пополнение внутреннего баланса — только через Platega. Цена проверяется перед списанием.'}</p>`}
     </section>
     <div class="plugin-purchase-options__divider"><span>или тариф с этим плагином</span></div>

@@ -52,6 +52,21 @@ test('zero price is free access without invented purchases; unavailable modules 
   h.run('input.planned=true; renderPluginPage()');assert.match(h.page.innerHTML,/Плагин не найден/);
   const pending=h.run('pluginPurchaseOptionsMarkup(input)');assert.match(pending,/Пока недоступен/);assert.doesNotMatch(pending,/data-plugin-subscription=/);
 });
+test('an existing Stars Relay license shows setup or access guidance without another purchase', () => {
+  const h = harness({ id:'zetslay.stars-relay', installed:false, active:false });
+  h.run('authState.workspace = { pluginLicenses:[input.id] };');
+  let html = h.run('pluginPurchaseOptionsMarkup(input)');
+  assert.match(html, /Лицензия уже куплена/);
+  assert.match(html, /Установить и включить/);
+  assert.doesNotMatch(html, /data-plugin-buy|data-plugin-subscription/);
+  h.run('globalThis.subscriptionPluginAllowed = () => false;');
+  html = h.run('pluginPurchaseOptionsMarkup(input)');
+  assert.match(html, /действующий платный тариф/);
+  assert.match(html, /href="#billing"/);
+  assert.doesNotMatch(html, /data-plugin-buy|Установить и включить/);
+  h.run('subscriptionPluginAllowed = () => true; input.installed = true; input.active = true;');
+  assert.match(h.run('pluginPurchaseOptionsMarkup(input)'), /Настройки плагина доступны/);
+});
 test('missing tariff data does not invent a plan, amount or purchase action',()=>{
   const h=harness();h.run('ZetSlayPricing=null; renderPluginPage()');
   assert.match(h.page.innerHTML,/Условия подписки сейчас не загружены/);assert.match(h.page.innerHTML,/href="#billing"/);assert.doesNotMatch(h.page.innerHTML,/data-plugin-subscription=/);
