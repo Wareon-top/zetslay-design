@@ -1,14 +1,24 @@
-import importlib.util,json,shutil,tempfile,unittest,subprocess,os
+import importlib.util,json,shutil,tempfile,unittest,subprocess,os,re
 from pathlib import Path
 spec=importlib.util.spec_from_file_location('launch',Path(__file__).with_name('stage-launch-readiness.py'));m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
 ROOT=Path(__file__).resolve().parents[1]
 class LaunchStageTests(unittest.TestCase):
- def fixture(self):
+ def fixture(self,legacy=True):
   temp=tempfile.TemporaryDirectory();self.addCleanup(temp.cleanup);p=Path(temp.name);local=p/'local';incoming=p/'incoming';incoming.mkdir()
   for f in m.FILES[:4]:
    (local/f).parent.mkdir(parents=True,exist_ok=True);shutil.copy(ROOT/f,local/f)
   (local/'assets').mkdir();(local/'assets/zetslay-orderflow.webp').touch()
   for f in ('launch-readiness-patches.json','launch-readiness-fragments.json'):shutil.copy(ROOT/'deploy'/f,incoming/f)
+  if legacy:
+   runtime=local/'app/app.js'
+   text=runtime.read_text(encoding='utf-8')
+   # The historical installer targets the reviewed authentication functions.
+   for patch in json.loads((incoming/'launch-readiness-patches.json').read_text(encoding='utf-8')):
+    if patch['name'] not in ('setAuthMode','submitAuth','startTelegramLogin'):continue
+    pattern=r'^(?:async )?function '+re.escape(patch['name'])+r'\([^\n]*\) \{\n.*?^\}'
+    text,count=re.subn(pattern,lambda _:patch['after'],text,flags=re.M|re.S)
+    self.assertEqual(count,1)
+   runtime.write_text(text,encoding='utf-8')
   for f in m.FILES[4:]:
    (incoming/f).parent.mkdir(parents=True,exist_ok=True);shutil.copy(ROOT/f,incoming/f)
   return p,local,incoming
@@ -44,6 +54,13 @@ class LaunchStageTests(unittest.TestCase):
  def test_unknown_runtime_aborts_before_writing(self):
   p,local,inc=self.fixture();(local/'app/app.js').write_text('unrecognized runtime');
   with self.assertRaises(ValueError):m.stage(local,inc,p/'out')
+  self.assertFalse((p/'out').exists())
+ def test_new_registration_controls_cannot_be_replaced_by_historical_auth_patch(self):
+  p,local,inc=self.fixture(legacy=False)
+  before=(local/'app/app.js').read_bytes()
+  self.assertIn(b'data-auth-age-row',before)
+  with self.assertRaisesRegex(ValueError,'setAuthMode'):m.stage(local,inc,p/'out')
+  self.assertEqual((local/'app/app.js').read_bytes(),before)
   self.assertFalse((p/'out').exists())
  def test_installer_restores_partial_write_and_removes_new_files(self):
   p,local,inc=self.fixture();backup=p/'backup';backup.mkdir();bin=p/'bin';bin.mkdir()
