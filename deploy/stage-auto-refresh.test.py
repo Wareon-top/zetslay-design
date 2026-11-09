@@ -1,4 +1,4 @@
-import unittest,tempfile,shutil,importlib.util,subprocess,os
+import unittest,tempfile,shutil,importlib.util,subprocess,os,re
 from pathlib import Path
 REPO=Path(__file__).parents[1].resolve();spec=importlib.util.spec_from_file_location('stage',REPO/'deploy/stage-auto-refresh.py');m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
 class StageTest(unittest.TestCase):
@@ -6,7 +6,12 @@ class StageTest(unittest.TestCase):
   with tempfile.TemporaryDirectory() as d:
    out=Path(d)/'out';again=Path(d)/'again';shutil.copytree(REPO/'app',out);m.stage(REPO/'app',REPO/'app',out);m.stage(out,REPO/'app',again)
    for name in m.ASSETS+['overview.js','index.html']:self.assertEqual((out/name).read_bytes(),(again/name).read_bytes())
-   html=(out/'index.html').read_text();self.assertEqual(html.count('src="auto-refresh.js'),1);self.assertNotIn('src="store-refresh.js',html);self.assertLess(html.index('src="payments.js'),html.index('src="auto-refresh.js'));self.assertIn('payment-confirmation.js?v=20261016-confirmation-ticket',html)
+   html=(out/'index.html').read_text(encoding='utf-8');self.assertEqual(html.count('src="auto-refresh.js'),1);self.assertNotIn('src="store-refresh.js',html);self.assertLess(html.index('src="payments.js'),html.index('src="auto-refresh.js'))
+   original=(REPO/'app'/'index.html').read_text(encoding='utf-8')
+   receipt=r'<script[^>]*\bsrc="payment-confirmation\.js(?:\?[^"]*)?"[^>]*>'
+   original_tags=re.findall(receipt,original)
+   self.assertEqual(len(original_tags),1)
+   self.assertEqual(re.findall(receipt,html),original_tags)
  def test_unknown_layout_does_not_write(self):
   with tempfile.TemporaryDirectory() as d:
    local=Path(d)/'local';local.mkdir();(local/'index.html').write_text('unknown');(local/'overview.js').write_text('unknown')
