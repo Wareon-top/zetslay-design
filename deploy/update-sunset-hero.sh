@@ -57,8 +57,13 @@ for file in "${payload[@]}"; do
   mkdir -p "$work/staged/$(dirname "$file")"
   cp -- "$work/incoming/$file" "$work/staged/$file"
   if [[ -e "$file" ]] && ! cmp -s "$file" "$work/staged/$file"; then
-    echo "Файл $file уже существует и отличается от пакета. Ничего не установлено." >&2
-    exit 1
+    # Permit the exact previously published CSS; reject custom or unknown edits.
+    previous_css=6ec8eeb93ca16c6b093b594eb7554b24b769173b479a30cb768bfa9fe8ed6e7f
+    actual=$(sha256sum "$file"); actual=${actual%% *}
+    if [[ "$file" != landing-sunset-20261111.css || "$actual" != "$previous_css" ]]; then
+      echo "Файл $file уже существует и отличается от проверенных версий. Ничего не установлено." >&2
+      exit 1
+    fi
   fi
 done
 if [[ "${ZETSLAY_SUNSET_PREFLIGHT_ONLY:-false}" == true ]]; then
@@ -93,7 +98,7 @@ curl -fsS --max-time 20 "${url}${separator}sunset-release=${revision}" -o "$work
 import sys
 from pathlib import Path
 html = Path(sys.argv[1]).read_bytes()
-if html.count(b'data-landing-hero="sunset-v4"') != 1 or b'landing-sunset-20261111.css?v=sunset-v4' not in html:
+if html.count(b'data-landing-hero="sunset-v4"') != 1 or b'landing-sunset-20261111.css?v=sunset-v4-fit1"' not in html:
     raise SystemExit('Публичная страница не подтвердила обновление. Выполняется откат.')
 PY
 base=${url%%\?*}; base=${base%/}

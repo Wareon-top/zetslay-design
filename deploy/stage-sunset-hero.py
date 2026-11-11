@@ -4,7 +4,7 @@ import re
 import sys
 from pathlib import Path
 
-STYLE = b"landing-sunset-20261111.css?v=sunset-v4"
+STYLE = b"landing-sunset-20261111.css?v=sunset-v4-fit1"
 MARKER = b'data-landing-hero="sunset-v4"'
 HEADER = re.compile(rb'<header\b(?=[^>]*\bclass=["\'][^"\']*\bsite-header\b)[^>]*>.*?</header\s*>', re.S | re.I)
 HERO = re.compile(rb'<section\b(?=[^>]*\bid=["\']landing["\'])(?=[^>]*\bdata-landing-hero=["\'](?:orderflow|sunset-v4)["\'])[^>]*>.*?</section\s*>', re.S | re.I)

@@ -10,7 +10,7 @@
 .zsh-hero [hidden]{display:none!important}
 .zsh-hero a{color:inherit;text-decoration:none}
 .zsh-hero a:focus-visible{outline:3px solid var(--zsh-focus);outline-offset:5px}
-.zsh-stage{--zsh-k:min(1px,100cqw / 1600);position:relative;isolation:isolate;width:min(100%,1600px);height:calc(var(--zsh-k)*900);margin-inline:auto}
+.zsh-stage{--zsh-k:min(1px,100cqw / 1600);position:relative;isolation:isolate;width:100%;height:calc(var(--zsh-k)*900);margin-inline:auto}
 .zsh-sky,.zsh-foreground{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;object-position:50% 100%;pointer-events:none;user-select:none}
 .zsh-sky{z-index:0}
 .zsh-foreground{z-index:8;mask-image:linear-gradient(180deg,transparent 0%,transparent 79%,#00000028 84%,#000000b0 94%,#000 100%)}
@@ -26,7 +26,7 @@
 .zsh-hero .zsh-header .header-login::after{content:'↗'}
 .zsh-hero .zsh-header [data-session-guest].button--header{display:none}
 .zsh-hero .zsh-header .mobile-menu{display:none}
-.zsh-copy{position:absolute;z-index:20;top:calc(var(--zsh-k)*128);left:calc(var(--zsh-k)*240);width:calc(var(--zsh-k)*1120);text-align:center}
+.zsh-copy{position:absolute;z-index:20;top:calc(var(--zsh-k)*128);left:50%;width:calc(var(--zsh-k)*1120);transform:translateX(-50%);text-align:center}
 .zsh-hero .zsh-title{max-width:none;margin:0;padding:0;color:var(--zsh-white);font-family:inherit;font-size:calc(var(--zsh-k)*104);font-weight:650;font-variation-settings:'opsz' 32;line-height:1.01;letter-spacing:-.045em}
 .zsh-title span{display:block;white-space:nowrap;color:inherit}
 .zsh-hero .zsh-copy p{max-width:calc(var(--zsh-k)*880);margin:calc(var(--zsh-k)*20) auto 0;padding:0;color:var(--zsh-ink);font-size:calc(var(--zsh-k)*24);line-height:1.4;letter-spacing:-.02em}
@@ -35,7 +35,7 @@
 .zsh-hero .zsh-button--primary{background:var(--zsh-ink);color:var(--zsh-white)}
 .zsh-hero .zsh-button--secondary{background:var(--zsh-white);color:var(--zsh-ink)}
 .zsh-hero .zsh-button:hover{outline:1px solid var(--zsh-ink);outline-offset:3px}
-.zsh-object{position:absolute;z-index:5;top:calc(var(--zsh-k)*472);left:50%;width:calc(var(--zsh-k)*456);height:calc(var(--zsh-k)*456);transform:translateX(-50%)}
+.zsh-object{position:absolute;z-index:5;top:calc(var(--zsh-k)*472);left:50%;width:calc(var(--zsh-k)*400);height:calc(var(--zsh-k)*400);transform:translateX(-50%)}
 .zsh-render{display:block;width:100%;height:100%;filter:drop-shadow(var(--zsh-object-shadow))}
 .zsh-object img{display:block;width:100%;height:100%;object-fit:contain;transform:rotate(-5deg)}
 @container zsh (width < 1024px){
@@ -43,7 +43,7 @@
   .zsh-hero .site-header.zsh-header{top:calc(var(--zsh-k)*28);left:calc(var(--zsh-k)*40);right:calc(var(--zsh-k)*40)}
   .zsh-hero .zsh-header .desktop-nav{gap:calc(var(--zsh-k)*24)}
   .zsh-hero .zsh-header .desktop-nav a{font-size:calc(var(--zsh-k)*16)}
-  .zsh-copy{top:calc(var(--zsh-k)*144);left:calc(var(--zsh-k)*72);width:calc(var(--zsh-k)*880)}
+  .zsh-copy{top:calc(var(--zsh-k)*144);width:calc(var(--zsh-k)*880)}
   .zsh-hero .zsh-title{font-size:calc(var(--zsh-k)*84)}
   .zsh-hero .zsh-copy p{max-width:calc(var(--zsh-k)*760);font-size:calc(var(--zsh-k)*22);margin-top:calc(var(--zsh-k)*24)}
   .zsh-hero .zsh-button{font-size:calc(var(--zsh-k)*18)}
@@ -64,7 +64,7 @@
   .zsh-hero .zsh-header .mobile-menu summary span{display:block;width:16px;height:1.5px;background:var(--zsh-ink)}
   .zsh-hero .zsh-header .mobile-menu nav{position:absolute;z-index:40;top:calc(100% + 12px);right:0;display:grid;gap:4px;width:min(260px,75cqw);margin:0;padding:12px;border:0;border-radius:16px;background:var(--zsh-white);box-shadow:var(--zsh-control-shadow)}
   .zsh-hero .zsh-header .mobile-menu nav a{padding:10px 12px;color:var(--zsh-ink);font-size:14px;line-height:1.4}
-  .zsh-copy{top:calc(var(--zsh-k)*116);left:calc(var(--zsh-k)*20);width:calc(var(--zsh-k)*350)}
+  .zsh-copy{top:calc(var(--zsh-k)*116);width:calc(var(--zsh-k)*350)}
   .zsh-hero .zsh-title{font-size:calc(var(--zsh-k)*42);line-height:1.06;letter-spacing:-.05em}
   .zsh-hero .zsh-copy p{max-width:calc(var(--zsh-k)*320);font-size:max(12px,calc(var(--zsh-k)*15));line-height:1.5;margin-top:calc(var(--zsh-k)*20)}
   .zsh-actions{gap:calc(var(--zsh-k)*12);margin-top:calc(var(--zsh-k)*24)}
