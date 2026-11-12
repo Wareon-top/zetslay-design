@@ -1,0 +1,10 @@
+{
+  "app/managed-proxy-ui.js": {
+    "before": "f9e8924eb085ebd3eaefaba2e9bcd2bffe683f777773537f35a880898aa01ede",
+    "after": "c17454c181a356360ecd726a7e56ae70ef317c02baef2c0ac7c8c8f441404f6d"
+  },
+  "app/managed-proxy-ui.css": {
+    "before": "977c7d46e36e5238f2c32ace55200b2f0bb12cf8f1e6152ea24d0dfaeef916af",
+    "after": "f2bf2a6580804f90ac245e4f8638135135a7b66f5babe47587c7dbe5d1447905"
+  }
+}

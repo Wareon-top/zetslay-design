@@ -3,16 +3,50 @@ const managedProxyUi = {token:'',generation:0,revision:0,loadRevision:0,data:nul
 const managedProxyEscape = value => escapeHtml(String(value ?? ''));
 const managedProxyDate = value => Number.isFinite(Date.parse(value)) ? new Intl.DateTimeFormat('ru-RU',{dateStyle:'medium',timeStyle:'short'}).format(new Date(value)) : 'Не указан';
 const managedProxyLabel = value => ({issue:'Получение',renew:'Продление',replace:'Замена',pending:'Ждёт администратора',assigned:'Прокси назначен',completed:'Выполнен',cancelled:'Отменён',expired:'Срок истёк',retired:'Отозван',available:'Проверен',needs_check:'Нужна проверка',complete:'Проверка завершена',failed:'Требуется внимание',checking:'Проверяем с сервера'})[value] || value || '—';
+const managedProxyFailureMessages = {
+  STORE_CHANGED:['Аккаунт FunPay не совпадает с подключённым','FunPay вернул другой аккаунт. Проверьте, что Golden Key взят из нужного аккаунта FunPay. Если аккаунт не меняли — обратитесь в поддержку ZetSlay.'],
+  AUTH_REJECTED:['Не удалось войти в аккаунт FunPay','FunPay не подтвердил вход по сохранённому Golden Key. Скопируйте актуальный ключ из нужного аккаунта, сохраните его в настройках подключения и повторите проверку.'],
+  CAPTCHA_REQUIRED:['FunPay требует проверку в браузере','Откройте FunPay, войдите в нужный аккаунт и пройдите проверку, если она появится. Затем повторите проверку соединения в ZetSlay.'],
+  PROXY_AUTH_REJECTED:['Прокси отклонил данные доступа','Для своего прокси проверьте логин, пароль и режим доступа у поставщика. Если прокси куплен в ZetSlay — обратитесь в поддержку ZetSlay.'],
+  PROXY_EXPIRED:['Срок действия прокси закончился','Продлите прокси или подключите другой действующий адрес, затем повторите проверку.'],
+  PROXY_REVOKED:['Прокси больше недоступен для подключения','Выберите другой действующий прокси или обратитесь в поддержку ZetSlay.'],
+  PROXY_CHECK_BUSY:['Другая проверка ещё выполняется','Дождитесь её завершения, обновите статус и повторите проверку.'],
+  PROXY_CHECK_TIMEOUT:['Проверка не завершилась вовремя','Обновите статус перед повтором: сервер мог продолжить проверку после закрытия ожидания.'],
+  PROXY_TIMEOUT:['Прокси не ответил вовремя','Повторите проверку немного позже. Если ошибка повторяется, проверьте прокси у поставщика или обратитесь в поддержку ZetSlay.'],
+  PROXY_CONNECTION_REFUSED:['Не удалось подключиться к прокси','Проверьте адрес, порт и срок действия прокси. Для прокси ZetSlay обратитесь в поддержку.'],
+  PROXY_DNS_FAILED:['Не удалось найти адрес прокси','Проверьте, правильно ли указан адрес прокси. Если он верный, повторите проверку позже или обратитесь к поставщику.'],
+  PROXY_TLS_REJECTED:['Не удалось установить защищённое соединение','Повторите проверку. Если ошибка сохраняется, обратитесь к поставщику прокси или в поддержку ZetSlay.'],
+  PROXY_TUNNEL_REJECTED:['Прокси не разрешил соединение с FunPay','Проверьте, разрешён ли доступ к FunPay у поставщика прокси. Для прокси ZetSlay обратитесь в поддержку.'],
+  PLATFORM_UNAVAILABLE:['Не удалось получить ответ FunPay','Повторите проверку позже. Если FunPay открывается в браузере, а ошибка сохраняется — обратитесь в поддержку ZetSlay.'],
+  HTTP_STATUS:['FunPay ответил с ошибкой','Повторите проверку позже. Если ошибка повторяется, передайте код из подробностей в поддержку ZetSlay.'],
+  RATE_LIMITED:['Слишком много запросов','Подождите немного и повторите проверку. Частые повторы могут продлить ограничение.'],
+  PLAN_REQUIRED:['Для подключения нужна активная подписка','Проверьте срок подписки ZetSlay и продлите её, если он закончился.'],
+  INVALID_SESSION:['Нужно снова войти в ZetSlay','Войдите в кабинет заново и повторите проверку.'],
+  INVALID_STATE:['Подключение изменилось или ещё не настроено','Обновите состояние подключения. Убедитесь, что Telegram привязан, Golden Key сохранён и прокси выбран, затем повторите проверку.'],
+};
+const managedProxyFailureAliases={AUTH_REJECTED_PROXY:'PROXY_AUTH_REJECTED',TIMEOUT:'PROXY_TIMEOUT',ETIMEDOUT:'PROXY_TIMEOUT',SYNC_TIMEOUT:'PROXY_CHECK_TIMEOUT',ECONNREFUSED:'PROXY_CONNECTION_REFUSED',DNS_FAILED:'PROXY_DNS_FAILED',ENOTFOUND:'PROXY_DNS_FAILED',EAI_AGAIN:'PROXY_DNS_FAILED',TLS_REJECTED:'PROXY_TLS_REJECTED',TUNNEL_REJECTED:'PROXY_TUNNEL_REJECTED',METHOD_REJECTED:'PROXY_TUNNEL_REJECTED'};
+function managedProxyFailure(code){
+  const key=typeof code==='string'&&Object.hasOwn(managedProxyFailureAliases,code)?managedProxyFailureAliases[code]:code;
+  const [title,action]=typeof key==='string'&&Object.hasOwn(managedProxyFailureMessages,key)?managedProxyFailureMessages[key]:['Не удалось завершить проверку','Обновите статус и повторите проверку. Если ошибка сохраняется, обратитесь в поддержку ZetSlay и передайте код из подробностей.'];
+  return {title,action};
+}
+function managedProxyTechnical(code){
+  const safe=typeof code==='string'&&/^[A-Z][A-Z0-9_]{1,63}$/.test(code)?code:'CHECK_FAILED';
+  return `<details class="mp-check-technical"><summary>Код для поддержки</summary><code>${managedProxyEscape(safe)}</code></details>`;
+}
 function managedProxyReset(){
   managedProxyUi.revision++;clearInterval(managedProxyUi.poll);
   Object.assign(managedProxyUi,{token:'',generation:0,data:null,admin:null,busy:false,loading:false,error:'',adminError:'',source:'managed',poll:null});
   document.querySelectorAll('[data-managed-proxy],[data-managed-proxy-admin]').forEach(n=>n.remove());
 }
 function managedProxyChecks(checks){
-  return `<div class="mp-checks">${[['availability','Доступность FunPay','Публичная страница через прокси'],['authorization','Авторизация магазина','Golden Key и принадлежность магазина'],['readAccess','Заказы и чаты','Чтение данных без изменений']].map(([key,title,note])=>{
+  const stages=[['availability','Доступность FunPay','Публичная страница через прокси'],['authorization','Авторизация магазина','Golden Key и принадлежность магазина'],['readAccess','Заказы и чаты','Чтение данных без изменений']];
+  return `<div class="mp-checks">${stages.map(([key,title,note],index)=>{
     const c=checks?.[key],passed=c?.status==='passed',failed=c?.status==='failed';
-    const detail=passed?(key==='availability'?`HTTP ${c.httpStatus} · ${c.latencyMs ?? '—'} мс`:key==='authorization'?`Магазин #${c.storeId}`:'Чтение подтверждено'):failed?c.code||'Ошибка проверки':'Ещё не проверено';
-    return `<div class="mp-check ${passed?'is-passed':failed?'is-failed':''}"><span aria-hidden="true">${passed?'✓':failed?'!':'○'}</span><div><strong>${title}</strong><small>${note}</small></div><b>${managedProxyEscape(detail)}</b></div>`;
+    const blocked=!passed&&!failed&&stages.slice(0,index).some(([previous])=>checks?.[previous]?.status==='failed');
+    const explanation=failed?managedProxyFailure(c.code):null;
+    const detail=passed?(key==='availability'?`HTTP ${c.httpStatus} · ${c.latencyMs ?? '—'} мс`:key==='authorization'?`Магазин #${c.storeId}`:'Чтение подтверждено'):failed?explanation.title:blocked?'Проверка остановлена':'Ещё не проверено';
+    return `<div class="mp-check ${passed?'is-passed':failed?'is-failed':''}"><span aria-hidden="true">${passed?'✓':failed?'!':'○'}</span><div><strong>${title}</strong><small>${note}</small></div><b>${managedProxyEscape(detail)}</b>${failed?`<p class="mp-check-help">${managedProxyEscape(explanation.action)}</p>${managedProxyTechnical(c.code)}`:blocked?'<p class="mp-check-help">Сначала устраните ошибку на предыдущем этапе и повторите проверку.</p>':''}</div>`;
   }).join('')}</div>`;
 }
 function managedProxyMarkup(data,{busy=false,error=''}={}){
@@ -29,7 +63,7 @@ function managedProxyMarkup(data,{busy=false,error=''}={}){
   ${pending?`<div class="mp-request"><strong>${managedProxyEscape(managedProxyLabel(pending.kind))} · ${managedProxyEscape(managedProxyLabel(pending.status))}</strong><small>Запрошено: ${managedProxyEscape(pending.days)} дн. Фактический срок появится после назначения.</small><button type="button" class="button button--ghost" data-mp-action="cancel" data-request-id="${managedProxyEscape(pending.id)}" ${locked?'disabled':''}>Отменить запрос</button></div>`:''}
   ${candidates.map(c=>`<div class="mp-candidate"><div><strong>${managedProxyEscape(c.label)}</strong><small>До ${managedProxyDate(c.expiresAt)} · ${managedProxyEscape(c.remainingDays)} дн.</small></div><button type="button" class="button button--primary" data-mp-action="activate" data-resource-id="${managedProxyEscape(c.id)}" ${locked||!data.canActivate?'disabled':''}>Проверить и подключить</button></div>`).join('')}
   ${!showChecks?shop:''}
-  ${showChecks?managedProxyChecks(checks):''}${op?`<p class="mp-observed" role="status">${managedProxyEscape(managedProxyLabel(op.status))}${op.installed?' · Новый прокси подключён':''}${op.code?' · '+managedProxyEscape(op.code):''} · ${managedProxyDate(op.updatedAt)}</p>`:''}
+  ${showChecks?managedProxyChecks(checks):''}${op?`<p class="mp-observed" role="status">${managedProxyEscape(managedProxyLabel(op.status))}${op.installed?' · Новый прокси подключён':''} · ${managedProxyDate(op.updatedAt)}</p>${op.code&&!Object.values(checks||{}).some(c=>c?.status==='failed')?`<div class="mp-operation-help"><strong>${managedProxyEscape(managedProxyFailure(op.code).title)}</strong><p>${managedProxyEscape(managedProxyFailure(op.code).action)}</p>${managedProxyTechnical(op.code)}</div>`:''}`:''}
   ${error?`<p class="mp-error" role="alert">${managedProxyEscape(error)}</p>`:''}
   <div class="mp-actions"><button type="button" class="button button--ghost" data-mp-action="refresh" ${busy?'disabled':''}>Обновить статус</button>${data.configured?`<button type="button" class="button button--ghost" data-mp-action="check" ${locked||!data.activePlan||r?.expired||r?.state==='retired'?'disabled':''}>Проверить соединение</button>`:''}</div>
   ${!shopEnabled&&!pending?`<form data-mp-request><label>Нужный срок<select name="days"><option value="30">30 дней</option><option value="7">7 дней</option><option value="90">90 дней</option></select></label><div class="mp-actions">${!r?`<button class="button button--primary" name="kind" value="${data.configured?'replace':'issue'}" ${locked||!data.activePlan?'disabled':''}>${data.configured?'Запросить замену':'Получить прокси'}</button>`:`<button class="button button--primary" name="kind" value="renew" ${locked?'disabled':''}>Продлить</button><button class="button button--ghost" name="kind" value="replace" ${locked?'disabled':''}>Заменить</button>`}</div></form>`:''}
@@ -93,7 +127,7 @@ async function managedProxyRun(path,body,admin=false){
     if(!managedProxyCurrent(token,generation,revision))return;
     if(data.operation)managedProxyUi.data={...managedProxyUi.data,operation:data.operation};
     if(data.operation?.installed){await loadOnboarding();if(!managedProxyCurrent(token,generation,revision))return;renderConnectionWizard();if(typeof renderProfile==='function')renderProfile();}
-  }catch(e){if(managedProxyCurrent(token,generation,revision))managedProxyUi[admin?'adminError':'error']=['TimeoutError','AbortError'].includes(e.name)?'Ответ не получен вовремя. Обновите статус: сервер мог завершить действие.':e.code==='MFA_STEP_UP'?'Подтвердите изменение кодом 2FA в профиле → «Защита аккаунта», затем повторите действие.':e.message||'Действие не выполнено';}
+  }catch(e){if(managedProxyCurrent(token,generation,revision))managedProxyUi[admin?'adminError':'error']=['TimeoutError','AbortError'].includes(e.name)?'Ответ не получен вовремя. Обновите статус: сервер мог завершить действие.':e.code==='MFA_STEP_UP'?'Подтвердите изменение кодом 2FA в профиле → «Защита аккаунта», затем повторите действие.':Object.hasOwn(managedProxyFailureMessages,e.code||'')||Object.hasOwn(managedProxyFailureAliases,e.code||'')?`${managedProxyFailure(e.code).title}. ${managedProxyFailure(e.code).action}`:e.message||'Действие не выполнено';}
   finally{if(managedProxyCurrent(token,generation,revision)){clearInterval(managedProxyUi.poll);managedProxyUi.poll=null;managedProxyUi.busy=false;managedProxyUi.loadRevision++;managedProxyUi.loading=false;await managedProxyLoad(admin);managedProxyRender();}}
 }
 (function installManagedProxy(){
