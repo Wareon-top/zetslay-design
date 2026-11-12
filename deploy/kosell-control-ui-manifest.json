@@ -1,0 +1,10 @@
+{
+  "app/kosell-storefront.js": {
+    "before": "b21fffb4730c4b63741894ee795c845fbcdfbc4dbc90f059e44b9e95538ae2b8",
+    "after": "edd35fe6ec004d95dff60690a0785022a93e8805e8a97f2057df64b4c8947390"
+  },
+  "app/kosell-workspace.css": {
+    "before": "bc56ae6067a3349f2b66dcae29710457585d224b28468b29a342ed08a3f7045a",
+    "after": "de8d816d1b4d3c14978fd46e1869149bf9068b3be17e67d02df9c2f0cb228a50"
+  }
+}

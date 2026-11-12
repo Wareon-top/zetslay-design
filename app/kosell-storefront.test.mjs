@@ -274,3 +274,21 @@ test('a failed or foreign-store queue read keeps prior data, shows it may be sta
 test('storefront shows one declared step and requires review before the plan button becomes available',async()=>{const f=await selected();f.run("sfState().stage='2';sfState().reviewed=false;sfRefresh()");assert.match(f.root.innerHTML,/data-sf-current="2"/);assert.match(f.root.innerHTML,/data-sf-action="prepare" disabled/);f.run('sfState().reviewed=true;sfRefresh()');assert.doesNotMatch(f.root.innerHTML,/data-sf-action="prepare" disabled/);assert.match(f.root.innerHTML,/data-sf-stage="1"/);assert.equal(f.calls.some(c=>/\/(start|offer-confirm)$/.test(c.path)),false);});
 test('queue polling stays inactive when the user is on another plugin section',async()=>{const f=await selected();f.ctx.document.visibilityState='visible';f.ctx.kosellSectionName=()=>'settings';assert.equal(f.run('sfQueueVisible()'),false);f.ctx.kosellSectionName=()=>'storefront';assert.equal(f.run('sfQueueVisible()'),true);});
 test('storefront results show unknown creations without a retry action and stop consumes explicit client confirmation',async()=>{const f=await selected();f.ctx.jobs=[{id:'j1',status:'unknown',productName:'<script>x</script>',hours:24,priceMinor:120,currency:'RUB'},{id:'j2',status:'queued',productName:'Game',hours:1,priceMinor:10,currency:'RUB'}];f.run('kosellUi.status.offerJobs=jobs;sfRefresh()');assert.match(f.root.innerHTML,/data-kosell-offer-resolve/);assert.match(f.root.innerHTML,/автоматический повтор заблокирован/);assert.doesNotMatch(f.root.innerHTML,/<script>x/);await f.run('sfStopQueue()');assert.equal(f.calls.some(c=>c.path.endsWith('/catalog-stop')),false);let stops=0;f.ctx.apiRequest=async()=>{stops++;return {cancelled:1};};f.run('sfState().stopQueueConfirm=true');await f.run('sfStopQueue()');await f.run('sfStopQueue()');assert.equal(stops,1);assert.match(f.root.innerHTML,/Созданные лоты сохранены/);});
+
+
+test('large category selectors render a bounded searchable list instead of thousands of DOM options',async()=>{
+ const f=await selected();f.ctx.largeControl={name:'server_id',label:'Игра',kind:'select',required:true,options:Array.from({length:10000},(_,i)=>({value:String(i+1),label:'Title '+i}))};
+ f.run('sfState().entries[0].form.controls=[largeControl];sfState().entries[0].fields={server_id:"9999"}');
+ const html=f.run('sfControl(largeControl,sfState().entries[0])');assert.match(html,/data-sf-option-search/);assert.ok((html.match(/<option /g)||[]).length<=80);assert.match(html,/Title 9998/);
+ const found=f.run('sfOptionList(largeControl,"Title 9998")');assert.match(found,/Title 9998/);assert.ok((found.match(/<option /g)||[]).length<10);
+});
+test('selection filters keep the full reviewed batch and per-game failures are isolated',async()=>{
+ const f=await selected();await f.run('sfSelect(2,true)');const before=f.run('sfState().entries.length');f.run('sfState().entryFilter="ready"');const html=f.run('sfSelections()');assert.match(html,/data-sf-filter="issues"/);assert.equal(f.run('sfState().entries.length'),before);assert.doesNotMatch(html,/data-sf-remove="2"/);
+ f.run('sfState().entryFilter="issues"');assert.match(f.run('sfSelections()'),/data-sf-remove="2"/);
+});
+test('retrying a failed form retains an independently valid field selection for the same category',async()=>{
+ const f=await selected();f.ctx.newForm=structuredClone(form);f.ctx.newForm.controls[0].options.push({value:'ps',label:'PlayStation'});
+ f.run('sfState().entries[0].fields["fields[platform]"]="ps";sfState().entries[0].fieldNode="2500"');f.ctx.apiRequest=async()=>f.ctx.newForm;
+ await f.run('sfRead(sfState().entries[0])');assert.equal(f.run('sfState().entries[0].fields["fields[platform]"]'),'ps');
+ f.run('sfState().entries[0].fieldNode="another-category"');await f.run('sfRead(sfState().entries[0])');assert.equal(f.run('sfState().entries[0].fields["fields[platform]"]'),'steam');
+});
