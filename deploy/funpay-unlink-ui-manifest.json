@@ -1,0 +1,10 @@
+{
+  "app/funpay-disconnect-ui.js": {
+    "before": null,
+    "after": "d6e4475c5494c84d541abcdf19ce1fad4908968d888a3cddc0ec8cff1c66e114"
+  },
+  "app/funpay-disconnect-ui.css": {
+    "before": null,
+    "after": "056936c3c500230cf914e549c56c1def29c04c354cefff111027261d3440b593"
+  }
+}
