@@ -5,9 +5,9 @@ Never replaces host app/controllers, auth, legal pages, config, API or databases
 from pathlib import Path
 import argparse,hashlib,json,os,re,shutil,tempfile,urllib.request
 
-CSS=['tokens','zetslay-ui','profile','cabinet','catalog','plugin-page','production','reference-ui']
+CSS=['tokens','zetslay-ui','profile','cabinet','catalog','plugin-page','production','reference-ui','fidelity']
 JS=['icons','model','design-spec','reference-ui','production']
-RELEASE='20261114-production-reference1'
+RELEASE='20261114-claude-fidelity1'
 MARKER='ZETSLAY_CABINET_V3'
 def sha(data):return hashlib.sha256(data).hexdigest()
 def asset_directory(path,app):

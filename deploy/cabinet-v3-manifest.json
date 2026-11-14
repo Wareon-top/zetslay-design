@@ -1,398 +1,418 @@
 {
-  "release": "20261114-production-hq2",
-  "handoffSha256": "8903ee1109989cf36686184459aa8d38bdbcc52bbdb54800256dbb676a1f18a6",
-  "host": {
-    "app/app.js": [
-      "617426f83dcad3b59c56a3c21e3850ea88096421d10e629ad157f9503dd34f0e",
-      "e7879c7f8984cf6fb3c89e52cf3654dede4a497f13b5a5d03611c27252be6578"
-    ],
-    "app/profile.js": [
-      "e916d9e218d7d77405ada8b5c1adcccf37916af7715591985aade734df762460",
-      "d33342e47f9a48d4a61b3ad49471e31a3b4f3e7af2597dcaf76afc56ea842b8b"
-    ],
-    "app/plugin-page.js": [
-      "cefaffae289ab68675697efb31b5a269734a855b5a9dafb1729f2bf0d747c57f",
-      "618e537fc0cfef4dc9879bee702bfd1475beaace02d4f9c52b29d4f3ebbb8c6f"
-    ],
-    "app/workspace-upgrade.js": [
-      "3e2e67e8ebedf8707d1a9b37852ad6a7df921c55646985729681058e8c0ac880"
-    ],
-    "app/basic-automation.js": [
-      "49c0320f1705a09267a7d64c06987c9f0df24fed6db61af6feda85c467b02b92"
-    ],
-    "app/store-tools.js": [
-      "194d99930281d2770f5b48c461a69dd5d6b5b5ad052bc86e8c3379eb8f8bc65b"
-    ],
-    "app/event-center.css": [
-      "45203ad29059f4f647ca98005a43186c549ace34df3d9e22ba6fcff45dc19d21"
-    ],
-    "app/workspace-upgrade.css": [
-      "6a92d10daca0d3ea8b796680ae9e3fbdf97d3bb4deefe45d0034402eb9296bc6"
-    ],
-    "app/basic-automation.css": [
-      "7f874ae598d50dd582c1fa069d2dfdf3114171b4dbedca146e1ab7e4c572f24a"
-    ]
-  },
-  "files": [
-    {
-      "path": "app/cabinet-v3/assets/catalog-icons-derived.json",
-      "bytes": 3804,
-      "sha256": "4277655a9fbe2f6d700008bd832e18a73e56c30ea8e1a08fa8eb13e3ff22b74d"
-    },
-    {
-      "path": "app/cabinet-v3/assets/fonts/Inter-OFL.txt",
-      "bytes": 4376,
-      "sha256": "5dd548d31a85f756e01d63e00d7faf1e324103ed3e9102fcbbabf2cc2db6dd39"
-    },
-    {
-      "path": "app/cabinet-v3/assets/fonts/inter-variable.woff",
-      "bytes": 356020,
-      "sha256": "dfc0647644e1e3d7c6385044e143cd325b449e98e73da68dd4f7d945b53f4757"
-    },
-    {
-      "path": "app/cabinet-v3/assets/img/account.webp",
-      "bytes": 3988,
-      "sha256": "1463e8b4bcbdcd04a26028f8b1827c65f9d6f2c1511371d0ecc4eacd0c5eb783"
-    },
-    {
-      "path": "app/cabinet-v3/assets/img/brand.webp",
-      "bytes": 2944,
-      "sha256": "6fc047158593bba8a7d304bab761a6ceb143fd896c5a9e84ba2fa19e68927af4"
-    },
-    {
-      "path": "app/cabinet-v3/assets/img/cat-currency.webp",
-      "bytes": 25296,
-      "sha256": "d20bc151532393019596542f0bcafe1f5eeb5937d86b8a5f45c6743a7aeee64f"
-    },
-    {
-      "path": "app/cabinet-v3/assets/img/cat-rent.webp",
-      "bytes": 23826,
-      "sha256": "a4755bf8041152f62318ee1d553d89e48edd51f3baa42406e288d4443c04f969"
-    },
-    {
-      "path": "app/cabinet-v3/assets/img/cat-reviews.webp",
-      "bytes": 21750,
-      "sha256": "cb4468e6108d1b57afc5d76e9e773642a1950810075e5ec0a9898e26282f9dcd"
-    },
-    {
-      "path": "app/cabinet-v3/assets/img/cat-tools.webp",
-      "bytes": 20724,
-      "sha256": "9cb821fb01fba16382a1eff5b3c8f84c440c3d85a9d90ade46ba89499ead44d7"
-    },
-    {
-      "path": "app/cabinet-v3/assets/img/cover-sunset.webp",
-      "bytes": 18694,
-      "sha256": "13d1dda8093207d7da3d6e7e13982d937ee8bf917e3cfa1a60f73c7db485d934"
-    },
-    {
-      "path": "app/cabinet-v3/assets/img/funpay-link.webp",
-      "bytes": 13156,
-      "sha256": "d63568d81a03c333f8ab4e6c011a39010d234609d4ccaa67ddab9785a642d0d2"
-    },
-    {
-      "path": "app/cabinet-v3/assets/img/funpay-store.webp",
-      "bytes": 4188,
-      "sha256": "7a69da313c37529f15527dba871024c1829dfa944c6ce3484d9951d5819387ea"
-    },
-    {
-      "path": "app/cabinet-v3/assets/img/plg-ai.webp",
-      "bytes": 30974,
-      "sha256": "937a0022e58725e3a05ef399eff2e2f82fb9f72ea8416bd6c349610261a340d5"
-    },
-    {
-      "path": "app/cabinet-v3/assets/img/plg-cloner.webp",
-      "bytes": 30768,
-      "sha256": "83c5bf008188d067dbf3f93d1831784e74af347aea55bb88e7c400fdde2c48ca"
-    },
-    {
-      "path": "app/cabinet-v3/assets/img/plg-pause.webp",
-      "bytes": 29582,
-      "sha256": "66a5de5ac38d48a8b69c28db745b6964afba2b02a3490c810dc40fd4870ef64f"
-    },
-    {
-      "path": "app/cabinet-v3/assets/img/plg-prices.webp",
-      "bytes": 36398,
-      "sha256": "8518e4b100d3dfe73a08934a9ddb6a742984f39d82ed382096246617306b20ae"
-    },
-    {
-      "path": "app/cabinet-v3/assets/img/plg-priority.webp",
-      "bytes": 34518,
-      "sha256": "70d0422674341baba8095c04219db472e317f2919c12d31b673c2b3ae041e5aa"
-    },
-    {
-      "path": "app/cabinet-v3/assets/img/plg-remind.webp",
-      "bytes": 39680,
-      "sha256": "fcf35e41e4d9842db31948a66f5f23ea9e7c1969c924f7e5008c7fb8ee96b571"
-    },
-    {
-      "path": "app/cabinet-v3/assets/img/plg-rent.webp",
-      "bytes": 36878,
-      "sha256": "8716d43f13f1d281df3327005fc054faf65afa46e9feb6a6e5b0e38816e89a5a"
-    },
-    {
-      "path": "app/cabinet-v3/assets/img/plg-robux.webp",
-      "bytes": 34646,
-      "sha256": "126710c45b6ef86e463c6ecfabfcde30f8d585808fb365d2e6f509d61fa805a5"
-    },
-    {
-      "path": "app/cabinet-v3/assets/img/plg-stars.webp",
-      "bytes": 34200,
-      "sha256": "750c977c6854d5b952f75434ff59b2eebd193a2604f5180e5e28e0b6e5966579"
-    },
-    {
-      "path": "app/cabinet-v3/assets/img/plg-steam.webp",
-      "bytes": 36282,
-      "sha256": "156775fc7d04754b1ebf1ae84020d77c6310966889211cffc43c3d8641cc82de"
-    },
-    {
-      "path": "app/cabinet-v3/assets/img/plugin-rent.webp",
-      "bytes": 6530,
-      "sha256": "6233cc8f25e16d2a380f5569d9014989830dc20a93d2c9fc95f34e6073743dba"
-    },
-    {
-      "path": "app/cabinet-v3/assets/img/plugin-stars.webp",
-      "bytes": 6070,
-      "sha256": "e02c6d79a2b5bca5f270ba98290185305d8f764de2051886906f94f017e3007b"
-    },
-    {
-      "path": "app/cabinet-v3/assets/img/proxy-router.webp",
-      "bytes": 3778,
-      "sha256": "34954028d347e2cc3a4625c84fcd966a0360000e8518117d18657d01e2af71d4"
-    },
-    {
-      "path": "app/cabinet-v3/assets/img/subscription.webp",
-      "bytes": 3802,
-      "sha256": "e69d429fe1a4e5d21df42645c5af720630a20d36079fb4e417feb32e258942f4"
-    },
-    {
-      "path": "app/cabinet-v3/assets/img/telegram-bot.webp",
-      "bytes": 9026,
-      "sha256": "42d6aae9e45c189fde70f53ad6e77382a08dc8ebc9b64c18b14f2d097d738108"
-    },
-    {
-      "path": "app/cabinet-v3/assets/img/zetslay-z.webp",
-      "bytes": 33232,
-      "sha256": "b420ae79d839f670ea390e785f86a04736c8547708f4e104f506fe3250588d2f"
-    },
-    {
-      "path": "app/cabinet-v3/assets/plans/plan-growth.png",
-      "bytes": 1064699,
-      "sha256": "944539bb7cca91186ce78b5a3352996f9c4988be1933165642a49dfc93e52792"
-    },
-    {
-      "path": "app/cabinet-v3/assets/plans/plan-maximum.png",
-      "bytes": 1157772,
-      "sha256": "54cbcab9504a4f12ee9f005802142ee15b5bab8e356324719534f70ea6f66fe4"
-    },
-    {
-      "path": "app/cabinet-v3/assets/plans/plan-pro.png",
-      "bytes": 1011854,
-      "sha256": "bcfa83ff714b3d31847466e47a9db2ffd72b51f00fcb65548d42830e260910bd"
-    },
-    {
-      "path": "app/cabinet-v3/assets/plans/plan-start.png",
-      "bytes": 808602,
-      "sha256": "7a203c1eba58eb85a9184e54606f5a11eca3a47f2a45ad29e8ffd2b32e275223"
-    },
-    {
-      "path": "app/cabinet-v3/assets/quality-v2/account.webp",
-      "bytes": 919454,
-      "sha256": "a84ae6faf493d321763f1619fc1087e2fae48cf2e94133421a1c6e50ab776a23"
-    },
-    {
-      "path": "app/cabinet-v3/assets/quality-v2/cat-currency.webp",
-      "bytes": 915852,
-      "sha256": "a43584d90a8851228a224e12e18ed007cc54f5cd1e672de5122648556b717560"
-    },
-    {
-      "path": "app/cabinet-v3/assets/quality-v2/cat-rent.webp",
-      "bytes": 827370,
-      "sha256": "c332be59dae56d8e0bbef07ec619280683751bee00e93a3bf66ac8bb750de627"
-    },
-    {
-      "path": "app/cabinet-v3/assets/quality-v2/cat-reviews.webp",
-      "bytes": 804960,
-      "sha256": "d5b5bfd1b53b837444414b477120185c838f2f36f9f127b453815b6c1c7e85a2"
-    },
-    {
-      "path": "app/cabinet-v3/assets/quality-v2/cat-tools.webp",
-      "bytes": 1076414,
-      "sha256": "05648949cbda363d4ebf68280221332c6f5878d8d433d0f5dea5e11837b10d2f"
-    },
-    {
-      "path": "app/cabinet-v3/assets/quality-v2/funpay-link.webp",
-      "bytes": 345306,
-      "sha256": "7405b581c247f9c47ad9010ebc31ff79acc3ff4b214d15938df3c07ed9880627"
-    },
-    {
-      "path": "app/cabinet-v3/assets/quality-v2/funpay-store.webp",
-      "bytes": 731658,
-      "sha256": "d867e32076834642e8cf0d8b0a11e61afc83d2d0b7378cd4611cd4efb10c3870"
-    },
-    {
-      "path": "app/cabinet-v3/assets/quality-v2/plan-growth.webp",
-      "bytes": 639858,
-      "sha256": "9c61561e7c30e1fda15f981e62e73d9addcb12b47b5a15be29078e8499dc769d"
-    },
-    {
-      "path": "app/cabinet-v3/assets/quality-v2/plan-maximum.webp",
-      "bytes": 705010,
-      "sha256": "abc9465810c22be40a8966cb82248c6a7df3bfef597b1067ec3c9a296d6e19e9"
-    },
-    {
-      "path": "app/cabinet-v3/assets/quality-v2/plan-pro.webp",
-      "bytes": 631662,
-      "sha256": "5052d220e36cc0c7ab7f06335ae9273df67ed71d45c8558ca7f5ec4c42db7310"
-    },
-    {
-      "path": "app/cabinet-v3/assets/quality-v2/plan-start.webp",
-      "bytes": 500470,
-      "sha256": "482c7a9677d56188a2ca7676413b4c0c303bc22166f151f28f3a67231a2b4333"
-    },
-    {
-      "path": "app/cabinet-v3/assets/quality-v2/plg-ai.webp",
-      "bytes": 737606,
-      "sha256": "d17674a7fbef96fc1744a50a370a109054e0d153d8a1d6a745374bd2f7a81e31"
-    },
-    {
-      "path": "app/cabinet-v3/assets/quality-v2/plg-cloner.webp",
-      "bytes": 830470,
-      "sha256": "eddf8922b71a72e7a3013331e4c4bdad09f43eea403bed97f18a2b9e03ff126a"
-    },
-    {
-      "path": "app/cabinet-v3/assets/quality-v2/plg-confirm-reminder.webp",
-      "bytes": 772268,
-      "sha256": "7cdda9aa41cf1bd296ab734e0a531fca87c7eff71391a4e40a5066fd5ee8c577"
-    },
-    {
-      "path": "app/cabinet-v3/assets/quality-v2/plg-pause.webp",
-      "bytes": 619388,
-      "sha256": "c76a1c6b18a66bf0e7d44d838ae67cd4b8ec9912eb793d7eb817d97ee7ed64d2"
-    },
-    {
-      "path": "app/cabinet-v3/assets/quality-v2/plg-prices.webp",
-      "bytes": 810438,
-      "sha256": "57d06b300e5645377b3b1e2ea638e9a5e2c2745b8b06ea51bcd5811793d4642e"
-    },
-    {
-      "path": "app/cabinet-v3/assets/quality-v2/plg-priority.webp",
-      "bytes": 897082,
-      "sha256": "ca92b6bf16a3daea87c26b1b057b38462b2d95c35428bf96126bd81f8450d5d4"
-    },
-    {
-      "path": "app/cabinet-v3/assets/quality-v2/plg-remind.webp",
-      "bytes": 801554,
-      "sha256": "51353f8471f76722bf8e6b66b6afec0028198c111ac21a96c23d8dd2c71e3246"
-    },
-    {
-      "path": "app/cabinet-v3/assets/quality-v2/plg-rent.webp",
-      "bytes": 902540,
-      "sha256": "79f2202c8a754221a94cfc84daaeb2278a33bb4a07144cc8a6031f62ec15f26d"
-    },
-    {
-      "path": "app/cabinet-v3/assets/quality-v2/plg-review-bonus.webp",
-      "bytes": 857310,
-      "sha256": "ec3b8689148a9c8f1ca28ee669435d93388f232b754eb6fad2ade4fad996d44b"
-    },
-    {
-      "path": "app/cabinet-v3/assets/quality-v2/plg-roblox-lzt.webp",
-      "bytes": 806210,
-      "sha256": "7cc901aeb8f22e09ffb0c1e71cf83a7caf427502e3af75f58c064d0fd3c8f5f8"
-    },
-    {
-      "path": "app/cabinet-v3/assets/quality-v2/plg-robux.webp",
-      "bytes": 813768,
-      "sha256": "a0a24d643bad9ffaccec8dc644ddb3d44310449de284231614fefde6b3aac9a7"
-    },
-    {
-      "path": "app/cabinet-v3/assets/quality-v2/plg-stars.webp",
-      "bytes": 706266,
-      "sha256": "4c3b05e4356aa36945a7aabe4616af5aa5f4bb608b0969e59fdbdc4b28722a02"
-    },
-    {
-      "path": "app/cabinet-v3/assets/quality-v2/plg-steam.webp",
-      "bytes": 690282,
-      "sha256": "3c5f5ce04b1c3a88d9b1dd57b18d4b3ea15cd7e790e82f7e404aca55d2036777"
-    },
-    {
-      "path": "app/cabinet-v3/assets/quality-v2/plg-ticket-pilot.webp",
-      "bytes": 718180,
-      "sha256": "0d5f94e74ea20a701fa36e701455dbe2e632f14405c35131a30e81aacfba0fea"
-    },
-    {
-      "path": "app/cabinet-v3/assets/quality-v2/plg-tiktok-lzt.webp",
-      "bytes": 665274,
-      "sha256": "42b5e00e84ef9efc298eff642db34db3071bee621aa886011ea4880e8cddce5b"
-    },
-    {
-      "path": "app/cabinet-v3/assets/quality-v2/proxy-router.webp",
-      "bytes": 437482,
-      "sha256": "c4f284002eeaa43ffb187c3339e28e1243b1aafff0019f1b7978ab63cf87fa82"
-    },
-    {
-      "path": "app/cabinet-v3/assets/quality-v2/subscription.webp",
-      "bytes": 925356,
-      "sha256": "b056a7efdefb20ffec1dc1e7e35e969bd70fcdd8ee0fcfb7203329a6454db0fe"
-    },
-    {
-      "path": "app/cabinet-v3/assets/quality-v2/telegram-bot.webp",
-      "bytes": 632642,
-      "sha256": "7ee9e79156edd6c6ba1f8943b0dfac933bc91f726d64af2a4e5318941e738860"
-    },
-    {
-      "path": "app/cabinet-v3/assets/quality-v2/zetslay-z.webp",
-      "bytes": 829346,
-      "sha256": "718e43dfc6dfcfa1b9446dd1c0dbf8b8d298d423bb80c63c9479b34baebb0037"
-    },
-    {
-      "path": "app/cabinet-v3/cabinet.css",
-      "bytes": 53734,
-      "sha256": "aeaf5af2bf9ad8dc97dab9a8a44a0a179664bc375925e198cb93081221edb0a2"
-    },
-    {
-      "path": "app/cabinet-v3/catalog.css",
-      "bytes": 11208,
-      "sha256": "99483c18eb4ad2dc62a679422d30f475ccc1c933a66f45060b3e201ce5fa0ed9"
-    },
-    {
-      "path": "app/cabinet-v3/icons.js",
-      "bytes": 5240,
-      "sha256": "93b7b1e704e9bc95ba6f4071250bb6d678461b1b2b792c49a65e5d626b1af830"
-    },
-    {
-      "path": "app/cabinet-v3/model.js",
-      "bytes": 3342,
-      "sha256": "56076fb8d6105b65d52c432d41ec743e5ef4f0f237b2702cb500073d67cb1644"
-    },
-    {
-      "path": "app/cabinet-v3/plugin-page.css",
-      "bytes": 14545,
-      "sha256": "730e1e27f8a5d992238afe301457787d7c4c0c269c063dede060016d2c8d033c"
-    },
-    {
-      "path": "app/cabinet-v3/production.css",
-      "bytes": 33361,
-      "sha256": "8d70894d001ca98cef83eb87ddeabca75538825fad699d59a50c20d82933f3cc"
-    },
-    {
-      "path": "app/cabinet-v3/production.js",
-      "bytes": 24125,
-      "sha256": "be902e31a8b2821b02eb0c13e0c6d31a7ca45c4bdddbf8738369d1892e7c3935"
-    },
-    {
-      "path": "app/cabinet-v3/profile.css",
-      "bytes": 19409,
-      "sha256": "574510fcd39c4960a89276f90d1e728077b8febb5478703c7fc26df844d00b29"
-    },
-    {
-      "path": "app/cabinet-v3/tokens.css",
-      "bytes": 4371,
-      "sha256": "86fb61de61932bbcb6ea2797024ac3dae0cbed8b29e063bbef0968adec9535ab"
-    },
-    {
-      "path": "app/cabinet-v3/zetslay-ui.css",
-      "bytes": 39090,
-      "sha256": "014912475879d160a956e7d1dfcdc018e43eb42224ae74d59053464cc9f6acc6"
-    }
+ "release": "20261114-claude-fidelity1",
+ "handoffSha256": "8903ee1109989cf36686184459aa8d38bdbcc52bbdb54800256dbb676a1f18a6",
+ "host": {
+  "app/app.js": [
+   "617426f83dcad3b59c56a3c21e3850ea88096421d10e629ad157f9503dd34f0e",
+   "e7879c7f8984cf6fb3c89e52cf3654dede4a497f13b5a5d03611c27252be6578"
+  ],
+  "app/profile.js": [
+   "e916d9e218d7d77405ada8b5c1adcccf37916af7715591985aade734df762460",
+   "d33342e47f9a48d4a61b3ad49471e31a3b4f3e7af2597dcaf76afc56ea842b8b"
+  ],
+  "app/plugin-page.js": [
+   "cefaffae289ab68675697efb31b5a269734a855b5a9dafb1729f2bf0d747c57f",
+   "618e537fc0cfef4dc9879bee702bfd1475beaace02d4f9c52b29d4f3ebbb8c6f"
+  ],
+  "app/workspace-upgrade.js": [
+   "3e2e67e8ebedf8707d1a9b37852ad6a7df921c55646985729681058e8c0ac880"
+  ],
+  "app/basic-automation.js": [
+   "49c0320f1705a09267a7d64c06987c9f0df24fed6db61af6feda85c467b02b92"
+  ],
+  "app/store-tools.js": [
+   "194d99930281d2770f5b48c461a69dd5d6b5b5ad052bc86e8c3379eb8f8bc65b"
+  ],
+  "app/event-center.css": [
+   "45203ad29059f4f647ca98005a43186c549ace34df3d9e22ba6fcff45dc19d21"
+  ],
+  "app/workspace-upgrade.css": [
+   "6a92d10daca0d3ea8b796680ae9e3fbdf97d3bb4deefe45d0034402eb9296bc6"
+  ],
+  "app/basic-automation.css": [
+   "7f874ae598d50dd582c1fa069d2dfdf3114171b4dbedca146e1ab7e4c572f24a"
   ]
+ },
+ "files": [
+  {
+   "path": "app/cabinet-v3/assets/catalog-icons-derived.json",
+   "bytes": 3804,
+   "sha256": "4277655a9fbe2f6d700008bd832e18a73e56c30ea8e1a08fa8eb13e3ff22b74d"
+  },
+  {
+   "path": "app/cabinet-v3/assets/fonts/Inter-OFL.txt",
+   "bytes": 4376,
+   "sha256": "5dd548d31a85f756e01d63e00d7faf1e324103ed3e9102fcbbabf2cc2db6dd39"
+  },
+  {
+   "path": "app/cabinet-v3/assets/fonts/inter-variable.woff",
+   "bytes": 356020,
+   "sha256": "dfc0647644e1e3d7c6385044e143cd325b449e98e73da68dd4f7d945b53f4757"
+  },
+  {
+   "path": "app/cabinet-v3/assets/img/account.webp",
+   "bytes": 3988,
+   "sha256": "1463e8b4bcbdcd04a26028f8b1827c65f9d6f2c1511371d0ecc4eacd0c5eb783"
+  },
+  {
+   "path": "app/cabinet-v3/assets/img/brand.webp",
+   "bytes": 2944,
+   "sha256": "6fc047158593bba8a7d304bab761a6ceb143fd896c5a9e84ba2fa19e68927af4"
+  },
+  {
+   "path": "app/cabinet-v3/assets/img/cat-currency.webp",
+   "bytes": 25296,
+   "sha256": "d20bc151532393019596542f0bcafe1f5eeb5937d86b8a5f45c6743a7aeee64f"
+  },
+  {
+   "path": "app/cabinet-v3/assets/img/cat-rent.webp",
+   "bytes": 23826,
+   "sha256": "a4755bf8041152f62318ee1d553d89e48edd51f3baa42406e288d4443c04f969"
+  },
+  {
+   "path": "app/cabinet-v3/assets/img/cat-reviews.webp",
+   "bytes": 21750,
+   "sha256": "cb4468e6108d1b57afc5d76e9e773642a1950810075e5ec0a9898e26282f9dcd"
+  },
+  {
+   "path": "app/cabinet-v3/assets/img/cat-tools.webp",
+   "bytes": 20724,
+   "sha256": "9cb821fb01fba16382a1eff5b3c8f84c440c3d85a9d90ade46ba89499ead44d7"
+  },
+  {
+   "path": "app/cabinet-v3/assets/img/cover-sunset.webp",
+   "bytes": 18694,
+   "sha256": "13d1dda8093207d7da3d6e7e13982d937ee8bf917e3cfa1a60f73c7db485d934"
+  },
+  {
+   "path": "app/cabinet-v3/assets/img/funpay-link.webp",
+   "bytes": 13156,
+   "sha256": "d63568d81a03c333f8ab4e6c011a39010d234609d4ccaa67ddab9785a642d0d2"
+  },
+  {
+   "path": "app/cabinet-v3/assets/img/funpay-store.webp",
+   "bytes": 4188,
+   "sha256": "7a69da313c37529f15527dba871024c1829dfa944c6ce3484d9951d5819387ea"
+  },
+  {
+   "path": "app/cabinet-v3/assets/img/plg-ai.webp",
+   "bytes": 30974,
+   "sha256": "937a0022e58725e3a05ef399eff2e2f82fb9f72ea8416bd6c349610261a340d5"
+  },
+  {
+   "path": "app/cabinet-v3/assets/img/plg-cloner.webp",
+   "bytes": 30768,
+   "sha256": "83c5bf008188d067dbf3f93d1831784e74af347aea55bb88e7c400fdde2c48ca"
+  },
+  {
+   "path": "app/cabinet-v3/assets/img/plg-pause.webp",
+   "bytes": 29582,
+   "sha256": "66a5de5ac38d48a8b69c28db745b6964afba2b02a3490c810dc40fd4870ef64f"
+  },
+  {
+   "path": "app/cabinet-v3/assets/img/plg-prices.webp",
+   "bytes": 36398,
+   "sha256": "8518e4b100d3dfe73a08934a9ddb6a742984f39d82ed382096246617306b20ae"
+  },
+  {
+   "path": "app/cabinet-v3/assets/img/plg-priority.webp",
+   "bytes": 34518,
+   "sha256": "70d0422674341baba8095c04219db472e317f2919c12d31b673c2b3ae041e5aa"
+  },
+  {
+   "path": "app/cabinet-v3/assets/img/plg-remind.webp",
+   "bytes": 39680,
+   "sha256": "fcf35e41e4d9842db31948a66f5f23ea9e7c1969c924f7e5008c7fb8ee96b571"
+  },
+  {
+   "path": "app/cabinet-v3/assets/img/plg-rent.webp",
+   "bytes": 36878,
+   "sha256": "8716d43f13f1d281df3327005fc054faf65afa46e9feb6a6e5b0e38816e89a5a"
+  },
+  {
+   "path": "app/cabinet-v3/assets/img/plg-robux.webp",
+   "bytes": 34646,
+   "sha256": "126710c45b6ef86e463c6ecfabfcde30f8d585808fb365d2e6f509d61fa805a5"
+  },
+  {
+   "path": "app/cabinet-v3/assets/img/plg-stars.webp",
+   "bytes": 34200,
+   "sha256": "750c977c6854d5b952f75434ff59b2eebd193a2604f5180e5e28e0b6e5966579"
+  },
+  {
+   "path": "app/cabinet-v3/assets/img/plg-steam.webp",
+   "bytes": 36282,
+   "sha256": "156775fc7d04754b1ebf1ae84020d77c6310966889211cffc43c3d8641cc82de"
+  },
+  {
+   "path": "app/cabinet-v3/assets/img/plugin-rent.webp",
+   "bytes": 6530,
+   "sha256": "6233cc8f25e16d2a380f5569d9014989830dc20a93d2c9fc95f34e6073743dba"
+  },
+  {
+   "path": "app/cabinet-v3/assets/img/plugin-stars.webp",
+   "bytes": 6070,
+   "sha256": "e02c6d79a2b5bca5f270ba98290185305d8f764de2051886906f94f017e3007b"
+  },
+  {
+   "path": "app/cabinet-v3/assets/img/proxy-router.webp",
+   "bytes": 3778,
+   "sha256": "34954028d347e2cc3a4625c84fcd966a0360000e8518117d18657d01e2af71d4"
+  },
+  {
+   "path": "app/cabinet-v3/assets/img/subscription.webp",
+   "bytes": 3802,
+   "sha256": "e69d429fe1a4e5d21df42645c5af720630a20d36079fb4e417feb32e258942f4"
+  },
+  {
+   "path": "app/cabinet-v3/assets/img/telegram-bot.webp",
+   "bytes": 9026,
+   "sha256": "42d6aae9e45c189fde70f53ad6e77382a08dc8ebc9b64c18b14f2d097d738108"
+  },
+  {
+   "path": "app/cabinet-v3/assets/img/zetslay-z.webp",
+   "bytes": 33232,
+   "sha256": "b420ae79d839f670ea390e785f86a04736c8547708f4e104f506fe3250588d2f"
+  },
+  {
+   "path": "app/cabinet-v3/assets/plans/plan-growth.png",
+   "bytes": 1064699,
+   "sha256": "944539bb7cca91186ce78b5a3352996f9c4988be1933165642a49dfc93e52792"
+  },
+  {
+   "path": "app/cabinet-v3/assets/plans/plan-maximum.png",
+   "bytes": 1157772,
+   "sha256": "54cbcab9504a4f12ee9f005802142ee15b5bab8e356324719534f70ea6f66fe4"
+  },
+  {
+   "path": "app/cabinet-v3/assets/plans/plan-pro.png",
+   "bytes": 1011854,
+   "sha256": "bcfa83ff714b3d31847466e47a9db2ffd72b51f00fcb65548d42830e260910bd"
+  },
+  {
+   "path": "app/cabinet-v3/assets/plans/plan-start.png",
+   "bytes": 808602,
+   "sha256": "7a203c1eba58eb85a9184e54606f5a11eca3a47f2a45ad29e8ffd2b32e275223"
+  },
+  {
+   "path": "app/cabinet-v3/assets/quality-v2/account.webp",
+   "bytes": 919454,
+   "sha256": "a84ae6faf493d321763f1619fc1087e2fae48cf2e94133421a1c6e50ab776a23"
+  },
+  {
+   "path": "app/cabinet-v3/assets/quality-v2/cat-currency.webp",
+   "bytes": 915852,
+   "sha256": "a43584d90a8851228a224e12e18ed007cc54f5cd1e672de5122648556b717560"
+  },
+  {
+   "path": "app/cabinet-v3/assets/quality-v2/cat-rent.webp",
+   "bytes": 827370,
+   "sha256": "c332be59dae56d8e0bbef07ec619280683751bee00e93a3bf66ac8bb750de627"
+  },
+  {
+   "path": "app/cabinet-v3/assets/quality-v2/cat-reviews.webp",
+   "bytes": 804960,
+   "sha256": "d5b5bfd1b53b837444414b477120185c838f2f36f9f127b453815b6c1c7e85a2"
+  },
+  {
+   "path": "app/cabinet-v3/assets/quality-v2/cat-tools.webp",
+   "bytes": 1076414,
+   "sha256": "05648949cbda363d4ebf68280221332c6f5878d8d433d0f5dea5e11837b10d2f"
+  },
+  {
+   "path": "app/cabinet-v3/assets/quality-v2/funpay-link.webp",
+   "bytes": 345306,
+   "sha256": "7405b581c247f9c47ad9010ebc31ff79acc3ff4b214d15938df3c07ed9880627"
+  },
+  {
+   "path": "app/cabinet-v3/assets/quality-v2/funpay-store.webp",
+   "bytes": 731658,
+   "sha256": "d867e32076834642e8cf0d8b0a11e61afc83d2d0b7378cd4611cd4efb10c3870"
+  },
+  {
+   "path": "app/cabinet-v3/assets/quality-v2/plan-growth.webp",
+   "bytes": 639858,
+   "sha256": "9c61561e7c30e1fda15f981e62e73d9addcb12b47b5a15be29078e8499dc769d"
+  },
+  {
+   "path": "app/cabinet-v3/assets/quality-v2/plan-maximum.webp",
+   "bytes": 705010,
+   "sha256": "abc9465810c22be40a8966cb82248c6a7df3bfef597b1067ec3c9a296d6e19e9"
+  },
+  {
+   "path": "app/cabinet-v3/assets/quality-v2/plan-pro.webp",
+   "bytes": 631662,
+   "sha256": "5052d220e36cc0c7ab7f06335ae9273df67ed71d45c8558ca7f5ec4c42db7310"
+  },
+  {
+   "path": "app/cabinet-v3/assets/quality-v2/plan-start.webp",
+   "bytes": 500470,
+   "sha256": "482c7a9677d56188a2ca7676413b4c0c303bc22166f151f28f3a67231a2b4333"
+  },
+  {
+   "path": "app/cabinet-v3/assets/quality-v2/plg-ai.webp",
+   "bytes": 737606,
+   "sha256": "d17674a7fbef96fc1744a50a370a109054e0d153d8a1d6a745374bd2f7a81e31"
+  },
+  {
+   "path": "app/cabinet-v3/assets/quality-v2/plg-cloner.webp",
+   "bytes": 830470,
+   "sha256": "eddf8922b71a72e7a3013331e4c4bdad09f43eea403bed97f18a2b9e03ff126a"
+  },
+  {
+   "path": "app/cabinet-v3/assets/quality-v2/plg-confirm-reminder.webp",
+   "bytes": 772268,
+   "sha256": "7cdda9aa41cf1bd296ab734e0a531fca87c7eff71391a4e40a5066fd5ee8c577"
+  },
+  {
+   "path": "app/cabinet-v3/assets/quality-v2/plg-pause.webp",
+   "bytes": 619388,
+   "sha256": "c76a1c6b18a66bf0e7d44d838ae67cd4b8ec9912eb793d7eb817d97ee7ed64d2"
+  },
+  {
+   "path": "app/cabinet-v3/assets/quality-v2/plg-prices.webp",
+   "bytes": 810438,
+   "sha256": "57d06b300e5645377b3b1e2ea638e9a5e2c2745b8b06ea51bcd5811793d4642e"
+  },
+  {
+   "path": "app/cabinet-v3/assets/quality-v2/plg-priority.webp",
+   "bytes": 897082,
+   "sha256": "ca92b6bf16a3daea87c26b1b057b38462b2d95c35428bf96126bd81f8450d5d4"
+  },
+  {
+   "path": "app/cabinet-v3/assets/quality-v2/plg-remind.webp",
+   "bytes": 801554,
+   "sha256": "51353f8471f76722bf8e6b66b6afec0028198c111ac21a96c23d8dd2c71e3246"
+  },
+  {
+   "path": "app/cabinet-v3/assets/quality-v2/plg-rent.webp",
+   "bytes": 902540,
+   "sha256": "79f2202c8a754221a94cfc84daaeb2278a33bb4a07144cc8a6031f62ec15f26d"
+  },
+  {
+   "path": "app/cabinet-v3/assets/quality-v2/plg-review-bonus.webp",
+   "bytes": 857310,
+   "sha256": "ec3b8689148a9c8f1ca28ee669435d93388f232b754eb6fad2ade4fad996d44b"
+  },
+  {
+   "path": "app/cabinet-v3/assets/quality-v2/plg-roblox-lzt.webp",
+   "bytes": 806210,
+   "sha256": "7cc901aeb8f22e09ffb0c1e71cf83a7caf427502e3af75f58c064d0fd3c8f5f8"
+  },
+  {
+   "path": "app/cabinet-v3/assets/quality-v2/plg-robux.webp",
+   "bytes": 813768,
+   "sha256": "a0a24d643bad9ffaccec8dc644ddb3d44310449de284231614fefde6b3aac9a7"
+  },
+  {
+   "path": "app/cabinet-v3/assets/quality-v2/plg-stars.webp",
+   "bytes": 706266,
+   "sha256": "4c3b05e4356aa36945a7aabe4616af5aa5f4bb608b0969e59fdbdc4b28722a02"
+  },
+  {
+   "path": "app/cabinet-v3/assets/quality-v2/plg-steam.webp",
+   "bytes": 690282,
+   "sha256": "3c5f5ce04b1c3a88d9b1dd57b18d4b3ea15cd7e790e82f7e404aca55d2036777"
+  },
+  {
+   "path": "app/cabinet-v3/assets/quality-v2/plg-ticket-pilot.webp",
+   "bytes": 718180,
+   "sha256": "0d5f94e74ea20a701fa36e701455dbe2e632f14405c35131a30e81aacfba0fea"
+  },
+  {
+   "path": "app/cabinet-v3/assets/quality-v2/plg-tiktok-lzt.webp",
+   "bytes": 665274,
+   "sha256": "42b5e00e84ef9efc298eff642db34db3071bee621aa886011ea4880e8cddce5b"
+  },
+  {
+   "path": "app/cabinet-v3/assets/quality-v2/proxy-router.webp",
+   "bytes": 437482,
+   "sha256": "c4f284002eeaa43ffb187c3339e28e1243b1aafff0019f1b7978ab63cf87fa82"
+  },
+  {
+   "path": "app/cabinet-v3/assets/quality-v2/subscription.webp",
+   "bytes": 925356,
+   "sha256": "b056a7efdefb20ffec1dc1e7e35e969bd70fcdd8ee0fcfb7203329a6454db0fe"
+  },
+  {
+   "path": "app/cabinet-v3/assets/quality-v2/telegram-bot.webp",
+   "bytes": 632642,
+   "sha256": "7ee9e79156edd6c6ba1f8943b0dfac933bc91f726d64af2a4e5318941e738860"
+  },
+  {
+   "path": "app/cabinet-v3/assets/quality-v2/zetslay-z.webp",
+   "bytes": 829346,
+   "sha256": "718e43dfc6dfcfa1b9446dd1c0dbf8b8d298d423bb80c63c9479b34baebb0037"
+  },
+  {
+   "path": "app/cabinet-v3/cabinet.css",
+   "bytes": 53734,
+   "sha256": "aeaf5af2bf9ad8dc97dab9a8a44a0a179664bc375925e198cb93081221edb0a2"
+  },
+  {
+   "path": "app/cabinet-v3/catalog.css",
+   "bytes": 11208,
+   "sha256": "99483c18eb4ad2dc62a679422d30f475ccc1c933a66f45060b3e201ce5fa0ed9"
+  },
+  {
+   "path": "app/cabinet-v3/design-spec.js",
+   "bytes": 4457,
+   "sha256": "c6d1d69797d3d85a2051f8fbef8a059e3c55eb75b2858777bc069518e1c817ed"
+  },
+  {
+   "path": "app/cabinet-v3/fidelity.css",
+   "bytes": 27269,
+   "sha256": "6ad495c68a43cbfe45c958167f5f2ba5155f3abcd4cb67e6d2273b7a89528d5e"
+  },
+  {
+   "path": "app/cabinet-v3/icons.js",
+   "bytes": 5240,
+   "sha256": "93b7b1e704e9bc95ba6f4071250bb6d678461b1b2b792c49a65e5d626b1af830"
+  },
+  {
+   "path": "app/cabinet-v3/model.js",
+   "bytes": 3342,
+   "sha256": "56076fb8d6105b65d52c432d41ec743e5ef4f0f237b2702cb500073d67cb1644"
+  },
+  {
+   "path": "app/cabinet-v3/plugin-page.css",
+   "bytes": 14545,
+   "sha256": "730e1e27f8a5d992238afe301457787d7c4c0c269c063dede060016d2c8d033c"
+  },
+  {
+   "path": "app/cabinet-v3/production.css",
+   "bytes": 33361,
+   "sha256": "8d70894d001ca98cef83eb87ddeabca75538825fad699d59a50c20d82933f3cc"
+  },
+  {
+   "path": "app/cabinet-v3/production.js",
+   "bytes": 24633,
+   "sha256": "e6e001be3518c9d6e116c960d346392ff2075b8a47306561d093b506512c3542"
+  },
+  {
+   "path": "app/cabinet-v3/profile.css",
+   "bytes": 19409,
+   "sha256": "574510fcd39c4960a89276f90d1e728077b8febb5478703c7fc26df844d00b29"
+  },
+  {
+   "path": "app/cabinet-v3/reference-ui.css",
+   "bytes": 45229,
+   "sha256": "1a3328811ef401a9738a90e26f2710f5918104adb3464b68fdecc1c538f1487d"
+  },
+  {
+   "path": "app/cabinet-v3/reference-ui.js",
+   "bytes": 36002,
+   "sha256": "3d073d3b7ec8781199647ddf5697c435eace15f4d15e3f521e55946956c2df3d"
+  },
+  {
+   "path": "app/cabinet-v3/tokens.css",
+   "bytes": 4371,
+   "sha256": "86fb61de61932bbcb6ea2797024ac3dae0cbed8b29e063bbef0968adec9535ab"
+  },
+  {
+   "path": "app/cabinet-v3/zetslay-ui.css",
+   "bytes": 39090,
+   "sha256": "014912475879d160a956e7d1dfcdc018e43eb42224ae74d59053464cc9f6acc6"
+  }
+ ]
 }
