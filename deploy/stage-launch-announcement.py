@@ -1,37 +1,19 @@
-"""Install the announcement alongside the current cabinet without replacing other UI modules."""
-from pathlib import Path
-import re
+"""Retired: the launch announcement was removed at the owner's request (13.11.2026, commit b8d1510).
+
+This installer used to add the weekly launch card to the cabinet. It now always refuses, before any
+backup or file write, so an old command cannot bring the card back. To remove a card that is still
+installed on the server, use deploy/update-remove-launch.sh.
+"""
 import sys
 
-VERSION = '20261017-launch-reference'
-ASSETS = ['launch-announcement.js', 'launch-announcement.css', 'launch-announcement.test.mjs', 'assets/launch-cover.jpg', 'assets/launch-brand.webp']
-
-def require(value, message):
-    if not value:
-        raise ValueError(message + ' Файлы не изменены.')
+MESSAGE = ('Уведомление о запуске снято по решению владельца (13.11.2026). '
+           'Установщик выключен; для удаления с сайта используйте deploy/update-remove-launch.sh. Файлы не изменены.')
 
 def stage(local, incoming, out):
-    local, incoming, out = map(Path, [local, incoming, out])
-    html = (local / 'index.html').read_text()
-    require(not re.search(r'^(<<<<<<<|=======|>>>>>>>)', html, re.M), 'Конфликт разметки.')
-    for name in ['app.js', 'learning.js']:
-        require((local / name).is_file() and re.search(r'<script\b[^>]*src=["\']' + re.escape(name) + r'(?:\?[^"\']*)?["\']', html), 'Не подтверждён кабинет: ' + name)
-    require(html.count('</head>') == 1 and html.count('</body>') == 1, 'Не подтверждена разметка кабинета.')
-    files = {name: (incoming / name).read_bytes() for name in ASSETS}
-    patterns = [r'<link\b[^>]*href=["\']launch-announcement\.css(?:\?[^"\']*)?["\'][^>]*>', r'<script\b[^>]*src=["\']launch-announcement\.js(?:\?[^"\']*)?["\'][^>]*>\s*</script>']
-    for pattern in patterns:
-        require(len(re.findall(pattern, html)) <= 1, 'Уведомление подключено несколько раз.')
-        html = re.sub(pattern + r'[ \t]*\r?\n?', '', html)
-    html = html.replace('</head>', f'<link rel="stylesheet" href="launch-announcement.css?v={VERSION}">\n</head>')
-    html = html.replace('</body>', f'<script src="launch-announcement.js?v={VERSION}" defer></script>\n</body>')
-    files['index.html'] = html.encode('utf-8')
-    for name, text in files.items():
-        path = out / name
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_bytes(text)
+    raise ValueError(MESSAGE)
 
 if __name__ == '__main__':
     try:
         stage(*sys.argv[1:])
-    except (OSError, ValueError) as error:
+    except ValueError as error:
         raise SystemExit(str(error))
