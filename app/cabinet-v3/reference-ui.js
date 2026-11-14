@@ -30,6 +30,12 @@
     let actions=$('.cover__actions',copy);if(!actions){actions=make('span','cover__actions');copy.append(actions);}
     const actionSelectors={dashboard:'[data-overview-refresh],[data-overview-connect]',orders:'[data-orders-refresh],[data-orders-connect]',messages:'[data-messages-refresh],[data-messages-connect]',lots:'[data-lots-refresh]',billing:'[data-billing-open="topup"],[data-billing-open="promo"]',finance:'[data-finance-refresh]'};
     if(actionSelectors[key])for(const b of $$(actionSelectors[key],view)){b.classList.add('btn','btn--glass','btn--sm');put(actions,b);}
+    /* Old per-view headings repeat the banner title. Their live controls move into the banner; the rest is hidden. */
+    for(const old of $$(':scope > header:not(.zs-cover)',view)){
+      if(!/-heading\b/.test(old.className))continue;
+      for(const ctl of $$('button,a',old)){if([...ctl.attributes].some(x=>x.name.startsWith('data-'))){ctl.classList.add('btn','btn--glass','btn--sm');put(actions,ctl);}}
+      old.classList.add('zsf-old-heading');
+    }
     const art=$('.cover__emblem img',cover);
     if(art&&d.emblem){const name=d.emblem.split('/').pop().replace('.webp','');const src=A(name);if(art.getAttribute('src')!==src)art.setAttribute('src',src);}
   }
@@ -70,7 +76,9 @@
     const p=plan();document.body.dataset.zsfPaid=String(p.active===true&&p.id!=='trial_3d');
     label($('[data-zsf-plan-name]'),planNames[p.id]||'Доступ к сервису');label($('[data-zsf-plan-until]'),p.active?date(p.expiresAt)?'Доступ до '+date(p.expiresAt):'Доступ активен':'Выбрать тариф');
     const d=specs[alias[view]||view],tab=d?.tabs?.find(t=>t[0]===sub);
-    label($('#current-view-label'),(d?d.group+' / '+d.title:view==='profile'?'Аккаунт / Профиль':'Аккаунт / '+(viewTitles[view]||view))+(tab?' / '+tab[1]:''));
+    const pluginId=String(view).startsWith('plugins/')?view.slice(8):'',pluginName=pluginId&&typeof state!=='undefined'?(state.plugins||[]).find(x=>x.id===pluginId)?.name:'';
+    const crumb=pluginId?'Автоматизация / Плагины'+(pluginName?' / '+pluginName:''):view==='plugins'?'Автоматизация / Плагины':(d?d.group+' / '+d.title:view==='profile'?'Аккаунт / Профиль':'Аккаунт / '+(viewTitles[view]||view))+(tab?' / '+tab[1]:'');
+    label($('#current-view-label'),crumb);
     const avatar=$('.topbar [data-auth-open]');if(avatar&&authState.user){avatar.removeAttribute('data-auth-open');avatar.dataset.zsfRoute='profile';}
   }
   function dashboard(){

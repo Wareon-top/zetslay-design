@@ -253,7 +253,7 @@
     hook('pluginCatalogFailed',catalogue);
     const hostReset=resetAccountData;resetAccountData=function(...args){
       window.ZSCabinetFidelity?.reset();
-      for(const id of virtual){const target=$(`[data-view="${id}"] [data-zs-account-content]`);if(target)target.replaceChildren();}
+      for(const id of virtual){const target=$(`[data-view="${id}"] [data-zs-account-content]`);if(target){target.replaceChildren();delete target.dataset.signature;}}
       $$('[data-zs-profile-plugins]').forEach(n=>n.replaceChildren());return hostReset.apply(this,args);
     };
     // Decorate asynchronous host renders without repainting inputs or replacing live forms.

@@ -184,3 +184,20 @@
 /* «Во всех тарифах»: icon tiles instead of bare checks */
 .zs-production.zs-reference [data-pricing-platform] .pf > svg{width:36px;height:36px;padding:9px;margin-bottom:8px;border-radius:11px;background:rgba(255,139,69,.12);color:#ff8b45}
 .zs-production.zs-reference .pstage + *{margin-top:16px}
+
+/* ---------- duplicated legacy headings under the banners ---------- */
+.zs-production.zs-reference .zsf-old-heading{display:none!important}
+/* automation tabs follow the section-tabs pattern */
+.zs-production.zs-reference [data-view="store-tools"] .tools-tabs{display:inline-flex;gap:2px;max-width:100%;margin:20px 0 0;padding:3px;border:0;border-radius:14px;background:#141416;overflow-x:auto;scrollbar-width:none}
+.zs-production.zs-reference [data-view="store-tools"] .tools-tabs button{flex:none;min-height:34px;padding:0 14px;border:0;border-radius:11px;background:none;color:#98989f;font-size:14px;font-weight:550;box-shadow:none}
+.zs-production.zs-reference [data-view="store-tools"] .tools-tabs button.is-active,.zs-production.zs-reference [data-view="store-tools"] .tools-tabs button[aria-pressed="true"]{background:#2c2c2e;color:#fff}
+/* ---------- filter/period chips: one pattern across sections (handoff .chip) ---------- */
+.zs-production.zs-reference :is(.orders-page-periods,.orders-page-tabs,.inventory-tabs,.messages-page-filters,.fin-periods,.overview-period-picker){display:flex;flex-wrap:wrap;gap:8px;padding:0;border:0;background:none;box-shadow:none}
+.zs-production.zs-reference :is(.orders-page-periods,.orders-page-tabs,.inventory-tabs,.messages-page-filters,.fin-periods,.overview-period-picker) > button{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 15px;border:0;border-radius:999px;background:#2c2c2e;color:#c7c7cc;font-size:14px;font-weight:550;box-shadow:none;outline-offset:2px}
+.zs-production.zs-reference :is(.orders-page-periods,.orders-page-tabs,.inventory-tabs,.messages-page-filters,.fin-periods,.overview-period-picker) > button:hover{background:#3a3a3d;color:#fff}
+.zs-production.zs-reference :is(.orders-page-periods,.orders-page-tabs,.inventory-tabs,.messages-page-filters,.fin-periods,.overview-period-picker) > button:is([aria-pressed="true"],.is-active){background:#fff;color:#151515}
+.zs-production.zs-reference :is(.orders-page-tabs,.inventory-tabs,.messages-page-filters) > button > :is(span,b,small,em){opacity:.6;font-weight:600;background:none;color:inherit;padding:0}
+
+/* ---------- plugin page: the product stage replaces the legacy fact strip and jump links ---------- */
+.zs-production.zs-reference [data-plugin-page] > .plugin-detail-facts,
+.zs-production.zs-reference [data-plugin-page] > .plugin-detail-navigation{display:none}
