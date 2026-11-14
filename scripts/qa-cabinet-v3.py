@@ -199,6 +199,11 @@ with sync_playwright() as p:
     check('tariff terms button stays a host control',direct.locator('.pc2 [data-billing-plan]').count()==4)
     direct.locator('[data-pricing-period="year"]').first.click();direct.wait_for_timeout(200)
     check('year period recalculates host price',direct.locator('[data-pricing-plan="start"] [data-pricing-price]').inner_text().replace(' ',' ')=='119,20 ₽')
+    # Plugin page: purchase options sit across the card under the art, the host CTA stays in the right column.
+    direct.goto(f'http://127.0.0.1:{server.server_port}/app/#plugins',wait_until='networkidle');direct.wait_for_timeout(700)
+    direct.locator('.zs-plugin-tile .plugin-card__navigation a').first.click();direct.wait_for_timeout(700)
+    layout=direct.evaluate("(()=>{const o=document.querySelector('.pp-stage .plugin-purchase-options'),m=document.querySelector('.pp-stage .pp-media'),b=document.querySelector('.pp-stage .plugin-page-action > .button');if(!o||!m)return null;const R=o.getBoundingClientRect(),M=m.getBoundingClientRect(),B=b?b.getBoundingClientRect():null;return {below:R.top>=M.bottom-1,wide:R.width>M.width,cta:!B||B.left>M.right}})()")
+    check('plugin purchase options span the card under the art',layout is not None and (layout['below'] and layout['wide'] and layout['cta']))
     direct.close()
     check('no JS runtime errors',not errors)
     check('all local assets exist',not failed_assets)

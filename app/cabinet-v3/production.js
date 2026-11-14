@@ -210,8 +210,13 @@
   let statObserver=null;
   function stats() {
     const sync=()=>{for(const s of document.querySelectorAll('.overview-stat>strong.ws-empty-stat'))if(s.textContent.trim()!=='—')s.classList.remove('ws-empty-stat');};
-    sync();if(statObserver)return;const grid=document.querySelector('[data-view="dashboard"]');if(!grid)return;
-    statObserver=new MutationObserver(sync);statObserver.observe(grid,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['class']});
+    const bars=()=>{for(const panel of document.querySelectorAll('[data-view="analytics"] .ws-analytics-panel')){
+      const rows=[...panel.querySelectorAll(':scope > .ws-product-row')].filter(r=>r.firstElementChild?.hasAttribute('title'));
+      const sums=rows.map(r=>Number((r.querySelector('b')?.textContent||'').replace(/[^\d,]/g,'').replace(',','.'))||0),max=Math.max(0,...sums);
+      rows.forEach((r,i)=>{const w=max?Math.round(sums[i]/max*100)+'%':'0%';if(r.style.getPropertyValue('--zs-bar')!==w)r.style.setProperty('--zs-bar',w);if(!r.hasAttribute('data-zs-bar'))r.setAttribute('data-zs-bar','');});
+    }};
+    const run=()=>{sync();bars();};run();if(statObserver)return;const views=['dashboard','analytics'].map(v=>document.querySelector(`[data-view="${v}"]`)).filter(Boolean);if(!views.length)return;
+    statObserver=new MutationObserver(run);for(const v of views)statObserver.observe(v,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['class']});
   }
   function refresh() {
     scheduled=false;if(!authState.user){window.ZSCabinetFidelity?.reset();return;}

@@ -252,3 +252,49 @@
 @media (max-width:560px){.zs-production.zs-reference .dash-list > article{grid-template-columns:32px minmax(0,1fr) auto}.zs-production.zs-reference .dash-list > article .table-status{grid-column:2 / -1}}
 /* dashboard sync notice: a soft card instead of a thin outlined strip */
 .zs-production.zs-reference [data-overview-notice]:not([hidden]){display:block;margin:12px 0 0;padding:12px 16px;border:0;border-radius:14px;background:#232325;color:#c7c7cc;font-size:13.5px;line-height:1.45;box-shadow:none}
+
+/* ---------- reports: stat labels in sentence case, like the dashboard ---------- */
+.zs-production.zs-reference :is([data-view="analytics"] .overview-stat__label h2,.fin-stat > span:first-child){text-transform:none;letter-spacing:0;font-size:13px;font-weight:500;color:#aeaeb2}
+.zs-production.zs-reference .fin-stat > strong{font-size:26px;font-weight:700;color:#fff}
+/* analytics: product rows get a proportional bar (width set by production.js from the host's own sums) */
+.zs-production.zs-reference .ws-product-row[data-zs-bar]{display:grid;grid-template-columns:minmax(90px,170px) minmax(0,1fr) auto;align-items:center;gap:12px;min-height:22px;padding:4px 0;border:0;font-size:13.5px}
+.zs-production.zs-reference .ws-product-row[data-zs-bar] > span{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:#e5e5ea}
+.zs-production.zs-reference .ws-product-row[data-zs-bar]::after{content:"";grid-column:2;grid-row:1;height:8px;width:var(--zs-bar,0%);min-width:6px;border-radius:999px;background:linear-gradient(90deg,#ff8b45,#ffa25f)}
+.zs-production.zs-reference .ws-product-row[data-zs-bar] > b{grid-column:3;color:#fff;font-weight:650;white-space:nowrap}
+/* finance table: denser rows */
+.zs-production.zs-reference [data-view="finance"] tbody td{padding-top:10px;padding-bottom:10px;vertical-align:middle}
+.zs-production.zs-reference [data-view="finance"] .fin-product{font-size:13.5px;font-weight:600;color:#fff}
+.zs-production.zs-reference [data-view="finance"] .fin-cost-button{min-height:32px;padding:0 14px;border:0;border-radius:999px;background:#2c2c2e;color:#fff;font-weight:600}
+/* automation metrics: plain stat cards instead of the cover gradient */
+.zs-production.zs-reference .tools-metrics > article{min-height:0;padding:16px 18px;border:0;border-radius:20px;background:#1c1c1e;box-shadow:none}
+.zs-production.zs-reference .tools-metrics > article > span{font-size:13px;color:#aeaeb2}
+.zs-production.zs-reference .tools-metrics > article > strong{display:block;margin-top:8px;font-size:28px;font-weight:700;color:#fff}
+
+/* ---------- plugin page: compact stage like the handoff ----------
+   The host purchase block stays the same node (real options, prices, CTA); only its box is laid out:
+   heading, status and CTA in the right column, purchase options across the card under the art. */
+@media (min-width:900px){
+ .zs-production.zs-reference .pp-stage .pp-card{grid-template-areas:"media head" "media status" "media cta" "media err" "opts opts";grid-template-rows:auto auto auto 1fr auto;row-gap:14px;align-items:start}
+ .zs-production.zs-reference .pp-stage .pp-info,.zs-production.zs-reference .pp-stage .plugin-page-action{display:contents}
+ .zs-production.zs-reference .pp-stage .pp-media{grid-area:media;height:auto;min-height:0;align-self:stretch}
+ .zs-production.zs-reference .pp-stage .plugin-page-heading{grid-area:head}
+ .zs-production.zs-reference .pp-stage .plugin-page-action-status{grid-area:status;margin:0;padding:12px 14px;border-radius:14px;background:#232325}
+ .zs-production.zs-reference .pp-stage .plugin-page-action > .button{grid-area:cta;margin:0}
+ .zs-production.zs-reference .pp-stage .plugin-page-action-error{grid-area:err;margin:0}
+ .zs-production.zs-reference .pp-stage .plugin-purchase-options{grid-area:opts;display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:stretch;margin:6px 0 0}
+ .zs-production.zs-reference .pp-stage .plugin-purchase-options__divider{display:none}
+ .zs-production.zs-reference .pp-stage .plugin-purchase-options__note{grid-column:1 / -1;margin:0;font-size:13px;color:#8e8e93}
+ .zs-production.zs-reference .pp-stage .plugin-purchase-option{margin:0;padding:18px;border:1px solid #2c2c2e;border-radius:18px;background:#232325;box-shadow:none}
+}
+.zs-production.zs-reference .tools-metrics > article::before{display:none}
+.zs-production.zs-reference .tools-content > .tools-metrics{order:-1}
+/* the wide finance table scrolls inside its card instead of widening the page */
+.zs-production.zs-reference .fin-table-wrap{position:relative;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+@media (max-width:480px){
+ /* cover titles: never split a word between letters on phones */
+ .zs-production.zs-reference .zs-cover .cover__copy h1{overflow-wrap:normal;word-break:normal;hyphens:manual;font-size:clamp(24px,7vw,30px)}
+ /* analytics: bar under the name, full width */
+ .zs-production.zs-reference .ws-product-row[data-zs-bar]{grid-template-columns:minmax(0,1fr) auto;row-gap:6px}
+ .zs-production.zs-reference .ws-product-row[data-zs-bar] > b{grid-column:2;grid-row:1}
+ .zs-production.zs-reference .ws-product-row[data-zs-bar]::after{grid-column:1 / -1;grid-row:2}
+}
