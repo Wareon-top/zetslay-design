@@ -1,0 +1,10 @@
+app/cabinet-v3/*.js text eol=lf
+app/cabinet-v3/*.mjs text eol=lf
+app/cabinet-v3/*.css text eol=lf
+app/cabinet-v3/assets/*.json text eol=lf
+app/cabinet-v3/assets/fonts/*.txt text eol=lf
+deploy/start-cabinet-v3.sh text eol=lf
+deploy/update-cabinet-v3.py text eol=lf
+deploy/test_cabinet_v3.py text eol=lf
+deploy/cabinet-v3-manifest.json text eol=lf
+scripts/qa-cabinet-v3.py text eol=lf

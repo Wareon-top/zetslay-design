@@ -1,0 +1,128 @@
+[
+ {
+  "file": "assets/img/cat-currency.webp",
+  "source": "categories/currency.png",
+  "id": "category-currency",
+  "previewId": "currency",
+  "kind": "category",
+  "visibleAspect": 1.327,
+  "sourceSha256": "a0f430373553e97d80a8d19ad9ae3336a2046d9f66f36407c1d4a937ddada1fb"
+ },
+ {
+  "file": "assets/img/cat-rent.webp",
+  "source": "categories/rent.png",
+  "id": "category-rent",
+  "previewId": "rent",
+  "kind": "category",
+  "visibleAspect": 0.894,
+  "sourceSha256": "dc6c2f4ca7b367d6c03ace7ddc5a3fc5caf47b31dab047c3a956321c08bdcab3"
+ },
+ {
+  "file": "assets/img/cat-tools.webp",
+  "source": "categories/tools.png",
+  "id": "category-tools",
+  "previewId": "tools",
+  "kind": "category",
+  "visibleAspect": 0.922,
+  "sourceSha256": "70b8b1d184a74ea1c669bddd2c1c7a50f7781813da68c020d320a9e26e71cf0d"
+ },
+ {
+  "file": "assets/img/cat-reviews.webp",
+  "source": "categories/reviews.png",
+  "id": "category-reviews",
+  "previewId": "reviews",
+  "kind": "category",
+  "visibleAspect": 1.124,
+  "sourceSha256": "c943434ecdfe6501202f875c658951597d3ac5e7cf438a901029f31824e101fc"
+ },
+ {
+  "file": "assets/img/plg-stars.webp",
+  "source": "plugins/stars-relay.png",
+  "id": "plugin-stars-relay",
+  "previewId": "stars",
+  "kind": "plugin",
+  "visibleAspect": 1.034,
+  "sourceSha256": "b4f6bdb256aeb5cbbc7bdd035d6020a19098785b242a00a4386b787766372d6c"
+ },
+ {
+  "file": "assets/img/plg-robux.webp",
+  "source": "plugins/robux-relay.png",
+  "id": "plugin-robux-relay",
+  "previewId": "robux",
+  "kind": "plugin",
+  "visibleAspect": 0.926,
+  "sourceSha256": "e30e03986ee40f682708c2c55a1f2132205cbe5a01ad13fa7517c3ddac1d7921"
+ },
+ {
+  "file": "assets/img/plg-rent.webp",
+  "source": "plugins/kosell-rent.png",
+  "id": "plugin-kosell-rent",
+  "previewId": "rent",
+  "kind": "plugin",
+  "visibleAspect": 1.189,
+  "sourceSha256": "80b6e607351945061d7a9ec5eb734f74d0a67d4b4bfffd9fd41ab862b8863ae3"
+ },
+ {
+  "file": "assets/img/plg-steam.webp",
+  "source": "plugins/steam-rent.png",
+  "id": "plugin-steam-rent",
+  "previewId": "steam",
+  "kind": "plugin",
+  "visibleAspect": 1.017,
+  "sourceSha256": "56e2cdcbb714122f5b1fa39323d73a306b889826c8f6ee33c7b5ff2e6e5e0983"
+ },
+ {
+  "file": "assets/img/plg-prices.webp",
+  "source": "plugins/mass-price-editor.png",
+  "id": "plugin-mass-price-editor",
+  "previewId": "prices",
+  "kind": "plugin",
+  "visibleAspect": 0.837,
+  "sourceSha256": "43bcb5196438472a56c92cf20c95a34ac12a378a19fafaefbbe10b1392e0f882"
+ },
+ {
+  "file": "assets/img/plg-cloner.webp",
+  "source": "plugins/lot-cloner.png",
+  "id": "plugin-lot-cloner",
+  "previewId": "cloner",
+  "kind": "plugin",
+  "visibleAspect": 0.923,
+  "sourceSha256": "7b14642c167c943998911262ba37c922e494d9ecd9733d52395e34ca559eafbb"
+ },
+ {
+  "file": "assets/img/plg-pause.webp",
+  "source": "plugins/sales-pause.png",
+  "id": "plugin-sales-pause",
+  "previewId": "pause",
+  "kind": "plugin",
+  "visibleAspect": 0.787,
+  "sourceSha256": "2840c37f95572b0627b229cbe2b1b043fbad312863b25bc498d0018355d22b8e"
+ },
+ {
+  "file": "assets/img/plg-priority.webp",
+  "source": "plugins/priority-orders.png",
+  "id": "plugin-priority-orders",
+  "previewId": "priority",
+  "kind": "plugin",
+  "visibleAspect": 0.891,
+  "sourceSha256": "0cfeceb72e73fbd42d782f2c4ae2b9d9c0b15971a08958ded8aac629c2e183f8"
+ },
+ {
+  "file": "assets/img/plg-ai.webp",
+  "source": "plugins/ai-reviews.png",
+  "id": "plugin-ai-reviews",
+  "previewId": "ai",
+  "kind": "plugin",
+  "visibleAspect": 1.178,
+  "sourceSha256": "0d5dbc7b3c6422a27eb49bb7f33b37c3012a54164456ff4b62beb48846e94ebd"
+ },
+ {
+  "file": "assets/img/plg-remind.webp",
+  "source": "plugins/review-reminder.png",
+  "id": "plugin-review-reminder",
+  "previewId": "remind",
+  "kind": "plugin",
+  "visibleAspect": 0.969,
+  "sourceSha256": "694dffc4f4652cb1b1eb8c0ba457336be8ea8cd6252d16c1b4a81504b93753f0"
+ }
+]

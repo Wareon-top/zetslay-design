@@ -1,5 +1,5 @@
 import {readFile, readdir, stat} from 'node:fs/promises';
-import {resolve, join} from 'node:path';
+import {resolve, join, relative, isAbsolute, sep} from 'node:path';
 
 export async function checkPublicLinks(root) {
   const base=resolve(root),files=['index.html','app/index.html',
@@ -14,7 +14,8 @@ export async function checkPublicLinks(root) {
       if(url.origin!=='https://zetslay.pro')continue;
       let pathname;try{pathname=decodeURIComponent(url.pathname);}catch{missing.push({file,target:link});continue;}
       const target=resolve(base,'.'+pathname);
-      if(target!==base&&!target.startsWith(base+'/')){missing.push({file,target:pathname});continue;}
+      const within=relative(base,target);
+      if(isAbsolute(within)||within==='..'||within.startsWith('..'+sep)){missing.push({file,target:pathname});continue;}
       try{const item=await stat(target);if(item.isDirectory())await stat(join(target,'index.html'));}
       catch{missing.push({file,target:pathname});}
     }

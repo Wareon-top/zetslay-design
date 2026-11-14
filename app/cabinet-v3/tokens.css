@@ -1,0 +1,142 @@
+/*
+  ZetSlay design tokens — candidate v1 (13.11.2026), NOT approved by the user yet.
+  Single source: primitive → semantic → component. Mirror: tokens.json.
+  Origin legend in tokens.json: veemp = measured on reference and adapted,
+  zetslay = existing user requirement, proposed = this iteration.
+*/
+@font-face {
+  font-family: "ZetSlay Inter";
+  src: url("assets/fonts/inter-variable.woff") format("woff");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Tokens are scoped to the ZetSlay root (.zs), not the global :root, so they never leak into the host app. */
+.zs {
+  /* ---------- primitive ---------- */
+  --zs-black: #000000;
+  --zs-gray-950: #0a0a0b;
+  --zs-gray-925: #0f0f11;
+  --zs-gray-900: #161618;
+  --zs-gray-850: #1c1c1e;
+  --zs-gray-800: #242427;
+  --zs-gray-750: #2c2c2e;
+  --zs-gray-700: #3a3a3d;
+  --zs-gray-500: #808086;
+  --zs-gray-400: #98989f;
+  --zs-gray-300: #c7c7cc;
+  --zs-white: #ffffff;
+
+  --zs-orange-300: #ffb27f;
+  --zs-orange-400: #ff9d61;
+  --zs-orange-500: #ff8b45;
+  --zs-orange-600: #f07a33;
+  --zs-orange-ink: #1a0f07;
+
+  --zs-green-400: #5fd49a;
+  --zs-amber-400: #ffc15a;
+  --zs-red-400: #ff7a6b;
+  --zs-red-500: #ff6b5e;
+  --zs-red-ink: #1f0905;
+  --zs-blue-300: #8ab4ff;
+
+  /* ---------- semantic: surfaces ---------- */
+  --page: var(--zs-gray-950);
+  --nav: var(--zs-gray-925);
+  --surface: var(--zs-gray-850);
+  --surface-inset: var(--zs-gray-900);
+  --surface-raised: var(--zs-gray-800);
+  --control: var(--zs-gray-750);
+  --control-hover: var(--zs-gray-700);
+  --line: rgba(255, 255, 255, 0.07);
+  --line-strong: rgba(255, 255, 255, 0.12);
+  --scrim: rgba(0, 0, 0, 0.72);
+
+  /* ---------- semantic: text ---------- */
+  --text: var(--zs-white);
+  --text-body: var(--zs-gray-300);
+  --text-muted: var(--zs-gray-400);
+  --text-faint: var(--zs-gray-500);
+
+  /* ---------- semantic: action ---------- */
+  --accent: var(--zs-orange-500);
+  --accent-hover: var(--zs-orange-400);
+  --accent-press: var(--zs-orange-600);
+  --on-accent: var(--zs-orange-ink);
+  --accent-text: var(--zs-orange-300);
+  --focus: var(--zs-orange-300);
+  --danger: var(--zs-red-500);
+  --on-danger: var(--zs-red-ink);
+
+  /* ---------- semantic: state (never all orange) ---------- */
+  --success: var(--zs-green-400);
+  --success-soft: rgba(95, 212, 154, 0.12);
+  --warning: var(--zs-amber-400);
+  --warning-soft: rgba(255, 193, 90, 0.12);
+  --error: var(--zs-red-400);
+  --error-soft: rgba(255, 122, 107, 0.12);
+  --info: var(--zs-blue-300);
+  --info-soft: rgba(138, 180, 255, 0.12);
+  --neutral-soft: rgba(255, 255, 255, 0.07);
+
+  /* ---------- typography ---------- */
+  --font: "ZetSlay Inter", Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --display-weight: 650;
+  --display-tracking: -0.045em;
+  --title-tracking: -0.025em;
+  /* role: size / line-height */
+  --t-cover: 48px;      --t-cover-lh: 52px;      /* cabinet cover name; landing hero keeps its own scale */
+  --t-section: 28px;    --t-section-lh: 32px;
+  --t-dialog: 28px;     --t-dialog-lh: 32px;
+  --t-card: 21px;       --t-card-lh: 26px;
+  --t-row: 16px;        --t-row-lh: 21px;
+  --t-body: 15px;       --t-body-lh: 22px;
+  --t-small: 13px;      --t-small-lh: 18px;
+  --t-label: 12px;      --t-label-lh: 16px;
+
+  /* ---------- spacing (4-based) ---------- */
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px;
+  --s-6: 24px; --s-8: 32px; --s-10: 40px; --s-12: 48px; --s-16: 64px;
+
+  /* ---------- geometry ---------- */
+  --r-dialog: 28px;
+  --r-group: 24px;
+  --r-inset: 16px;
+  --r-field: 12px;
+  --r-pill: 999px;
+  --h-control-lg: 52px;
+  --h-control: 44px;
+  --h-control-sm: 36px;
+  --h-row: 76px;
+  --icon-row: 48px;
+  --icon-plugin: 56px;
+  --w-nav: 236px;
+  --w-aside: 340px;
+  --w-content: 1200px;
+  --w-dialog: 520px;
+
+  /* ---------- motion (veemp-measured timings) ---------- */
+  --ease: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-sheet: cubic-bezier(0.32, 0.72, 0, 1);
+  --d-press: 120ms;
+  --d-out: 180ms;
+  --d-window: 240ms;
+  --d-state: 300ms;
+  --d-float: 6.4s;
+  --d-glint: 7.6s;
+}
+
+@media (max-width: 759px) {
+  .zs {
+    --t-cover: 32px;   --t-cover-lh: 36px;
+    --t-section: 24px; --t-section-lh: 28px;
+    --t-dialog: 24px;  --t-dialog-lh: 28px;
+    --t-card: 19px;    --t-card-lh: 24px;
+    --r-group: 20px;
+    --r-dialog: 24px;
+    --h-row: 68px;
+    --icon-row: 44px;
+    --icon-plugin: 48px;
+  }
+}
