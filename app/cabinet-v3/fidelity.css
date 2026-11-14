@@ -368,3 +368,52 @@
 .zs-production.zs-reference [data-plugin-page] .plugin-page-main > [role="tabpanel"] > [data-zsf-pane]:first-child,.zs-production.zs-reference [data-plugin-page] .plugin-page-main > [role="tabpanel"] > [data-zsf-pane]:not([style*="none"]) ~ x{margin-top:0}
 .zs-production.zs-reference [data-plugin-page]:is([data-zsf-tab="settings"],[data-zsf-tab="queue"],[data-zsf-tab="history"]) .plugin-page-layout{grid-template-columns:minmax(0,1fr)}
 .zs-production.zs-reference [data-plugin-page]:is([data-zsf-tab="settings"],[data-zsf-tab="queue"],[data-zsf-tab="history"]) .plugin-page-sidebar{display:none}
+
+/* ---------- buyer commands: compact rows like the handoff table ---------- */
+.zs-production.zs-reference [data-tools-command-rows]{display:grid;gap:6px}
+.zs-production.zs-reference [data-tools-command-rows] > .tools-command{display:grid;gap:10px;padding:10px 14px;border-radius:14px;background:#232325}
+.zs-production.zs-reference .zsf-cmd-row{display:grid;grid-template-columns:minmax(90px,150px) minmax(0,1fr) auto;align-items:center;gap:14px;min-height:36px}
+.zs-production.zs-reference .zsf-cmd-trigger{justify-self:start;padding:3px 9px;border-radius:8px;background:#2c2c2e;color:#fff;font:600 12.5px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace}
+.zs-production.zs-reference .zsf-cmd-text{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:13.5px;color:#c7c7cc}
+.zs-production.zs-reference .zsf-cmd-edit{min-height:32px;padding:0 14px;border:0;border-radius:999px;background:#2c2c2e;color:#fff;font-size:13px;font-weight:600;cursor:pointer}
+.zs-production.zs-reference .zsf-cmd-edit:focus-visible{outline:2px solid #fff;outline-offset:2px}
+/* folded: only the summary and the real «Включена» switch */
+.zs-production.zs-reference .tools-command:not(.zsf-cmd-open) > :not(.zsf-cmd-row):not(.tools-inline:last-child){display:none}
+.zs-production.zs-reference .tools-command:not(.zsf-cmd-open) > .tools-inline:last-child > :not(.tools-check:first-child){display:none}
+.zs-production.zs-reference .tools-command:not(.zsf-cmd-open){grid-template-columns:minmax(0,1fr) auto;align-items:center}
+.zs-production.zs-reference .tools-command:not(.zsf-cmd-open) > .tools-inline:last-child{grid-column:2;grid-row:1;margin:0}
+.zs-production.zs-reference .tools-command:not(.zsf-cmd-open) > .tools-inline:last-child .tools-check{font-size:0;gap:0}
+.zs-production.zs-reference .tools-command.zsf-cmd-open{background:#262628;outline:1px solid #3a3a3d}
+@media (max-width:560px){.zs-production.zs-reference .zsf-cmd-row{grid-template-columns:minmax(0,1fr) auto}.zs-production.zs-reference .zsf-cmd-text{grid-column:1 / -1;grid-row:2}}
+/* folded row order like the handoff: trigger · reply · switch · «Изменить» */
+.zs-production.zs-reference .tools-command:not(.zsf-cmd-open){grid-template-columns:minmax(90px,150px) minmax(0,1fr) auto auto;column-gap:14px}
+.zs-production.zs-reference .tools-command:not(.zsf-cmd-open) > .zsf-cmd-row{display:contents}
+.zs-production.zs-reference .tools-command:not(.zsf-cmd-open) .zsf-cmd-trigger{grid-column:1;grid-row:1}
+.zs-production.zs-reference .tools-command:not(.zsf-cmd-open) .zsf-cmd-text{grid-column:2;grid-row:1}
+.zs-production.zs-reference .tools-command:not(.zsf-cmd-open) > .tools-inline:last-child{grid-column:3;grid-row:1}
+.zs-production.zs-reference .tools-command:not(.zsf-cmd-open) .zsf-cmd-edit{grid-column:4;grid-row:1}
+@media (max-width:560px){.zs-production.zs-reference .tools-command:not(.zsf-cmd-open){grid-template-columns:minmax(0,1fr) auto auto}.zs-production.zs-reference .tools-command:not(.zsf-cmd-open) .zsf-cmd-text{grid-column:1 / -1;grid-row:2}.zs-production.zs-reference .tools-command:not(.zsf-cmd-open) > .tools-inline:last-child{grid-column:2}.zs-production.zs-reference .tools-command:not(.zsf-cmd-open) .zsf-cmd-edit{grid-column:3}}
+
+/* ---------- plugin facts strip (rarity · installed · catalogue price) ---------- */
+.zs-production.zs-reference .zsf-pp-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:4px 0 0;padding:12px 4px;border-radius:16px;background:#232325}
+.zs-production.zs-reference .zsf-pp-facts > div{display:grid;justify-items:center;gap:2px;min-width:0;padding:0 4px;text-align:center}
+.zs-production.zs-reference .zsf-pp-facts > div + div{border-left:1px solid #3a3a3d}
+.zs-production.zs-reference .zsf-pp-facts strong{max-width:100%;font-size:clamp(12px,1vw,14.5px);font-weight:700;color:#fff;line-height:1.25;white-space:nowrap}
+.zs-production.zs-reference .zsf-pp-facts span{font-size:12px;color:#8e8e93}
+@media (min-width:900px){
+ .zs-production.zs-reference .pp-stage .pp-card{grid-template-areas:"media head" "media facts" "media status" "media cta" "media err" "opts opts";grid-template-rows:auto auto auto auto 1fr auto}
+ .zs-production.zs-reference .pp-stage .zsf-pp-facts{grid-area:facts}
+}
+/* ---------- plugin forms: fields on the shared design-system look ---------- */
+.zs-production.zs-reference [data-plugin-page] .plugin-page-main [role="tabpanel"] :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),select){min-height:42px;padding:0 14px;border:1px solid #3a3a3d;border-radius:12px;background:#1c1c1e;color:#fff;font-size:14px}
+.zs-production.zs-reference [data-plugin-page] .plugin-page-main [role="tabpanel"] textarea{padding:10px 14px;border:1px solid #3a3a3d;border-radius:12px;background:#1c1c1e;color:#fff;font-size:14px;line-height:1.45}
+.zs-production.zs-reference [data-plugin-page] .plugin-page-main [role="tabpanel"] :is(input,select,textarea):focus-visible{outline:none;border-color:#ff8b45;box-shadow:0 0 0 3px rgba(255,139,69,.25)}
+.zs-production.zs-reference [data-plugin-page] .plugin-page-main [role="tabpanel"] label{font-size:13px;color:#c7c7cc}
+.zs-production.zs-reference [data-plugin-page] .plugin-page-main [role="tabpanel"] fieldset{border:0;padding:0;margin:0;min-width:0}
+@media (max-width:899px){.zs-production.zs-reference .zsf-pp-facts strong{font-size:14px}}
+@media (max-width:380px){
+ .zs-production.zs-reference .zsf-pp-facts{grid-template-columns:minmax(0,1fr);row-gap:8px;padding:12px 14px}
+ .zs-production.zs-reference .zsf-pp-facts > div{display:flex;justify-content:space-between;align-items:baseline;padding:0}
+ .zs-production.zs-reference .zsf-pp-facts > div + div{border-left:0}
+ .zs-production.zs-reference .zsf-pp-facts > div > span{order:-1}
+}

@@ -163,7 +163,7 @@
   }
   function refresh(){
     if(rendering)return;rendering=true;
-    try{document.body.classList.add('zs-reference');auth();if(!authState.user)return;navigation();for(const view of $$('[data-view]'))decorateCover(view);dashboard();billing();panels();profile();catalogue();product();syncModal();}
+    try{document.body.classList.add('zs-reference');auth();if(!authState.user)return;navigation();for(const view of $$('[data-view]'))decorateCover(view);dashboard();billing();panels();profile();catalogue();product();commands();syncModal();}
     finally{rendering=false;}
   }
   function profile(){
@@ -208,6 +208,7 @@
       hero.dataset.reference='true';hero.classList.add('pp-stage');const card=make('div','pp-card');
       const art=$('.zs-product-art',hero),summary=$('.zs-product-summary',hero);if(art){art.classList.add('pp-media');art.innerHTML='<div class="pp-gal slide">'+art.innerHTML+'</div>';$('.slide img',art)?.classList.add('slide__obj');card.append(art);}if(summary){summary.classList.add('pp-info');card.append(summary);}hero.append(card);
     }
+    productFacts(hero);
     const nav=$('.zs-product-tabs',root),main=$('.plugin-page-main',root);if(!nav||!main)return;
     // Handoff tabs built from the host's own blocks: nothing is invented, a tab exists only when a real block backs it.
     const sections=$$(':scope > section',main);
@@ -227,6 +228,46 @@
     if(root.dataset.zsfTab!==selected)root.dataset.zsfTab=selected;
     if(!productObserver){productObserver=new MutationObserver(()=>{if(!productQueued){productQueued=true;requestAnimationFrame(()=>{productQueued=false;product();});}});}
     if(productObserved!==main){productObserver.disconnect();productObserver.observe(main,{childList:true,subtree:true});productObserved=main;}
+  }
+  // Buyer commands as compact table rows (handoff): the host form, inputs and drafts stay; a row only folds the fields.
+  const openCommands=new Set();
+  function commandSummary(row){
+    const trigger=$('input[name="trigger"]',row)?.value.trim()||'',text=$('textarea[name="text"]',row)?.value.trim()||'';
+    $('.zsf-cmd-trigger',row).textContent=trigger||'Новая команда';$('.zsf-cmd-text',row).textContent=text||'Ответ не задан';
+    return trigger;
+  }
+  function commandFold(row,open){
+    row.classList.toggle('zsf-cmd-open',open);const b=$('.zsf-cmd-edit',row);if(b){b.setAttribute('aria-expanded',String(open));b.textContent=open?'Свернуть':'Изменить';}
+  }
+  function commands(){
+    for(const row of $$('[data-tools-command-rows] > .tools-command')){
+      if(!$('.zsf-cmd-row',row)){
+        const head=make('div','zsf-cmd-row','<code class="zsf-cmd-trigger"></code><span class="zsf-cmd-text"></span>');
+        const edit=make('button','zsf-cmd-edit','Изменить');edit.type='button';edit.dataset.zsfCmdEdit='';head.append(edit);row.prepend(head);
+      }
+      const trigger=commandSummary(row),invalid=$$('input,textarea',row).some(n=>!n.checkValidity()),first=!row.dataset.zsfCmd;
+      // A command that is not saved yet (just added, or edited into a new trigger) opens so its fields can be filled.
+      const saved=new Set((typeof storeToolsUi!=='undefined'&&storeToolsUi.data?.commands||[]).map(c=>c.trigger));
+      row.dataset.zsfCmd='';commandFold(row,invalid||(first?(!trigger||!saved.has(trigger)||openCommands.has(trigger)):row.classList.contains('zsf-cmd-open')));
+    }
+  }
+  document.addEventListener('click',event=>{
+    const edit=event.target.closest?.('[data-zsf-cmd-edit]');if(!edit)return;const row=edit.closest('.tools-command'),trigger=commandSummary(row),open=!row.classList.contains('zsf-cmd-open');
+    if(open)openCommands.add(trigger);else openCommands.delete(trigger);commandFold(row,open);if(open)$('input[name="trigger"]',row)?.focus();
+  });
+  document.addEventListener('input',event=>{const row=event.target.closest?.('[data-tools-command-rows] > .tools-command');if(row&&$('.zsf-cmd-row',row))commandSummary(row);});
+  // Browser validation cannot focus a folded field: open the row first.
+  document.addEventListener('invalid',event=>{const row=event.target.closest?.('[data-tools-command-rows] > .tools-command');if(row)commandFold(row,true);},true);
+  // Handoff fact strip from catalogue data the host already has: rarity, installed in this cabinet, catalogue price.
+  function productFacts(hero){
+    const info=$('.pp-info',hero),route=typeof parsePluginPageRoute==='function'?parsePluginPageRoute(location.hash.slice(1)):null;
+    const plugin=typeof state!=='undefined'&&route?state.plugins.find(p=>p.id===route.id):null;
+    let box=$('.zsf-pp-facts',hero);if(!info||!plugin){box?.remove();return;}
+    const rarity=typeof pluginRarity==='function'?pluginRarity(plugin):null;
+    const facts=[rarity&&[rarity.label,'редкость'],[plugin.installed?'Установлен':'Не установлен','в кабинете'],[plugin.price||'—','в каталоге']].filter(Boolean);
+    const html=facts.map(([v,l])=>`<div><strong>${E(v)}</strong><span>${E(l)}</span></div>`).join('');
+    if(!box){box=make('div','zsf-pp-facts');box.setAttribute('role','list');$('.plugin-page-heading',info)?.after(box);}
+    if(box.dataset.html!==html){box.dataset.html=html;box.innerHTML=html;for(const n of box.children)n.setAttribute('role','listitem');}
   }
   const productTabs=[['about','Умеет'],['needs','Нужно'],['settings','Настройки'],['queue','Очередь'],['history','История']];
   let productObserver=null,productObserved=null,productQueued=false;

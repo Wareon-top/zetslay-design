@@ -262,7 +262,7 @@
     hook('renderPlugins',()=>{catalogue();schedule();});
     hook('renderPluginPage',()=>{pluginPage();schedule();});
     hook('renderBilling',billing);hook('renderAuthState',schedule);hook('renderAccountSecurity',distribute);hook('renderLegalRequests',distribute);
-    hook('pluginCatalogFailed',catalogue);
+    hook('pluginCatalogFailed',catalogue);hook('renderStoreTools',()=>window.ZSCabinetFidelity?.refresh());
     const hostReset=resetAccountData;resetAccountData=function(...args){
       window.ZSCabinetFidelity?.reset();
       for(const id of virtual){const target=$(`[data-view="${id}"] [data-zs-account-content]`);if(target){target.replaceChildren();delete target.dataset.signature;}}

@@ -213,6 +213,9 @@ with sync_playwright() as p:
     check('plugin tabs follow arrow keys',direct.evaluate("document.activeElement?.dataset.zsfProductTab")=='needs' and direct.evaluate("document.querySelector('[data-zsf-product-tab=needs]').getAttribute('aria-selected')")=='true')
     check('«Нужно» shows the host access block',direct.evaluate("(()=>{const s=document.querySelector('[data-zsf-role=needs]');return !!s&&!s.hidden&&!!s.querySelector('.plugin-page-permissions')})()"))
     direct.locator('[data-zsf-product-tab="about"]').click();direct.wait_for_timeout(200)
+    # Plugin facts come from catalogue data only (rarity, installed, price) and fit their cells.
+    facts=direct.evaluate("[...document.querySelectorAll('.zsf-pp-facts > div > span')].map(s=>s.textContent)")
+    check('plugin facts use real catalogue fields',facts==['редкость','в кабинете','в каталоге'])
     # Knowledge base: the video link moved into the cover is still the host link, and the empty banner is hidden.
     direct.goto(f'http://127.0.0.1:{server.server_port}/app/#guide',wait_until='networkidle');direct.wait_for_timeout(900)
     moved=direct.locator('.zs-cover .video-guide-banner__action')
