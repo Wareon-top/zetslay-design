@@ -208,10 +208,35 @@
       hero.dataset.reference='true';hero.classList.add('pp-stage');const card=make('div','pp-card');
       const art=$('.zs-product-art',hero),summary=$('.zs-product-summary',hero);if(art){art.classList.add('pp-media');art.innerHTML='<div class="pp-gal slide">'+art.innerHTML+'</div>';$('.slide img',art)?.classList.add('slide__obj');card.append(art);}if(summary){summary.classList.add('pp-info');card.append(summary);}hero.append(card);
     }
-    const sections=$$('.plugin-page-main > section',root),nav=$('.zs-product-tabs',root);if(!nav)return;
-    nav.classList.add('tabs');nav.setAttribute('role','tablist');const id=R()?.route||'';let selected=tabsByPlugin.get(id)||sections[0]?.id;if(!sections.some(n=>n.id===selected))selected=sections[0]?.id;
-    for(const button of $$('button',nav)){const on=button.dataset.zsScroll===selected;button.classList.add('tab');button.dataset.zsfProductTab=button.dataset.zsScroll;button.setAttribute('role','tab');button.setAttribute('aria-selected',String(on));button.tabIndex=on?0:-1;}
-    for(const section of sections){section.setAttribute('role','tabpanel');show(section,section.id===selected);}
+    const nav=$('.zs-product-tabs',root),main=$('.plugin-page-main',root);if(!nav||!main)return;
+    // Handoff tabs built from the host's own blocks: nothing is invented, a tab exists only when a real block backs it.
+    const sections=$$(':scope > section',main);
+    for(const n of sections)if(!n.dataset.zsfRole)n.dataset.zsfRole=n.matches('[aria-labelledby="plugin-description-title"]')?'about':n.matches('[aria-labelledby="plugin-access-title"]')?'needs':'plugin';
+    const about=sections.find(n=>n.dataset.zsfRole==='about')||sections[0],needs=sections.find(n=>n.dataset.zsfRole==='needs'),panels=sections.filter(n=>n!==about&&n!==needs),kinds=new Set();
+    for(const panel of panels){const subs=$$('section.plugin-page-panel',panel).filter(n=>{const outer=n.parentElement.closest('section.plugin-page-panel');return !outer||outer===panel||!panel.contains(outer);});
+      const tag=box=>{for(const child of box.children){const sub=subs.includes(child)?child:null;const kind=sub?paneKind(sub):subs.some(n=>child.contains(n))?null:'settings';if(kind===null){tag(child);continue;}if(child.dataset.zsfPane!==kind)child.dataset.zsfPane=kind;kinds.add(kind);}};
+      if(subs.length)tag(panel);else{for(const child of panel.children)if(child.dataset.zsfPane!=='settings')child.dataset.zsfPane='settings';kinds.add('settings');}}
+    const available=productTabs.filter(([k])=>k==='about'?!!about:k==='needs'?!!needs:kinds.has(k)),id=R()?.route||'';
+    let selected=tabsByPlugin.get(id);if(!available.some(([k])=>k===selected))selected='about';
+    const signature=available.map(([k])=>k).join(',');
+    if(nav.dataset.zsfTabs!==signature){nav.dataset.zsfTabs=signature;nav.replaceChildren(...available.map(([k,label])=>{const b=make('button','tab',label);b.type='button';b.id='zs-pp-tab-'+k;b.dataset.zsfProductTab=k;b.setAttribute('role','tab');return b;}));}
+    nav.classList.add('tabs');nav.setAttribute('role','tablist');nav.setAttribute('aria-label','Разделы плагина');
+    for(const b of $$('[data-zsf-product-tab]',nav)){const on=b.dataset.zsfProductTab===selected;b.setAttribute('aria-selected',String(on));b.tabIndex=on?0:-1;}
+    const visible=selected==='about'?[about]:selected==='needs'?[needs]:panels;
+    for(const section of sections){section.setAttribute('role','tabpanel');section.setAttribute('aria-labelledby','zs-pp-tab-'+selected);show(section,visible.includes(section));}
+    if(root.dataset.zsfTab!==selected)root.dataset.zsfTab=selected;
+    if(!productObserver){productObserver=new MutationObserver(()=>{if(!productQueued){productQueued=true;requestAnimationFrame(()=>{productQueued=false;product();});}});}
+    if(productObserved!==main){productObserver.disconnect();productObserver.observe(main,{childList:true,subtree:true});productObserved=main;}
+  }
+  const productTabs=[['about','Умеет'],['needs','Нужно'],['settings','Настройки'],['queue','Очередь'],['history','История']];
+  let productObserver=null,productObserved=null,productQueued=false;
+  // A host block goes to the tab its own eyebrow or title names; anything unclear stays in «Настройки».
+  function paneKind(section){
+    const settings=/правил|подключ|ассортимент|настро|доступ|бюджет|привяз|кош[её]л|аккаунт|профил|витрин|создани|маршрут/i,
+      queue=/очеред|расписани|заказы и|выдач|покупк|управлени[ея] аренд/i,history=/аналитик|истори|журнал|отч[её]т|дни и номинал/i;
+    const head=section.querySelector('[class*="section-head"]'),texts=[head?.querySelector('span')?.textContent||'',section.querySelector('h3,h2')?.textContent||''];
+    for(const t of texts){if(!t.trim())continue;if(settings.test(t))return 'settings';if(queue.test(t))return 'queue';if(history.test(t))return 'history';}
+    return 'settings';
   }
   function auth(){
     const box=$('.auth-modal');if(!box||box.dataset.reference)return;box.dataset.reference='true';box.classList.add('lg-card');
@@ -274,5 +299,10 @@
     const route=target.dataset.zsfRoute;if(route){event.preventDefault();event.stopImmediatePropagation();if(!closeModal())return;setView(route);return;}
     if(target.hasAttribute('data-zs-editor')){event.preventDefault();event.stopImmediatePropagation();openModal('account',target);}
   },true);
+  document.addEventListener('keydown',event=>{
+    const tab=event.target.closest?.('[data-zsf-product-tab]');if(!tab||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+    const list=$$('[data-zsf-product-tab]',tab.parentElement),i=list.indexOf(tab);let n=event.key==='Home'?0:event.key==='End'?list.length-1:i+(event.key==='ArrowRight'?1:-1);
+    n=(n+list.length)%list.length;event.preventDefault();const next=list[n].dataset.zsfProductTab;tabsByPlugin.set(R()?.route||'',next);product();$(`[data-zsf-product-tab="${next}"]`)?.focus();
+  });
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',refresh);else refresh();
 })();

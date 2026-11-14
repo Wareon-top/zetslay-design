@@ -206,6 +206,13 @@ with sync_playwright() as p:
     check('plugin purchase options span the card under the art',layout is not None and (layout['below'] and layout['wide'] and layout['cta']))
     # Plugin page tabs: the active tab names the panel, so the panel has no second heading.
     check('plugin tab panel has no duplicate heading',direct.evaluate("[...document.querySelectorAll('.plugin-page-main > [role=tabpanel]:not([hidden]) > .plugin-page-section-heading')].every(h=>getComputedStyle(h).display==='none')"))
+    # Handoff plugin tabs over host blocks: «Умеет»/«Нужно» first, arrows move focus, «Нужно» shows the host access block.
+    labels=direct.evaluate("[...document.querySelectorAll('[data-zsf-product-tab]')].map(b=>b.textContent)")
+    check('plugin page uses handoff tab names',labels[:2]==['Умеет','Нужно'] and set(labels)<= {'Умеет','Нужно','Настройки','Очередь','История'})
+    direct.locator('[data-zsf-product-tab="about"]').focus();direct.keyboard.press('ArrowRight');direct.wait_for_timeout(200)
+    check('plugin tabs follow arrow keys',direct.evaluate("document.activeElement?.dataset.zsfProductTab")=='needs' and direct.evaluate("document.querySelector('[data-zsf-product-tab=needs]').getAttribute('aria-selected')")=='true')
+    check('«Нужно» shows the host access block',direct.evaluate("(()=>{const s=document.querySelector('[data-zsf-role=needs]');return !!s&&!s.hidden&&!!s.querySelector('.plugin-page-permissions')})()"))
+    direct.locator('[data-zsf-product-tab="about"]').click();direct.wait_for_timeout(200)
     # Knowledge base: the video link moved into the cover is still the host link, and the empty banner is hidden.
     direct.goto(f'http://127.0.0.1:{server.server_port}/app/#guide',wait_until='networkidle');direct.wait_for_timeout(900)
     moved=direct.locator('.zs-cover .video-guide-banner__action')

@@ -360,3 +360,11 @@
 .zs-production.zs-reference [data-view="guide"] .kb-shortcut{padding:16px 18px;border:0;border-radius:20px;background:#1c1c1e;text-align:left}
 .zs-production.zs-reference [data-view="guide"] .kb-shortcut:hover{background:#232325}
 .zs-production.zs-reference [data-view="guide"] .kb-card{padding:16px 18px;border:0;border-radius:20px;background:#1c1c1e}
+/* handoff tabs over the host plugin panel: show only the blocks of the selected tab */
+.zs-production.zs-reference [data-plugin-page][data-zsf-tab="settings"] [data-zsf-pane]:not([data-zsf-pane="settings"]),
+.zs-production.zs-reference [data-plugin-page][data-zsf-tab="queue"] [data-zsf-pane]:not([data-zsf-pane="queue"]),
+.zs-production.zs-reference [data-plugin-page][data-zsf-tab="history"] [data-zsf-pane]:not([data-zsf-pane="history"]){display:none!important}
+.zs-production.zs-reference [data-plugin-page] .plugin-page-main > [role="tabpanel"] section.plugin-page-panel{margin-top:12px;padding:16px 18px;border:0;border-radius:18px;background:#232325}
+.zs-production.zs-reference [data-plugin-page] .plugin-page-main > [role="tabpanel"] > [data-zsf-pane]:first-child,.zs-production.zs-reference [data-plugin-page] .plugin-page-main > [role="tabpanel"] > [data-zsf-pane]:not([style*="none"]) ~ x{margin-top:0}
+.zs-production.zs-reference [data-plugin-page]:is([data-zsf-tab="settings"],[data-zsf-tab="queue"],[data-zsf-tab="history"]) .plugin-page-layout{grid-template-columns:minmax(0,1fr)}
+.zs-production.zs-reference [data-plugin-page]:is([data-zsf-tab="settings"],[data-zsf-tab="queue"],[data-zsf-tab="history"]) .plugin-page-sidebar{display:none}
