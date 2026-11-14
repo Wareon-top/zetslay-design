@@ -6,7 +6,11 @@ test('every paid or zero-price licence shows the subscription prerequisite befor
 });
 test('catalogue, knowledge base, connection wizard and financial terms explain the same prerequisite',()=>{
  const plans=JSON.parse(read('../subscription-plans.json'));assert.ok(plans.conditions.some(x=>x.includes('Бессрочная покупка плагина не заменяет подписку')));assert.ok(plans.conditions.some(x=>x.includes('лицензии сохраняются')));
- for(const [name,pattern] of [['./knowledge-base.js',/Бессрочная покупка сохраняет лицензию/],['./app.js',/data-connection-subscription-note/],['./billing.js',/включая купленные навсегда/],['./learning.js',/в том числе купленных навсегда/],['../index.html',/Бессрочная покупка плагина не заменяет подписку/],['./index.html',/Бессрочная покупка плагина не заменяет подписку/]])assert.match(read(name),pattern);
+ for(const [name,pattern] of [['./knowledge-base.js',/Бессрочная покупка сохраняет лицензию/],['./app.js',/data-connection-subscription-note/],['./billing.js',/включая купленные навсегда/],['./learning.js',/в том числе купленных навсегда/],['./index.html',/Бессрочная покупка плагина не заменяет подписку/]])assert.match(read(name),pattern);
+ // The owner removed the landing block «Что входит в стоимость» (14.11.2026); the redesigned landing states the
+ // same prerequisite in its tariff FAQ. The meaning stays mandatory: active plan, lifetime plugins included, licences kept.
+ const landing=read('../index.html').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ');
+ assert.match(landing,/нужен активный тариф или пробный период/);assert.match(landing,/Это условие действует и для плагинов, купленных навсегда/);assert.match(landing,/Лицензии сохраняются после окончания подписки/);
  assert.match(read('./subscription-access.js'),/подключение|Подключение/);assert.match(read('./subscription-access.js'),/'zetslay.priority-orders':0/);
 });
 test('new legal version preserves the previous immutable definition and links to its archive',()=>{

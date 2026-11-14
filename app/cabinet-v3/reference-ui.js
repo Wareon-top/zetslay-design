@@ -340,6 +340,12 @@
     const route=target.dataset.zsfRoute;if(route){event.preventDefault();event.stopImmediatePropagation();if(!closeModal())return;setView(route);return;}
     if(target.hasAttribute('data-zs-editor')){event.preventDefault();event.stopImmediatePropagation();openModal('account',target);}
   },true);
+  // Host overlays that are not native dialogs (FunPay wizard, sign-in) would open under the detail dialog,
+  // which sits in the browser top layer. Close the detail first (moved nodes go back), then run the host once.
+  for(const name of ['setModal','setAuthModal']){
+    const host=window[name];if(typeof host!=='function')continue;
+    window[name]=function(open,...args){if(open&&modal&&!closeModal())return;return host.call(this,open,...args);};
+  }
   document.addEventListener('keydown',event=>{
     const tab=event.target.closest?.('[data-zsf-product-tab]');if(!tab||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
     const list=$$('[data-zsf-product-tab]',tab.parentElement),i=list.indexOf(tab);let n=event.key==='Home'?0:event.key==='End'?list.length-1:i+(event.key==='ArrowRight'?1:-1);

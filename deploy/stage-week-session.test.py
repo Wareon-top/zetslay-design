@@ -5,12 +5,15 @@ import shutil
 import re
 import unittest
 BASE=Path(__file__).resolve().parents[1]
+# The week-session installer targets the legacy landing; the redesigned landing ships sessions itself.
+LEGACY=BASE/'deploy/fixtures/week-session-legacy-landing.html'
 spec=importlib.util.spec_from_file_location('stage',Path(__file__).with_name('stage-week-session.py'));module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
 class StageTests(unittest.TestCase):
     def test_upgrades_legacy_tab_login_without_replacing_other_sections(self):
         with tempfile.TemporaryDirectory() as tmp:
             local=Path(tmp)/'local';local.mkdir();(local/'app').mkdir()
             for name in ['index.html','app/index.html','app/app.js','app/account-security.js']:shutil.copy2(BASE/name,local/name)
+            shutil.copy2(LEGACY,local/'index.html')
             p=local/'app/app.js';text=p.read_text()
             a,b=module.span(text,'async function restoreSession()','\nasync function initializeAuthFlow(')
             text=text[:a]+"async function restoreSession() { /* old tab-only login */ }\n"+text[b:]
@@ -32,6 +35,7 @@ class StageTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             local=Path(tmp)/'local';local.mkdir();(local/'app').mkdir()
             for name in ['index.html','app/index.html','app/app.js','app/account-security.js']:shutil.copy2(BASE/name,local/name)
+            shutil.copy2(LEGACY,local/'index.html')
             for name in ['index.html','app/app.js']:
                 p=local/name;p.write_text(p.read_text()+('\n<!-- OWNER CUSTOM FOOTER -->\n' if name.endswith('html') else '\n// OWNER CUSTOM PLUGINS\n'))
             out=Path(tmp)/'out';module.stage(local,BASE,out)
@@ -40,10 +44,18 @@ class StageTests(unittest.TestCase):
             second=Path(tmp)/'second';module.stage(out,BASE,second)
             self.assertEqual((second/'index.html').read_text().count('data-session-cabinet'),2)
             self.assertEqual((second/'app/app.js').read_text().count('async function logoutSession('),1)
+    def test_redesigned_landing_is_refused_without_changes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            local=Path(tmp)/'local';local.mkdir();(local/'app').mkdir()
+            for name in ['index.html','app/index.html','app/app.js','app/account-security.js']:shutil.copy2(BASE/name,local/name)
+            before=(local/'index.html').read_bytes();out=Path(tmp)/'out'
+            with self.assertRaisesRegex(ValueError,'landing-v2'):module.stage(local,BASE,out)
+            self.assertFalse(out.exists());self.assertEqual((local/'index.html').read_bytes(),before)
     def test_unknown_shape_does_not_modify_source(self):
         with tempfile.TemporaryDirectory() as tmp:
             local=Path(tmp)/'local';local.mkdir();(local/'app').mkdir()
             for name in ['index.html','app/index.html','app/app.js','app/account-security.js']:shutil.copy2(BASE/name,local/name)
+            shutil.copy2(LEGACY,local/'index.html')
             p=local/'app/app.js';p.write_text(p.read_text().replace('async function restoreSession()','async function renamedRestore()'))
             before=p.read_text();out=Path(tmp)/'out'
             with self.assertRaises(ValueError):module.stage(local,BASE,out)

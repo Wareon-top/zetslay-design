@@ -1,3 +1,6 @@
+// The launch announcement was retired at the owner's request (13.11.2026, commit b8d1510).
+// This browser check keeps it retired: an authenticated dashboard on desktop and mobile waits well past
+// the old quiet delay and must show no launch card, write no announcement storage and raise no errors.
 const {chromium} = require(process.env.ZETSLAY_PLAYWRIGHT_MODULE || 'playwright');
 const fs = require('fs'), http = require('http'), path = require('path'), assert = require('assert');
 const site = path.resolve(__dirname, '..');
@@ -8,124 +11,53 @@ const server = http.createServer((req, res) => {
   let file = path.join(site, decodeURIComponent(url.pathname));
   if (url.pathname.endsWith('/')) file = path.join(file, 'index.html');
   if (!file.startsWith(site + path.sep) || !fs.existsSync(file) || !fs.statSync(file).isFile()) {res.statusCode = 404; return res.end();}
-  const types = {'.html':'text/html', '.css':'text/css', '.js':'application/javascript', '.svg':'image/svg+xml', '.jpg':'image/jpeg', '.webp':'image/webp', '.woff2':'font/woff2', '.woff':'font/woff'};
+  const types = {'.html':'text/html', '.css':'text/css', '.js':'application/javascript', '.svg':'image/svg+xml', '.jpg':'image/jpeg', '.webp':'image/webp', '.png':'image/png', '.woff2':'font/woff2', '.woff':'font/woff'};
   res.setHeader('Content-Type', types[path.extname(file)] || 'application/json');
   res.end(fs.readFileSync(file));
 });
 (async () => {
+  const html = fs.readFileSync(path.join(site, 'app/index.html'), 'utf8');
+  assert.doesNotMatch(html, /launch-announcement\.(?:js|css)/, 'The cabinet must not load the retired launch announcement');
   await new Promise(r => server.listen(0, '127.0.0.1', r));
   const base = 'http://127.0.0.1:' + server.address().port;
   const browser = await chromium.launch({executablePath:process.env.ZETSLAY_TEST_BROWSER_PATH || undefined, headless:true, args:['--no-sandbox']});
-  const context = await browser.newContext({viewport:{width:1440, height:1000}}), errors=[];
+  const errors = [];
   try {
-    await context.route('**/*', r => r.request().url().startsWith(base) ? r.continue() : r.fulfill({status:401, contentType:'application/json', body:'{"error":{"code":"UNAUTHORIZED"}}'}));
-    async function prepare(page, user='launch-user') {
-      page.on('pageerror', e => errors.push(e.message));
+    for (const [name, viewport, mobile] of [['desktop', {width:1440, height:1000}, false], ['mobile', {width:390, height:844}, true]]) {
+      const context = await browser.newContext({viewport, isMobile:mobile, hasTouch:mobile});
+      await context.route('**/*', r => r.request().url().startsWith(base) ? r.continue() : r.fulfill({status:401, contentType:'application/json', body:'{"error":{"code":"UNAUTHORIZED"}}'}));
+      const page = await context.newPage();
+      page.on('pageerror', e => errors.push(name + ': ' + e.message));
       await page.clock.install();
       await page.goto(base + '/app/');
-      await page.waitForFunction(() => !!window.ZetSlayLaunchAnnouncement);
-      await page.evaluate(user => {
-        window.launchFixture = {requests:[]};
-        apiRequest = async (p,o={}) => {
-          launchFixture.requests.push({path:p,method:o.method || 'GET'});
-          if (p === '/api/v1/learning') return {version:1,revision:1,welcomeSeen:true,status:'completed',step:5};
-          if (p === '/api/v1/subscription/status') return {workspace:authState.workspace,trial:{state:'used'},discounts:[]};
+      await page.waitForFunction(() => typeof renderAuthState === 'function' && typeof setView === 'function');
+      await page.evaluate(() => {
+        apiRequest = async p => {
+          if (p === '/api/v1/learning') return {version:1, revision:1, welcomeSeen:true, status:'completed', step:5};
+          if (p === '/api/v1/subscription/status') return {workspace:authState.workspace, trial:{state:'used'}, discounts:[]};
           return {};
         };
-        authState.user={id:user,email:'launch-test@example.invalid'};
-        authState.token='local-browser-fixture';
-        authState.workspace={id:'launch-workspace',plan:{active:false},pluginLicenses:[]};
-        state.storeFleet={selectedStoreId:null,stores:[],capacity:{used:0,limit:1}};
-        renderAuthState();setAuthModal(false);setView('dashboard');
-        document.activeElement?.blur();
-      }, user);
-      await page.clock.fastForward(600);
+        authState.user = {id:'launch-user', email:'launch-test@example.invalid'};
+        authState.token = 'local-browser-fixture';
+        authState.workspace = {id:'launch-workspace', plan:{active:false}, pluginLicenses:[]};
+        state.storeFleet = {selectedStoreId:null, stores:[], capacity:{used:0, limit:1}};
+        renderAuthState(); setAuthModal(false); setView('dashboard'); document.activeElement?.blur();
+      });
+      // The retired card used a 3 s quiet delay; wait far beyond it, then across a week of cadence.
+      await page.clock.fastForward(15000);
+      await page.waitForTimeout(300);
+      assert.equal(await page.locator('.launch-notice, [class*="launch-notice"]').count(), 0, name + ': launch card is shown');
+      assert.equal(await page.evaluate(() => typeof window.ZetSlayLaunchAnnouncement), 'undefined', name + ': launch controller is active');
+      assert.equal(await page.evaluate(() => Object.keys(localStorage).filter(k => k.startsWith('zetslay.announcement.')).length), 0, name + ': announcement storage written');
+      await page.evaluate(() => setView('orders')); await page.evaluate(() => setView('dashboard'));
+      await page.clock.fastForward(8 * 86400000);
+      assert.equal(await page.locator('.launch-notice').count(), 0, name + ': launch card returns after a week');
+      await page.screenshot({path:path.join(out, `launch-retired-${name}.png`)});
+      await context.close();
     }
-    async function show(page) {
-      await page.clock.fastForward(4000);
-      await page.locator('.launch-notice').waitFor();
-      await page.waitForTimeout(550);
-    }
-    const page = await context.newPage();
-    await prepare(page);
-    await page.evaluate(() => {const d=document.createElement('dialog');d.id='launch-test-blocker';d.innerHTML='<button>Продолжить</button>';document.body.append(d);d.showModal();});
-    await page.clock.fastForward(5000);
-    assert.equal(await page.locator('.launch-notice').count(), 0);
-    assert.equal(await page.evaluate(() => Object.keys(localStorage).filter(k=>k.startsWith('zetslay.announcement.')).length), 0);
-    await page.evaluate(() => {document.querySelector('#launch-test-blocker').remove();document.activeElement?.blur();});
-    await show(page);
-    assert.equal(await page.locator('.launch-notice').getAttribute('aria-labelledby'), 'launch-notice-title');
-    assert.equal(await page.evaluate(() => document.activeElement.closest('.launch-notice') === null), true);
-    assert.equal(await page.locator('.launch-notice__cover img').evaluate(n=>n.complete && n.naturalWidth>0), true);
-    assert.equal(await page.locator('.launch-author__avatar').evaluate(n=>n.complete && n.naturalWidth>0), true);
-    assert.equal(await page.locator('.launch-notice__body button, .launch-notice .launch-eyebrow').count(),0);
-    const proportions=await page.locator('.launch-notice__cover').evaluate(n=>({ratio:n.clientWidth/n.clientHeight,body:getComputedStyle(n.closest('.launch-notice')).backgroundColor}));
-    assert.ok(Math.abs(proportions.ratio-16/9)<.02);
-    assert.match(proportions.body,/13, 13, 13/);
-    await page.screenshot({path:path.join(out,'launch-desktop.png')});
-    if (process.env.ZETSLAY_LAUNCH_INLINE_PREVIEW === '1') {
-      const preview = await page.locator('.launch-notice').screenshot();
-      console.log('LAUNCH_PREVIEW=' + preview.toString('base64'));
-    }
-    await page.locator('.launch-notice__cover').hover();
-    await page.waitForTimeout(550);
-    assert.equal(await page.locator('.launch-notice__more').evaluate(n=>getComputedStyle(n).opacity),'1');
-    await page.screenshot({path:path.join(out,'launch-hover-desktop.png')});
-    await page.locator('.launch-notice__more').click();
-    await page.locator('.launch-article[open]').waitFor();
-    assert.match(await page.locator('.launch-access').textContent(), /кроме легендарных/);
-    assert.equal(await page.evaluate(()=>document.querySelector('.launch-article').contains(document.activeElement)), true);
-    await page.keyboard.press('Shift+Tab');
-    assert.equal(await page.evaluate(()=>document.querySelector('.launch-article').contains(document.activeElement)), true);
-    await page.screenshot({path:path.join(out,'launch-article-desktop.png')});
-    if (process.env.ZETSLAY_LAUNCH_INLINE_PREVIEW === '1') console.log('LAUNCH_ARTICLE_PREVIEW=' + (await page.locator('.launch-article').screenshot()).toString('base64'));
-    await page.keyboard.press('Escape');
-    assert.equal(await page.locator('.launch-article').count(), 0);
-    await page.clock.fastForward(5000);
-    assert.equal(await page.locator('.launch-notice').count(), 0);
-    // Re-open the real cabinet in the same browser: the stored preference survives.
-    const second = await context.newPage();await prepare(second);await second.clock.fastForward(5000);
-    assert.equal(await second.locator('.launch-notice').count(), 0);
-    await second.close();await page.bringToFront();
-    // Move the clock past the interval without firing seven days of unrelated timers.
-    await page.clock.setSystemTime(Date.now()+7*86400000+60000);
-    await page.evaluate(()=>ZetSlayLaunchAnnouncement.refresh());await show(page);
-    await page.setViewportSize({width:390,height:844});
-    await page.emulateMedia({reducedMotion:'reduce'});
-    const rect = await page.locator('.launch-notice').boundingBox();
-    assert.ok(rect.x>=15 && rect.x+rect.width<=375 && rect.y>=15 && rect.y+rect.height<=829);
-    assert.equal(await page.locator('.launch-notice').evaluate(n=>getComputedStyle(n).animationName), 'none');
-    await page.screenshot({path:path.join(out,'launch-mobile.png')});
-    if (process.env.ZETSLAY_LAUNCH_INLINE_PREVIEW === '1') console.log('LAUNCH_MOBILE_PREVIEW=' + (await page.locator('.launch-notice').screenshot()).toString('base64'));
-    await page.locator('.launch-notice__more').click();
-    await page.locator('.launch-article[open]').waitFor();
-    assert.equal(await page.locator('.launch-article').evaluate(n=>n.scrollWidth<=n.clientWidth), true);
-    await page.screenshot({path:path.join(out,'launch-article-mobile.png')});
-    await page.locator('[data-launch-route="billing"]').click();
-    assert.equal(await page.locator('[data-view].is-active').getAttribute('data-view'), 'billing');
-    assert.equal(await page.locator('.launch-article').count(),0);
-    // Switching account must not inherit the previous user's dismissal.
-    await page.evaluate(()=>{resetAccountData();authState.user.id='launch-second-user';authState.token='rotated-fixture';sessionGeneration++;renderAuthState();setView('dashboard');document.activeElement?.blur();});
-    await show(page);
-    await page.setViewportSize({width:390,height:480});
-    assert.equal(await page.locator('.launch-notice').evaluate(n=>n.scrollWidth<=n.clientWidth && n.getBoundingClientRect().top>=15),true);
-    await page.locator('.launch-close').click();assert.equal(await page.locator('.launch-notice').count(),0);
-    await page.evaluate(()=>{setView('orders');setView('dashboard');});await page.clock.fastForward(5000);assert.equal(await page.locator('.launch-notice').count(),0);
-    const requests=await page.evaluate(()=>launchFixture.requests);
-    assert.deepEqual(requests.filter(r=>r.method!=='GET'),[]);
-    assert.equal(requests.some(r=>/payments\/(topup|purchase)/.test(r.path)),false);
-    assert.deepEqual(errors,[]);
-    const touchContext=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true,reducedMotion:'reduce'});
-    await touchContext.route('**/*',r=>r.request().url().startsWith(base)?r.continue():r.fulfill({status:401,contentType:'application/json',body:'{"error":{"code":"UNAUTHORIZED"}}'}));
-    const touch=await touchContext.newPage();await prepare(touch,'launch-touch');await show(touch);
-    assert.equal(await touch.locator('.launch-notice__more').evaluate(n=>getComputedStyle(n).opacity),'1');
-    assert.equal(await touch.locator('.launch-notice__more').evaluate(n=>getComputedStyle(n).backdropFilter),'none');
-    await touch.screenshot({path:path.join(out,'launch-touch.png')});
-    if(process.env.ZETSLAY_LAUNCH_INLINE_PREVIEW==='1')console.log('LAUNCH_TOUCH_PREVIEW='+(await touch.locator('.launch-notice').screenshot()).toString('base64'));
-    await touch.locator('.launch-notice__more').tap();await touch.locator('.launch-article[open]').waitFor();await touch.locator('.launch-article .launch-close').tap();
-    assert.equal(await touch.locator('.launch-article').count(),0);
-    await touchContext.close();
-    assert.deepEqual(errors,[]);
-    console.log(JSON.stringify({passed:true,realCabinet:true,referenceCover:true,weeklyCadence:true,overlayPriority:true,accountIsolation:true,mobile:true,touchAction:true,reducedMotion:true,financialWrites:0,browserErrors:errors}));
-  } finally {await browser.close();server.close();}
-})().catch(error=>{console.error(error);server.close();process.exitCode=1;});
+    assert.deepEqual(errors, []);
+    console.log('Launch announcement stays retired on desktop and mobile.');
+  } finally {
+    await browser.close(); server.close();
+  }
+})().catch(error => { console.error(error); process.exit(1); });

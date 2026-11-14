@@ -157,6 +157,25 @@ with sync_playwright() as p:
     page.locator('[data-view="telegram"] [data-bot-settings-open]').click();page.wait_for_timeout(100)
     check('real bot settings open',page.locator('.bot-settings-dialog').is_visible())
     page.evaluate('botSettingsClose()')
+    # Release review P1: the profile path must reach a usable FunPay wizard. The detail <dialog> lives in the
+    # browser top layer, so visibility alone is not enough — the wizard must receive the pointer and input.
+    def wizard_via_profile(label):
+        page.evaluate("setView('profile')");page.wait_for_timeout(300)
+        page.locator('[data-zsf-open="connection"]').first.click();page.wait_for_timeout(300)
+        page.locator('.zsf-detail [data-profile-connect]').first.click();page.wait_for_timeout(350)
+        state=page.evaluate("(()=>{const w=document.querySelector('.connect-modal'),b=w?.querySelector('[data-close-connect]'),r=b?.getBoundingClientRect();return {detail:!!document.querySelector('dialog.zsf-detail[open]'),wizard:!!w&&!w.hidden,top:r?w.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)):false}})()")
+        check(f'profile → detail → real FunPay wizard is on top ({label})',state=={'detail':False,'wizard':True,'top':True})
+        field=page.locator('.connect-modal input:visible, .connect-modal textarea:visible').first
+        typed=True
+        if field.count():field.fill('qa');typed=field.input_value()=='qa'
+        page.locator('.connect-modal [data-close-connect]').first.click();page.wait_for_timeout(300)
+        check(f'wizard from profile takes input and closes ({label})',typed and page.locator('.connect-modal').is_hidden() and not page.evaluate("!!document.querySelector('dialog.zsf-detail[open]')"))
+    wizard_via_profile('connected, 1440')
+    page.set_viewport_size({'width':390,'height':844});wizard_via_profile('connected, 390');page.set_viewport_size({'width':1440,'height':1000})
+    read_data['/api/v1/funpay/connection']={'connected':False,'store':None}
+    page.evaluate('loadStoreFleet()');page.wait_for_timeout(300);page.evaluate('renderStoreFleet()')
+    wizard_via_profile('not connected, 1440')
+    page.set_viewport_size({'width':390,'height':844});wizard_via_profile('not connected, 390');page.set_viewport_size({'width':1440,'height':1000})
     # A complete public catalog must not fall back to generic artwork for known plugins.
     public_catalog=json.loads((Path(__file__).resolve().parents[1]/'subscription-plans.json').read_text(encoding='utf-8'))
     public_plugins=[plugin for group in public_catalog['pluginGroups'] for plugin in group['plugins']]
