@@ -96,7 +96,7 @@
     const root=$('[data-view="billing"]'),pricing=$('[data-billing-pricing]',root),P=window.ZetSlayPricing;if(!root||!pricing||!P)return;
     if(!root.dataset.referenceBilling){
       root.dataset.referenceBilling='true';const tabs=make('nav','sec-tabs','<div class="tabs">'+[['plans','Тарифы'],['balance','Баланс и платежи'],['licenses','Лицензии']].map(([id,t])=>`<a class="tab" href="#billing/${id}" data-zsf-route="billing/${id}">${t}</a>`).join('')+'</div>');tabs.setAttribute('aria-label','Подписка и баланс');$('.zs-cover',root).after(tabs);
-      const access=make('section','acc-card',`<img class="acc-card__sky" src="cabinet-v3/assets/img/cover-sunset.webp" alt=""><div class="acc-card__copy"><span class="acc-card__eyebrow">Ваш доступ</span><h2 data-zsf-access-name></h2><div data-zsf-rarities></div><p data-zsf-access-until></p><div data-zsf-access-meter></div></div>${image('subscription','acc-card__art')}`);access.dataset.zsfBillPart='plans';tabs.after(access);
+      const access=make('section','acc-card',`<img class="acc-card__sky" src="cabinet-v3/assets/img/cover-sunset.webp" alt=""><div class="acc-card__copy"><span class="acc-card__eyebrow">Ваш доступ</span><h2 data-zsf-access-name></h2><div data-zsf-rarities></div><p data-zsf-access-until></p><div data-zsf-access-meter></div></div>${image('plan-'+(['start','growth','pro','maximum'].includes(plan().id)?plan().id:'start'),'acc-card__art')}`);access.dataset.zsfBillPart='plans';tabs.after(access);
       pricing.dataset.zsfBillPart='plans';
       for(const n of $$('.billing-summary,.billing-store,[data-payments-history]',root))n.dataset.zsfBillPart='balance';
       const licenses=make('section','cab-panel zsf-licenses','<header class="cab-panel__head"><div><h2>Лицензии плагинов</h2><p>Отдельно купленные бессрочные лицензии сохраняются в аккаунте</p></div></header><div data-zsf-license-list></div>');licenses.dataset.zsfBillPart='licenses';pricing.after(licenses);
@@ -109,21 +109,31 @@
     const meter=$('[data-zsf-access-meter]',root),end=Date.parse(current.expiresAt),start=Date.parse(current.activatedAt);
     const days=Number.isFinite(end)?Math.max(0,Math.ceil((end-Date.now())/86400000)):null,total=Number.isFinite(start)&&end>start?Math.ceil((end-start)/86400000):null;
     const meterText=total!==null?`<div class="acc-meter" role="meter" aria-label="Осталось дней доступа" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${Math.min(days,total)}"><i style="width:${Math.min(100,days/total*100)}%"></i></div><div class="acc-meter__legend"><b>Осталось ${days} дней</b><span>из ${total}</span></div>`:'';html(meter,meterText);
-    const plans=$$('[data-pricing-plan]',pricing);plans[0]?.parentElement.classList.add('tar-grid');
-    for(const card of plans){
+    const plans=$$('[data-pricing-plan]',pricing),grid=plans[0]?.parentElement;
+    const groupSize={};let totalPlugins=0;for(const g of P.pluginGroups){groupSize[g.rarity]=g.plugins.length;totalPlugins+=g.plugins.length;}
+    const countOf=pl=>pl.includes.reduce((a,k)=>a+(groupSize[k]||0),0),plu=n=>n%10===1&&n%100!==11?'плагин':n%10>=2&&n%10<=4&&(n%100<12||n%100>14)?'плагина':'плагинов';
+    const kinds={1:'Обычные',2:'Обычные и продвинутые',3:'Все, кроме легендарных',4:'Все четыре редкости'};
+    if(grid&&!grid.closest('.pstage')){
+      grid.classList.remove('tar-grid');grid.classList.add('pc2-grid');
+      const head=$('.landing-pricing__heading',pricing),trial=$('[data-pricing-trial]',pricing),stage=make('section','pstage',`<img class="pstage__sky" src="cabinet-v3/assets/img/cover-sunset.webp" alt="" loading="lazy" decoding="async">`);
+      grid.before(stage);if(head){head.classList.add('pstage__head');stage.append(head);}stage.append(grid);if(trial)stage.append(trial);
+    }
+    for(const [n,card] of plans.entries()){
       const p=P.plans.find(p=>p.id===card.dataset.pricingPlan);if(!p)continue;
       if(!card.dataset.reference){
         card.dataset.reference='true';const price=$('[data-pricing-price]',card),original=$('[data-pricing-original]',card),note=$('[data-pricing-note]',card),button=$('[data-billing-plan]',card),badge=$('[data-billing-current]',card);
-        card.className='pricing-card tar tar--'+p.palette+(p.featured?' tar--featured':'');
-        card.innerHTML=(p.featured?`<span class="tar__ribbon">${I('sparkle')}${E(p.featured)}</span>`:'')+`<header class="tar__head"><div class="tar__name"><h3 id="billing-pricing-${p.id}-title">${E(p.name)}</h3>${rarity(p.includes)}</div>${image(({start:'cat-tools',growth:'plg-prices',pro:'plg-ai',maximum:'cat-rent'})[p.id],'tar__art')}</header><p class="tar__desc">${E(p.description)}</p><div class="tar__price" data-zsf-price><span>/ мес</span></div><div data-zsf-plan-note></div><div data-zsf-plan-button></div><ul class="tar__feat">${p.features.slice(0,4).map(t=>`<li>${I('check')}<span>${E(t)}</span></li>`).join('')}</ul>${p.features.length>4?`<details class="tar__more"><summary>Ещё ${p.features.length-4} возможности ${I('chevron')}</summary><ul class="tar__feat">${p.features.slice(4).map(t=>`<li>${I('check')}<span>${E(t)}</span></li>`).join('')}</ul></details>`:''}<footer class="tar__foot"><strong>${E(p.footer)}</strong><small>${E(p.footerDescription)}</small></footer>`;
-        const value=$('[data-zsf-price]',card);if(price){price.classList.add('num');value.prepend(price);}if(original)value.append(original);
-        if(note){note.className='tar__note num';$('[data-zsf-plan-note]',card).replaceWith(note);}
-        if(button){button.className='pricing-card__cta btn btn--block '+(p.featured?'btn--light':'btn--primary');$('[data-zsf-plan-button]',card).replaceWith(button);}
-        if(badge){badge.classList.add('zsf-current-plan');$('.tar__head',card).append(badge);}
+        const cnt=countOf(p),next=P.plans[P.plans.indexOf(p)+1];
+        const more=next?`В «${E(next.name)}» — ещё ${countOf(next)-cnt} ${plu(countOf(next)-cnt)}`:`Все ${totalPlugins} плагинов каталога ZetSlay`;
+        card.className='pricing-card pc2'+(p.featured?' pc2--featured':'');
+        card.innerHTML=`${image('plan-'+p.id,'pc2__art')}<h3 id="billing-pricing-${p.id}-title">${E(p.name)}${p.featured?` <span class="pc2__badge">${E(p.featured)}</span>`:''}</h3><div class="pc2__price" data-zsf-price><span>в месяц</span></div><div data-zsf-plan-note></div><div class="pc2__plugins"><p><strong>${cnt} ${plu(cnt)}</strong> в подписке</p><small>${kinds[p.includes.length]||''}</small><p class="pc2__more">${more}</p></div><p class="pc2__label">Что входит:</p><ul class="pc2__feat">${p.features.map(t=>`<li>${I('check')}<span>${E(t)}</span></li>`).join('')}</ul><div data-zsf-plan-button></div>`;
+        const value=$('[data-zsf-price]',card);if(price){price.classList.add('num');value.prepend(price);}if(original){original.classList.add('num');price?price.after(original):value.prepend(original);}
+        if(note){note.className='pc2__note num';$('[data-zsf-plan-note]',card).replaceWith(note);}else $('[data-zsf-plan-note]',card).remove();
+        if(button){button.className='pricing-card__cta pc2__cta';$('[data-zsf-plan-button]',card).replaceWith(button);}else $('[data-zsf-plan-button]',card).remove();
+        if(badge){badge.classList.add('zsf-current-plan');$('h3',card).append(badge);}
       }
       card.classList.toggle('is-current',p.id===current.id);
     }
-    const picker=$('[data-pricing-periods]',pricing);if(picker){picker.classList.add('per-seg');for(const b of $$('button',picker))b.classList.add('per-seg__opt');}
+    const picker=$('[data-pricing-periods]',pricing);if(picker){picker.classList.add('zs-periods');}
     const platform=$('[data-pricing-platform]',pricing);if(platform){platform.classList.add('cab-panel');label($('h3',platform),'Во всех тарифах');$('ul',platform)?.classList.add('pf-grid');for(const li of $$('li',platform))li.classList.add('pf');}
     const shell=$('.landing-pricing__shell',pricing),notes=$('.landing-pricing__notes',pricing);if(notes&&!notes.closest('details')){const detail=make('details','cab-panel zsf-terms','<summary><strong>Условия подписки</strong><span>Срок доступа, оплата, ограничения и возвраты</span></summary>');notes.before(detail);detail.append(notes);}
     const comparisonSource=$('[data-pricing-comparison]',pricing);if(comparisonSource&&!$('[data-zsf-rarity-matrix]',pricing)){
@@ -177,7 +187,7 @@
       group.classList.add('cgroup');$('.zs-catalog-group-head',group)?.classList.add('cgroup__head');$('.zs-catalog-tiles',group)?.classList.add('cgroup__grid');
     }
     for(const card of $$('.zs-plugin-tile',root)){
-      if(card.dataset.reference)return;card.dataset.reference='true';card.classList.add('pcard');
+      if(card.dataset.reference)continue;card.dataset.reference='true';card.classList.add('pcard');
       const bg=make('span','pcard__bg');bg.setAttribute('aria-hidden','true');card.prepend(bg);
       const cover=$('.plugin-card__cover',card),img=$('img',cover||card);if(img){img.classList.add('pcard__icon');card.prepend(img);}
       const body=$('.plugin-card__body',card);body?.classList.add('pcard__body');$('h3,h2',card)?.classList.add('pcard__name');$('.plugin-card__body>p',card)?.classList.add('pcard__desc');
@@ -222,14 +232,24 @@
     if(modal.kind==='account'){
       const fresh=$('[data-profile] .profile-editor');
       if(fresh&&!modal.body.contains(fresh)){for(const old of $$('.profile-editor',modal.body))old.remove();moveToModal(fresh);}
-      const button=$('[data-zsf-save]',modal.dialog);if(button){const busy=profileState.saving===true;button.disabled=busy;button.textContent=busy?'Сохраняем…':'Сохранить изменения';button.setAttribute('aria-busy',String(busy));}
+      mirrorSave();
     }
     for(const panel of $$('.zsf-modal-source .profile-panel',modal.dialog))panel.classList.add('block');
+  }
+  /* The host form owns the save lifecycle (busy, failure, retry). Mirror its submit button so a failed
+     save that only resets the button in profile.js `finally` also releases the dialog button. */
+  function mirrorSave(){
+    if(!modal||modal.kind!=='account')return;
+    const button=$('[data-zsf-save]',modal.dialog),host=$('[data-profile-form] [type="submit"]',modal.body);if(!button)return;
+    const apply=()=>{const busy=host?host.disabled&&profileState.saving===true:profileState.saving===true;button.disabled=busy||!host;button.textContent=busy?'Сохраняем…':'Сохранить изменения';button.setAttribute('aria-busy',String(busy));};
+    if(modal.saveObserver&&modal.saveHost!==host){modal.saveObserver.disconnect();modal.saveObserver=null;}
+    if(host&&!modal.saveObserver){modal.saveHost=host;modal.saveObserver=new MutationObserver(apply);modal.saveObserver.observe(host,{attributes:true,attributeFilter:['disabled'],childList:true,characterData:true,subtree:true});}
+    apply();
   }
   function closeModal(discard=false,force=false){
     if(!modal)return true;if(!force&&modal.kind==='account'&&profileState.saving)return false;
     if(!force&&modal.kind==='account'&&profileState.dirty&&!discard){html($('[data-zsf-draft-note]',modal.dialog),'Есть несохранённые изменения <button type="button" class="btn btn--quiet" data-zsf-discard>Закрыть без сохранения</button>');return false;}
-    const current=modal;modal=null;
+    const current=modal;modal=null;current.saveObserver?.disconnect();
     if(discard&&typeof profileState!=='undefined'){profileState.dirty=false;profileState.avatarDraft=null;}
     for(const {node,marker}of current.moved){node.classList.remove('zsf-modal-source');if(marker.isConnected){marker.replaceWith(node);}else if(node.isConnected&&node.matches('.profile-editor'))$('[data-zs-profile-editor]')?.append(node);if(node.matches('[data-view]')){node.hidden=true;node.classList.remove('is-active');}}
     current.dialog.close();current.dialog.remove();document.body.classList.remove('zsf-detail-open');if(current.opener?.isConnected)current.opener.focus();

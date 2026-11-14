@@ -1,0 +1,186 @@
+/* Fidelity pass (Claude, 2026-11-14): aligns real host screens with the all-sections handoff
+   (zetslay-all-sections-design-handoff.zip). Loaded last; only presentation. Every control that
+   carries a data-* contract stays in the DOM and stays operable. */
+
+/* ---------- catalog: one banner title, compact toolbar, cabinet-style 4-column cards ---------- */
+.zs-production.zs-reference [data-view="plugins"] > .view-heading{display:flex;justify-content:flex-end;min-height:0;margin:18px 0 -8px;padding:0}
+.zs-production.zs-reference [data-view="plugins"] > .view-heading > div:first-child{display:none}
+.zs-production.zs-reference [data-view="plugins"] .catalog-count{display:inline-flex;gap:6px;font-size:12.5px}
+.zs-production.zs-reference [data-view="plugins"] > .catalog-hero{display:none}
+.zs-production.zs-reference [data-view="plugins"] > .catalog-search{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;margin:18px 0 0;padding:0;background:none;box-shadow:none;border:0}
+.zs-production.zs-reference [data-view="plugins"] > .catalog-search > div:first-child{flex:1 1 280px;max-width:420px;min-width:0}
+.zs-production.zs-reference [data-view="plugins"] > .catalog-search .panel-label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.zs-production.zs-reference [data-view="plugins"] > .catalog-search .catalog-filter{flex:0 1 200px;min-width:0}
+.zs-production.zs-reference [data-view="plugins"] > .catalog-search input,
+.zs-production.zs-reference [data-view="plugins"] > .catalog-search select{width:100%;min-height:44px;border-radius:999px;background:#1c1c1e;border:0;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);color:#fff;font-size:14.5px;padding-inline:18px}
+.zs-production.zs-reference [data-view="plugins"] > .cat-pills{order:0;display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 0;padding:0;background:none;border:0}
+.zs-production.zs-reference [data-view="plugins"] > .cat-pills button{min-height:38px;padding:0 16px;border:0;border-radius:999px;background:#2c2c2e;color:#c7c7cc;font-size:14px;font-weight:550;box-shadow:none}
+.zs-production.zs-reference [data-view="plugins"] > .cat-pills button:hover{background:#3a3a3d;color:#fff}
+.zs-production.zs-reference [data-view="plugins"] > .cat-pills button.is-active{background:#fff;color:#151515}
+.zs-production.zs-reference [data-view="plugins"] > .cat-pills button svg{display:none}
+
+.zs-production.zs-reference #plugin-grid{gap:40px;margin-top:28px}
+.zs-production.zs-reference .zs-catalog-group{position:relative;padding:28px 28px 30px;border-radius:24px;background:#1c1c1e;overflow:visible}
+.zs-production.zs-reference .zs-catalog-group-head{display:flex;justify-content:space-between;align-items:flex-start;max-width:none;margin:0 0 6px;padding:0}
+.zs-production.zs-reference .zs-catalog-group-head h2{font-size:clamp(24px,2.2vw,30px);line-height:1.1;font-weight:650;letter-spacing:-.035em}
+.zs-production.zs-reference .zs-catalog-group-head p{margin-top:6px;font-size:14px;color:#98989f}
+.zs-production.zs-reference .zs-catalog-group-head > img{position:absolute;top:-30px;right:22px;width:112px;height:112px;object-fit:contain;transform:rotate(-6deg);filter:drop-shadow(-6px 16px 18px rgba(0,0,0,.55));pointer-events:none}
+.zs-production.zs-reference .zs-catalog-tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px 16px;padding-top:24px}
+
+.zs-production.zs-reference .zs-plugin-tile.pcard{--icon:96px;--hang:36px;position:relative;isolation:isolate;display:flex;flex-direction:column;min-width:0;min-height:0;margin:0;padding:calc(var(--icon) - var(--hang) + 50px) 18px 16px;border:0;border-radius:22px;background:none;box-shadow:none;overflow:visible}
+.zs-production.zs-reference .zs-plugin-tile .pcard__bg{position:absolute;z-index:-1;inset:var(--hang) 0 0 0;border-radius:20px;overflow:hidden;background:linear-gradient(180deg,#b84a1a 0%,#ae4518 55%,#b04a1c 100%);box-shadow:inset 0 1px 0 rgba(255,220,190,.28),inset 0 0 0 1px rgba(255,190,140,.12),0 14px 28px -14px rgba(0,0,0,.7)}
+.zs-production.zs-reference .zs-plugin-tile .pcard__bg::after{content:"";position:absolute;left:0;right:0;bottom:0;height:60px;pointer-events:none;background:url("assets/img/cover-sunset.webp") 50% 100%/150% auto no-repeat;-webkit-mask-image:linear-gradient(0deg,#000 0%,#000 52%,transparent 100%);mask-image:linear-gradient(0deg,#000 0%,#000 52%,transparent 100%)}
+.zs-production.zs-reference .zs-plugin-tile.pcard > .pcard__icon,
+.zs-production.zs-reference .plugin-catalog .zs-plugin-tile.pcard > .pcard__icon{position:absolute;z-index:2;top:0;left:12px;width:var(--icon);height:var(--icon);max-width:none;max-height:none;object-fit:contain;filter:drop-shadow(0 14px 16px rgba(0,0,0,.5));transition:transform .6s cubic-bezier(.23,1,.32,1)}
+.zs-production.zs-reference .zs-plugin-tile:hover > .pcard__icon{transform:translateY(-5px) rotate(-2deg)}
+.zs-production.zs-reference .zs-plugin-tile .plugin-card__cover{position:absolute;inset:var(--hang) 0 0 0;z-index:1;height:auto;margin:0;padding:0;background:none;border:0;overflow:visible}
+.zs-production.zs-reference .zs-plugin-tile .plugin-card__cover > a{position:absolute;inset:0;border-radius:20px}
+.zs-production.zs-reference .zs-plugin-tile .plugin-card__cover .plugin-rarity{position:absolute;top:12px;right:12px;min-height:24px;padding:0 9px;border-radius:999px;background:rgba(38,12,2,.55);color:#fff;font-size:11.5px;font-weight:650;box-shadow:none}
+.zs-production.zs-reference .zs-plugin-tile .pcard__body{position:relative;z-index:2;display:flex;flex-direction:column;gap:4px;flex:1;padding:0;pointer-events:none}
+.zs-production.zs-reference .zs-plugin-tile .pcard__body a,.zs-production.zs-reference .zs-plugin-tile .pcard__body button{pointer-events:auto}
+.zs-production.zs-reference .zs-plugin-tile .pcard__name{margin:0;font-size:17px;line-height:22px;font-weight:650;letter-spacing:-.015em;color:#fff}
+.zs-production.zs-reference .zs-plugin-tile .pcard__name a{color:inherit;text-decoration:none}
+.zs-production.zs-reference .zs-plugin-tile .pcard__desc{margin:0;font-size:13.5px;line-height:19px;color:#ffe6d6;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.zs-production.zs-reference .zs-plugin-tile .pcard__foot{display:flex;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:6px;margin-top:auto;padding-top:14px;border:0}
+.zs-production.zs-reference .zs-plugin-tile .pcard__price{display:inline-flex;align-items:center;min-height:30px;padding:0 13px;border-radius:999px;background:#fff;color:#151515;font-size:14px;font-weight:650}
+.zs-production.zs-reference .zs-plugin-tile .pcard__price strong{font:inherit;color:inherit}
+.zs-production.zs-reference .zs-plugin-tile .plugin-card__status{display:inline-flex;align-items:center;min-height:30px;padding:0 12px;border-radius:999px;background:rgba(38,12,2,.62);color:#fff;font-size:12.5px;font-weight:650;backdrop-filter:blur(6px)}
+.zs-production.zs-reference .zs-plugin-tile .plugin-card__navigation{position:absolute;top:calc(var(--hang) + 12px);right:12px;margin:0;padding:0;border:0}
+.zs-production.zs-reference .zs-plugin-tile .plugin-card__navigation a{display:grid;place-items:center;width:32px;height:32px;padding:0;border-radius:50%;background:rgba(38,12,2,.3);color:#fff;font-size:0;line-height:0;transition:background-color .3s,transform .3s}
+.zs-production.zs-reference .zs-plugin-tile .plugin-card__navigation a svg{width:16px;height:16px}
+.zs-production.zs-reference .zs-plugin-tile:hover .plugin-card__navigation a{background:rgba(38,12,2,.5);transform:translateX(2px)}
+.zs-production.zs-reference .zs-plugin-tile .plugin-card__cover .plugin-rarity + *{display:none}
+/* rarity badge sits where the chevron is in the reference; move it into the footer row visually */
+.zs-production.zs-reference .zs-plugin-tile .plugin-card__cover .plugin-rarity{top:auto;bottom:16px;right:16px}
+
+@media (max-width:1279px){.zs-production.zs-reference .zs-catalog-tiles{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:1023px){.zs-production.zs-reference .zs-catalog-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:759px){
+  .zs-production.zs-reference .zs-catalog-group{padding:22px 14px 16px;border-radius:20px}
+  .zs-production.zs-reference .zs-catalog-group-head{padding-right:92px}
+  .zs-production.zs-reference .zs-catalog-group-head > img{top:-24px;right:8px;width:88px;height:88px}
+  .zs-production.zs-reference .zs-catalog-tiles{gap:14px 10px}
+  .zs-production.zs-reference .zs-plugin-tile.pcard{--icon:80px;--hang:30px;padding:calc(var(--icon) - var(--hang) + 40px) 12px 12px}
+  .zs-production.zs-reference .zs-plugin-tile .pcard__name{font-size:15.5px;line-height:20px}
+  .zs-production.zs-reference .zs-plugin-tile .pcard__desc{font-size:12.5px;line-height:17px}
+  .zs-production.zs-reference .zs-plugin-tile .plugin-card__cover .plugin-rarity{display:none}
+  .zs-production.zs-reference [data-view="plugins"] > .catalog-search > div:first-child{max-width:none;flex-basis:100%}
+  .zs-production.zs-reference [data-view="plugins"] > .catalog-search .catalog-filter{flex:1 1 140px}
+}
+@media (max-width:379px){.zs-production.zs-reference .zs-catalog-tiles{grid-template-columns:minmax(0,1fr)}}
+@media (prefers-reduced-motion:reduce){.zs-production.zs-reference .zs-plugin-tile:hover > .pcard__icon{transform:none}}
+
+/* ---------- shared chips: selected state is a white pill as in the handoff ---------- */
+.zs-production.zs-reference .period-switch button,
+.zs-production.zs-reference [data-orders-period],
+.zs-production.zs-reference [data-orders-status]{border-radius:999px}
+/* old plugin-card rules give the body a fixed min-height and make it the positioning context */
+.zs-production.zs-reference .zs-plugin-tile .pcard__body{position:static;min-height:0;height:auto}
+.zs-production.zs-reference .zs-plugin-tile .pcard__desc,.zs-production.zs-reference .zs-plugin-tile .pcard__name{position:relative;min-height:0}
+.zs-production.zs-reference .zs-plugin-tile .pcard__foot{position:relative;min-height:0;margin-top:auto}
+.zs-production.zs-reference .zs-plugin-tile .plugin-card__cover{aspect-ratio:auto}
+.zs-production.zs-reference .zs-plugin-tile .plugin-card__navigation{z-index:3;height:auto}
+.zs-production.zs-reference [data-view="plugins"] > .catalog-search{justify-content:flex-start}
+.zs-production.zs-reference [data-view="plugins"] > .catalog-search .search-field{padding:0;border:0;background:none;box-shadow:none}
+.zs-production.zs-reference [data-view="plugins"] > .catalog-search .search-field input{padding-left:18px}
+
+/* ---------- tariffs v3: same design as the landing (user decision 14.11) ---------- */
+
+/* =====================================================================
+   Tariffs v3 — same design as the landing page: sunset scene, grey cards,
+   3D plan object on top, plugin count + next-plan increment,
+   grey buttons, orange only on the featured plan
+   ===================================================================== */
+.zs-production.zs-reference .pstage { position: relative; isolation: isolate; padding: 44px 28px 28px; border-radius: var(--r-group); overflow: hidden; background: #140c08; }
+.zs-production.zs-reference .pstage__sky { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; object-position: 50% 85%; }
+.zs-production.zs-reference .pstage::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: linear-gradient(180deg, rgba(10, 10, 11, .9) 0%, rgba(10, 10, 11, .72) 38%, rgba(10, 10, 11, .45) 72%, rgba(10, 10, 11, .55) 100%); }
+.zs-production.zs-reference .pstage__head { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+.zs-production.zs-reference .pstage__head h2 { font-size: clamp(30px, 3.4vw, 44px); line-height: 1.05; font-weight: 650; letter-spacing: -.04em; color: #fff; }
+.zs-production.zs-reference .pstage__head > p { max-width: 480px; font-size: 15px; line-height: 1.45; color: var(--text-body); }
+.zs-production.zs-reference .zs-periods { display: inline-flex; gap: 4px; max-width: 100%; margin-top: 8px; padding: 4px; border-radius: var(--r-pill); background: rgba(20, 20, 22, .82); backdrop-filter: blur(10px); box-shadow: inset 0 0 0 1px var(--line); }
+.zs-production.zs-reference .zs-periods .per-seg__opt { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 16px; border-radius: var(--r-pill); font-size: 14px; font-weight: 600; color: var(--text-body); white-space: nowrap; transition: background-color var(--d-state) var(--ease), color var(--d-state) var(--ease); }
+.zs-production.zs-reference .zs-periods .per-seg__opt:hover { color: #fff; }
+.zs-production.zs-reference .zs-periods .per-seg__opt[aria-checked="true"] { background: #fff; color: #151515; }
+.zs-production.zs-reference .zs-periods .per-seg__opt b { padding: 2px 7px; border-radius: var(--r-pill); background: rgba(255, 255, 255, .12); color: #fff; font-size: 12px; font-weight: 700; }
+.zs-production.zs-reference .zs-periods .per-seg__opt[aria-checked="true"] b { background: #151515; }
+
+.zs-production.zs-reference .pc2-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; padding-top: 104px; }
+.zs-production.zs-reference .pc2 { position: relative; display: flex; flex-direction: column; min-width: 0; padding: 70px 18px 18px; border-radius: var(--r-group); background: #1c1c1e; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06), 0 30px 60px -30px rgba(0, 0, 0, .8); }
+.zs-production.zs-reference .pc2__art { position: absolute; top: -88px; left: 50%; width: 148px; height: 148px; margin-left: -74px; object-fit: contain; filter: drop-shadow(0 18px 22px rgba(0, 0, 0, .55)); transition: transform 1.2s var(--ease); pointer-events: none; }
+.zs-production.zs-reference .pc2:hover .pc2__art { transform: translateY(-8px); }
+.zs-production.zs-reference .pc2 h3 { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 19px; line-height: 1.2; font-weight: 700; letter-spacing: -.02em; color: #fff; }
+.zs-production.zs-reference .pc2__badge { padding: 4px 10px; border-radius: var(--r-pill); background: rgba(255, 255, 255, .1); color: var(--text-body); font-size: 11.5px; font-weight: 650; letter-spacing: 0; }
+.zs-production.zs-reference .pc2__price { display: flex; align-items: baseline; flex-wrap: wrap; gap: 2px 8px; margin-top: 10px; }
+.zs-production.zs-reference .pc2__price strong { font-size: clamp(28px, 2.4vw, 36px); line-height: 1; font-weight: 750; letter-spacing: -.04em; color: #fff; }
+.zs-production.zs-reference .pc2__price del { font-size: 14px; color: var(--text-muted); text-decoration-thickness: 1.5px; }
+.zs-production.zs-reference .pc2__price span { font-size: 13px; color: var(--text-muted); }
+.zs-production.zs-reference .pc2__note { min-height: 34px; margin-top: 6px; font-size: 12px; line-height: 1.4; color: var(--text-muted); }
+.zs-production.zs-reference .pc2__plugins { margin-top: 12px; padding: 12px 14px; border-radius: var(--r-inset); background: #2c2c2e; }
+.zs-production.zs-reference .pc2__plugins p { font-size: 13.5px; color: var(--text-body); }
+.zs-production.zs-reference .pc2__plugins p strong { font-size: 16px; font-weight: 700; color: #fff; }
+.zs-production.zs-reference .pc2__plugins small { display: block; margin-top: 2px; font-size: 12px; color: var(--text-muted); }
+.zs-production.zs-reference .pc2__more { margin-top: 9px; padding-top: 9px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08); font-size: 12.5px !important; font-weight: 600; color: #e5e5ea !important; }
+.zs-production.zs-reference .pc2__label { margin-top: 16px; font-size: 12px; color: var(--text-muted); }
+.zs-production.zs-reference .pc2__feat { display: flex; flex-direction: column; flex: 1; margin: 4px 0 18px; padding: 0; list-style: none; }
+.zs-production.zs-reference .pc2__feat li { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 9px; padding: 7px 0; font-size: 13px; line-height: 1.4; color: var(--text-body); }
+.zs-production.zs-reference .pc2__feat li + li { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06); }
+.zs-production.zs-reference .pc2__feat svg { width: 20px; height: 20px; padding: 4px; border-radius: 50%; background: #3a3a3c; color: #fff; stroke-width: 2.4; }
+.zs-production.zs-reference .pc2__cta { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; margin-top: auto; border: 0; border-radius: var(--r-pill); background: #2c2c2e; color: #fff; font-size: 14.5px; font-weight: 650; }
+.zs-production.zs-reference .pc2__cta svg { width: 17px; height: 17px; }
+.zs-production.zs-reference .pc2__cta:disabled { cursor: not-allowed; opacity: .6; }
+.zs-production.zs-reference .pc2.is-current .pc2__cta:disabled { opacity: 1; }
+.zs-production.zs-reference .pc2--featured .pc2__cta { background: var(--accent); color: var(--on-accent); }
+.zs-production.zs-reference .pstage .pricing-trial { display: flex; align-items: center; gap: 10px 22px; margin-top: 18px; padding: 14px 20px; border-radius: var(--r-inset); background: rgba(28, 28, 30, .82); backdrop-filter: blur(10px); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .06); }
+.zs-production.zs-reference .pstage .pricing-trial > span { display: flex; flex-direction: column; flex: none; }
+.zs-production.zs-reference .pstage .pricing-trial small { font-size: 11.5px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; }
+.zs-production.zs-reference .pstage .pricing-trial strong { font-size: 15px; font-weight: 700; color: #fff; }
+.zs-production.zs-reference .pstage .pricing-trial p { font-size: 13.5px; line-height: 1.5; color: var(--text-body); }
+
+@media (max-width: 1279px) { .zs-production.zs-reference .pc2-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 104px; } }
+@media (max-width: 759px) {
+  .zs-production.zs-reference .pstage { padding: 32px 14px 16px; }
+  .zs-production.zs-reference .zs-periods { width: 100%; }
+  .zs-production.zs-reference .zs-periods .per-seg__opt { flex: 1; justify-content: center; padding: 0 6px; gap: 4px; font-size: 13px; }
+  .zs-production.zs-reference .zs-periods .per-seg__opt b { padding: 1px 5px; font-size: 11px; }
+  .zs-production.zs-reference .pc2-grid { grid-template-columns: minmax(0, 1fr); row-gap: 96px; padding-top: 96px; }
+  .zs-production.zs-reference .pstage .pricing-trial { flex-direction: column; align-items: flex-start; }
+}
+@media (max-width: 379px) {
+  .zs-production.zs-reference .zs-periods .per-seg__opt { flex-direction: column; gap: 1px; min-height: 48px; line-height: 15px; white-space: normal; }
+}
+@media (prefers-reduced-motion: reduce) { .zs-production.zs-reference .pc2:hover .pc2__art { transform: none; } }
+
+/* host pricing markup inside the stage */
+.zs-production.zs-reference .pstage{margin-top:20px}
+.zs-production.zs-reference .pstage .landing-pricing__heading{display:flex;flex-direction:column;align-items:center;gap:10px;margin:0;padding:0;text-align:center}
+.zs-production.zs-reference .pstage .landing-pricing__heading h2{font-size:clamp(30px,3.4vw,44px);line-height:1.05;font-weight:650;letter-spacing:-.04em;color:#fff;margin:0}
+.zs-production.zs-reference .pstage .landing-pricing__heading p{max-width:520px;margin:0 auto;font-size:15px;line-height:1.45;color:#c7c7cc}
+.zs-production.zs-reference .pstage .zs-periods button{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 16px;border:0;border-radius:999px;background:none;font-size:14px;font-weight:600;color:#c7c7cc;white-space:nowrap}
+.zs-production.zs-reference .pstage .zs-periods button[aria-pressed="true"]{background:#fff;color:#151515}
+.zs-production.zs-reference .pstage .zs-periods button span{padding:2px 7px;border-radius:999px;background:rgba(255,255,255,.12);color:#fff;font-size:12px;font-weight:700}
+.zs-production.zs-reference .pstage .zs-periods button[aria-pressed="true"] span{background:#151515}
+.zs-production.zs-reference .pstage .pricing-card.pc2{margin:0;border:0;overflow:visible;min-height:0;transform:none}
+.zs-production.zs-reference .pstage .pricing-card.pc2::before,.zs-production.zs-reference .pstage .pricing-card.pc2::after{content:none}
+.zs-production.zs-reference .pstage .pc2__price [data-pricing-price]{font-size:clamp(28px,2.4vw,36px);line-height:1;font-weight:750;letter-spacing:-.04em;color:#fff}
+.zs-production.zs-reference .pstage .pc2__price [data-pricing-original]{font-size:14px;color:#98989f;text-decoration:line-through}
+.zs-production.zs-reference .pstage .zsf-current-plan{padding:4px 10px;border-radius:999px;background:rgba(74,222,128,.14);color:#4ade80;font-size:11.5px;font-weight:650}
+.zs-production.zs-reference .pstage .pricing-trial > span{display:flex;flex-direction:column-reverse;flex:none}
+.zs-production.zs-reference .pstage .pricing-trial > span > span{font-size:11.5px;font-weight:600;color:#98989f;text-transform:uppercase;letter-spacing:.06em}
+.zs-production.zs-reference .pstage .pricing-trial strong{font-size:15px;font-weight:700;color:#fff}
+.zs-production.zs-reference .pstage .pricing-trial p{margin:0;font-size:13.5px;line-height:1.5;color:#c7c7cc}
+.zs-production.zs-reference .pc2 > [data-zs-plan-art]{display:none}
+.zs-production.zs-reference .pstage .zsf-current-plan{position:static;inset:auto;transform:none}
+/* rarity matrix: real table, aligned columns, current plan highlighted */
+.zs-production.zs-reference [data-zsf-rarity-matrix]{overflow-x:auto;border-radius:16px;background:#141416}
+.zs-production.zs-reference table.rar-matrix{display:table;width:100%;min-width:620px;border-collapse:collapse;font-size:14px}
+.zs-production.zs-reference table.rar-matrix th,.zs-production.zs-reference table.rar-matrix td{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.08);text-align:center;vertical-align:middle}
+.zs-production.zs-reference table.rar-matrix thead th{font-size:12.5px;font-weight:600;color:#98989f}
+.zs-production.zs-reference table.rar-matrix thead th:first-child,.zs-production.zs-reference table.rar-matrix tbody th{text-align:left;width:46%}
+.zs-production.zs-reference table.rar-matrix tbody th strong{display:block;font-size:14.5px;font-weight:600;color:#fff}
+.zs-production.zs-reference table.rar-matrix tbody th small{display:block;margin-top:2px;font-size:12.5px;font-weight:400;color:#98989f}
+.zs-production.zs-reference table.rar-matrix td{color:#636366}
+.zs-production.zs-reference table.rar-matrix td svg{width:18px;height:18px;color:#4ade80;vertical-align:middle}
+.zs-production.zs-reference table.rar-matrix tr:last-child > *{border-bottom:0}
+/* «Во всех тарифах»: icon tiles instead of bare checks */
+.zs-production.zs-reference [data-pricing-platform] .pf > svg{width:36px;height:36px;padding:9px;margin-bottom:8px;border-radius:11px;background:rgba(255,139,69,.12);color:#ff8b45}
+.zs-production.zs-reference .pstage + *{margin-top:16px}

@@ -202,7 +202,7 @@
   function billing() {
     $$('[data-plan],[data-pricing-plan],.plan-card,.tariff-card,.pricing-card').forEach(node=>{
       const id=node.dataset.plan||node.dataset.planId||node.dataset.pricingPlan;
-      if(!['start','growth','pro','maximum'].includes(id)||$('[data-zs-plan-art]',node))return;
+      if(!['start','growth','pro','maximum'].includes(id)||$('[data-zs-plan-art]',node)||node.classList.contains('pc2'))return;
       const img=document.createElement('img');img.src=`cabinet-v3/assets/plans/plan-${id}.png`;img.alt='';img.loading='lazy';img.dataset.zsPlanArt='';node.prepend(img);
     });
   }
