@@ -1,5 +1,5 @@
 {
- "release": "20261114-claude-fidelity1",
+ "release": "20261114-claude-fidelity2",
  "handoffSha256": "8903ee1109989cf36686184459aa8d38bdbcc52bbdb54800256dbb676a1f18a6",
  "host": {
   "app/app.js": [
@@ -361,8 +361,8 @@
   },
   {
    "path": "app/cabinet-v3/fidelity.css",
-   "bytes": 27269,
-   "sha256": "6ad495c68a43cbfe45c958167f5f2ba5155f3abcd4cb67e6d2273b7a89528d5e"
+   "bytes": 31799,
+   "sha256": "e9189ac9e3bf6805e9bf7d238914e5274307f257df56e1d0882df7ad879f51a9"
   },
   {
    "path": "app/cabinet-v3/icons.js",
@@ -386,8 +386,8 @@
   },
   {
    "path": "app/cabinet-v3/production.js",
-   "bytes": 24633,
-   "sha256": "e6e001be3518c9d6e116c960d346392ff2075b8a47306561d093b506512c3542"
+   "bytes": 25257,
+   "sha256": "b09792f8ce111ff012e3050f7cd6bbc3f159e31f3197cb81371fc51a424d6d03"
   },
   {
    "path": "app/cabinet-v3/profile.css",
@@ -401,8 +401,8 @@
   },
   {
    "path": "app/cabinet-v3/reference-ui.js",
-   "bytes": 36002,
-   "sha256": "3d073d3b7ec8781199647ddf5697c435eace15f4d15e3f521e55946956c2df3d"
+   "bytes": 36037,
+   "sha256": "19a7c41827205aedd76e80f5dafa100da381d497b72caa6e3ef94f663a755f20"
   },
   {
    "path": "app/cabinet-v3/tokens.css",

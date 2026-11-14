@@ -28,7 +28,7 @@
     if(p.active===true)chips.push([(planNames[p.id]||'Активный доступ')+(date(p.expiresAt)?' · до '+date(p.expiresAt):''),'card']);
     const next=chips.map(([t,i])=>`<span class="cover-chip">${I(i)}${E(t)}</span>`).join('');html(meta,next);
     let actions=$('.cover__actions',copy);if(!actions){actions=make('span','cover__actions');copy.append(actions);}
-    const actionSelectors={dashboard:'[data-overview-refresh],[data-overview-connect]',orders:'[data-orders-refresh],[data-orders-connect]',messages:'[data-messages-refresh],[data-messages-connect]',lots:'[data-lots-refresh]',billing:'[data-billing-open="topup"],[data-billing-open="promo"]',finance:'[data-finance-refresh]'};
+    const actionSelectors={'proxy-shop':'[data-zs-proxy-buy]',dashboard:'[data-overview-refresh],[data-overview-connect]',orders:'[data-orders-refresh],[data-orders-connect]',messages:'[data-messages-refresh],[data-messages-connect]',lots:'[data-lots-refresh]',billing:'[data-billing-open="topup"],[data-billing-open="promo"]',finance:'[data-finance-refresh]'};
     if(actionSelectors[key])for(const b of $$(actionSelectors[key],view)){b.classList.add('btn','btn--glass','btn--sm');put(actions,b);}
     /* Old per-view headings repeat the banner title. Their live controls move into the banner; the rest is hidden. */
     for(const old of $$(':scope > header:not(.zs-cover)',view)){

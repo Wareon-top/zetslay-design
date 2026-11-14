@@ -206,9 +206,16 @@
       const img=document.createElement('img');img.src=`cabinet-v3/assets/plans/plan-${id}.png`;img.alt='';img.loading='lazy';img.dataset.zsPlanArt='';node.prepend(img);
     });
   }
+  // Host marks a stat empty once ('—') and does not clear the mark when data arrives later; mirror it from the text.
+  let statObserver=null;
+  function stats() {
+    const sync=()=>{for(const s of document.querySelectorAll('.overview-stat>strong.ws-empty-stat'))if(s.textContent.trim()!=='—')s.classList.remove('ws-empty-stat');};
+    sync();if(statObserver)return;const grid=document.querySelector('[data-view="dashboard"]');if(!grid)return;
+    statObserver=new MutationObserver(sync);statObserver.observe(grid,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['class']});
+  }
   function refresh() {
     scheduled=false;if(!authState.user){window.ZSCabinetFidelity?.reset();return;}
-    banners();profile();distribute();pluginPage();billing();syncNav();window.ZSCabinetFidelity?.refresh();
+    banners();profile();distribute();pluginPage();billing();stats();syncNav();window.ZSCabinetFidelity?.refresh();
   }
   function schedule() {if(!scheduled){scheduled=true;requestAnimationFrame(refresh);}}
   function installRouting() {
