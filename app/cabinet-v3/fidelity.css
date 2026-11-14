@@ -298,3 +298,65 @@
  .zs-production.zs-reference .ws-product-row[data-zs-bar] > b{grid-column:2;grid-row:1}
  .zs-production.zs-reference .ws-product-row[data-zs-bar]::after{grid-column:1 / -1;grid-row:2}
 }
+
+/* ---------- plugin page below the stage: tabs + two cards like the handoff ---------- */
+.zs-production.zs-reference [data-plugin-page] .zs-product-tabs{margin:24px 0 16px}
+.zs-production.zs-reference [data-plugin-page] .plugin-page-layout{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px;align-items:start}
+/* the active tab already names the panel: no second heading inside it */
+.zs-production.zs-reference [data-plugin-page] .plugin-page-main > [role="tabpanel"] > .plugin-page-section-heading{display:none}
+.zs-production.zs-reference [data-plugin-page] .plugin-page-main > [role="tabpanel"]{padding:20px 22px;border:0;border-radius:22px;background:#1c1c1e}
+.zs-production.zs-reference [data-plugin-page] .plugin-page-main > [role="tabpanel"] > h2:first-child{margin:0 0 8px;font-size:17px}
+.zs-production.zs-reference [data-plugin-page] :is(.plugin-detail-prose,.plugin-page-permissions){font-size:15px;line-height:1.6;color:#e5e5ea}
+.zs-production.zs-reference [data-plugin-page] .plugin-detail-content{padding:0;border:0;background:none}
+.zs-production.zs-reference [data-plugin-page] .plugin-detail-prose p{margin:0 0 10px}
+.zs-production.zs-reference [data-plugin-page] .plugin-page-context{display:grid;grid-template-columns:36px minmax(0,1fr);column-gap:12px;row-gap:6px;padding:18px 20px;border:0;border-radius:22px;background:#1c1c1e}
+.zs-production.zs-reference [data-plugin-page] .plugin-page-context > .plugin-page-section-icon{grid-row:1 / span 2;width:36px;height:36px;margin:0;border-radius:10px;background:#2c2c2e}
+.zs-production.zs-reference [data-plugin-page] .plugin-page-context > h2{margin:0;font-size:15px;line-height:1.3;align-self:center}
+.zs-production.zs-reference [data-plugin-page] .plugin-page-context > p{grid-column:2;margin:0;font-size:13px;line-height:1.5;color:#aeaeb2}
+.zs-production.zs-reference [data-plugin-page] .plugin-page-context > a{grid-column:1 / -1;margin-top:8px;padding-top:12px;border-top:1px solid #2c2c2e;font-size:13.5px;color:#fff}
+.zs-production.zs-reference [data-plugin-page] .plugin-page-id{display:flex;gap:8px;align-items:center;margin:10px 4px 0;font-size:12px;color:#8e8e93}
+.zs-production.zs-reference [data-plugin-page] .plugin-page-id code{padding:3px 8px;border-radius:8px;background:#232325;color:#c7c7cc;font-size:12px}
+@media (max-width:899px){.zs-production.zs-reference [data-plugin-page] .plugin-page-layout{grid-template-columns:minmax(0,1fr)}}
+
+/* ---------- automation tabs ---------- */
+/* host checkboxes for on/off settings drawn as the handoff switch (same input, same name, same form) */
+.zs-production.zs-reference :is(.tools-notification,.tools-command .tools-check,[data-basic-form="settings"],.ba-stock-switches) input[type="checkbox"]{appearance:none;-webkit-appearance:none;position:relative;flex:none;width:44px;height:26px;margin:0;border:0;border-radius:999px;background:#3a3a3c;cursor:pointer;transition:background .18s}
+.zs-production.zs-reference :is(.tools-notification,.tools-command .tools-check,[data-basic-form="settings"],.ba-stock-switches) input[type="checkbox"]::before{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.35);transition:transform .18s}
+.zs-production.zs-reference :is(.tools-notification,.tools-command .tools-check,[data-basic-form="settings"],.ba-stock-switches) input[type="checkbox"]:checked{background:#ff8b45}
+.zs-production.zs-reference :is(.tools-notification,.tools-command .tools-check,[data-basic-form="settings"],.ba-stock-switches) input[type="checkbox"]:checked::before{transform:translateX(18px)}
+.zs-production.zs-reference :is(.tools-notification,.tools-command .tools-check,[data-basic-form="settings"],.ba-stock-switches) input[type="checkbox"]:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.zs-production.zs-reference :is(.tools-notification,.tools-command .tools-check,[data-basic-form="settings"],.ba-stock-switches) input[type="checkbox"]:disabled{opacity:.5;cursor:not-allowed}
+@media (prefers-reduced-motion:reduce){.zs-production.zs-reference :is(.tools-notification,.tools-command .tools-check,[data-basic-form="settings"],.ba-stock-switches) input[type="checkbox"],.zs-production.zs-reference :is(.tools-notification,.tools-command .tools-check,[data-basic-form="settings"],.ba-stock-switches) input[type="checkbox"]::before{transition:none}}
+/* notifications: one list of rows */
+.zs-production.zs-reference .tools-notification-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;margin:12px 0 16px}
+.zs-production.zs-reference .tools-notification{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:0;padding:12px 14px;border:0;border-radius:14px;background:#232325;cursor:pointer}
+.zs-production.zs-reference .tools-notification strong{display:block;font-size:14px;font-weight:600;color:#fff}
+.zs-production.zs-reference .tools-notification small{display:block;margin-top:2px;font-size:12.5px;color:#8e8e93}
+/* templates: list rows with pill actions */
+.zs-production.zs-reference .tools-template-list{display:grid;gap:6px}
+.zs-production.zs-reference .tools-template-list > article{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border:0;border-radius:14px;background:#232325}
+.zs-production.zs-reference .tools-template-list > article strong{font-size:14px;color:#fff}
+.zs-production.zs-reference .tools-template-list > article p{margin:2px 0 0;font-size:12.5px;color:#8e8e93;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.zs-production.zs-reference .tools-row-actions{display:flex;gap:6px;flex:none}
+.zs-production.zs-reference .tools-row-actions > button{min-height:32px;padding:0 14px;border:0;border-radius:999px;background:#2c2c2e;color:#fff;font-size:13px;font-weight:600}
+.zs-production.zs-reference .tools-row-actions > button[data-tools-template-remove]{background:none;color:#ff7a6b}
+/* commands: each command is a soft card, switches inline */
+.zs-production.zs-reference .tools-command{padding:14px;border:0;border-radius:16px;background:#232325}
+.zs-production.zs-reference .tools-command .tools-check{display:inline-flex;align-items:center;gap:10px}
+.zs-production.zs-reference .ba-stock-switches .tools-check{display:flex;align-items:center;justify-content:space-between;flex-direction:row-reverse;gap:12px;padding:10px 14px;border-radius:14px;background:#232325}
+
+/* ---------- knowledge base ---------- */
+/* the video link now lives in the cover; the big banner hides only once its link has moved */
+.zs-production.zs-reference [data-view="guide"] > .video-guide-banner:not(:has(.video-guide-banner__action)){display:none}
+.zs-production.zs-reference .zs-cover .video-guide-banner__action{display:inline-flex;align-items:center;gap:6px;width:auto;height:auto;min-height:0;padding:7px 14px;font-size:13px;text-decoration:none}
+/* proxy offer is already on the dashboard and profile */
+.zs-production.zs-reference [data-view="guide"] > [data-proxy-invite="guide"]{display:none}
+.zs-production.zs-reference [data-view="guide"] .kb-search{margin:20px 0 12px;padding:0;border:0;background:none}
+.zs-production.zs-reference [data-view="guide"] .kb-search{position:relative;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.zs-production.zs-reference [data-view="guide"] .kb-search > svg{position:absolute;left:14px;top:13px;width:16px;height:16px;color:#8e8e93;pointer-events:none}
+.zs-production.zs-reference [data-view="guide"] .kb-search input{flex:0 1 420px;min-width:0;height:42px;padding:0 16px 0 40px;border:0;border-radius:999px;background:#1c1c1e;color:#fff;font-size:14px}
+.zs-production.zs-reference [data-view="guide"] .kb-search-hint{font-size:12px;color:#8e8e93}
+.zs-production.zs-reference [data-view="guide"] .kb-shortcuts{gap:12px}
+.zs-production.zs-reference [data-view="guide"] .kb-shortcut{padding:16px 18px;border:0;border-radius:20px;background:#1c1c1e;text-align:left}
+.zs-production.zs-reference [data-view="guide"] .kb-shortcut:hover{background:#232325}
+.zs-production.zs-reference [data-view="guide"] .kb-card{padding:16px 18px;border:0;border-radius:20px;background:#1c1c1e}

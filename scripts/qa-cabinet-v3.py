@@ -204,6 +204,13 @@ with sync_playwright() as p:
     direct.locator('.zs-plugin-tile .plugin-card__navigation a').first.click();direct.wait_for_timeout(700)
     layout=direct.evaluate("(()=>{const o=document.querySelector('.pp-stage .plugin-purchase-options'),m=document.querySelector('.pp-stage .pp-media'),b=document.querySelector('.pp-stage .plugin-page-action > .button');if(!o||!m)return null;const R=o.getBoundingClientRect(),M=m.getBoundingClientRect(),B=b?b.getBoundingClientRect():null;return {below:R.top>=M.bottom-1,wide:R.width>M.width,cta:!B||B.left>M.right}})()")
     check('plugin purchase options span the card under the art',layout is not None and (layout['below'] and layout['wide'] and layout['cta']))
+    # Plugin page tabs: the active tab names the panel, so the panel has no second heading.
+    check('plugin tab panel has no duplicate heading',direct.evaluate("[...document.querySelectorAll('.plugin-page-main > [role=tabpanel]:not([hidden]) > .plugin-page-section-heading')].every(h=>getComputedStyle(h).display==='none')"))
+    # Knowledge base: the video link moved into the cover is still the host link, and the empty banner is hidden.
+    direct.goto(f'http://127.0.0.1:{server.server_port}/app/#guide',wait_until='networkidle');direct.wait_for_timeout(900)
+    moved=direct.locator('.zs-cover .video-guide-banner__action')
+    check('guide video link sits in the cover',moved.count()==1 and (moved.get_attribute('href') or '').startswith('https://youtu.be/'))
+    check('guide banner without its link is hidden',direct.evaluate("[...document.querySelectorAll('[data-view=guide] > .video-guide-banner')].every(b=>getComputedStyle(b).display==='none')"))
     direct.close()
     check('no JS runtime errors',not errors)
     check('all local assets exist',not failed_assets)
