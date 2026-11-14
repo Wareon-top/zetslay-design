@@ -50,9 +50,9 @@ try{
  await page.waitForFunction(()=>!accountSecurityUi.busy);assert.ok(verified);
  await page.setViewportSize({width:390,height:844});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
  await page.evaluate(()=>{window.syntheticLogin=acceptSession({mfaRequired:true,passkeyAvailable:true,totpAvailable:false,challengeToken:'synthetic-challenge'});});
- // Since 6135ec6 the sign-in dialog prepares the challenge first and labels the action «Подтвердить ключом доступа».
+ // Since 6135ec6 the sign-in dialog prepares the challenge first; one tap on «Подтвердить ключом доступа»
+ // starts WebAuthn directly from that click (no intermediate «Продолжить на устройстве» sheet on login).
  await page.getByRole('button',{name:'Подтвердить ключом доступа',exact:true}).click();
- await page.getByRole('button',{name:'Продолжить на устройстве',exact:true}).click();
  await page.waitForFunction(()=>accepted.length===1);assert.ok(loginResponse);assert.equal(await page.evaluate(()=>accepted[0].token),'synthetic-mfa-session');
  console.log(JSON.stringify({browser:'Chromium virtual authenticator',enrollment:true,stepUp:true,login:true,mobileNoOverflow:true,freshClickCeremonies:true,emptyDisplayNameNormalized:true,realAccountsUsed:false}));
  await context.close();
