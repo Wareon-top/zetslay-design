@@ -1,0 +1,33 @@
+{
+  "passed": 6,
+  "total": 6,
+  "checks": [
+    {
+      "name": "every one of 15 public plugins has an image",
+      "passed": true
+    },
+    {
+      "name": "no generic plugin glyph tiles remain",
+      "passed": true
+    },
+    {
+      "name": "15 distinct high resolution icons loaded",
+      "passed": true
+    },
+    {
+      "name": "complete public catalog fits phone",
+      "passed": true
+    },
+    {
+      "name": "no JS errors",
+      "passed": true
+    },
+    {
+      "name": "no missing assets",
+      "passed": true
+    }
+  ],
+  "runtimeErrors": [],
+  "missingAssets": [],
+  "vpsUpdated": false
+}

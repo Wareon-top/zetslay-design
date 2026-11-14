@@ -1,0 +1,462 @@
+{
+  "passed": 91,
+  "total": 91,
+  "checks": [
+    {
+      "name": "320x640: no horizontal overflow, no element wider than the viewport, no mobile zoom-out",
+      "passed": true,
+      "detail": "(320, 320, 320, [])"
+    },
+    {
+      "name": "320x640: 3D Z fully inside the hero stage, title inside",
+      "passed": true,
+      "detail": "{'sw': 320, 'cw': 320, 'iw': 320, 'wide': [], 'zIn': True, 'titleIn': True, 'overlap': False, 'broken': [], 'fonts': ['Inter', 'ZetSlaySunsetInter']}"
+    },
+    {
+      "name": "320x640: hero buttons do not cover the Z",
+      "passed": true,
+      "detail": "{'sw': 320, 'cw': 320, 'iw': 320, 'wide': [], 'zIn': True, 'titleIn': True, 'overlap': False, 'broken': [], 'fonts': ['Inter', 'ZetSlaySunsetInter']}"
+    },
+    {
+      "name": "320x640: all images load",
+      "passed": true,
+      "detail": "[]"
+    },
+    {
+      "name": "320x640: local fonts loaded (Inter, hero font)",
+      "passed": true,
+      "detail": "['Inter', 'ZetSlaySunsetInter']"
+    },
+    {
+      "name": "320x640: no JS/console errors",
+      "passed": true,
+      "detail": "[]"
+    },
+    {
+      "name": "320x640: only same-origin requests",
+      "passed": true,
+      "detail": "{'127.0.0.1:8140'}"
+    },
+    {
+      "name": "390x844: no horizontal overflow, no element wider than the viewport, no mobile zoom-out",
+      "passed": true,
+      "detail": "(390, 390, 390, [])"
+    },
+    {
+      "name": "390x844: 3D Z fully inside the hero stage, title inside",
+      "passed": true,
+      "detail": "{'sw': 390, 'cw': 390, 'iw': 390, 'wide': [], 'zIn': True, 'titleIn': True, 'overlap': False, 'broken': [], 'fonts': ['Inter', 'ZetSlaySunsetInter']}"
+    },
+    {
+      "name": "390x844: hero buttons do not cover the Z",
+      "passed": true,
+      "detail": "{'sw': 390, 'cw': 390, 'iw': 390, 'wide': [], 'zIn': True, 'titleIn': True, 'overlap': False, 'broken': [], 'fonts': ['Inter', 'ZetSlaySunsetInter']}"
+    },
+    {
+      "name": "390x844: all images load",
+      "passed": true,
+      "detail": "[]"
+    },
+    {
+      "name": "390x844: local fonts loaded (Inter, hero font)",
+      "passed": true,
+      "detail": "['Inter', 'ZetSlaySunsetInter']"
+    },
+    {
+      "name": "390x844: no JS/console errors",
+      "passed": true,
+      "detail": "[]"
+    },
+    {
+      "name": "390x844: only same-origin requests",
+      "passed": true,
+      "detail": "{'127.0.0.1:8140'}"
+    },
+    {
+      "name": "768x1024: no horizontal overflow, no element wider than the viewport, no mobile zoom-out",
+      "passed": true,
+      "detail": "(768, 768, 768, [])"
+    },
+    {
+      "name": "768x1024: 3D Z fully inside the hero stage, title inside",
+      "passed": true,
+      "detail": "{'sw': 768, 'cw': 768, 'iw': 768, 'wide': [], 'zIn': True, 'titleIn': True, 'overlap': False, 'broken': [], 'fonts': ['Inter', 'ZetSlaySunsetInter']}"
+    },
+    {
+      "name": "768x1024: hero buttons do not cover the Z",
+      "passed": true,
+      "detail": "{'sw': 768, 'cw': 768, 'iw': 768, 'wide': [], 'zIn': True, 'titleIn': True, 'overlap': False, 'broken': [], 'fonts': ['Inter', 'ZetSlaySunsetInter']}"
+    },
+    {
+      "name": "768x1024: all images load",
+      "passed": true,
+      "detail": "[]"
+    },
+    {
+      "name": "768x1024: local fonts loaded (Inter, hero font)",
+      "passed": true,
+      "detail": "['Inter', 'ZetSlaySunsetInter']"
+    },
+    {
+      "name": "768x1024: no JS/console errors",
+      "passed": true,
+      "detail": "[]"
+    },
+    {
+      "name": "768x1024: only same-origin requests",
+      "passed": true,
+      "detail": "{'127.0.0.1:8140'}"
+    },
+    {
+      "name": "1024x768: no horizontal overflow, no element wider than the viewport, no mobile zoom-out",
+      "passed": true,
+      "detail": "(1024, 1024, 1024, [])"
+    },
+    {
+      "name": "1024x768: 3D Z fully inside the hero stage, title inside",
+      "passed": true,
+      "detail": "{'sw': 1024, 'cw': 1024, 'iw': 1024, 'wide': [], 'zIn': True, 'titleIn': True, 'overlap': False, 'broken': [], 'fonts': ['Inter', 'ZetSlaySunsetInter']}"
+    },
+    {
+      "name": "1024x768: hero buttons do not cover the Z",
+      "passed": true,
+      "detail": "{'sw': 1024, 'cw': 1024, 'iw': 1024, 'wide': [], 'zIn': True, 'titleIn': True, 'overlap': False, 'broken': [], 'fonts': ['Inter', 'ZetSlaySunsetInter']}"
+    },
+    {
+      "name": "1024x768: all images load",
+      "passed": true,
+      "detail": "[]"
+    },
+    {
+      "name": "1024x768: local fonts loaded (Inter, hero font)",
+      "passed": true,
+      "detail": "['Inter', 'ZetSlaySunsetInter']"
+    },
+    {
+      "name": "1024x768: no JS/console errors",
+      "passed": true,
+      "detail": "[]"
+    },
+    {
+      "name": "1024x768: only same-origin requests",
+      "passed": true,
+      "detail": "{'127.0.0.1:8140'}"
+    },
+    {
+      "name": "1440x900: no horizontal overflow, no element wider than the viewport, no mobile zoom-out",
+      "passed": true,
+      "detail": "(1440, 1440, 1440, [])"
+    },
+    {
+      "name": "1440x900: 3D Z fully inside the hero stage, title inside",
+      "passed": true,
+      "detail": "{'sw': 1440, 'cw': 1440, 'iw': 1440, 'wide': [], 'zIn': True, 'titleIn': True, 'overlap': False, 'broken': [], 'fonts': ['Inter', 'ZetSlaySunsetInter']}"
+    },
+    {
+      "name": "1440x900: hero buttons do not cover the Z",
+      "passed": true,
+      "detail": "{'sw': 1440, 'cw': 1440, 'iw': 1440, 'wide': [], 'zIn': True, 'titleIn': True, 'overlap': False, 'broken': [], 'fonts': ['Inter', 'ZetSlaySunsetInter']}"
+    },
+    {
+      "name": "1440x900: all images load",
+      "passed": true,
+      "detail": "[]"
+    },
+    {
+      "name": "1440x900: local fonts loaded (Inter, hero font)",
+      "passed": true,
+      "detail": "['Inter', 'ZetSlaySunsetInter']"
+    },
+    {
+      "name": "1440x900: no JS/console errors",
+      "passed": true,
+      "detail": "[]"
+    },
+    {
+      "name": "1440x900: only same-origin requests",
+      "passed": true,
+      "detail": "{'127.0.0.1:8140'}"
+    },
+    {
+      "name": "1920x1080: no horizontal overflow, no element wider than the viewport, no mobile zoom-out",
+      "passed": true,
+      "detail": "(1920, 1920, 1920, [])"
+    },
+    {
+      "name": "1920x1080: 3D Z fully inside the hero stage, title inside",
+      "passed": true,
+      "detail": "{'sw': 1920, 'cw': 1920, 'iw': 1920, 'wide': [], 'zIn': True, 'titleIn': True, 'overlap': False, 'broken': [], 'fonts': ['Inter', 'ZetSlaySunsetInter']}"
+    },
+    {
+      "name": "1920x1080: hero buttons do not cover the Z",
+      "passed": true,
+      "detail": "{'sw': 1920, 'cw': 1920, 'iw': 1920, 'wide': [], 'zIn': True, 'titleIn': True, 'overlap': False, 'broken': [], 'fonts': ['Inter', 'ZetSlaySunsetInter']}"
+    },
+    {
+      "name": "1920x1080: all images load",
+      "passed": true,
+      "detail": "[]"
+    },
+    {
+      "name": "1920x1080: local fonts loaded (Inter, hero font)",
+      "passed": true,
+      "detail": "['Inter', 'ZetSlaySunsetInter']"
+    },
+    {
+      "name": "1920x1080: no JS/console errors",
+      "passed": true,
+      "detail": "[]"
+    },
+    {
+      "name": "1920x1080: only same-origin requests",
+      "passed": true,
+      "detail": "{'127.0.0.1:8140'}"
+    },
+    {
+      "name": "1280x600: no horizontal overflow, no element wider than the viewport, no mobile zoom-out",
+      "passed": true,
+      "detail": "(1280, 1280, 1280, [])"
+    },
+    {
+      "name": "1280x600: 3D Z fully inside the hero stage, title inside",
+      "passed": true,
+      "detail": "{'sw': 1280, 'cw': 1280, 'iw': 1280, 'wide': [], 'zIn': True, 'titleIn': True, 'overlap': False, 'broken': [], 'fonts': ['Inter', 'ZetSlaySunsetInter']}"
+    },
+    {
+      "name": "1280x600: hero buttons do not cover the Z",
+      "passed": true,
+      "detail": "{'sw': 1280, 'cw': 1280, 'iw': 1280, 'wide': [], 'zIn': True, 'titleIn': True, 'overlap': False, 'broken': [], 'fonts': ['Inter', 'ZetSlaySunsetInter']}"
+    },
+    {
+      "name": "1280x600: all images load",
+      "passed": true,
+      "detail": "[]"
+    },
+    {
+      "name": "1280x600: local fonts loaded (Inter, hero font)",
+      "passed": true,
+      "detail": "['Inter', 'ZetSlaySunsetInter']"
+    },
+    {
+      "name": "1280x600: no JS/console errors",
+      "passed": true,
+      "detail": "[]"
+    },
+    {
+      "name": "1280x600: only same-origin requests",
+      "passed": true,
+      "detail": "{'127.0.0.1:8140'}"
+    },
+    {
+      "name": "exactly one h1 = approved hero title",
+      "passed": true,
+      "detail": "Автоматизацияпродаж на FunPay"
+    },
+    {
+      "name": "all required anchors exist",
+      "passed": true,
+      "detail": "[]"
+    },
+    {
+      "name": "no dead in-page links",
+      "passed": true,
+      "detail": "[]"
+    },
+    {
+      "name": "hero CTAs: app/ and #plugins",
+      "passed": true,
+      "detail": "['app/', '#plugins']"
+    },
+    {
+      "name": "login and register links present",
+      "passed": true,
+      "detail": "(3, 10)"
+    },
+    {
+      "name": "legal + security links present",
+      "passed": true,
+      "detail": "[]"
+    },
+    {
+      "name": "support link",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "SEO: lang ru, production canonical/OG, title, description",
+      "passed": true,
+      "detail": "{'h1': 1, 'h1t': 'Автоматизацияпродаж на FunPay', 'ids': [], 'deadHash': [], 'heroCta': ['app/', '#plugins'], 'login': 3, 'reg': 10, 'legal': [], 'support': 'https://t.me/zetslaysupport', 'canonical': 'https://zetslay.pro/', 'og': 'https://zetslay.pro/assets/zetslay-orderflow.webp', 'lang': 'ru', 'title': 'ZetSlay — кабинет продавца FunPay', 'desc': 'Заказы, сообщения, товары и плагины в одном кабинете. Подключите магазин на FunPay и попробуйте ZetSlay.', 'plugins': ['zetslay.steam-rent', 'zetslay.kosell-rent', 'zetslay.roblox-lzt-market', 'zetslay.tiktok-lzt-market', 'zetslay.robux-relay', 'zetslay.stars-relay', 'zetslay.ai-reviews', 'zetslay.ticket-pilot', 'zetslay.confirm-reminder', 'zetslay.review-reminder', 'zetslay.auto-review-bonus', 'zetslay.mass-price-editor', 'zetslay.lot-cloner', 'zetslay.sales-pause', 'zetslay.priority-orders'], 'count': '15', 'hooks': [], 'skipped': [], 'words': 12104}"
+    },
+    {
+      "name": "15 public plugins, ids unique",
+      "passed": true,
+      "detail": "['zetslay.steam-rent', 'zetslay.kosell-rent', 'zetslay.roblox-lzt-market', 'zetslay.tiktok-lzt-market', 'zetslay.robux-relay', 'zetslay.stars-relay', 'zetslay.ai-reviews', 'zetslay.ticket-pilot', 'zetslay.confirm-reminder', 'zetslay.review-reminder', 'zetslay.auto-review-bonus', 'zetslay.mass-price-editor', 'zetslay.lot-cloner', 'zetslay.sales-pause', 'zetslay.priority-orders']"
+    },
+    {
+      "name": "all functional data-hook groups present",
+      "passed": true,
+      "detail": "[]"
+    },
+    {
+      "name": "heading levels never skip",
+      "passed": true,
+      "detail": "[]"
+    },
+    {
+      "name": "pricing notes block removed (user request 14.11)",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "catalog: 4 cabinet-style groups, 15 orange cards, category nav links resolve",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "features: masonry — sunset tile + 9 cards, each with a 3D icon slot, no orange links, no interface demos",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "tariffs: 4 grey cards with 3D plan art on a background scene; plugin counts 3/7/10/15 and next-plan increments; only the featured CTA is orange",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "no invented ratings/reviews in structured data",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "period picker revealed by JS",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "pricing quarter: all 4 plans match kopeck formula, note, strike-through",
+      "passed": true,
+      "detail": "[('134,10 ₽', '402,30 ₽ за 3 месяца · 90 дней · скидка 10% · оплата целиком'), ('269,10 ₽', '807,30 ₽ за 3 месяца · 90 дней · скидка 10% · оплата целиком'), ('449,10 ₽', '1 347,30 ₽ за 3 месяца · 90 дней · скидка 10% · оплата целиком'), ('719,10 ₽', '2 157,30 ₽ за 3 месяца · 90 дней · скидка 10% · оплата целиком')]"
+    },
+    {
+      "name": "pricing year: all 4 plans match kopeck formula, note, strike-through",
+      "passed": true,
+      "detail": "[('119,20 ₽', '1 430,40 ₽ за 12 месяцев · 360 дней · скидка 20% · оплата целиком'), ('239,20 ₽', '2 870,40 ₽ за 12 месяцев · 360 дней · скидка 20% · оплата целиком'), ('399,20 ₽', '4 790,40 ₽ за 12 месяцев · 360 дней · скидка 20% · оплата целиком'), ('639,20 ₽', '7 670,40 ₽ за 12 месяцев · 360 дней · скидка 20% · оплата целиком')]"
+    },
+    {
+      "name": "pricing month: all 4 plans match kopeck formula, note, strike-through",
+      "passed": true,
+      "detail": "[('149 ₽', 'Итого 149 ₽ за 30 дней доступа'), ('299 ₽', 'Итого 299 ₽ за 30 дней доступа'), ('499 ₽', 'Итого 499 ₽ за 30 дней доступа'), ('799 ₽', 'Итого 799 ₽ за 30 дней доступа')]"
+    },
+    {
+      "name": "keyboard End → year, aria-pressed, live announcement",
+      "passed": true,
+      "detail": "['year', 'true', '12 месяцев. Скидка 20%. Показана стоимость в месяц; полная сумма указана под ценой.']"
+    },
+    {
+      "name": "keyboard ArrowRight wraps to month",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "ZetSlayPricing export intact, paymentAvailable stays false",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "FAQ search \"прокси\" filters and counts",
+      "passed": true,
+      "detail": "[6, 'Найдено: 6 из 12']"
+    },
+    {
+      "name": "FAQ normalises ё/е (\"включенным\" finds \"включённым\")",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "FAQ category filter",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "FAQ empty state",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "FAQ reset restores all",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "footer → #faq-secrets: filter reset, answer open",
+      "passed": true,
+      "detail": "[False, True, '#faq-secrets']"
+    },
+    {
+      "name": "only one FAQ answer open",
+      "passed": true,
+      "detail": "1"
+    },
+    {
+      "name": "direct URL #faq-errors opens the answer",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "mobile menu opens",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "Escape closes menu, focus on toggle",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "menu link navigates and closes menu",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "session guest: guest/cabinet links",
+      "passed": true,
+      "detail": "[False, False]"
+    },
+    {
+      "name": "session signed-in: guest/cabinet links",
+      "passed": true,
+      "detail": "[True, True]"
+    },
+    {
+      "name": "session expired: guest/cabinet links",
+      "passed": true,
+      "detail": "[False, False]"
+    },
+    {
+      "name": "no-JS: nothing hidden by reveal, headings visible, month prices, FAQ native, picker hidden",
+      "passed": true,
+      "detail": "{'hidden': 0, 'h2': 11, 'price': '499 ₽', 'faqOpen': True, 'picker': True}"
+    },
+    {
+      "name": "reduced motion: reveal disabled",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "first Tab shows skip link",
+      "passed": true,
+      "detail": "['skip-link', True, 'none']"
+    },
+    {
+      "name": "next focus has visible outline",
+      "passed": true,
+      "detail": "solid"
+    },
+    {
+      "name": "cookie settings open the existing privacy dialog",
+      "passed": true,
+      "detail": ""
+    }
+  ],
+  "note": "Actual project root served locally. API session fixtures isolated; no real account/transaction."
+}

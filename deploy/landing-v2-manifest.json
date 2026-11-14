@@ -1,44 +1,11 @@
 {
-  "release": "20261114-landing-production1",
+  "release": "20261114-landing-production2",
   "handoffSha256": "5c3f3f3cd0427056cc188a0c22ed750491e9c80a67788b2b5deea006ebce4b0c",
   "files": [
     {
-      "path": "index.html",
-      "bytes": 99775,
-      "sha256": "fa3f521910552af8da138a58b58c6485addd4537ce93e3786bf28ae90c833e0d",
-      "allowedBefore": [
-        "e60ab5b4f93d532e52daf60e25c0f9d9b25e0ced3b6c04a396ddfa205493a511",
-        "776e6aeee4fc5c60876f1844e9281b8b593f22abc7116b82770b6fcc5777b2b1"
-      ]
-    },
-    {
-      "path": "landing-v2.css",
-      "bytes": 48071,
-      "sha256": "b643fc087b91fbeeaa258ece916ef286143912f92603b67a66e1288df25f409d",
-      "allowedBefore": []
-    },
-    {
-      "path": "landing-v2.js",
-      "bytes": 2439,
-      "sha256": "9ce30727e1e5f4e4348499fc370af8b0f1d7b3fbfc7455b4704fff692071b5a7",
-      "allowedBefore": []
-    },
-    {
-      "path": "legal/legal-controls-20261109.css",
-      "bytes": 10374,
-      "sha256": "19ccae5c8a9490a8d9a70f98834e868a503da4d0a27457215a7d5ef60de60307",
-      "allowedBefore": []
-    },
-    {
-      "path": "legal/privacy-controls-20261109.js",
-      "bytes": 4616,
-      "sha256": "3303ec561c37ca66f3e1a05e1451190e1ccdcce051ecb2e5146b021b70fe08bc",
-      "allowedBefore": []
-    },
-    {
       "path": "assets/landing-v2/PROVENANCE.json",
-      "bytes": 6330,
-      "sha256": "27fcc6096b61c4276f9253bd9b966025e55ef640063adb43c611934ebbf02829",
+      "bytes": 8179,
+      "sha256": "77f4308a1854583b4e84a10e1cd1a8a98e5abe17820a39f13545f63433a9e4f6",
       "allowedBefore": []
     },
     {
@@ -96,6 +63,18 @@
       "allowedBefore": []
     },
     {
+      "path": "assets/landing-v2/hq-20261114/plg-auto-review-bonus.webp",
+      "bytes": 857310,
+      "sha256": "ec3b8689148a9c8f1ca28ee669435d93388f232b754eb6fad2ade4fad996d44b",
+      "allowedBefore": []
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/plg-confirm-reminder.webp",
+      "bytes": 772268,
+      "sha256": "7cdda9aa41cf1bd296ab734e0a531fca87c7eff71391a4e40a5066fd5ee8c577",
+      "allowedBefore": []
+    },
+    {
       "path": "assets/landing-v2/hq-20261114/plg-kosell-rent.webp",
       "bytes": 902540,
       "sha256": "79f2202c8a754221a94cfc84daaeb2278a33bb4a07144cc8a6031f62ec15f26d",
@@ -126,6 +105,12 @@
       "allowedBefore": []
     },
     {
+      "path": "assets/landing-v2/hq-20261114/plg-roblox-lzt-market.webp",
+      "bytes": 806210,
+      "sha256": "7cc901aeb8f22e09ffb0c1e71cf83a7caf427502e3af75f58c064d0fd3c8f5f8",
+      "allowedBefore": []
+    },
+    {
       "path": "assets/landing-v2/hq-20261114/plg-robux-relay.webp",
       "bytes": 813768,
       "sha256": "a0a24d643bad9ffaccec8dc644ddb3d44310449de284231614fefde6b3aac9a7",
@@ -147,6 +132,51 @@
       "path": "assets/landing-v2/hq-20261114/plg-steam-rent.webp",
       "bytes": 690282,
       "sha256": "3c5f5ce04b1c3a88d9b1dd57b18d4b3ea15cd7e790e82f7e404aca55d2036777",
+      "allowedBefore": []
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/plg-ticket-pilot.webp",
+      "bytes": 718180,
+      "sha256": "0d5f94e74ea20a701fa36e701455dbe2e632f14405c35131a30e81aacfba0fea",
+      "allowedBefore": []
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/plg-tiktok-lzt-market.webp",
+      "bytes": 665274,
+      "sha256": "42b5e00e84ef9efc298eff642db34db3071bee621aa886011ea4880e8cddce5b",
+      "allowedBefore": []
+    },
+    {
+      "path": "index.html",
+      "bytes": 98815,
+      "sha256": "1a7a25ae3fdc0e982e144bb333e96f1d3dbfe4d045f6e00569aaa2d6bcfa1636",
+      "allowedBefore": [
+        "e60ab5b4f93d532e52daf60e25c0f9d9b25e0ced3b6c04a396ddfa205493a511",
+        "776e6aeee4fc5c60876f1844e9281b8b593f22abc7116b82770b6fcc5777b2b1"
+      ]
+    },
+    {
+      "path": "landing-v2.css",
+      "bytes": 48498,
+      "sha256": "cd1ec84c6edaad29eb6875e19a65ccfbb511a559143136f4732d43695789108c",
+      "allowedBefore": []
+    },
+    {
+      "path": "landing-v2.js",
+      "bytes": 2439,
+      "sha256": "9ce30727e1e5f4e4348499fc370af8b0f1d7b3fbfc7455b4704fff692071b5a7",
+      "allowedBefore": []
+    },
+    {
+      "path": "legal/legal-controls-20261109.css",
+      "bytes": 10374,
+      "sha256": "19ccae5c8a9490a8d9a70f98834e868a503da4d0a27457215a7d5ef60de60307",
+      "allowedBefore": []
+    },
+    {
+      "path": "legal/privacy-controls-20261109.js",
+      "bytes": 4616,
+      "sha256": "3303ec561c37ca66f3e1a05e1451190e1ccdcce051ecb2e5146b021b70fe08bc",
       "allowedBefore": []
     }
   ],

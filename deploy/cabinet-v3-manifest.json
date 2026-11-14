@@ -1,5 +1,5 @@
 {
-  "release": "20261114-production-hq1",
+  "release": "20261114-production-hq2",
   "handoffSha256": "8903ee1109989cf36686184459aa8d38bdbcc52bbdb54800256dbb676a1f18a6",
   "host": {
     "app/app.js": [
@@ -260,6 +260,11 @@
       "sha256": "eddf8922b71a72e7a3013331e4c4bdad09f43eea403bed97f18a2b9e03ff126a"
     },
     {
+      "path": "app/cabinet-v3/assets/quality-v2/plg-confirm-reminder.webp",
+      "bytes": 772268,
+      "sha256": "7cdda9aa41cf1bd296ab734e0a531fca87c7eff71391a4e40a5066fd5ee8c577"
+    },
+    {
       "path": "app/cabinet-v3/assets/quality-v2/plg-pause.webp",
       "bytes": 619388,
       "sha256": "c76a1c6b18a66bf0e7d44d838ae67cd4b8ec9912eb793d7eb817d97ee7ed64d2"
@@ -285,6 +290,16 @@
       "sha256": "79f2202c8a754221a94cfc84daaeb2278a33bb4a07144cc8a6031f62ec15f26d"
     },
     {
+      "path": "app/cabinet-v3/assets/quality-v2/plg-review-bonus.webp",
+      "bytes": 857310,
+      "sha256": "ec3b8689148a9c8f1ca28ee669435d93388f232b754eb6fad2ade4fad996d44b"
+    },
+    {
+      "path": "app/cabinet-v3/assets/quality-v2/plg-roblox-lzt.webp",
+      "bytes": 806210,
+      "sha256": "7cc901aeb8f22e09ffb0c1e71cf83a7caf427502e3af75f58c064d0fd3c8f5f8"
+    },
+    {
       "path": "app/cabinet-v3/assets/quality-v2/plg-robux.webp",
       "bytes": 813768,
       "sha256": "a0a24d643bad9ffaccec8dc644ddb3d44310449de284231614fefde6b3aac9a7"
@@ -298,6 +313,16 @@
       "path": "app/cabinet-v3/assets/quality-v2/plg-steam.webp",
       "bytes": 690282,
       "sha256": "3c5f5ce04b1c3a88d9b1dd57b18d4b3ea15cd7e790e82f7e404aca55d2036777"
+    },
+    {
+      "path": "app/cabinet-v3/assets/quality-v2/plg-ticket-pilot.webp",
+      "bytes": 718180,
+      "sha256": "0d5f94e74ea20a701fa36e701455dbe2e632f14405c35131a30e81aacfba0fea"
+    },
+    {
+      "path": "app/cabinet-v3/assets/quality-v2/plg-tiktok-lzt.webp",
+      "bytes": 665274,
+      "sha256": "42b5e00e84ef9efc298eff642db34db3071bee621aa886011ea4880e8cddce5b"
     },
     {
       "path": "app/cabinet-v3/assets/quality-v2/proxy-router.webp",
@@ -336,8 +361,8 @@
     },
     {
       "path": "app/cabinet-v3/model.js",
-      "bytes": 3014,
-      "sha256": "4eaa5105a4c2f8e8649730b5a2661eccdb12de85b456b2a84f6b61ce46810ca4"
+      "bytes": 3342,
+      "sha256": "56076fb8d6105b65d52c432d41ec743e5ef4f0f237b2702cb500073d67cb1644"
     },
     {
       "path": "app/cabinet-v3/plugin-page.css",
@@ -346,13 +371,13 @@
     },
     {
       "path": "app/cabinet-v3/production.css",
-      "bytes": 32980,
-      "sha256": "6aa339c996a2c38bccb4fc851b2efb2f7e17c175e5e4085060f051da172bbd7a"
+      "bytes": 33361,
+      "sha256": "8d70894d001ca98cef83eb87ddeabca75538825fad699d59a50c20d82933f3cc"
     },
     {
       "path": "app/cabinet-v3/production.js",
-      "bytes": 23909,
-      "sha256": "5728edef49f37257fcc7983218004b78a8a8344c3f43d303bbed62cdd8b35153"
+      "bytes": 24125,
+      "sha256": "be902e31a8b2821b02eb0c13e0c6d31a7ca45c4bdddbf8738369d1892e7c3935"
     },
     {
       "path": "app/cabinet-v3/profile.css",

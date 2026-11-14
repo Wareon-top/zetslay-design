@@ -198,6 +198,61 @@
       ],
       "sha256": "51353f8471f76722bf8e6b66b6afec0028198c111ac21a96c23d8dd2c71e3246",
       "opticalScale": 1.3091
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/plg-roblox-lzt-market.webp",
+      "sourceAsset": "plg-roblox-lzt",
+      "source": "built-in image_gen; references: ZetSlay catalog 2026-11-13",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "7cc901aeb8f22e09ffb0c1e71cf83a7caf427502e3af75f58c064d0fd3c8f5f8",
+      "opticalScale": 1.1099
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/plg-tiktok-lzt-market.webp",
+      "sourceAsset": "plg-tiktok-lzt",
+      "source": "built-in image_gen; references: ZetSlay catalog 2026-11-13",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "42b5e00e84ef9efc298eff642db34db3071bee621aa886011ea4880e8cddce5b",
+      "opticalScale": 1.1717
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/plg-ticket-pilot.webp",
+      "sourceAsset": "plg-ticket-pilot",
+      "source": "built-in image_gen; references: ZetSlay catalog 2026-11-13",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "0d5f94e74ea20a701fa36e701455dbe2e632f14405c35131a30e81aacfba0fea",
+      "opticalScale": 1.1706
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/plg-confirm-reminder.webp",
+      "sourceAsset": "plg-confirm-reminder",
+      "source": "built-in image_gen; references: ZetSlay catalog 2026-11-13",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "7cdda9aa41cf1bd296ab734e0a531fca87c7eff71391a4e40a5066fd5ee8c577",
+      "opticalScale": 1.1859
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/plg-auto-review-bonus.webp",
+      "sourceAsset": "plg-review-bonus",
+      "source": "built-in image_gen; references: ZetSlay catalog 2026-11-13",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "ec3b8689148a9c8f1ca28ee669435d93388f232b754eb6fad2ade4fad996d44b",
+      "opticalScale": 1.1625
     }
   ]
 }

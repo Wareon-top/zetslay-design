@@ -1,0 +1,815 @@
+{
+  "checks": [
+    {
+      "name": "production bridge loaded",
+      "passed": true
+    },
+    {
+      "name": "authenticated real shell visible",
+      "passed": true
+    },
+    {
+      "name": "new profile rendered",
+      "passed": true
+    },
+    {
+      "name": "profile uses full resolution transparent art",
+      "passed": true
+    },
+    {
+      "name": "profile refresh remains reachable",
+      "passed": true
+    },
+    {
+      "name": "no demo controls",
+      "passed": true
+    },
+    {
+      "name": "new grouped menu",
+      "passed": true
+    },
+    {
+      "name": "server role hides admin",
+      "passed": true
+    },
+    {
+      "name": "route dashboard",
+      "passed": true
+    },
+    {
+      "name": "active menu dashboard",
+      "passed": true
+    },
+    {
+      "name": "route events",
+      "passed": true
+    },
+    {
+      "name": "active menu events",
+      "passed": true
+    },
+    {
+      "name": "route orders",
+      "passed": true
+    },
+    {
+      "name": "active menu orders",
+      "passed": true
+    },
+    {
+      "name": "route messages",
+      "passed": true
+    },
+    {
+      "name": "active menu messages",
+      "passed": true
+    },
+    {
+      "name": "route lots",
+      "passed": true
+    },
+    {
+      "name": "active menu lots",
+      "passed": true
+    },
+    {
+      "name": "route store-tools",
+      "passed": true
+    },
+    {
+      "name": "active menu store-tools",
+      "passed": true
+    },
+    {
+      "name": "route plugins",
+      "passed": true
+    },
+    {
+      "name": "active menu plugins",
+      "passed": true
+    },
+    {
+      "name": "route proxy-shop",
+      "passed": true
+    },
+    {
+      "name": "active menu proxy-shop",
+      "passed": true
+    },
+    {
+      "name": "route analytics",
+      "passed": true
+    },
+    {
+      "name": "active menu analytics",
+      "passed": true
+    },
+    {
+      "name": "route finance",
+      "passed": true
+    },
+    {
+      "name": "active menu finance",
+      "passed": true
+    },
+    {
+      "name": "route billing",
+      "passed": true
+    },
+    {
+      "name": "active menu billing",
+      "passed": true
+    },
+    {
+      "name": "route profile",
+      "passed": true
+    },
+    {
+      "name": "active menu profile",
+      "passed": true
+    },
+    {
+      "name": "route connection",
+      "passed": true
+    },
+    {
+      "name": "active menu connection",
+      "passed": true
+    },
+    {
+      "name": "route telegram",
+      "passed": true
+    },
+    {
+      "name": "active menu telegram",
+      "passed": true
+    },
+    {
+      "name": "route security",
+      "passed": true
+    },
+    {
+      "name": "active menu security",
+      "passed": true
+    },
+    {
+      "name": "route support",
+      "passed": true
+    },
+    {
+      "name": "active menu support",
+      "passed": true
+    },
+    {
+      "name": "route guide",
+      "passed": true
+    },
+    {
+      "name": "active menu guide",
+      "passed": true
+    },
+    {
+      "name": "route documents",
+      "passed": true
+    },
+    {
+      "name": "active menu documents",
+      "passed": true
+    },
+    {
+      "name": "real catalogue cards",
+      "passed": true
+    },
+    {
+      "name": "topup action remains reachable",
+      "passed": true
+    },
+    {
+      "name": "promo action remains reachable",
+      "passed": true
+    },
+    {
+      "name": "orange catalogue tile",
+      "passed": true
+    },
+    {
+      "name": "security can render after relocation",
+      "passed": true
+    },
+    {
+      "name": "one security panel",
+      "passed": true
+    },
+    {
+      "name": "one documents panel",
+      "passed": true
+    },
+    {
+      "name": "plugin product hero",
+      "passed": true
+    },
+    {
+      "name": "plugin product uses restored master",
+      "passed": true
+    },
+    {
+      "name": "kosell settings retained",
+      "passed": true
+    },
+    {
+      "name": "no overflow profile 320",
+      "passed": true
+    },
+    {
+      "name": "no overflow plugins 320",
+      "passed": true
+    },
+    {
+      "name": "no overflow billing 320",
+      "passed": true
+    },
+    {
+      "name": "no overflow messages 320",
+      "passed": true
+    },
+    {
+      "name": "no overflow security 320",
+      "passed": true
+    },
+    {
+      "name": "no overflow profile 390",
+      "passed": true
+    },
+    {
+      "name": "no overflow plugins 390",
+      "passed": true
+    },
+    {
+      "name": "no overflow billing 390",
+      "passed": true
+    },
+    {
+      "name": "no overflow messages 390",
+      "passed": true
+    },
+    {
+      "name": "no overflow security 390",
+      "passed": true
+    },
+    {
+      "name": "no overflow profile 768",
+      "passed": true
+    },
+    {
+      "name": "no overflow plugins 768",
+      "passed": true
+    },
+    {
+      "name": "no overflow billing 768",
+      "passed": true
+    },
+    {
+      "name": "no overflow messages 768",
+      "passed": true
+    },
+    {
+      "name": "no overflow security 768",
+      "passed": true
+    },
+    {
+      "name": "no overflow profile 1024",
+      "passed": true
+    },
+    {
+      "name": "no overflow plugins 1024",
+      "passed": true
+    },
+    {
+      "name": "no overflow billing 1024",
+      "passed": true
+    },
+    {
+      "name": "no overflow messages 1024",
+      "passed": true
+    },
+    {
+      "name": "no overflow security 1024",
+      "passed": true
+    },
+    {
+      "name": "mobile drawer opens",
+      "passed": true
+    },
+    {
+      "name": "drawer makes background inert",
+      "passed": true
+    },
+    {
+      "name": "Escape closes drawer",
+      "passed": true
+    },
+    {
+      "name": "background restored",
+      "passed": true
+    },
+    {
+      "name": "no accidental marketplace writes",
+      "passed": true
+    },
+    {
+      "name": "save failure keeps draft",
+      "passed": true
+    },
+    {
+      "name": "save failure releases button",
+      "passed": true
+    },
+    {
+      "name": "save failure is visible",
+      "passed": true
+    },
+    {
+      "name": "profile save uses real controller",
+      "passed": true
+    },
+    {
+      "name": "server confirms saved state",
+      "passed": true
+    },
+    {
+      "name": "connected account can be managed",
+      "passed": true
+    },
+    {
+      "name": "real FunPay wizard opens",
+      "passed": true
+    },
+    {
+      "name": "real bot settings open",
+      "passed": true
+    },
+    {
+      "name": "all 15 published plugins rendered",
+      "passed": true
+    },
+    {
+      "name": "all 15 plugins have full resolution 3D art",
+      "passed": true
+    },
+    {
+      "name": "each plugin has distinct artwork",
+      "passed": true
+    },
+    {
+      "name": "complete catalog fits phone",
+      "passed": true
+    },
+    {
+      "name": "new product art roblox-lzt-market",
+      "passed": true
+    },
+    {
+      "name": "new product art tiktok-lzt-market",
+      "passed": true
+    },
+    {
+      "name": "new product art ticket-pilot",
+      "passed": true
+    },
+    {
+      "name": "new product art confirm-reminder",
+      "passed": true
+    },
+    {
+      "name": "new product art auto-review-bonus",
+      "passed": true
+    },
+    {
+      "name": "no JS runtime errors",
+      "passed": true
+    },
+    {
+      "name": "all local assets exist",
+      "passed": true
+    },
+    {
+      "name": "catalogue failure recorded",
+      "passed": true
+    },
+    {
+      "name": "catalogue failure explained",
+      "passed": true
+    },
+    {
+      "name": "stale purchase cards hidden",
+      "passed": true
+    },
+    {
+      "name": "logout hides private shell",
+      "passed": true
+    },
+    {
+      "name": "logout clears separate private screens",
+      "passed": true
+    }
+  ],
+  "passed": 103,
+  "total": 103,
+  "runtimeErrors": [],
+  "missingAssets": [],
+  "apiRequests": [
+    {
+      "path": "/api/v1/auth/resume",
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/support/tickets",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/subscription/trial",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/learning",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/legal/requests",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/proxy-shop",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/managed-proxy",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/plugin-catalog",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/funpay/connection",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/finance",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/onboarding",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/proxy-shop",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/profile",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/account/security",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/account/sync-health",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/events",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/legal/acceptance",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/subscription/trial",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/managed-proxy",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/subscription/status",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/events",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/events",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/store-tools",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/bot-access",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/store-tools",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/bot-access",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/managed-proxy",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/proxy-shop",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/payments",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/managed-proxy",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/proxy-shop",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/managed-proxy",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/proxy-shop",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/managed-proxy",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/proxy-shop",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/managed-proxy",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/proxy-shop",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/support/tickets",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/managed-proxy",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/proxy-shop",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/payments",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/managed-proxy",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/proxy-shop",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/managed-proxy",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/proxy-shop",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/plugins/kosell-rent/status",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/managed-proxy",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/proxy-shop",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/payments",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/store-tools",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/bot-access",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/managed-proxy",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/proxy-shop",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/managed-proxy",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/proxy-shop",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/managed-proxy",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/proxy-shop",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/payments",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/store-tools",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/bot-access",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/managed-proxy",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/proxy-shop",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/managed-proxy",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/proxy-shop",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/managed-proxy",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/proxy-shop",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/payments",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/store-tools",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/bot-access",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/managed-proxy",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/proxy-shop",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/managed-proxy",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/proxy-shop",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/managed-proxy",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/proxy-shop",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/payments",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/store-tools",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/bot-access",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/managed-proxy",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/proxy-shop",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/managed-proxy",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/proxy-shop",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/managed-proxy",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/proxy-shop",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/profile",
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/profile",
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/managed-proxy",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/funpay/connection",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/managed-proxy",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/funpay/lot-raise",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/proxy-shop",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/onboarding",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/proxy-shop",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/managed-proxy",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/proxy-shop",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/bot-access",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/plugin-catalog",
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/plugin-catalog",
+      "method": "GET"
+    }
+  ],
+  "note": "Isolated contract fixtures only. No production account or transaction used."
+}

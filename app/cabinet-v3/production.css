@@ -345,3 +345,10 @@ html:has(.zs-production){background:#0a0a0b;color-scheme:dark}
 .zs img[src$="quality-v2/zetslay-z.webp"]{scale:1.0611}
 .zs .art:has(>img[src$="quality-v2/zetslay-z.webp"]){scale:1.0611}
 .zs .art>img[src*="quality-v2/"]{scale:1}
+
+/* Missing plugin artwork: optical size at native resolution. */
+.zs img[src$="quality-v2/plg-roblox-lzt.webp"]{scale:1.1099}
+.zs img[src$="quality-v2/plg-tiktok-lzt.webp"]{scale:1.1717}
+.zs img[src$="quality-v2/plg-ticket-pilot.webp"]{scale:1.1706}
+.zs img[src$="quality-v2/plg-confirm-reminder.webp"]{scale:1.1859}
+.zs img[src$="quality-v2/plg-review-bonus.webp"]{scale:1.1625}

@@ -545,3 +545,10 @@
 .zl img[src$="hq-20261114/plg-priority-orders.webp"] { scale: 1.175; }
 .zl img[src$="hq-20261114/plg-ai-reviews.webp"] { scale: 1.1895; }
 .zl img[src$="hq-20261114/plg-review-reminder.webp"] { scale: 1.3091; }
+
+/* Complete the same 3D series for every published plugin. */
+.zl img[src$="hq-20261114/plg-roblox-lzt-market.webp"] { scale: 1.1099; }
+.zl img[src$="hq-20261114/plg-tiktok-lzt-market.webp"] { scale: 1.1717; }
+.zl img[src$="hq-20261114/plg-ticket-pilot.webp"] { scale: 1.1706; }
+.zl img[src$="hq-20261114/plg-confirm-reminder.webp"] { scale: 1.1859; }
+.zl img[src$="hq-20261114/plg-auto-review-bonus.webp"] { scale: 1.1625; }

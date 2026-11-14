@@ -45,7 +45,7 @@ async def main():
             ctx, pg, errs, hosts = await newpage(b, w, h)
             await pg.goto(BASE + '/', wait_until='networkidle')
             await pg.evaluate('(async()=>{for(let y=0;y<document.documentElement.scrollHeight;y+=600){scrollTo(0,y);await new Promise(r=>setTimeout(r,25));}scrollTo(0,0);})()')
-            await pg.evaluate('Promise.all([...document.images].map(i=>i.decode().catch(()=>0)))')
+            await pg.evaluate('Promise.all([...document.images].map(i=>{i.loading="eager";return i.decode().catch(()=>0)}))')
             m = await pg.evaluate('''() => { const cw = document.documentElement.clientWidth, st = document.querySelector('.zsh-stage').getBoundingClientRect(), z = document.querySelector('.zsh-object img').getBoundingClientRect();
               const t = document.querySelector('.zsh-title').getBoundingClientRect(), a = document.querySelector('.zsh-actions').getBoundingClientRect();
               return { sw: document.documentElement.scrollWidth, cw, iw: innerWidth, wide: [...document.querySelectorAll('body *')].filter(e => e.getBoundingClientRect().right > cw + 1 && !e.closest('.zl-cnav,.pricing-comparison__scroll,.faq-categories')).slice(0, 3).map(e => e.className.baseVal ?? e.className), zIn: z.left >= st.left - 1 && z.right <= st.right + 1 && z.top >= st.top - 1 && z.bottom <= st.bottom + 1 && z.right <= cw,

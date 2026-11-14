@@ -73,9 +73,15 @@ with sync_playwright() as p:
     page.wait_for_timeout(700)
     consent=page.get_by_role('button',name='Понятно',exact=True)
     if consent.count() and consent.is_visible():consent.click()
+    # Wait for the async host profile renderer instead of relying on a fixed delay.
+    try:page.locator('[data-zs-profile]').wait_for(state='attached',timeout=5000)
+    except Exception:pass # retain diagnostics below if initialization actually failed
     check('production bridge loaded',page.evaluate('Boolean(window.ZetSlayCabinet)'))
     check('authenticated real shell visible',page.locator('.app-shell').is_visible())
     check('new profile rendered',page.locator('[data-zs-profile]').count()==1)
+    if not page.locator('[data-zs-profile]').count():
+        print('PROFILE DIAGNOSTICS',json.dumps({'errors':errors,'missingAssets':failed_assets,'state':page.evaluate('({bridge:window.ZetSlayCabinet,view:state.view,authenticated:Boolean(authState.user),model:Boolean(window.ZSCabinetModel)})')},ensure_ascii=True))
+        raise SystemExit(1)
     account_art=page.locator('.zs-account-row img[src$="quality-v2/account.webp"]').first
     account_art.evaluate('(img)=>img.decode()')
     check('profile uses full resolution transparent art',account_art.evaluate('(img)=>img.naturalWidth===1254&&img.naturalHeight===1254'))
@@ -150,6 +156,26 @@ with sync_playwright() as p:
     page.locator('[data-view="telegram"] [data-bot-settings-open]').click();page.wait_for_timeout(100)
     check('real bot settings open',page.locator('.bot-settings-dialog').is_visible())
     page.evaluate('botSettingsClose()')
+    # A complete public catalog must not fall back to generic artwork for known plugins.
+    public_catalog=json.loads((Path(__file__).resolve().parents[1]/'subscription-plans.json').read_text(encoding='utf-8'))
+    public_plugins=[plugin for group in public_catalog['pluginGroups'] for plugin in group['plugins']]
+    read_data['/api/v1/plugin-catalog']['entries']=[{'id':p['id'],'name':p['name'],'priceRub':990,'description':'Изолированная проверка оформления','published':True,'permissions':[],'events':[],'installation':None} for p in public_plugins]
+    page.set_viewport_size({'width':1440,'height':1000})
+    page.evaluate("setView('plugins');loadPluginCatalog()")
+    page.wait_for_timeout(250)
+    artwork=page.locator('.zs-plugin-tile .plugin-card__cover img')
+    artwork.evaluate_all('(images)=>Promise.all(images.map(i=>{i.loading="eager";return i.decode()}))')
+    check('all 15 published plugins rendered',page.locator('.zs-plugin-tile').count()==15)
+    check('all 15 plugins have full resolution 3D art',artwork.evaluate_all('(images)=>images.length===15&&images.every(i=>i.currentSrc.includes("quality-v2/plg-")&&i.naturalWidth>=1200)'))
+    check('each plugin has distinct artwork',artwork.evaluate_all('(images)=>new Set(images.map(i=>i.currentSrc)).size===15'))
+    page.screenshot(path=str(OUT/'all-plugins-desktop.png'),full_page=True)
+    page.set_viewport_size({'width':390,'height':844})
+    check('complete catalog fits phone',page.evaluate('document.documentElement.scrollWidth<=innerWidth+1'))
+    page.screenshot(path=str(OUT/'all-plugins-phone.png'),full_page=True)
+    for plugin in ['roblox-lzt-market','tiktok-lzt-market','ticket-pilot','confirm-reminder','auto-review-bonus']:
+        page.evaluate('(id)=>setView("plugins/zetslay."+id)',plugin);page.wait_for_timeout(80)
+        image=page.locator('.zs-product-art img');image.evaluate('(i)=>i.decode()')
+        check('new product art '+plugin,image.evaluate('(i)=>i.currentSrc.includes("quality-v2/plg-")&&i.naturalWidth===1254'))
     check('no JS runtime errors',not errors)
     check('all local assets exist',not failed_assets)
     # Failure is not converted into an apparent success or a fixture.
