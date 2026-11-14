@@ -41,8 +41,8 @@
     },
     {
       "path": "app/cabinet-v3/assets/fonts/Inter-OFL.txt",
-      "bytes": 4469,
-      "sha256": "d7cee39dfa656bffe74385c76debffe635788a83c00ce4370718c99d4c2650ff"
+      "bytes": 4376,
+      "sha256": "5dd548d31a85f756e01d63e00d7faf1e324103ed3e9102fcbbabf2cc2db6dd39"
     },
     {
       "path": "app/cabinet-v3/assets/fonts/inter-variable.woff",
