@@ -10,7 +10,7 @@
   const artSource=name=>Object.hasOwn(hq,name)?'cabinet-v3/assets/quality-v2/'+hq[name]:base+name+'.webp';
   const svg=n=>window.ZSIcons.svg(n), art=(name,cls='')=>`<img class="${cls}" src="${artSource(name)}" alt="" loading="lazy" decoding="async">`;
   const virtual=new Set(['connection','telegram','security','documents','proxy-shop']);
-  const R=window.ZetSlayCabinet={release:'20261114-hq2',route:'dashboard',sub:'',pending:false};
+  const R=window.ZetSlayCabinet={release:'20261114-reference1',route:'dashboard',sub:'',pending:false};
   let activeRoute='dashboard', menuOpener=null, scheduled=false;
   const session=()=>`${authState.user?.id||''}:${sessionGeneration}`;
   const titleOf=v=>M.groups.flatMap(g=>g.items).find(it=>it[0]===v)?.[1]||viewTitles[v]||'Кабинет';
@@ -207,24 +207,26 @@
     });
   }
   function refresh() {
-    scheduled=false;if(!authState.user)return;
-    banners();profile();distribute();pluginPage();billing();syncNav();
+    scheduled=false;if(!authState.user){window.ZSCabinetFidelity?.reset();return;}
+    banners();profile();distribute();pluginPage();billing();syncNav();window.ZSCabinetFidelity?.refresh();
   }
   function schedule() {if(!scheduled){scheduled=true;requestAnimationFrame(refresh);}}
   function installRouting() {
     const host=setView;
     setView=function(value,updateHash=true){
-      const r=M.route(value), oldScope=session();activeRoute=r.view;R.route=r.view;R.sub=r.sub;
+      const r=M.route(value), oldScope=session();if(window.ZSCabinetFidelity?.closeModal()===false)return;activeRoute=r.view;R.route=r.view;R.sub=r.sub;
       let result;
+      if(updateHash)history.replaceState(null,'','#'+r.view+(r.sub?'/'+r.sub:'')+(r.search?'?'+r.search:''));
       if(virtual.has(r.view)){
         // Load private profile through the original controller, then show the dedicated surface.
         result=host('profile',false);
         $$('[data-view]').forEach(el=>{const on=el.dataset.view===r.view;el.hidden=!on;el.classList.toggle('is-active',on);});
-        if(updateHash)history.replaceState(null,'','#'+r.view);
+        if(updateHash)history.replaceState(null,'','#'+r.view+(r.sub?'/'+r.sub:'')+(r.search?'?'+r.search:''));
         document.title=titleOf(r.view)+' — ZetSlay';
         distribute();
       }else{
-        result=host(r.view,updateHash);
+        result=host(r.view,false);
+        if(updateHash)history.replaceState(null,'','#'+r.view+(r.sub?'/'+r.sub:'')+(r.search?'?'+r.search:''));
         if(r.view==='store-tools'&&r.sub){
           if(r.sub==='scenarios')$('[data-basic-automation]')?.scrollIntoView({block:'start'});
           else $(`[data-tools-tab="${CSS.escape(r.sub)}"]`)?.click();
@@ -250,6 +252,7 @@
     hook('renderBilling',billing);hook('renderAuthState',schedule);hook('renderAccountSecurity',distribute);hook('renderLegalRequests',distribute);
     hook('pluginCatalogFailed',catalogue);
     const hostReset=resetAccountData;resetAccountData=function(...args){
+      window.ZSCabinetFidelity?.reset();
       for(const id of virtual){const target=$(`[data-view="${id}"] [data-zs-account-content]`);if(target)target.replaceChildren();}
       $$('[data-zs-profile-plugins]').forEach(n=>n.replaceChildren());return hostReset.apply(this,args);
     };
