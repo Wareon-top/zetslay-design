@@ -22,3 +22,4 @@ deploy/landing-v2-manifest.json text eol=lf
 deploy/test_landing_v2.py text eol=lf
 scripts/preview-design.mjs text eol=lf
 scripts/qa-landing-v2.py text eol=lf
+deploy/fixtures/** -text

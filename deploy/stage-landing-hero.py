@@ -29,6 +29,9 @@ def stage(local, incoming, output):
     text = (local / 'index.html').read_text()
     desired = (incoming / 'index.html').read_text()
     require(not re.search(r'^(<<<<<<<|=======|>>>>>>>)', text, re.M), 'Найдены маркеры конфликта')
+    # The redesigned landing (landing-v2) replaces the whole page and has its own installer.
+    require('class="zl-section' not in text and 'class="zl-section' not in desired,
+            'Главная в новом дизайне (landing-v2): первый экран ставит установщик главной deploy/update-landing-v2.py')
     old_hero, old_ribbon = hero_parts(text)
     new_hero, new_ribbon = hero_parts(desired)
     require(new_ribbon is not None, 'В обновлении нет строки платформ')

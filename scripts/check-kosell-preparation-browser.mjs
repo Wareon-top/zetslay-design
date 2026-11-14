@@ -38,7 +38,9 @@ try{
  await page.waitForFunction(()=>!sfState().busy&&!!sfState().error);
  assert.equal(categoryCalls,1);assert.equal(await page.evaluate(()=>sfState().entries.length),2);
  assert.match(await page.locator('[data-sf-feedback]').textContent(),/не ответил вовремя/);
- await page.locator('[data-sf-action="retry-fields"]').click();
+ // The redesigned workspace offers the same retry twice: in the selection tools and in the «план не готов» notice.
+ assert.equal(await page.locator('[data-sf-action="retry-fields"]').count(),2);
+ await page.locator('.sf-blockers [data-sf-action="retry-fields"]').click();
  await page.waitForFunction(()=>!sfState().busy&&sfState().entries.every(sfEntryReady));assert.equal(categoryCalls,3);
  await page.locator('[data-sf-reviewed]').check();await page.locator('[data-sf-action="prepare"]').click();
  await page.waitForFunction(()=>!sfState().busy&&!!sfState().error);
