@@ -96,8 +96,11 @@ test('payment amount guard accepts the provider boundary and rejects excess, fra
   assert.equal(tampered.ZetSlayPricing.quote('maximum','year'),null);
 });
 
-test('public and cabinet tariffs expose permanent document links, the transaction limit and exact review marker', () => {
-  for(const [path,prefix] of [['../index.html','legal/'],['../app/billing-section.html','../legal/']]){
+test('public legal navigation is permanent; payment limit and review marker remain on cabinet checkout', () => {
+  const landing=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+  assert.match(landing,/aria-label="Юридические документы"/);
+  for(const doc of ['offer.html','privacy.html','refunds.html'])assert.ok(landing.includes(`href="/legal/${doc}"`));
+  for(const [path,prefix] of [['../app/billing-section.html','../legal/']]){
     const html=readFileSync(new URL(path,import.meta.url),'utf8');
     assert.match(html,/aria-label="Документы проекта"/);
     for(const doc of ['offer.html','privacy.html','refunds.html'])assert.ok(html.includes(`href="${prefix}${doc}"`));

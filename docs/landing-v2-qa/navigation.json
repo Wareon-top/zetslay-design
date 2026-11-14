@@ -1,0 +1,41 @@
+{
+  "checks": [
+    {
+      "name": "all 18 artwork files use high resolution originals",
+      "passed": true
+    },
+    {
+      "name": "login CTA enters actual cabinet page",
+      "passed": true
+    },
+    {
+      "name": "real cabinet scripts loaded",
+      "passed": true
+    },
+    {
+      "name": "no authenticated shell exposed to guest",
+      "passed": true
+    },
+    {
+      "name": "registration CTA enters actual cabinet registration",
+      "passed": true
+    },
+    {
+      "name": "registration confirmation remains required",
+      "passed": true
+    },
+    {
+      "name": "navigation has no missing local assets",
+      "passed": true
+    },
+    {
+      "name": "navigation has no JS exceptions",
+      "passed": true
+    }
+  ],
+  "passed": 8,
+  "total": 8,
+  "errors": [],
+  "missingAssets": [],
+  "vpsTouched": false
+}

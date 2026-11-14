@@ -1,0 +1,203 @@
+{
+  "sourceHandoffSha256": "5c3f3f3cd0427056cc188a0c22ed750491e9c80a67788b2b5deea006ebce4b0c",
+  "qualityAssets": [
+    {
+      "path": "assets/landing-v2/hq-20261114/cat-currency.webp",
+      "sourceAsset": "cat-currency",
+      "source": "ZetSlay HQ 2026-11-14; unchanged lossless WebP",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "a43584d90a8851228a224e12e18ed007cc54f5cd1e672de5122648556b717560",
+      "opticalScale": 1.0822
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/cat-rent.webp",
+      "sourceAsset": "cat-rent",
+      "source": "ZetSlay HQ 2026-11-14; unchanged lossless WebP",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "c332be59dae56d8e0bbef07ec619280683751bee00e93a3bf66ac8bb750de627",
+      "opticalScale": 1.1729
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/cat-tools.webp",
+      "sourceAsset": "cat-tools",
+      "source": "ZetSlay HQ 2026-11-14; unchanged lossless WebP",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "05648949cbda363d4ebf68280221332c6f5878d8d433d0f5dea5e11837b10d2f",
+      "opticalScale": 1.1081
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/cat-reviews.webp",
+      "sourceAsset": "cat-reviews",
+      "source": "ZetSlay HQ 2026-11-14; unchanged lossless WebP",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "d5b5bfd1b53b837444414b477120185c838f2f36f9f127b453815b6c1c7e85a2",
+      "opticalScale": 1.1597
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/plan-start.webp",
+      "sourceAsset": "plan-start",
+      "source": "ZetSlay HQ 2026-11-14; unchanged lossless WebP",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "482c7a9677d56188a2ca7676413b4c0c303bc22166f151f28f3a67231a2b4333",
+      "opticalScale": 1.2373
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/plan-growth.webp",
+      "sourceAsset": "plan-growth",
+      "source": "ZetSlay HQ 2026-11-14; unchanged lossless WebP",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "9c61561e7c30e1fda15f981e62e73d9addcb12b47b5a15be29078e8499dc769d",
+      "opticalScale": 1.1524
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/plan-pro.webp",
+      "sourceAsset": "plan-pro",
+      "source": "ZetSlay HQ 2026-11-14; unchanged lossless WebP",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "5052d220e36cc0c7ab7f06335ae9273df67ed71d45c8558ca7f5ec4c42db7310",
+      "opticalScale": 1.1405
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/plan-maximum.webp",
+      "sourceAsset": "plan-maximum",
+      "source": "ZetSlay HQ 2026-11-14; unchanged lossless WebP",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "abc9465810c22be40a8966cb82248c6a7df3bfef597b1067ec3c9a296d6e19e9",
+      "opticalScale": 1.0791
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/plg-stars-relay.webp",
+      "sourceAsset": "plg-stars",
+      "source": "ZetSlay HQ 2026-11-14; unchanged lossless WebP",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "4c3b05e4356aa36945a7aabe4616af5aa5f4bb608b0969e59fdbdc4b28722a02",
+      "opticalScale": 1.1562
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/plg-robux-relay.webp",
+      "sourceAsset": "plg-robux",
+      "source": "ZetSlay HQ 2026-11-14; unchanged lossless WebP",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "a0a24d643bad9ffaccec8dc644ddb3d44310449de284231614fefde6b3aac9a7",
+      "opticalScale": 1.1639
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/plg-kosell-rent.webp",
+      "sourceAsset": "plg-rent",
+      "source": "ZetSlay HQ 2026-11-14; unchanged lossless WebP",
+      "size": [
+        1312,
+        1199
+      ],
+      "sha256": "79f2202c8a754221a94cfc84daaeb2278a33bb4a07144cc8a6031f62ec15f26d",
+      "opticalScale": 1.0969
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/plg-steam-rent.webp",
+      "sourceAsset": "plg-steam",
+      "source": "ZetSlay HQ 2026-11-14; unchanged lossless WebP",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "3c5f5ce04b1c3a88d9b1dd57b18d4b3ea15cd7e790e82f7e404aca55d2036777",
+      "opticalScale": 1.2003
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/plg-mass-price-editor.webp",
+      "sourceAsset": "plg-prices",
+      "source": "ZetSlay HQ 2026-11-14; unchanged lossless WebP",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "57d06b300e5645377b3b1e2ea638e9a5e2c2745b8b06ea51bcd5811793d4642e",
+      "opticalScale": 1.1433
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/plg-lot-cloner.webp",
+      "sourceAsset": "plg-cloner",
+      "source": "ZetSlay HQ 2026-11-14; unchanged lossless WebP",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "eddf8922b71a72e7a3013331e4c4bdad09f43eea403bed97f18a2b9e03ff126a",
+      "opticalScale": 1.1962
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/plg-sales-pause.webp",
+      "sourceAsset": "plg-pause",
+      "source": "ZetSlay HQ 2026-11-14; unchanged lossless WebP",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "c76a1c6b18a66bf0e7d44d838ae67cd4b8ec9912eb793d7eb817d97ee7ed64d2",
+      "opticalScale": 1.3161
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/plg-priority-orders.webp",
+      "sourceAsset": "plg-priority",
+      "source": "ZetSlay HQ 2026-11-14; unchanged lossless WebP",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "ca92b6bf16a3daea87c26b1b057b38462b2d95c35428bf96126bd81f8450d5d4",
+      "opticalScale": 1.175
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/plg-ai-reviews.webp",
+      "sourceAsset": "plg-ai",
+      "source": "ZetSlay HQ 2026-11-14; unchanged lossless WebP",
+      "size": [
+        1312,
+        1199
+      ],
+      "sha256": "d17674a7fbef96fc1744a50a370a109054e0d153d8a1d6a745374bd2f7a81e31",
+      "opticalScale": 1.1895
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/plg-review-reminder.webp",
+      "sourceAsset": "plg-remind",
+      "source": "ZetSlay HQ 2026-11-14; unchanged lossless WebP",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "51353f8471f76722bf8e6b66b6afec0028198c111ac21a96c23d8dd2c71e3246",
+      "opticalScale": 1.3091
+    }
+  ]
+}

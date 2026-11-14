@@ -8,3 +8,17 @@ deploy/update-cabinet-v3.py text eol=lf
 deploy/test_cabinet_v3.py text eol=lf
 deploy/cabinet-v3-manifest.json text eol=lf
 scripts/qa-cabinet-v3.py text eol=lf
+
+index.html text eol=lf
+landing-v2.css text eol=lf
+landing-v2.js text eol=lf
+assets/landing-v2/**/*.json text eol=lf
+legal/legal-controls-20261109.css text eol=lf
+legal/privacy-controls-20261109.js text eol=lf
+
+deploy/start-landing-v2.sh text eol=lf
+deploy/update-landing-v2.py text eol=lf
+deploy/landing-v2-manifest.json text eol=lf
+deploy/test_landing_v2.py text eol=lf
+scripts/preview-design.mjs text eol=lf
+scripts/qa-landing-v2.py text eol=lf

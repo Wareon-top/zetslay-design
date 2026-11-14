@@ -1,0 +1,287 @@
+{
+  "release": "20261114-landing-production1",
+  "handoffSha256": "5c3f3f3cd0427056cc188a0c22ed750491e9c80a67788b2b5deea006ebce4b0c",
+  "files": [
+    {
+      "path": "index.html",
+      "bytes": 99775,
+      "sha256": "fa3f521910552af8da138a58b58c6485addd4537ce93e3786bf28ae90c833e0d",
+      "allowedBefore": [
+        "e60ab5b4f93d532e52daf60e25c0f9d9b25e0ced3b6c04a396ddfa205493a511",
+        "776e6aeee4fc5c60876f1844e9281b8b593f22abc7116b82770b6fcc5777b2b1"
+      ]
+    },
+    {
+      "path": "landing-v2.css",
+      "bytes": 48071,
+      "sha256": "b643fc087b91fbeeaa258ece916ef286143912f92603b67a66e1288df25f409d",
+      "allowedBefore": []
+    },
+    {
+      "path": "landing-v2.js",
+      "bytes": 2439,
+      "sha256": "9ce30727e1e5f4e4348499fc370af8b0f1d7b3fbfc7455b4704fff692071b5a7",
+      "allowedBefore": []
+    },
+    {
+      "path": "legal/legal-controls-20261109.css",
+      "bytes": 10374,
+      "sha256": "19ccae5c8a9490a8d9a70f98834e868a503da4d0a27457215a7d5ef60de60307",
+      "allowedBefore": []
+    },
+    {
+      "path": "legal/privacy-controls-20261109.js",
+      "bytes": 4616,
+      "sha256": "3303ec561c37ca66f3e1a05e1451190e1ccdcce051ecb2e5146b021b70fe08bc",
+      "allowedBefore": []
+    },
+    {
+      "path": "assets/landing-v2/PROVENANCE.json",
+      "bytes": 6330,
+      "sha256": "27fcc6096b61c4276f9253bd9b966025e55ef640063adb43c611934ebbf02829",
+      "allowedBefore": []
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/cat-currency.webp",
+      "bytes": 915852,
+      "sha256": "a43584d90a8851228a224e12e18ed007cc54f5cd1e672de5122648556b717560",
+      "allowedBefore": []
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/cat-rent.webp",
+      "bytes": 827370,
+      "sha256": "c332be59dae56d8e0bbef07ec619280683751bee00e93a3bf66ac8bb750de627",
+      "allowedBefore": []
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/cat-reviews.webp",
+      "bytes": 804960,
+      "sha256": "d5b5bfd1b53b837444414b477120185c838f2f36f9f127b453815b6c1c7e85a2",
+      "allowedBefore": []
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/cat-tools.webp",
+      "bytes": 1076414,
+      "sha256": "05648949cbda363d4ebf68280221332c6f5878d8d433d0f5dea5e11837b10d2f",
+      "allowedBefore": []
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/plan-growth.webp",
+      "bytes": 639858,
+      "sha256": "9c61561e7c30e1fda15f981e62e73d9addcb12b47b5a15be29078e8499dc769d",
+      "allowedBefore": []
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/plan-maximum.webp",
+      "bytes": 705010,
+      "sha256": "abc9465810c22be40a8966cb82248c6a7df3bfef597b1067ec3c9a296d6e19e9",
+      "allowedBefore": []
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/plan-pro.webp",
+      "bytes": 631662,
+      "sha256": "5052d220e36cc0c7ab7f06335ae9273df67ed71d45c8558ca7f5ec4c42db7310",
+      "allowedBefore": []
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/plan-start.webp",
+      "bytes": 500470,
+      "sha256": "482c7a9677d56188a2ca7676413b4c0c303bc22166f151f28f3a67231a2b4333",
+      "allowedBefore": []
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/plg-ai-reviews.webp",
+      "bytes": 737606,
+      "sha256": "d17674a7fbef96fc1744a50a370a109054e0d153d8a1d6a745374bd2f7a81e31",
+      "allowedBefore": []
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/plg-kosell-rent.webp",
+      "bytes": 902540,
+      "sha256": "79f2202c8a754221a94cfc84daaeb2278a33bb4a07144cc8a6031f62ec15f26d",
+      "allowedBefore": []
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/plg-lot-cloner.webp",
+      "bytes": 830470,
+      "sha256": "eddf8922b71a72e7a3013331e4c4bdad09f43eea403bed97f18a2b9e03ff126a",
+      "allowedBefore": []
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/plg-mass-price-editor.webp",
+      "bytes": 810438,
+      "sha256": "57d06b300e5645377b3b1e2ea638e9a5e2c2745b8b06ea51bcd5811793d4642e",
+      "allowedBefore": []
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/plg-priority-orders.webp",
+      "bytes": 897082,
+      "sha256": "ca92b6bf16a3daea87c26b1b057b38462b2d95c35428bf96126bd81f8450d5d4",
+      "allowedBefore": []
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/plg-review-reminder.webp",
+      "bytes": 801554,
+      "sha256": "51353f8471f76722bf8e6b66b6afec0028198c111ac21a96c23d8dd2c71e3246",
+      "allowedBefore": []
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/plg-robux-relay.webp",
+      "bytes": 813768,
+      "sha256": "a0a24d643bad9ffaccec8dc644ddb3d44310449de284231614fefde6b3aac9a7",
+      "allowedBefore": []
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/plg-sales-pause.webp",
+      "bytes": 619388,
+      "sha256": "c76a1c6b18a66bf0e7d44d838ae67cd4b8ec9912eb793d7eb817d97ee7ed64d2",
+      "allowedBefore": []
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/plg-stars-relay.webp",
+      "bytes": 706266,
+      "sha256": "4c3b05e4356aa36945a7aabe4616af5aa5f4bb608b0969e59fdbdc4b28722a02",
+      "allowedBefore": []
+    },
+    {
+      "path": "assets/landing-v2/hq-20261114/plg-steam-rent.webp",
+      "bytes": 690282,
+      "sha256": "3c5f5ce04b1c3a88d9b1dd57b18d4b3ea15cd7e790e82f7e404aca55d2036777",
+      "allowedBefore": []
+    }
+  ],
+  "dependencies": [
+    {
+      "path": "apple-touch-icon.png",
+      "allowedSha256": [
+        "f5767f04b6644d261d59d8479cb5ec473b8cc03c93c5a26684912818f3470069"
+      ]
+    },
+    {
+      "path": "assets/fonts/fonts.css",
+      "allowedSha256": [
+        "f6769015db17937b5ce0f7f821bdddd781efa36992c15ce22680bf017324995d"
+      ]
+    },
+    {
+      "path": "assets/fonts/inter-variable.woff",
+      "allowedSha256": [
+        "dfc0647644e1e3d7c6385044e143cd325b449e98e73da68dd4f7d945b53f4757"
+      ]
+    },
+    {
+      "path": "assets/fonts/manrope-variable.woff",
+      "allowedSha256": [
+        "8ca61feb4209698edd33b98c70718e374c87537782c44cae5a55153c6b7b8bda"
+      ]
+    },
+    {
+      "path": "assets/hero-sunset-20261111/inter-variable.woff",
+      "allowedSha256": [
+        "dfc0647644e1e3d7c6385044e143cd325b449e98e73da68dd4f7d945b53f4757"
+      ]
+    },
+    {
+      "path": "assets/hero-sunset-20261111/main-z.webp",
+      "allowedSha256": [
+        "718e43dfc6dfcfa1b9446dd1c0dbf8b8d298d423bb80c63c9479b34baebb0037"
+      ]
+    },
+    {
+      "path": "assets/hero-sunset-20261111/sky.webp",
+      "allowedSha256": [
+        "aa9a789d92047ad9b8dfdc992ee0d3461ff9a32bdc7a8c7c8ac957379078c7ca"
+      ]
+    },
+    {
+      "path": "assets/platforms/funpay.svg",
+      "allowedSha256": [
+        "71998d6c98a16160b7f53f3601e4c7667142af19948c366ed3ae3679178d24b5"
+      ]
+    },
+    {
+      "path": "assets/platforms/ggsel.svg",
+      "allowedSha256": [
+        "f0402f897e0ff4707e5819a3e93d9ad8ac29c8e0877f613049d34809a5a8be58"
+      ]
+    },
+    {
+      "path": "assets/platforms/plati-market.svg",
+      "allowedSha256": [
+        "f2359b4fc657b85b886ecb943adff9ccaff19490a1a8538eb42385cb826cbdf1"
+      ]
+    },
+    {
+      "path": "assets/platforms/starvell.svg",
+      "allowedSha256": [
+        "36563a50f614755b74c0cc04bfbb0bfdb6d42c74aec79942efd38017ebf2faa0"
+      ]
+    },
+    {
+      "path": "assets/zetslay-logo.webp",
+      "allowedSha256": [
+        "fbe0612e8693a25818c7599f174f419061a51914db896a362af892f43c2ca282"
+      ]
+    },
+    {
+      "path": "favicon.ico",
+      "allowedSha256": [
+        "cf937355990d0464cf84865c7b424865fe08d34b4ffe43bf32f0cd89957acf44"
+      ]
+    },
+    {
+      "path": "landing-faq.js",
+      "allowedSha256": [
+        "ec523eb9f69a2b0191e34a157b9d97ee9e6211ba3fcc5f3e7233b65ec3a6f9bd"
+      ]
+    },
+    {
+      "path": "landing-footer.js",
+      "allowedSha256": [
+        "0782eaf5ff6d46a30dc48ec2197f0bd3333bd4d829f7e3ed1a0da33f3a71210b"
+      ]
+    },
+    {
+      "path": "landing-pricing.js",
+      "allowedSha256": [
+        "ece983a831682111b06191b92293b43c37041281d689274628e086a23981a0cc"
+      ]
+    },
+    {
+      "path": "landing-session.js",
+      "allowedSha256": [
+        "28d7e6d9287484f13354fab76e566a6c0ca7c77dd997d619cbae36111b1b581f"
+      ]
+    },
+    {
+      "path": "landing-sunset-20261111.css",
+      "allowedSha256": [
+        "e0545711fd55d634cca98d559e560696d8243a0d0a33a8e8fefad2c020d643e1"
+      ]
+    },
+    {
+      "path": "session-client.js",
+      "allowedSha256": [
+        "33d6918e28ca63eb45e12843de527549064050ed003847f21cce4e26a21741bd"
+      ]
+    },
+    {
+      "path": "session-ui.css",
+      "allowedSha256": [
+        "c86f1c651880e0f1fc79954d31b4f58dad4eaeee3300c1441a5a5da3d737a4e5"
+      ]
+    },
+    {
+      "path": "site-brand.css",
+      "allowedSha256": [
+        "1f49442aedcd60b6965edf0ac1a7ae9f2fe408a714c5f5d8a41e17b2c2ea436e"
+      ]
+    },
+    {
+      "path": "subscription-plans.json",
+      "allowedSha256": [
+        "831ef91a2456a2842c49461f34e24c8bef7047f8a43e23eba58982caa8cf0126"
+      ]
+    }
+  ]
+}
