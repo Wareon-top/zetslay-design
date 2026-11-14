@@ -102,7 +102,10 @@
   function rarity(includes){return '<ul class="rar-row" aria-label="Редкости в тарифе">'+[['common','◇'],['advanced','◆'],['ultra','✦'],['legendary','✧']].map(([r,s])=>`<li class="rar rar--${r}${includes.includes(r)?' is-on':''}"><span aria-hidden="true">${s}</span></li>`).join('')+'</ul>';}
   function billing(){
     const root=$('[data-view="billing"]'),pricing=$('[data-billing-pricing]',root),P=window.ZetSlayPricing;if(!root||!pricing||!P)return;
+    // Build once, and only after the section cover exists: refresh can run (e.g. from renderStoreTools) before
+    // decorateCover has painted billing; marking first left the section half-built for good.
     if(!root.dataset.referenceBilling){
+      if(!$('.zs-cover',root))return;
       root.dataset.referenceBilling='true';const tabs=make('nav','sec-tabs','<div class="tabs">'+[['plans','Тарифы'],['balance','Баланс и платежи'],['licenses','Лицензии']].map(([id,t])=>`<a class="tab" href="#billing/${id}" data-zsf-route="billing/${id}">${t}</a>`).join('')+'</div>');tabs.setAttribute('aria-label','Подписка и баланс');$('.zs-cover',root).after(tabs);
       const access=make('section','acc-card',`<img class="acc-card__sky" src="cabinet-v3/assets/img/cover-sunset.webp" alt=""><div class="acc-card__copy"><span class="acc-card__eyebrow">Ваш доступ</span><h2 data-zsf-access-name></h2><div data-zsf-rarities></div><p data-zsf-access-until></p><div data-zsf-access-meter></div></div>${image('plan-'+(['start','growth','pro','maximum'].includes(plan().id)?plan().id:'start'),'acc-card__art')}`);access.dataset.zsfBillPart='plans';tabs.after(access);
       pricing.dataset.zsfBillPart='plans';

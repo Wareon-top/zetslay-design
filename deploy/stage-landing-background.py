@@ -5,6 +5,8 @@ VERSION='20261024-ascii'
 ASSETS=('landing-hero.js','landing-orderflow.css')
 def stage(local,incoming,out):
  local,incoming,out=map(Path,(local,incoming,out));html=(local/'index.html').read_text()
+ # The redesigned landing (landing-v2) has no orderflow first screen; it ships with its own installer.
+ if 'class="zl-section' in html:raise ValueError('Главная в новом дизайне (landing-v2): фон первого экрана ставит установщик главной deploy/update-landing-v2.py. Сайт не изменён.')
  if 'data-landing-hero="orderflow"' not in html or not re.search(r'<canvas\b[^>]*data-hero-(?:particles|ascii)',html):raise ValueError('Не найден текущий первый экран с монетами. Сайт не изменён.')
  for name,tag,attr in [('landing-hero.js','script','src'),('landing-orderflow.css','link','href')]:
   pattern=r'(<'+tag+r'\b[^>]*\b'+attr+r'=["\'])'+re.escape(name)+r'(?:\?[^"\']*)?(["\'])'
