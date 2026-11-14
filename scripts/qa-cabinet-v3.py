@@ -222,6 +222,17 @@ with sync_playwright() as p:
     check('guide video link sits in the cover',moved.count()==1 and (moved.get_attribute('href') or '').startswith('https://youtu.be/'))
     check('guide banner without its link is hidden',direct.evaluate("[...document.querySelectorAll('[data-view=guide] > .video-guide-banner')].every(b=>getComputedStyle(b).display==='none')"))
     direct.close()
+    # Drawer menu below 1200px (981-1199 used to slide in invisible, without a close button, and the closed scrim covered the page).
+    for width in (1024,390):
+        drawer=context.new_page();drawer.set_viewport_size({'width':width,'height':800});drawer.on('pageerror',lambda error:errors.append(str(error)))
+        drawer.goto(f'http://127.0.0.1:{server.server_port}/app/#dashboard',wait_until='networkidle');drawer.wait_for_timeout(700)
+        drawer.locator('[data-sidebar-open]').focus();drawer.keyboard.press('Enter');drawer.wait_for_timeout(450)
+        opened=drawer.evaluate("({vis:getComputedStyle(document.querySelector('.sidebar')).visibility,focus:!!document.activeElement?.matches('.sidebar__close')})")
+        check(f'drawer menu opens visibly at {width}',opened['vis']=='visible' and opened['focus'])
+        drawer.keyboard.press('Escape');drawer.wait_for_timeout(450)
+        closed=drawer.evaluate("({vis:getComputedStyle(document.querySelector('.sidebar')).visibility,scrim:getComputedStyle(document.querySelector('.sidebar-backdrop')).visibility,back:!!document.activeElement?.matches('[data-sidebar-open]')})")
+        check(f'drawer closes and the scrim stops covering the page at {width}',closed['vis']=='hidden' and closed['scrim']=='hidden' and closed['back'])
+        drawer.close()
     check('no JS runtime errors',not errors)
     check('all local assets exist',not failed_assets)
     # Failure is not converted into an apparent success or a fixture.

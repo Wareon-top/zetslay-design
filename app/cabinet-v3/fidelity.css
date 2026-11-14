@@ -417,3 +417,14 @@
  .zs-production.zs-reference .zsf-pp-facts > div + div{border-left:0}
  .zs-production.zs-reference .zsf-pp-facts > div > span{order:-1}
 }
+
+/* ---------- drawer menu below 1200px ----------
+   The design system hides `.nav` until `.shell[data-nav-open]`, but the host opens the drawer with
+   `.sidebar.is-open` — without this the panel slid in but stayed invisible. */
+@media (max-width:1199px){
+ .zs-production .sidebar.is-open{visibility:visible;transform:none;transition:transform var(--d-window,.28s) var(--ease-sheet,ease)}
+}
+/* host styles.css hides the close button with !important above 980px; the drawer exists up to 1199px */
+@media (max-width:1199px){.zs-production .sidebar .sidebar__close{display:grid!important}}
+/* same 980/1199 gap for the scrim: show it (host keeps it invisible until .is-open) */
+@media (max-width:1199px){.zs-production .sidebar-backdrop{display:block;visibility:hidden;opacity:0;transition:opacity .2s,visibility .2s}.zs-production .sidebar-backdrop.is-open{visibility:visible;opacity:1}}
