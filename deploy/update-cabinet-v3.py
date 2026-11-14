@@ -7,7 +7,7 @@ import argparse,hashlib,json,os,re,shutil,tempfile,urllib.request
 
 CSS=['tokens','zetslay-ui','profile','cabinet','catalog','plugin-page','production']
 JS=['icons','model','production']
-RELEASE='20261114-production'
+RELEASE='20261114-production-hq1'
 MARKER='ZETSLAY_CABINET_V3'
 def sha(data):return hashlib.sha256(data).hexdigest()
 def asset_directory(path,app):

@@ -76,6 +76,9 @@ with sync_playwright() as p:
     check('production bridge loaded',page.evaluate('Boolean(window.ZetSlayCabinet)'))
     check('authenticated real shell visible',page.locator('.app-shell').is_visible())
     check('new profile rendered',page.locator('[data-zs-profile]').count()==1)
+    account_art=page.locator('.zs-account-row img[src$="quality-v2/account.webp"]').first
+    account_art.evaluate('(img)=>img.decode()')
+    check('profile uses full resolution transparent art',account_art.evaluate('(img)=>img.naturalWidth===1254&&img.naturalHeight===1254'))
     check('profile refresh remains reachable',page.locator('[data-view="profile"] .zs-cover [data-profile-reload]').is_visible())
     check('no demo controls',page.locator('[data-review-bar],[data-review]').count()==0)
     check('new grouped menu',page.locator('.zs-nav-group').count()>=4)
@@ -101,6 +104,9 @@ with sync_playwright() as p:
     check('one documents panel',page.locator('[data-legal-cabinet]').count()==1)
     page.evaluate("setView('plugins/zetslay.kosell-rent')");page.wait_for_timeout(250)
     check('plugin product hero',page.locator('[data-zs-product]').count()==1)
+    product_art=page.locator('.zs-product-art img').first
+    product_art.evaluate('(img)=>img.decode()')
+    check('plugin product uses restored master',product_art.evaluate('(img)=>img.currentSrc.includes("quality-v2/")&&img.naturalWidth>=1200'))
     check('kosell settings retained',page.locator('[data-plugin-page]').inner_text().find('Kosell')>=0)
     page.screenshot(path=str(OUT/'kosell-desktop.png'),full_page=True)
     for width in [320,390,768,1024]:

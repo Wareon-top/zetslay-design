@@ -1,0 +1,69 @@
+{
+  "checks": [
+    {
+      "name": "comparison gallery has 25 assets",
+      "passed": true
+    },
+    {
+      "name": "large robot uses 1254px master",
+      "passed": true
+    },
+    {
+      "name": "robot shimmer mask follows new master",
+      "passed": true
+    },
+    {
+      "name": "reduced motion respected",
+      "passed": true
+    },
+    {
+      "name": "robot dialog closes",
+      "passed": true
+    },
+    {
+      "name": "catalog fits 390",
+      "passed": true
+    },
+    {
+      "name": "catalog artwork resolves 390",
+      "passed": true
+    },
+    {
+      "name": "catalog fits 1440",
+      "passed": true
+    },
+    {
+      "name": "catalog artwork resolves 1440",
+      "passed": true
+    },
+    {
+      "name": "no browser exceptions",
+      "passed": true
+    },
+    {
+      "name": "no missing preview resources",
+      "passed": true
+    },
+    {
+      "name": "patch preflight",
+      "passed": true
+    },
+    {
+      "name": "patch installs",
+      "passed": true
+    },
+    {
+      "name": "patch idempotence",
+      "passed": true
+    },
+    {
+      "name": "patch refuses unknown edit",
+      "passed": true
+    }
+  ],
+  "passed": 15,
+  "total": 15,
+  "browserErrors": [],
+  "missingAssets": [],
+  "note": "Local mock design only; no VPS or real account used. DPR2 screenshots."
+}

@@ -6,9 +6,11 @@
   'use strict';
   if(typeof state==='undefined'||typeof authState==='undefined'||typeof setView!=='function')return;
   const M=window.ZSCabinetModel, E=escapeHtml, $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
-  const base='cabinet-v3/assets/img/', svg=n=>window.ZSIcons.svg(n), art=(name,cls='')=>`<img class="${cls}" src="${base}${name}.webp" alt="" loading="lazy" decoding="async">`;
+  const base='cabinet-v3/assets/img/', hq={"account":"account.webp","telegram-bot":"telegram-bot.webp","funpay-store":"funpay-store.webp","subscription":"subscription.webp","proxy-router":"proxy-router.webp","cat-currency":"cat-currency.webp","cat-rent":"cat-rent.webp","cat-tools":"cat-tools.webp","cat-reviews":"cat-reviews.webp","plg-stars":"plg-stars.webp","plg-robux":"plg-robux.webp","plg-rent":"plg-rent.webp","plg-steam":"plg-steam.webp","plg-prices":"plg-prices.webp","plg-cloner":"plg-cloner.webp","plg-pause":"plg-pause.webp","plg-priority":"plg-priority.webp","plg-ai":"plg-ai.webp","plg-remind":"plg-remind.webp","funpay-link":"funpay-link.webp","zetslay-z":"zetslay-z.webp","plan-growth":"plan-growth.webp","plan-maximum":"plan-maximum.webp","plan-pro":"plan-pro.webp","plan-start":"plan-start.webp","plugin-stars":"plg-stars.webp","plugin-rent":"plg-rent.webp"};
+  const artSource=name=>Object.hasOwn(hq,name)?'cabinet-v3/assets/quality-v2/'+hq[name]:base+name+'.webp';
+  const svg=n=>window.ZSIcons.svg(n), art=(name,cls='')=>`<img class="${cls}" src="${artSource(name)}" alt="" loading="lazy" decoding="async">`;
   const virtual=new Set(['connection','telegram','security','documents','proxy-shop']);
-  const R=window.ZetSlayCabinet={release:'20261114',route:'dashboard',sub:'',pending:false};
+  const R=window.ZetSlayCabinet={release:'20261114-hq',route:'dashboard',sub:'',pending:false};
   let activeRoute='dashboard', menuOpener=null, scheduled=false;
   const session=()=>`${authState.user?.id||''}:${sessionGeneration}`;
   const titleOf=v=>M.groups.flatMap(g=>g.items).find(it=>it[0]===v)?.[1]||viewTitles[v]||'Кабинет';
@@ -156,7 +158,7 @@
       const p=state.plugins.find(p=>p.id===id);if(!p)continue;
       c.classList.add('zs-plugin-tile');c.dataset.zsPlugin=id;
       const img=$('.plugin-card__cover img',c);
-      if(M.art[id]&&img){img.src=base+M.art[id]+'.webp';img.removeAttribute('data-plugin-cover');}
+      if(M.art[id]&&img){img.src=artSource(M.art[id]);img.removeAttribute('data-plugin-cover');}
       // Read-only card has one clear destination; transactional controls remain on the product page.
       const action=$('.plugin-card__navigation button',c);if(action)action.hidden=true;
       $('.plugin-permissions',c)?.remove();
