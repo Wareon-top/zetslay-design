@@ -428,3 +428,117 @@
 @media (max-width:1199px){.zs-production .sidebar .sidebar__close{display:grid!important}}
 /* same 980/1199 gap for the scrim: show it (host keeps it invisible until .is-open) */
 @media (max-width:1199px){.zs-production .sidebar-backdrop{display:block;visibility:hidden;opacity:0;transition:opacity .2s,visibility .2s}.zs-production .sidebar-backdrop.is-open{visibility:visible;opacity:1}}
+
+/* ======================= design pass: account screens & knowledge base ======================= */
+/* shared handoff card */
+.zs-production.zs-reference .zsf-card{min-width:0;padding:18px 20px;border:0;border-radius:22px;background:#1c1c1e}
+.zs-production.zs-reference .zsf-card__title,.zs-production.zs-reference .zsf-card > h2,.zs-production.zs-reference .zsf-card > h3:first-child{margin:0 0 4px;font-size:17px;font-weight:700;color:#fff}
+
+/* connection: state checklist + connection data */
+.zs-production.zs-reference .zs-conn-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:16px;align-items:start}
+.zs-production.zs-reference .zs-conn-grid > section{margin:0;padding:18px 20px;border:0;border-radius:22px;background:#1c1c1e;text-align:left}
+.zs-production.zs-reference .zs-conn-grid header h2{margin:0;font-size:17px;color:#fff}
+.zs-production.zs-reference .zs-conn-grid header p{margin:2px 0 12px;font-size:12.5px;color:#8e8e93}
+.zs-production.zs-reference .zs-checks{display:grid;gap:6px;margin:0 0 12px;padding:0;list-style:none}
+.zs-production.zs-reference .zs-check{display:grid;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;background:#232325}
+.zs-production.zs-reference .zs-check__icon{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;font-size:13px;font-weight:800}
+.zs-production.zs-reference .zs-check.is-ok .zs-check__icon{background:rgba(52,199,89,.16);color:#34c759}
+.zs-production.zs-reference .zs-check.is-warn .zs-check__icon{background:rgba(255,159,10,.16);color:#ff9f0a}
+.zs-production.zs-reference .zs-check strong{display:block;font-size:14px;color:#fff}
+.zs-production.zs-reference .zs-check small{display:block;font-size:12.5px;color:#8e8e93}
+.zs-production.zs-reference .zs-check em{font-style:normal;font-size:12.5px;font-weight:600;white-space:nowrap}
+.zs-production.zs-reference .zs-check.is-ok em{color:#34c759}
+.zs-production.zs-reference .zs-check.is-warn em{color:#ff9f0a}
+.zs-production.zs-reference .zs-conn-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.zs-production.zs-reference .zs-kv{display:grid;gap:0;margin:0}
+.zs-production.zs-reference .zs-kv > div{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #2c2c2e}
+.zs-production.zs-reference .zs-kv > div:last-child{border-bottom:0}
+.zs-production.zs-reference .zs-kv dt{font-size:13px;color:#8e8e93}
+.zs-production.zs-reference .zs-kv dd{margin:0;font-size:13.5px;font-weight:600;color:#fff;text-align:right}
+
+/* security: cards instead of one long panel */
+.zs-production.zs-reference [data-account-security-panel].zsf-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;padding:0;border:0;background:none;box-shadow:none}
+.zs-production.zs-reference [data-account-security-panel].zsf-cards > .profile-panel-heading{grid-column:1 / -1;margin:0;padding:0}
+.zs-production.zs-reference [data-account-security-panel].zsf-cards > .profile-panel-heading .profile-panel-icon,
+.zs-production.zs-reference [data-account-security-panel].zsf-cards > .profile-panel-heading h2{display:none}
+.zs-production.zs-reference .zsf-card--sessions{grid-column:1 / -1;display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+.zs-production.zs-reference .zsf-card--sessions > h3{margin:0;font-size:17px;color:#fff}
+.zs-production.zs-reference .zsf-card--sessions .account-security-sessions{align-self:stretch}
+.zs-production.zs-reference .zsf-card--mfa .account-security-heading{display:grid;gap:2px;margin:0 0 8px}
+.zs-production.zs-reference .zsf-card--mfa .account-security-heading strong{font-size:17px;color:#fff}
+.zs-production.zs-reference .zsf-card--mfa .account-security-heading span,
+.zs-production.zs-reference .zsf-card p{font-size:13px;color:#8e8e93}
+.zs-production.zs-reference .zsf-card .button{width:auto;align-self:flex-start}
+.zs-production.zs-reference .zsf-card--sync h3{margin:0 0 6px;font-size:17px;color:#fff}
+.zs-production.zs-reference .zsf-card--sync strong{display:block;font-size:14px;color:#34c759}
+
+/* documents: legal documents, my requests, new request */
+.zs-production.zs-reference [data-legal-cabinet].zsf-cards{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:16px;padding:0;background:none}
+.zs-production.zs-reference [data-legal-cabinet] .zsf-card--form,
+.zs-production.zs-reference [data-legal-cabinet] > [data-legal-admin-panel]{grid-column:1 / -1}
+.zs-production.zs-reference [data-legal-cabinet] .zsf-card--docs .legal-links{display:grid;gap:6px;margin:12px 0 0}
+.zs-production.zs-reference [data-legal-cabinet] .zsf-card--docs .legal-links > :is(a,button){display:flex;justify-content:space-between;align-items:center;min-height:44px;padding:0 14px;border:0;border-radius:12px;background:#232325;color:#fff;font-size:14px;font-weight:600;text-decoration:none;text-align:left}
+.zs-production.zs-reference [data-legal-cabinet] .zsf-card--docs .legal-links > a::after{content:"Открыть";padding:5px 12px;border-radius:999px;background:#2c2c2e;font-size:12.5px;font-weight:600;color:#fff}
+.zs-production.zs-reference [data-legal-cabinet] .zsf-card--requests{display:flex;flex-direction:column;gap:8px}
+.zs-production.zs-reference [data-legal-cabinet] .zsf-card--requests .legal-actions{order:9}
+.zs-production.zs-reference [data-legal-cabinet] .zsf-card--form form{display:grid;gap:10px;margin-top:8px}
+.zs-production.zs-reference [data-legal-cabinet] .zsf-card--form :is(select,textarea){width:100%;border:1px solid #3a3a3d;border-radius:12px;background:#232325;color:#fff;font-size:14px}
+.zs-production.zs-reference [data-legal-cabinet] .zsf-card--form select{min-height:42px;padding:0 12px}
+.zs-production.zs-reference [data-legal-cabinet] .zsf-card--form textarea{min-height:110px;padding:10px 12px}
+.zs-production.zs-reference [data-legal-cabinet] .zsf-card--form .button--primary{width:100%}
+
+/* telegram: bot card + what to configure */
+.zs-production.zs-reference [data-zs-account-content].zsf-bot-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+.zs-production.zs-reference .zsf-bot-grid > [data-zs-bot-panel]{margin:0;border:0;border-radius:22px;background:#1c1c1e}
+.zs-production.zs-reference .zsf-bot-links ul{display:grid;gap:6px;margin:12px 0 0;padding:0;list-style:none}
+.zs-production.zs-reference .zsf-bot-links li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border-radius:14px;background:#232325}
+.zs-production.zs-reference .zsf-bot-links strong{display:block;font-size:14px;color:#fff}
+.zs-production.zs-reference .zsf-bot-links small{display:block;font-size:12.5px;color:#8e8e93}
+.zs-production.zs-reference .zsf-bot-links button{flex:none;min-height:32px;padding:0 14px;border:0;border-radius:999px;background:#2c2c2e;color:#fff;font-size:13px;font-weight:600}
+
+/* knowledge base cards: rubric, title, description, read link */
+.zs-production.zs-reference [data-view="guide"] .kb-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.zs-production.zs-reference [data-view="guide"] .kb-card{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-height:0;padding:16px 18px 14px;text-align:left}
+.zs-production.zs-reference [data-view="guide"] .kb-card .kb-card-top{display:none}
+.zs-production.zs-reference [data-view="guide"] .kb-card .kb-card-footer{order:-1;display:block;margin:0;padding:0;border:0;font-size:12.5px;color:#8e8e93}
+.zs-production.zs-reference [data-view="guide"] .kb-card .kb-card-footer svg{display:none}
+.zs-production.zs-reference [data-view="guide"] .kb-card h3{margin:0;font-size:15px;font-weight:700;color:#fff}
+.zs-production.zs-reference [data-view="guide"] .kb-card .kb-card-desc{margin:0;font-size:13px;line-height:1.45;color:#8e8e93}
+.zs-production.zs-reference [data-view="guide"] .kb-card::after{content:"Читать \2192";margin-top:8px;font-size:13px;font-weight:600;color:#fff}
+@media (max-width:1023px){.zs-production.zs-reference [data-view="guide"] .kb-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:899px){
+ .zs-production.zs-reference :is(.zs-conn-grid,[data-account-security-panel].zsf-cards,[data-legal-cabinet].zsf-cards,[data-zs-account-content].zsf-bot-grid){grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:560px){.zs-production.zs-reference [data-view="guide"] .kb-grid{grid-template-columns:minmax(0,1fr)}}
+.zs-production.zs-reference [data-legal-cabinet] .zsf-card--docs{order:1}
+.zs-production.zs-reference [data-legal-cabinet] .zsf-card--requests{order:2}
+.zs-production.zs-reference [data-legal-cabinet] .zsf-card--form{order:3}
+.zs-production.zs-reference [data-legal-cabinet] > [data-legal-admin-panel]{order:4}
+.zs-production.zs-reference [data-account-security-panel].zsf-cards > .zsf-card--mfa{order:1}
+.zs-production.zs-reference [data-account-security-panel].zsf-cards > .zsf-card--sync{order:2}
+.zs-production.zs-reference [data-account-security-panel].zsf-cards > .zsf-card--sessions{order:3}
+
+/* security: sync card has no inner box */
+.zs-production.zs-reference .zsf-card--sync.account-sync-health,.zs-production.zs-reference .zsf-card--sync > .account-sync-health{margin:0;padding:0;border:0;background:none;box-shadow:none}
+
+/* managed proxy: handoff «Текущий прокси» card */
+.zs-production.zs-reference [data-view="proxy-shop"] .mp-card{padding:18px 20px;border:0;border-radius:22px;background:#1c1c1e;box-shadow:none}
+.zs-production.zs-reference [data-view="proxy-shop"] .mp-card > header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin:0 0 4px}
+.zs-production.zs-reference [data-view="proxy-shop"] .mp-eyebrow{display:block;font-size:12px;letter-spacing:0;text-transform:none;color:#8e8e93}
+.zs-production.zs-reference [data-view="proxy-shop"] .mp-card h3{margin:0;font-size:17px;font-weight:700;color:#fff}
+.zs-production.zs-reference [data-view="proxy-shop"] .mp-card > p{margin:0 0 12px;font-size:13px;color:#8e8e93}
+.zs-production.zs-reference [data-view="proxy-shop"] .mp-chip{padding:4px 10px;border:0;border-radius:999px;background:rgba(52,199,89,.14);color:#34c759;font-size:12.5px;font-weight:600}
+.zs-production.zs-reference [data-view="proxy-shop"] .mp-chip.is-warning{background:rgba(255,159,10,.14);color:#ff9f0a}
+.zs-production.zs-reference [data-view="proxy-shop"] .mp-lease{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin:0 0 12px;padding:0;border:0;border-radius:14px;background:#232325;overflow:hidden}
+.zs-production.zs-reference [data-view="proxy-shop"] .mp-lease > div{padding:12px 14px}
+.zs-production.zs-reference [data-view="proxy-shop"] .mp-lease > div + div{border-left:1px solid #2c2c2e}
+.zs-production.zs-reference [data-view="proxy-shop"] .mp-lease small{display:block;font-size:12px;color:#8e8e93}
+.zs-production.zs-reference [data-view="proxy-shop"] .mp-lease strong{display:block;margin-top:2px;font-size:14px;color:#fff}
+.zs-production.zs-reference [data-view="proxy-shop"] .mp-checks{display:grid;gap:6px;margin:0 0 12px;padding:0;border:0;background:none}
+.zs-production.zs-reference [data-view="proxy-shop"] .mp-check{margin:0;padding:10px 12px;border:0;border-radius:14px;background:#232325}
+.zs-production.zs-reference [data-view="proxy-shop"] .mp-actions{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+.zs-production.zs-reference [data-view="proxy-shop"] .mp-card select{min-height:42px;padding:0 12px;border:1px solid #3a3a3d;border-radius:12px;background:#232325;color:#fff}
+.zs-production.zs-reference [data-view="proxy-shop"] .mp-note{font-size:12.5px;color:#8e8e93}
+@media (max-width:560px){.zs-production.zs-reference [data-view="proxy-shop"] .mp-lease{grid-template-columns:minmax(0,1fr)}.zs-production.zs-reference [data-view="proxy-shop"] .mp-lease > div + div{border-left:0;border-top:1px solid #2c2c2e}}
+/* profile: the proxy strip duplicates the «Прокси» row of the account list (handoff has no strip) */
+.zs-production.zs-reference [data-view="profile"] :is([data-proxy-invite],[data-proxy-entry]){display:none}

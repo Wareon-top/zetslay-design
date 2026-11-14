@@ -133,8 +133,21 @@
     if(connection){
       const current=typeof selectedStore==='function'?selectedStore():null;
       const status=current?.status==='connected_read_only'?'Подключение подтверждено':current?'Подключение требует проверки':'Магазин не подключён';
-      const signature=JSON.stringify([current?.id,current?.displayName,current?.status,state.onboarding?.state]);
-      if(connection.dataset.signature!==signature){connection.dataset.signature=signature;connection.innerHTML=`<section class="zs-account-group zs-connection-card"><div class="zs-connection-art">${art('funpay-link')}</div><h2>${E(current?.displayName||'Подключите аккаунт FunPay')}</h2><p>${E(status)}</p><p class="zs-muted">Ключ магазина, прокси и проверка связи доступны в мастере подключения. Результат проверки приходит с сервера.</p>${button(current?'Управлять подключением':'Подключить FunPay','data-profile-connect','primary')}${current?button('Прокси','data-zs-route="proxy-shop"'):''}</section>`;}
+      const signature=JSON.stringify([current?.id,current?.displayName,current?.status,current?.proxyConfigured,current?.lastSeenAt,current?.metrics,state.onboarding?.state]);
+      if(connection.dataset.signature!==signature){connection.dataset.signature=signature;
+        // Handoff layout: «Состояние» checklist + «Данные подключения», built only from the selected store the host loaded.
+        const when=v=>{const d=v&&new Date(v);return d&&!isNaN(d)?d.toLocaleString('ru-RU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Moscow'}):null;};
+        const ok=current?.status==='connected_read_only',seen=when(current?.lastSeenAt);
+        const row=(good,title,sub,value)=>`<li class="zs-check ${good?'is-ok':'is-warn'}"><span class="zs-check__icon" aria-hidden="true">${good?'✓':'!'}</span><div><strong>${E(title)}</strong><small>${E(sub)}</small></div><em>${E(value)}</em></li>`;
+        const kv=(k,v)=>v==null||v===''?'':`<div><dt>${E(k)}</dt><dd>${E(v)}</dd></div>`;
+        connection.innerHTML=current?`<div class="zs-conn-grid">
+          <section class="zs-account-group zs-conn-state"><header><h2>Состояние</h2><p>${E(seen?'Последняя связь '+seen+' МСК':'Связь с сервером ещё не подтверждена')}</p></header>
+            <ul class="zs-checks">${row(ok,'Магазин FunPay',current.displayName||'Магазин',ok?'Подтверждён':'Нужна проверка')}${row(!!current.proxyConfigured,'Прокси','Маршрут подключения магазина',current.proxyConfigured?'Настроен':'Не настроен')}${row(ok,'Заказы и чаты','Чтение без изменений на FunPay',ok?'Читаются':'Не подтверждено')}</ul>
+            <p class="zs-muted">Ключ магазина, прокси и проверка связи — в мастере подключения. Результат проверки приходит с сервера.</p>
+            <div class="zs-conn-actions">${button('Управлять подключением','data-profile-connect','primary')}${button('Прокси','data-zs-route="proxy-shop"')}</div></section>
+          <section class="zs-account-group zs-conn-data"><header><h2>Данные подключения</h2><p>Из последнего снимка магазина</p></header>
+            <dl class="zs-kv">${kv('Магазин',current.displayName)}${kv('ID FunPay',current.id)}${kv('Лотов в снимке',current.metrics?.lots)}${kv('Баланс FunPay',current.metrics?.balance)}${kv('Прокси',current.proxyConfigured?'Настроен':'Не настроен')}</dl></section></div>`
+          :`<section class="zs-account-group zs-connection-card"><div class="zs-connection-art">${art('funpay-link')}</div><h2>Подключите аккаунт FunPay</h2><p>${E(status)}</p><p class="zs-muted">Ключ магазина, прокси и проверка связи доступны в мастере подключения. Результат проверки приходит с сервера.</p>${button('Подключить FunPay','data-profile-connect','primary')}</section>`;}
     }
     for(const name of ['security','documents','telegram']){
       const target=$(`[data-view="${name}"] [data-zs-account-content]`);
@@ -261,7 +274,7 @@
     hook('renderProfile',()=>{profile();schedule();});
     hook('renderPlugins',()=>{catalogue();schedule();});
     hook('renderPluginPage',()=>{pluginPage();schedule();});
-    hook('renderBilling',billing);hook('renderAuthState',schedule);hook('renderAccountSecurity',distribute);hook('renderLegalRequests',distribute);
+    hook('renderBilling',billing);hook('renderAuthState',schedule);hook('renderAccountSecurity',()=>{distribute();schedule();});hook('renderLegalRequests',()=>{distribute();schedule();});
     hook('pluginCatalogFailed',catalogue);hook('renderStoreTools',()=>window.ZSCabinetFidelity?.refresh());
     const hostReset=resetAccountData;resetAccountData=function(...args){
       window.ZSCabinetFidelity?.reset();

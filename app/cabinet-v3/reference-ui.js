@@ -166,7 +166,7 @@
   }
   function refresh(){
     if(rendering)return;rendering=true;
-    try{document.body.classList.add('zs-reference');auth();if(!authState.user)return;navigation();for(const view of $$('[data-view]'))decorateCover(view);dashboard();billing();panels();profile();catalogue();product();commands();syncModal();}
+    try{document.body.classList.add('zs-reference');auth();if(!authState.user)return;navigation();for(const view of $$('[data-view]'))decorateCover(view);dashboard();billing();panels();profile();catalogue();product();commands();accountLayout();syncModal();}
     finally{rendering=false;}
   }
   function profile(){
@@ -271,6 +271,35 @@
     const html=facts.map(([v,l])=>`<div><strong>${E(v)}</strong><span>${E(l)}</span></div>`).join('');
     if(!box){box=make('div','zsf-pp-facts');box.setAttribute('role','list');$('.plugin-page-heading',info)?.after(box);}
     if(box.dataset.html!==html){box.dataset.html=html;box.innerHTML=html;for(const n of box.children)n.setAttribute('role','listitem');}
+  }
+  // Account screens as handoff cards. Host nodes are only regrouped inside their own section
+  // (delegated data-* handlers keep working); the host may re-render, so grouping is idempotent.
+  function group(panel,cls,nodes){const card=make('div','zsf-card '+cls);nodes[0].before(card);for(const n of nodes)card.append(n);return card;}
+  function accountLayout(){
+    const sec=$('[data-account-security-panel]');
+    if(sec&&!$(':scope > .zsf-card',sec)){
+      const kids=[...sec.children].filter(n=>!n.matches('.profile-panel-heading')),cards=[];let cur=null;
+      for(const n of kids){if(n.matches('.account-sync-health')){cards.push({cls:'zsf-card--sync',nodes:[n]});cur=null;continue;}
+        if(n.tagName==='H3'||!cur){cur={cls:n.tagName==='H3'?'zsf-card--sessions':'zsf-card--mfa',nodes:[]};cards.push(cur);}cur.nodes.push(n);}
+      for(const c of cards)if(c.nodes.length)group(sec,c.cls,c.nodes);sec.classList.add('zsf-cards');
+    }
+    const legal=$('[data-view="documents"] [data-legal-cabinet]');
+    if(legal&&!$(':scope > .zsf-card',legal)){
+      const pick=s=>$$(`:scope > ${s}`,legal);
+      const docs=[...pick('h2'),...pick('h2 + p'),...pick('.legal-links'),...pick('[data-legal-acceptance]')];
+      const req=[...pick('.legal-actions'),...pick('[data-legal-load-status]'),...pick('[data-legal-requests]'),...pick('[data-legal-deletion]')];
+      const form=pick('[data-legal-request]');
+      if(docs.length)group(legal,'zsf-card--docs',docs);
+      if(req.length){const card=group(legal,'zsf-card--requests',req);card.prepend(make('h3','zsf-card__title','Мои обращения'));}
+      if(form.length){const card=group(legal,'zsf-card--form',form);card.prepend(make('h3','zsf-card__title','Новое обращение'));}
+      legal.classList.add('zsf-cards');
+    }
+    const bot=$('[data-view="telegram"] [data-zs-account-content]');
+    if(bot&&bot.children.length&&!$('.zsf-bot-links',bot)){
+      const links=[['store-tools/notifications','Уведомления','Заказы, сообщения, проблемы подключения','Открыть'],['store-tools/bot','Пароль доступа к боту','Отдельный от пароля аккаунта','Открыть'],['store-tools/commands','Команды покупателей','Ответы на команды в чате','Открыть']];
+      const card=make('section','zsf-card zsf-bot-links',`<h2 class="zsf-card__title">Что настроить</h2><ul>${links.map(([r,t,s,b])=>`<li><div><strong>${t}</strong><small>${s}</small></div><button type="button" class="btn btn--quiet btn--sm" data-zsf-route="${r}">${b}</button></li>`).join('')}</ul>`);
+      bot.append(card);bot.classList.add('zsf-bot-grid');
+    }
   }
   const productTabs=[['about','Умеет'],['needs','Нужно'],['settings','Настройки'],['queue','Очередь'],['history','История']];
   let productObserver=null,productObserved=null,productQueued=false;
