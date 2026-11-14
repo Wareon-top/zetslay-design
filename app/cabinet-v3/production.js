@@ -83,8 +83,10 @@
     const card=typeof profileState!=='undefined'?profileState.data?.profile:null;
     const identity=typeof profileState!=='undefined'?profileState.data?.identity:null;
     const name=card?.displayName||authState.user.email||'Мой профиль';
+    const reload=$('[data-profile-reload]',root);
     $('.profile-hero',root)?.remove();$('.profile-heading',root)?.remove();
     root.insertAdjacentHTML('afterbegin',cover(name,identity?.createdAt?'В ZetSlay с '+new Date(identity.createdAt).toLocaleDateString('ru-RU'):'Ваш аккаунт и подключения',profilePortrait(card||{displayName:name},true)));
+    if(reload){reload.classList.add('zs-cover-refresh');$('.zs-cover',root).append(reload);}
     const body=document.createElement('div');body.className='profile-grid zs-profile';body.dataset.zsProfile='';
     const aside=document.createElement('aside');aside.className='zs-profile-aside';aside.setAttribute('aria-label','Аккаунт и настройки');
     aside.innerHTML=`<div class="zs-account-group">${row('account','Данные аккаунта',identity?.email||'Вход через Telegram','data-zs-editor')}${row('telegram-bot','Telegram-бот',state.onboarding?.telegram?.linked?'Привязан':'Настроить подключение','data-zs-route="telegram"')}${row('funpay-store','Магазин FunPay',typeof selectedStore==='function'?selectedStore()?.displayName||'Подключить магазин':'Подключить магазин','data-zs-route="connection"')}</div><div class="zs-account-group">${row('subscription','Подписка и баланс','Тариф и история платежей','data-zs-route="billing"')}${row('proxy-router','Прокси','Подключение и продление','data-zs-route="proxy-shop"')}</div><div class="zs-account-group">${row('account','Безопасность','Сессии, 2FA и ключи доступа','data-zs-route="security"')}${row('funpay-link','Поддержка','Обращения и ответы','data-zs-route="support"')}</div>`;

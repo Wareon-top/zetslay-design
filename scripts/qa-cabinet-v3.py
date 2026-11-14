@@ -76,6 +76,7 @@ with sync_playwright() as p:
     check('production bridge loaded',page.evaluate('Boolean(window.ZetSlayCabinet)'))
     check('authenticated real shell visible',page.locator('.app-shell').is_visible())
     check('new profile rendered',page.locator('[data-zs-profile]').count()==1)
+    check('profile refresh remains reachable',page.locator('[data-view="profile"] .zs-cover [data-profile-reload]').is_visible())
     check('no demo controls',page.locator('[data-review-bar],[data-review]').count()==0)
     check('new grouped menu',page.locator('.zs-nav-group').count()>=4)
     check('server role hides admin',not page.locator('[data-admin-nav]').is_visible())
@@ -89,6 +90,9 @@ with sync_playwright() as p:
         if view in ['dashboard','orders','messages','lots','plugins','billing','security','documents','finance','store-tools']:
             page.screenshot(path=str(OUT/(view+'-desktop.png')),full_page=True)
     check('real catalogue cards',page.locator('.zs-plugin-tile').count()==2)
+    page.evaluate("setView('billing')")
+    check('topup action remains reachable',page.locator('.billing-heading [data-billing-open="topup"]').is_visible())
+    check('promo action remains reachable',page.locator('.billing-heading [data-billing-open="promo"]').is_visible())
     check('orange catalogue tile',page.locator('.zs-plugin-tile').first.evaluate('(el)=>getComputedStyle(el).backgroundImage.includes("linear-gradient")'))
     page.evaluate("setView('security');renderAccountSecurity()")
     check('security can render after relocation',page.locator('[data-view="security"] [data-account-security-panel]').count()==1)
