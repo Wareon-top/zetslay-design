@@ -2,6 +2,7 @@ name: Verify working bot settings
 on:
   push:
     paths:
+      - 'app/cabinet-v3/**'
       - 'app/bot-settings*'
       - 'app/profile.js'
       - 'deploy/*bot-settings*'

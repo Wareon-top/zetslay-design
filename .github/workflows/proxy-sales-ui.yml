@@ -2,6 +2,7 @@ name: Verify proxy shop interface
 on:
   push:
     paths:
+      - 'app/cabinet-v3/**'
       - 'app/proxy-shop*'
       - 'app/managed-proxy-ui*'
       - 'deploy/*proxy-sales*'
