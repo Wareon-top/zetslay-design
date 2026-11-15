@@ -113,9 +113,18 @@ def cache(text, names):
         if count!=1:raise ValueError('Не найден единственный ресурс '+name)
     return text
 
+def landing_page(text, data):
+    if 'class="zl-section' in text:
+        # Redesigned landing (landing-v2): its tariff cards are design markup (zl-pcard2) and it does not load
+        # landing-pricing.css. Keep the shared FAQ and the pricing runtime in sync; never overwrite the cards.
+        # Card names, prices and benefits are compared with the cabinet by app/billing.test.mjs.
+        if len(re.findall(r'<section\b[^>]*\bid="tariffs"',text))!=1:raise ValueError('Не найден единственный раздел тарифов на главной')
+        return cache(faq(text,data),['landing-pricing.js'])
+    return cache(faq(replace_section(text,'tariffs',markup(data)),data),['landing-pricing.js','landing-pricing.css'])
+
 def outputs(root):
     data=json.loads((root/'subscription-plans.json').read_text());validate(data)
-    landing=cache(faq(replace_section((root/'index.html').read_text(),'tariffs',markup(data)),data),['landing-pricing.js','landing-pricing.css'])
+    landing=landing_page((root/'index.html').read_text(),data)
     cabinet=cache(replace_section((root/'app/index.html').read_text(),'billing-tariffs',markup(data,True)),['billing-pricing.js','billing-pricing.css','billing.js'])
     # Finance updater fixture stays synchronized; no store/account panels are changed.
     fixture=(root/'app/billing-section.html').read_text()

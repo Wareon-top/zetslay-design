@@ -9,7 +9,8 @@ def stage(local,incoming,out):
  data=json.loads((incoming/'subscription-plans.json').read_text());builder.validate(data)
  landing=(local/'index.html').read_text();cabinet=(local/'app/index.html').read_text()
  for s in [landing,cabinet]:require(not re.search(r'^(<<<<<<<|=======|>>>>>>>)',s,re.M),'Конфликт исходных файлов.')
- landing=builder.cache(builder.faq(builder.replace_section(landing,'tariffs',builder.markup(data)),data),['landing-pricing.js','landing-pricing.css'])
+ # Legacy landing gets the generated tariff section; the redesigned landing keeps its design cards (FAQ + runtime only).
+ landing=builder.landing_page(landing,data)
  cabinet=builder.cache(builder.replace_section(cabinet,'billing-tariffs',builder.markup(data,True)),['billing-pricing.js','billing-pricing.css','billing.js'])
  pattern=r'<script\b[^>]*src=["\']tariff-summary\.js(?:\?[^"\']*)?["\'][^>]*>\s*</script>'
  require(len(re.findall(pattern,cabinet))<=1,'Дублируется сводка тарифа.');cabinet=re.sub(pattern+r'[ \t]*\r?\n?','',cabinet)

@@ -100,9 +100,9 @@ with sync_playwright() as p:
             page.screenshot(path=str(OUT/(view+'-desktop.png')),full_page=True)
     check('real catalogue cards',page.locator('.zs-plugin-tile').count()==2)
     page.evaluate("setView('billing')")
-    check('topup action remains reachable',page.locator('.billing-heading [data-billing-open="topup"]').is_visible())
-    check('promo action remains reachable',page.locator('.billing-heading [data-billing-open="promo"]').is_visible())
-    check('orange catalogue tile',page.locator('.zs-plugin-tile').first.evaluate('(el)=>getComputedStyle(el).backgroundImage.includes("linear-gradient")'))
+    check('topup action remains reachable',page.locator('[data-view="billing"] [data-billing-open="topup"]').is_visible())
+    check('promo action remains reachable',page.locator('[data-view="billing"] [data-billing-open="promo"]').is_visible())
+    check('orange catalogue tile',page.locator('.zs-plugin-tile .pcard__bg').first.evaluate('(el)=>getComputedStyle(el).backgroundImage.includes("linear-gradient")'))
     page.evaluate("setView('security');renderAccountSecurity()")
     check('security can render after relocation',page.locator('[data-view="security"] [data-account-security-panel]').count()==1)
     check('one security panel',page.locator('[data-account-security-panel]').count()==1)
@@ -135,14 +135,15 @@ with sync_playwright() as p:
     page.locator('[data-zs-editor]').click()
     form=page.locator('[data-profile-form]')
     form.locator('[name="displayName"]').fill('QA изменённое имя')
-    form.locator('button[type="submit"]').click();page.wait_for_timeout(200)
+    page.locator('[data-zsf-save]').click();page.wait_for_timeout(200)
     check('save failure keeps draft',form.locator('[name="displayName"]').input_value()=='QA изменённое имя')
-    check('save failure releases button',form.locator('button[type="submit"]').is_enabled())
+    check('save failure releases button',page.locator('[data-zsf-save]').is_enabled())
     check('save failure is visible',bool(form.locator('[data-profile-form-status]').inner_text()))
     profile_save_failure[0]=False
-    form.locator('button[type="submit"]').click();page.wait_for_timeout(200)
+    page.locator('[data-zsf-save]').click();page.wait_for_timeout(200)
     check('profile save uses real controller',page.locator('[data-view="profile"] .zs-cover h1').inner_text()=='QA изменённое имя')
     check('server confirms saved state',page.evaluate('profileState.data.profile.version')==2)
+    page.locator('.zsf-detail .sheet__close').click()
     # A connected account must still have an enabled management action.
     read_data['/api/v1/funpay/connection']={'externalStoreId':'12345','displayName':'QA connected store','status':'connected_read_only','proxyConfigured':True,'lastSeenAt':now.isoformat()}
     page.evaluate('loadStoreFleet()')
@@ -156,6 +157,25 @@ with sync_playwright() as p:
     page.locator('[data-view="telegram"] [data-bot-settings-open]').click();page.wait_for_timeout(100)
     check('real bot settings open',page.locator('.bot-settings-dialog').is_visible())
     page.evaluate('botSettingsClose()')
+    # Release review P1: the profile path must reach a usable FunPay wizard. The detail <dialog> lives in the
+    # browser top layer, so visibility alone is not enough — the wizard must receive the pointer and input.
+    def wizard_via_profile(label):
+        page.evaluate("setView('profile')");page.wait_for_timeout(300)
+        page.locator('[data-zsf-open="connection"]').first.click();page.wait_for_timeout(300)
+        page.locator('.zsf-detail [data-profile-connect]').first.click();page.wait_for_timeout(350)
+        state=page.evaluate("(()=>{const w=document.querySelector('.connect-modal'),b=w?.querySelector('[data-close-connect]'),r=b?.getBoundingClientRect();return {detail:!!document.querySelector('dialog.zsf-detail[open]'),wizard:!!w&&!w.hidden,top:r?w.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)):false}})()")
+        check(f'profile → detail → real FunPay wizard is on top ({label})',state=={'detail':False,'wizard':True,'top':True})
+        field=page.locator('.connect-modal input:visible, .connect-modal textarea:visible').first
+        typed=True
+        if field.count():field.fill('qa');typed=field.input_value()=='qa'
+        page.locator('.connect-modal [data-close-connect]').first.click();page.wait_for_timeout(300)
+        check(f'wizard from profile takes input and closes ({label})',typed and page.locator('.connect-modal').is_hidden() and not page.evaluate("!!document.querySelector('dialog.zsf-detail[open]')"))
+    wizard_via_profile('connected, 1440')
+    page.set_viewport_size({'width':390,'height':844});wizard_via_profile('connected, 390');page.set_viewport_size({'width':1440,'height':1000})
+    read_data['/api/v1/funpay/connection']={'connected':False,'store':None}
+    page.evaluate('loadStoreFleet()');page.wait_for_timeout(300);page.evaluate('renderStoreFleet()')
+    wizard_via_profile('not connected, 1440')
+    page.set_viewport_size({'width':390,'height':844});wizard_via_profile('not connected, 390');page.set_viewport_size({'width':1440,'height':1000})
     # A complete public catalog must not fall back to generic artwork for known plugins.
     public_catalog=json.loads((Path(__file__).resolve().parents[1]/'subscription-plans.json').read_text(encoding='utf-8'))
     public_plugins=[plugin for group in public_catalog['pluginGroups'] for plugin in group['plugins']]
@@ -163,7 +183,7 @@ with sync_playwright() as p:
     page.set_viewport_size({'width':1440,'height':1000})
     page.evaluate("setView('plugins');loadPluginCatalog()")
     page.wait_for_timeout(250)
-    artwork=page.locator('.zs-plugin-tile .plugin-card__cover img')
+    artwork=page.locator('.zs-plugin-tile > .pcard__icon')
     artwork.evaluate_all('(images)=>Promise.all(images.map(i=>{i.loading="eager";return i.decode()}))')
     check('all 15 published plugins rendered',page.locator('.zs-plugin-tile').count()==15)
     check('all 15 plugins have full resolution 3D art',artwork.evaluate_all('(images)=>images.length===15&&images.every(i=>i.currentSrc.includes("quality-v2/plg-")&&i.naturalWidth>=1200)'))
@@ -176,6 +196,62 @@ with sync_playwright() as p:
         page.evaluate('(id)=>setView("plugins/zetslay."+id)',plugin);page.wait_for_timeout(80)
         image=page.locator('.zs-product-art img');image.evaluate('(i)=>i.decode()')
         check('new product art '+plugin,image.evaluate('(i)=>i.currentSrc.includes("quality-v2/plg-")&&i.naturalWidth===1254'))
+    # Plugin routes: card click, history back/forward, direct hash, breadcrumb without raw route.
+    page.set_viewport_size({'width':1440,'height':1000})
+    page.evaluate("location.hash='#plugins'");page.wait_for_timeout(500)
+    page.locator('.zs-plugin-tile .plugin-card__navigation a').first.click();page.wait_for_timeout(500)
+    check('card opens plugin page',page.locator('[data-view="plugin"]').is_visible() and page.locator('[data-zs-product]').count()==1)
+    check('plugin breadcrumb is readable',page.locator('#current-view-label').inner_text().startswith('Автоматизация / Плагины'))
+    page.go_back();page.wait_for_timeout(500)
+    check('history back returns to catalogue',page.locator('[data-view="plugins"]').is_visible())
+    page.go_forward();page.wait_for_timeout(500)
+    check('history forward reopens plugin',page.locator('[data-view="plugin"]').is_visible() and page.locator('[data-zs-product]').count()==1)
+    page.evaluate("location.hash='#plugins'");page.wait_for_timeout(400)
+    check('catalogue cards use four columns at 1440',page.evaluate("getComputedStyle(document.querySelector('.zs-catalog-tiles')).gridTemplateColumns.split(' ').length")==4)
+    # Direct load of a separate account screen must not stay empty after the session resume clears it.
+    direct=context.new_page();direct.on('pageerror',lambda error:errors.append(str(error)))
+    direct.goto(f'http://127.0.0.1:{server.server_port}/app/#connection',wait_until='networkidle');direct.wait_for_timeout(900)
+    check('direct #connection renders content',direct.locator('[data-view="connection"] [data-zs-account-content] > *').count()>0)
+    direct.goto(f'http://127.0.0.1:{server.server_port}/app/#billing',wait_until='networkidle');direct.wait_for_timeout(900)
+    check('tariffs use the landing design',direct.locator('.pstage .pc2').count()==4 and direct.locator('.pc2--featured').count()==1)
+    check('featured tariff is the only orange CTA',direct.evaluate("[...document.querySelectorAll('.pc2__cta')].filter(b=>getComputedStyle(b).backgroundColor==='rgb(255, 139, 69)').length")==1)
+    check('tariff terms button stays a host control',direct.locator('.pc2 [data-billing-plan]').count()==4)
+    direct.locator('[data-pricing-period="year"]').first.click();direct.wait_for_timeout(200)
+    check('year period recalculates host price',direct.locator('[data-pricing-plan="start"] [data-pricing-price]').inner_text().replace(' ',' ')=='119,20 ₽')
+    # Plugin page: purchase options sit across the card under the art, the host CTA stays in the right column.
+    direct.goto(f'http://127.0.0.1:{server.server_port}/app/#plugins',wait_until='networkidle');direct.wait_for_timeout(700)
+    direct.locator('.zs-plugin-tile .plugin-card__navigation a').first.click();direct.wait_for_timeout(700)
+    layout=direct.evaluate("(()=>{const o=document.querySelector('.pp-stage .plugin-purchase-options'),m=document.querySelector('.pp-stage .pp-media'),b=document.querySelector('.pp-stage .plugin-page-action > .button');if(!o||!m)return null;const R=o.getBoundingClientRect(),M=m.getBoundingClientRect(),B=b?b.getBoundingClientRect():null;return {below:R.top>=M.bottom-1,wide:R.width>M.width,cta:!B||B.left>M.right}})()")
+    check('plugin purchase options span the card under the art',layout is not None and (layout['below'] and layout['wide'] and layout['cta']))
+    # Plugin page tabs: the active tab names the panel, so the panel has no second heading.
+    check('plugin tab panel has no duplicate heading',direct.evaluate("[...document.querySelectorAll('.plugin-page-main > [role=tabpanel]:not([hidden]) > .plugin-page-section-heading')].every(h=>getComputedStyle(h).display==='none')"))
+    # Handoff plugin tabs over host blocks: «Умеет»/«Нужно» first, arrows move focus, «Нужно» shows the host access block.
+    labels=direct.evaluate("[...document.querySelectorAll('[data-zsf-product-tab]')].map(b=>b.textContent)")
+    check('plugin page uses handoff tab names',labels[:2]==['Умеет','Нужно'] and set(labels)<= {'Умеет','Нужно','Настройки','Очередь','История'})
+    direct.locator('[data-zsf-product-tab="about"]').focus();direct.keyboard.press('ArrowRight');direct.wait_for_timeout(200)
+    check('plugin tabs follow arrow keys',direct.evaluate("document.activeElement?.dataset.zsfProductTab")=='needs' and direct.evaluate("document.querySelector('[data-zsf-product-tab=needs]').getAttribute('aria-selected')")=='true')
+    check('«Нужно» shows the host access block',direct.evaluate("(()=>{const s=document.querySelector('[data-zsf-role=needs]');return !!s&&!s.hidden&&!!s.querySelector('.plugin-page-permissions')})()"))
+    direct.locator('[data-zsf-product-tab="about"]').click();direct.wait_for_timeout(200)
+    # Plugin facts come from catalogue data only (rarity, installed, price) and fit their cells.
+    facts=direct.evaluate("[...document.querySelectorAll('.zsf-pp-facts > div > span')].map(s=>s.textContent)")
+    check('plugin facts use real catalogue fields',facts==['редкость','в кабинете','в каталоге'])
+    # Knowledge base: the video link moved into the cover is still the host link, and the empty banner is hidden.
+    direct.goto(f'http://127.0.0.1:{server.server_port}/app/#guide',wait_until='networkidle');direct.wait_for_timeout(900)
+    moved=direct.locator('.zs-cover .video-guide-banner__action')
+    check('guide video link sits in the cover',moved.count()==1 and (moved.get_attribute('href') or '').startswith('https://youtu.be/'))
+    check('guide banner without its link is hidden',direct.evaluate("[...document.querySelectorAll('[data-view=guide] > .video-guide-banner')].every(b=>getComputedStyle(b).display==='none')"))
+    direct.close()
+    # Drawer menu below 1200px (981-1199 used to slide in invisible, without a close button, and the closed scrim covered the page).
+    for width in (1024,390):
+        drawer=context.new_page();drawer.set_viewport_size({'width':width,'height':800});drawer.on('pageerror',lambda error:errors.append(str(error)))
+        drawer.goto(f'http://127.0.0.1:{server.server_port}/app/#dashboard',wait_until='networkidle');drawer.wait_for_timeout(700)
+        drawer.locator('[data-sidebar-open]').focus();drawer.keyboard.press('Enter');drawer.wait_for_timeout(450)
+        opened=drawer.evaluate("({vis:getComputedStyle(document.querySelector('.sidebar')).visibility,focus:!!document.activeElement?.matches('.sidebar__close')})")
+        check(f'drawer menu opens visibly at {width}',opened['vis']=='visible' and opened['focus'])
+        drawer.keyboard.press('Escape');drawer.wait_for_timeout(450)
+        closed=drawer.evaluate("({vis:getComputedStyle(document.querySelector('.sidebar')).visibility,scrim:getComputedStyle(document.querySelector('.sidebar-backdrop')).visibility,back:!!document.activeElement?.matches('[data-sidebar-open]')})")
+        check(f'drawer closes and the scrim stops covering the page at {width}',closed['vis']=='hidden' and closed['scrim']=='hidden' and closed['back'])
+        drawer.close()
     check('no JS runtime errors',not errors)
     check('all local assets exist',not failed_assets)
     # Failure is not converted into an apparent success or a fixture.

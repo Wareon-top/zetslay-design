@@ -10,7 +10,8 @@ class KosellUiTests(unittest.TestCase):
   self.assertIn('ZETSLAY_KOSELL_WORKSPACE_PREFLIGHT_ONLY=true',script)
  def fixture(self,root):
   local,incoming,out=[root/n for n in ['local','incoming','out']];local.mkdir();incoming.mkdir();manifest=json.loads((HERE/'kosell-workspace-manifest.json').read_text())
-  for n in manifest['assets']:shutil.copy2(HERE.parent/'app'/n,incoming/n)
+  # The pinned 20261029-kosell-3 assets; later Kosell releases are installed by update-kosell-control-ui.
+  for n in manifest['assets']:shutil.copy2(HERE/'fixtures'/('kosell-workspace-'+manifest['version'])/n,incoming/n)
   shutil.copy2(HERE/'kosell-workspace-manifest.json',incoming/'kosell-workspace-manifest.json')
   html='<html><head><meta name="PRIVATE_CABINET_CANARY" content="preserve"><link href="other.css"></head><body><div class="view-stack" data-overview><div class="overview-grid"></div></div><script src="kosell-rent.js?v=old" defer></script><script src="kosell-storefront.js?v=old" defer></script><script src="app.js"></script><script src="proxy-shop.js"></script></body></html>'
   (local/'index.html').write_text(html)

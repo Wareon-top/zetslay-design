@@ -20,8 +20,8 @@ cleanup() {
 trap cleanup EXIT
 git fetch origin "${ZETSLAY_WEEK_SESSION_DESIGN_REVISION:-codex/landing-light-dark-redesign}"
 revision=$(git rev-parse FETCH_HEAD)
-mkdir -p "$work/incoming/app" "$work/incoming/deploy"
-for file in index.html app/index.html app/app.js app/account-security.js session-client.js landing-session.js session-ui.css landing-session.test.mjs app/browser-session.test.mjs deploy/stage-week-session.py deploy/stage-week-session.test.py; do
+mkdir -p "$work/incoming/app" "$work/incoming/deploy/fixtures"
+for file in index.html app/index.html app/app.js app/account-security.js session-client.js landing-session.js session-ui.css landing-session.test.mjs app/browser-session.test.mjs deploy/stage-week-session.py deploy/stage-week-session.test.py deploy/fixtures/week-session-legacy-landing.html; do
   git show "$revision:$file" > "$work/incoming/$file"
 done
 python3 "$work/incoming/deploy/stage-week-session.test.py"

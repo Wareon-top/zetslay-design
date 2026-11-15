@@ -5,7 +5,7 @@ function run(failure=''){
  try{
   const site=join(tmp,'site'),bin=join(tmp,'bin'),backups=join(tmp,'backups');for(const dir of [join(site,'app'),bin,backups])mkdirSync(dir,{recursive:true});
   const original={};for(const name of ['index.html','app/index.html','app/app.js','app/account-security.js']){original[name]=readFileSync(join(base,name),'utf8');writeFileSync(join(site,name),original[name]);}
-  original['index.html']+='\n<!-- OWNED_LOCAL_CONTENT -->\n';writeFileSync(join(site,'index.html'),original['index.html']);
+  original['index.html']=readFileSync(join(base,'deploy/fixtures/week-session-legacy-landing.html'),'utf8')+'\n<!-- OWNED_LOCAL_CONTENT -->\n';writeFileSync(join(site,'index.html'),original['index.html']);
   const header=`#!${process.execPath}\nimport {readFileSync,renameSync} from 'node:fs';\nconst a=process.argv.slice(2);\n`;
   writeFileSync(join(bin,'git'),header+`if(a[0]==='rev-parse')console.log('pinned');else if(a[0]==='show')process.stdout.write(readFileSync(process.env.SOURCE_ROOT+'/'+a[1].split(':').slice(1).join(':'),'utf8'));`,{mode:0o755});
   writeFileSync(join(bin,'mv'),header+`if(process.env.FAIL_STEP==='install'&&a.at(-1)==='session-client.js')process.exit(1);renameSync(a.at(-2),a.at(-1));`,{mode:0o755});

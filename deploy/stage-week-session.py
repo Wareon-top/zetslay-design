@@ -33,6 +33,9 @@ def stage(local,incoming,output):
     local,incoming,output=map(Path,(local,incoming,output))
     root=(local/'index.html').read_text();html=(local/'app/index.html').read_text();app=(local/'app/app.js').read_text();desired=(incoming/'app/app.js').read_text()
     for text in (root,html,app):require(not re.search(r'^(<<<<<<<|=======|>>>>>>>)',text,re.M),'Конфликт')
+    # The redesigned landing (landing-v2) already ships the session entry points and has its own installer.
+    require('class="zl-section' not in root,
+            'Главная уже в новом дизайне (landing-v2): её кнопки сессии ставит установщик главной deploy/update-landing-v2.py')
     app=replace_span(app,desired,'const localCabinet =','let sessionGeneration = 0;')
     app=replace_span(app,desired,'async function apiRequest(','\nfunction accountInitials(')
     app=replace_span(app,desired,'async function acceptSession(','\nasync function submitAuth(')

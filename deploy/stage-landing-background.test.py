@@ -1,26 +1,33 @@
 from pathlib import Path
 import importlib.util,os,re,shutil,subprocess,tarfile,tempfile,unittest
 ROOT=Path(__file__).resolve().parents[1]
+# The background installer targets the legacy orderflow landing (shared fixture with stage-landing-hero).
+LEGACY=ROOT/'deploy/fixtures/landing-hero-legacy-index.html'
 spec=importlib.util.spec_from_file_location('background',Path(__file__).with_name('stage-landing-background.py'));m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
 class BackgroundTests(unittest.TestCase):
  def test_only_asset_cache_keys_and_canvas_hook_change(self):
   with tempfile.TemporaryDirectory() as d:
    root=Path(d);local=root/'local';local.mkdir()
-   html=(ROOT/'index.html').read_text().replace('20261024-ascii','VPS-VERSION').replace(' data-hero-ascii','').replace('</body>','<script>/* LOCAL AUTH */</script></body>')
+   html=LEGACY.read_text().replace('20261024-ascii','VPS-VERSION').replace(' data-hero-ascii','').replace('</body>','<script>/* LOCAL AUTH */</script></body>')
    (local/'index.html').write_text(html);m.stage(local,ROOT,root/'out');result=(root/'out/index.html').read_text()
    expected=html.replace('landing-hero.js?v=VPS-VERSION','landing-hero.js?v='+m.VERSION).replace('landing-orderflow.css?v=VPS-VERSION','landing-orderflow.css?v='+m.VERSION).replace('data-hero-particles>','data-hero-particles data-hero-ascii>')
    self.assertEqual(result,expected);m.stage(root/'out',ROOT,root/'again');self.assertEqual((root/'again/index.html').read_text(),result)
  def test_unknown_or_duplicate_markup_stops_before_staging(self):
-  for html in ['unknown',(ROOT/'index.html').read_text().replace('</head>','<script src="landing-hero.js"></script></head>')]:
+  for html in ['unknown',LEGACY.read_text().replace('</head>','<script src="landing-hero.js"></script></head>')]:
    with tempfile.TemporaryDirectory() as d:
     root=Path(d);(root/'index.html').write_text(html)
     with self.assertRaises(ValueError):m.stage(root,ROOT,root/'out')
     self.assertFalse((root/'out').exists());self.assertEqual((root/'index.html').read_text(),html)
+ def test_redesigned_landing_is_refused_without_changes(self):
+  with tempfile.TemporaryDirectory() as d:
+   root=Path(d);shutil.copy2(ROOT/'index.html',root/'index.html');before=(root/'index.html').read_bytes()
+   with self.assertRaisesRegex(ValueError,'landing-v2'):m.stage(root,ROOT,root/'out')
+   self.assertFalse((root/'out').exists());self.assertEqual((root/'index.html').read_bytes(),before)
  def test_installer_preserves_current_page_backs_up_and_restores_on_partial_failure_without_node(self):
   for failure in (False,True):
    with self.subTest(failure=failure),tempfile.TemporaryDirectory() as d:
     root=Path(d);site=root/'site';(site/'deploy').mkdir(parents=True);backup=root/'backup';backup.mkdir()
-    for name in ['index.html',*m.ASSETS]:shutil.copy2(ROOT/name,site/name)
+    for name in ['index.html',*m.ASSETS]:shutil.copy2(LEGACY if name=='index.html' else ROOT/name,site/name)
     shutil.copy2(ROOT/'deploy/stage-landing-background.py',site/'deploy/stage-landing-background.py')
     def git(*args):return subprocess.run(['git','-C',str(site),*args],capture_output=True,text=True,check=True).stdout.strip()
     git('init','-q');git('config','user.name','Test');git('config','user.email','test@example.invalid');git('add','.');git('commit','-qm','fixture');rev=git('rev-parse','HEAD')

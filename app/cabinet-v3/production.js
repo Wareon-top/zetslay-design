@@ -10,7 +10,7 @@
   const artSource=name=>Object.hasOwn(hq,name)?'cabinet-v3/assets/quality-v2/'+hq[name]:base+name+'.webp';
   const svg=n=>window.ZSIcons.svg(n), art=(name,cls='')=>`<img class="${cls}" src="${artSource(name)}" alt="" loading="lazy" decoding="async">`;
   const virtual=new Set(['connection','telegram','security','documents','proxy-shop']);
-  const R=window.ZetSlayCabinet={release:'20261114-hq2',route:'dashboard',sub:'',pending:false};
+  const R=window.ZetSlayCabinet={release:'20261114-reference1',route:'dashboard',sub:'',pending:false};
   let activeRoute='dashboard', menuOpener=null, scheduled=false;
   const session=()=>`${authState.user?.id||''}:${sessionGeneration}`;
   const titleOf=v=>M.groups.flatMap(g=>g.items).find(it=>it[0]===v)?.[1]||viewTitles[v]||'Кабинет';
@@ -133,8 +133,21 @@
     if(connection){
       const current=typeof selectedStore==='function'?selectedStore():null;
       const status=current?.status==='connected_read_only'?'Подключение подтверждено':current?'Подключение требует проверки':'Магазин не подключён';
-      const signature=JSON.stringify([current?.id,current?.displayName,current?.status,state.onboarding?.state]);
-      if(connection.dataset.signature!==signature){connection.dataset.signature=signature;connection.innerHTML=`<section class="zs-account-group zs-connection-card"><div class="zs-connection-art">${art('funpay-link')}</div><h2>${E(current?.displayName||'Подключите аккаунт FunPay')}</h2><p>${E(status)}</p><p class="zs-muted">Ключ магазина, прокси и проверка связи доступны в мастере подключения. Результат проверки приходит с сервера.</p>${button(current?'Управлять подключением':'Подключить FunPay','data-profile-connect','primary')}${current?button('Прокси','data-zs-route="proxy-shop"'):''}</section>`;}
+      const signature=JSON.stringify([current?.id,current?.displayName,current?.status,current?.proxyConfigured,current?.lastSeenAt,current?.metrics,state.onboarding?.state]);
+      if(connection.dataset.signature!==signature){connection.dataset.signature=signature;
+        // Handoff layout: «Состояние» checklist + «Данные подключения», built only from the selected store the host loaded.
+        const when=v=>{const d=v&&new Date(v);return d&&!isNaN(d)?d.toLocaleString('ru-RU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Moscow'}):null;};
+        const ok=current?.status==='connected_read_only',seen=when(current?.lastSeenAt);
+        const row=(good,title,sub,value)=>`<li class="zs-check ${good?'is-ok':'is-warn'}"><span class="zs-check__icon" aria-hidden="true">${good?'✓':'!'}</span><div><strong>${E(title)}</strong><small>${E(sub)}</small></div><em>${E(value)}</em></li>`;
+        const kv=(k,v)=>v==null||v===''?'':`<div><dt>${E(k)}</dt><dd>${E(v)}</dd></div>`;
+        connection.innerHTML=current?`<div class="zs-conn-grid">
+          <section class="zs-account-group zs-conn-state"><header><h2>Состояние</h2><p>${E(seen?'Последняя связь '+seen+' МСК':'Связь с сервером ещё не подтверждена')}</p></header>
+            <ul class="zs-checks">${row(ok,'Магазин FunPay',current.displayName||'Магазин',ok?'Подтверждён':'Нужна проверка')}${row(!!current.proxyConfigured,'Прокси','Маршрут подключения магазина',current.proxyConfigured?'Настроен':'Не настроен')}${row(ok,'Заказы и чаты','Чтение без изменений на FunPay',ok?'Читаются':'Не подтверждено')}</ul>
+            <p class="zs-muted">Ключ магазина, прокси и проверка связи — в мастере подключения. Результат проверки приходит с сервера.</p>
+            <div class="zs-conn-actions">${button('Управлять подключением','data-profile-connect','primary')}${button('Прокси','data-zs-route="proxy-shop"')}</div></section>
+          <section class="zs-account-group zs-conn-data"><header><h2>Данные подключения</h2><p>Из последнего снимка магазина</p></header>
+            <dl class="zs-kv">${kv('Магазин',current.displayName)}${kv('ID FunPay',current.id)}${kv('Лотов в снимке',current.metrics?.lots)}${kv('Баланс FunPay',current.metrics?.balance)}${kv('Прокси',current.proxyConfigured?'Настроен':'Не настроен')}</dl></section></div>`
+          :`<section class="zs-account-group zs-connection-card"><div class="zs-connection-art">${art('funpay-link')}</div><h2>Подключите аккаунт FunPay</h2><p>${E(status)}</p><p class="zs-muted">Ключ магазина, прокси и проверка связи доступны в мастере подключения. Результат проверки приходит с сервера.</p>${button('Подключить FunPay','data-profile-connect','primary')}</section>`;}
     }
     for(const name of ['security','documents','telegram']){
       const target=$(`[data-view="${name}"] [data-zs-account-content]`);
@@ -202,29 +215,43 @@
   function billing() {
     $$('[data-plan],[data-pricing-plan],.plan-card,.tariff-card,.pricing-card').forEach(node=>{
       const id=node.dataset.plan||node.dataset.planId||node.dataset.pricingPlan;
-      if(!['start','growth','pro','maximum'].includes(id)||$('[data-zs-plan-art]',node))return;
+      if(!['start','growth','pro','maximum'].includes(id)||$('[data-zs-plan-art]',node)||node.classList.contains('pc2'))return;
       const img=document.createElement('img');img.src=`cabinet-v3/assets/plans/plan-${id}.png`;img.alt='';img.loading='lazy';img.dataset.zsPlanArt='';node.prepend(img);
     });
   }
+  // Host marks a stat empty once ('—') and does not clear the mark when data arrives later; mirror it from the text.
+  let statObserver=null;
+  function stats() {
+    const sync=()=>{for(const s of document.querySelectorAll('.overview-stat>strong.ws-empty-stat'))if(s.textContent.trim()!=='—')s.classList.remove('ws-empty-stat');};
+    const bars=()=>{for(const panel of document.querySelectorAll('[data-view="analytics"] .ws-analytics-panel')){
+      const rows=[...panel.querySelectorAll(':scope > .ws-product-row')].filter(r=>r.firstElementChild?.hasAttribute('title'));
+      const sums=rows.map(r=>Number((r.querySelector('b')?.textContent||'').replace(/[^\d,]/g,'').replace(',','.'))||0),max=Math.max(0,...sums);
+      rows.forEach((r,i)=>{const w=max?Math.round(sums[i]/max*100)+'%':'0%';if(r.style.getPropertyValue('--zs-bar')!==w)r.style.setProperty('--zs-bar',w);if(!r.hasAttribute('data-zs-bar'))r.setAttribute('data-zs-bar','');});
+    }};
+    const run=()=>{sync();bars();};run();if(statObserver)return;const views=['dashboard','analytics'].map(v=>document.querySelector(`[data-view="${v}"]`)).filter(Boolean);if(!views.length)return;
+    statObserver=new MutationObserver(run);for(const v of views)statObserver.observe(v,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['class']});
+  }
   function refresh() {
-    scheduled=false;if(!authState.user)return;
-    banners();profile();distribute();pluginPage();billing();syncNav();
+    scheduled=false;if(!authState.user){window.ZSCabinetFidelity?.reset();return;}
+    banners();profile();distribute();pluginPage();billing();stats();syncNav();window.ZSCabinetFidelity?.refresh();
   }
   function schedule() {if(!scheduled){scheduled=true;requestAnimationFrame(refresh);}}
   function installRouting() {
     const host=setView;
     setView=function(value,updateHash=true){
-      const r=M.route(value), oldScope=session();activeRoute=r.view;R.route=r.view;R.sub=r.sub;
+      const r=M.route(value), oldScope=session();if(window.ZSCabinetFidelity?.closeModal()===false)return;activeRoute=r.view;R.route=r.view;R.sub=r.sub;
       let result;
+      if(updateHash)history.replaceState(null,'','#'+r.view+(r.sub?'/'+r.sub:'')+(r.search?'?'+r.search:''));
       if(virtual.has(r.view)){
         // Load private profile through the original controller, then show the dedicated surface.
         result=host('profile',false);
         $$('[data-view]').forEach(el=>{const on=el.dataset.view===r.view;el.hidden=!on;el.classList.toggle('is-active',on);});
-        if(updateHash)history.replaceState(null,'','#'+r.view);
+        if(updateHash)history.replaceState(null,'','#'+r.view+(r.sub?'/'+r.sub:'')+(r.search?'?'+r.search:''));
         document.title=titleOf(r.view)+' — ZetSlay';
         distribute();
       }else{
-        result=host(r.view,updateHash);
+        result=host(r.view,false);
+        if(updateHash)history.replaceState(null,'','#'+r.view+(r.sub?'/'+r.sub:'')+(r.search?'?'+r.search:''));
         if(r.view==='store-tools'&&r.sub){
           if(r.sub==='scenarios')$('[data-basic-automation]')?.scrollIntoView({block:'start'});
           else $(`[data-tools-tab="${CSS.escape(r.sub)}"]`)?.click();
@@ -247,10 +274,11 @@
     hook('renderProfile',()=>{profile();schedule();});
     hook('renderPlugins',()=>{catalogue();schedule();});
     hook('renderPluginPage',()=>{pluginPage();schedule();});
-    hook('renderBilling',billing);hook('renderAuthState',schedule);hook('renderAccountSecurity',distribute);hook('renderLegalRequests',distribute);
-    hook('pluginCatalogFailed',catalogue);
+    hook('renderBilling',billing);hook('renderAuthState',schedule);hook('renderAccountSecurity',()=>{distribute();schedule();});hook('renderLegalRequests',()=>{distribute();schedule();});
+    hook('pluginCatalogFailed',catalogue);hook('renderStoreTools',()=>window.ZSCabinetFidelity?.refresh());
     const hostReset=resetAccountData;resetAccountData=function(...args){
-      for(const id of virtual){const target=$(`[data-view="${id}"] [data-zs-account-content]`);if(target)target.replaceChildren();}
+      window.ZSCabinetFidelity?.reset();
+      for(const id of virtual){const target=$(`[data-view="${id}"] [data-zs-account-content]`);if(target){target.replaceChildren();delete target.dataset.signature;}}
       $$('[data-zs-profile-plugins]').forEach(n=>n.replaceChildren());return hostReset.apply(this,args);
     };
     // Decorate asynchronous host renders without repainting inputs or replacing live forms.

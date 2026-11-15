@@ -165,7 +165,16 @@ test('integration preserves existing identity and routing; leaving finance close
 test('cabinet tariffs exactly duplicate landing names, prices and benefits without registration links',()=>{
   const landing=readFileSync(new URL('../index.html',import.meta.url),'utf8');
   const billing=readFileSync(new URL('./billing-section.html',import.meta.url),'utf8');
-  const cards=html=>[...html.matchAll(/<article\b[^>]*data-pricing-plan="([^"]+)"[^>]*data-monthly-rub="(\d+)"[^>]*>(.*?)<\/article>/gs)].map(([,id,price,body])=>({id,price,title:body.match(/<h3[^>]*>(.*?)<\/h3>/s)[1],features:body.match(/<ul class="pricing-card__features"[^>]*>(.*?)<\/ul>/s)[1]}));
+  // The landing uses the redesigned card markup (zl-pcard2) while the cabinet keeps the host card nodes,
+  // so compare what the visitor reads: plan id, monthly price, plan name and every benefit line.
+  // A decorative badge inside the heading («Оптимальный выбор») is not part of the plan name.
+  const text=html=>html.replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ').replace(/\s+/g,' ').trim();
+  const cards=html=>[...html.matchAll(/<article\b[^>]*data-pricing-plan="([^"]+)"[^>]*data-monthly-rub="(\d+)"[^>]*>(.*?)<\/article>/gs)].map(([,id,price,body])=>{
+    const title=body.match(/<h3[^>]*>(.*?)<\/h3>/s);const list=body.match(/<ul class="(?:pricing-card__features|zl-pcard2__feat)"[^>]*>(.*?)<\/ul>/s);
+    assert.ok(title&&list,`Plan ${id} must have a name and a benefit list`);
+    return {id,price,title:text(title[1].replace(/<span class="[^"]*badge[^"]*"[^>]*>.*?<\/span>/gs,'')),features:[...list[1].matchAll(/<li\b[^>]*>(.*?)<\/li>/gs)].map(m=>text(m[1]))};
+  });
+  for(const card of cards(billing))assert.ok(card.features.length>=4,`Plan ${card.id} lost its benefits`);
   assert.deepEqual(cards(billing),cards(landing));
   assert.equal(cards(billing).length,4);
   assert.ok(!billing.includes('auth=register'));
