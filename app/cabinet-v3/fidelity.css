@@ -736,3 +736,16 @@
 .zs-production .connect-modal .connection-controls{flex-wrap:wrap;row-gap:8px}
 .zs-production .connect-modal .connection-controls__right{flex-wrap:wrap;min-width:0;row-gap:8px}
 .zs-production .connect-modal .connection-fineprint{overflow-wrap:anywhere}
+
+/* messages, real inboxes (dozens of threads): rows keep their height inside the scrolling list */
+.zs-production.zs-reference .messages-page-list > *{flex:none}
+.zs-production.zs-reference .messages-page-thread{flex:none;min-height:60px}
+.zs-production.zs-reference .messages-page-thread-content small{max-width:140px;overflow:hidden;text-overflow:ellipsis}
+.zs-production.zs-reference .messages-page-thread-content strong{min-width:0}
+/* FunPay system / unknown-sender notices (e.g. auto-delivery) as a centred note, not a buyer bubble */
+.zs-production.zs-reference :is(.messages-page-message--system,.messages-page-message--unknown){justify-content:center}
+.zs-production.zs-reference :is(.messages-page-message--system,.messages-page-message--unknown) .messages-page-bubble{max-width:min(88%,560px);padding:8px 14px 6px;border:1px dashed #3a3a3d;border-radius:14px;background:transparent;color:#c7c7cc;text-align:center}
+.zs-production.zs-reference :is(.messages-page-message--system,.messages-page-message--unknown) .messages-page-bubble p{font-size:13px;line-height:19px}
+.zs-production.zs-reference :is(.messages-page-message--system,.messages-page-message--unknown) .messages-page-message-meta{justify-content:center}
+.zs-production.zs-reference .messages-page-source-date{font-size:11px;color:#8e8e93}
+.zs-production.zs-reference :is(.ec-list > .ec-row,.sup-ticket-list > .sup-ticket,[data-tools-command-rows] > .tools-command){flex:none}
