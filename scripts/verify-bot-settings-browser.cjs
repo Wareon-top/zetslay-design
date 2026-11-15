@@ -34,7 +34,7 @@ try{for(const [name,viewport]of [['desktop',{width:1440,height:1000}],['mobile',
  assert.equal(await dialog.locator('[name=botToken],[name=token]').count(),0);assert.match(await dialog.innerText(),/@test_working_bot/);
  await page.screenshot({path:path.join(out,name+'-settings.png'),fullPage:false});
  await page.keyboard.press('Escape');await page.waitForFunction(()=>!document.querySelector('.bot-settings-dialog'));
- const configure=page.locator('[data-profile] [data-bot-settings-open]');await configure.click();await form.waitFor();
+ /* Cabinet design: the profile opens the Telegram card in the detail dialog; its real bot panel holds «Настроить». */await page.locator('[data-zsf-open="telegram"]').first().click();const configure=page.locator('.zsf-detail [data-bot-settings-open]');await configure.click();await form.waitFor();
  assert.equal(await page.locator('.connect-modal').evaluate(n=>n.classList.contains('is-open')),false,'profile configure does not replace bot');
  await form.locator('[name=password]').fill('OwnerPassword123');await form.locator('[name=confirmPassword]').fill('AnotherPassword123');await form.locator('[type=submit]').click();await dialog.locator('[data-bs-error]:not([hidden])').waitFor();assert.equal(await page.evaluate(()=>botFixture.calls.filter(c=>c.method==='POST').length),0);
  await form.locator('[name=confirmPassword]').fill('OwnerPassword123');await page.evaluate(()=>botFixture.fail=true);await form.locator('[type=submit]').click();await dialog.locator('[data-bs-error]:not([hidden])').waitFor();assert.equal(await form.locator('[name=password]').inputValue(),'OwnerPassword123');

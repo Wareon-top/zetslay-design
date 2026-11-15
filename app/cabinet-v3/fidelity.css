@@ -349,8 +349,6 @@
 /* the video link now lives in the cover; the big banner hides only once its link has moved */
 .zs-production.zs-reference [data-view="guide"] > .video-guide-banner:not(:has(.video-guide-banner__action)){display:none}
 .zs-production.zs-reference .zs-cover .video-guide-banner__action{display:inline-flex;align-items:center;gap:6px;width:auto;height:auto;min-height:0;padding:7px 14px;font-size:13px;text-decoration:none}
-/* proxy offer is already on the dashboard and profile */
-.zs-production.zs-reference [data-view="guide"] > [data-proxy-invite="guide"]{display:none}
 .zs-production.zs-reference [data-view="guide"] .kb-search{margin:20px 0 12px;padding:0;border:0;background:none}
 .zs-production.zs-reference [data-view="guide"] .kb-search{position:relative;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .zs-production.zs-reference [data-view="guide"] .kb-search > svg{position:absolute;left:14px;top:13px;width:16px;height:16px;color:#8e8e93;pointer-events:none}
@@ -732,3 +730,9 @@
 @media (max-width:380px){.zs-production.zs-reference .messages-page-chat-header{gap:8px;padding:10px 12px}.zs-production.zs-reference .messages-page-chat-tools{gap:4px}.zs-production.zs-reference .messages-page-chat-header .messages-page-icon-button{width:30px;height:30px}.zs-production.zs-reference .messages-page-chat-header .messages-page-avatar{width:30px;height:30px}}
 .zs-production.zs-reference .messages-page-sidebar-controls label{flex:1;min-width:0}
 .zs-production.zs-reference .messages-page-sidebar-controls select{flex:1;min-width:0;width:100%}
+/* connection wizard: the last step has no connector to the right (it pushed the dialog 3px wider on phones) */
+.zs-production .connect-modal .connection-step:last-child::after{display:none}
+.zs-production .connect-modal footer > :is(.connection-controls,.connection-fineprint,.connect-error){min-width:0;max-width:100%}
+.zs-production .connect-modal .connection-controls{flex-wrap:wrap;row-gap:8px}
+.zs-production .connect-modal .connection-controls__right{flex-wrap:wrap;min-width:0;row-gap:8px}
+.zs-production .connect-modal .connection-fineprint{overflow-wrap:anywhere}

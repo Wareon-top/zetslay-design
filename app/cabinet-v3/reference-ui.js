@@ -95,7 +95,9 @@
     $('.overview-period-toolbar',root)?.classList.add('cab-toolbar');$('.overview-periods',root)?.classList.add('chips');
     for(const b of $$('[data-overview-period]',root))b.classList.add('chip');
     for(const head of $$('.overview-card__heading',root))head.classList.add('cab-panel__head');
-    const extra=$('.zsf-additional',root);if(extra)for(const sel of ['.learning-checklist','.ws-resources'])put(extra,$(sel,root));
+    // The onboarding checklist stays in the main flow (a new seller must see it); it hides itself when done.
+    const extra=$('.zsf-additional',root);if(extra)for(const sel of ['.ws-resources'])put(extra,$(sel,root));
+    const checklist=$('.learning-checklist',root);if(checklist&&extra&&extra.contains(checklist))extra.before(checklist);
     const tasks=$('[data-ws-next-actions],.ws-next-actions',root);if(tasks)tasks.classList.add('cab-tasks');
     for(const task of $$('.ws-task',root))task.classList.add('cab-task');
   }
