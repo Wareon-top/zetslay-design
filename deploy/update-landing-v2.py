@@ -3,7 +3,7 @@
 from pathlib import Path, PurePosixPath
 import argparse, hashlib, json, os, tempfile, urllib.request
 
-RELEASE='20261114-landing-production2'
+RELEASE='20261115-landing-reviews1'
 FIXED={'index.html','landing-v2.css','landing-v2.js','assets/landing-v2/PROVENANCE.json',
        'legal/legal-controls-20261109.css','legal/privacy-controls-20261109.js'}
 

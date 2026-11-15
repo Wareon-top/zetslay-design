@@ -27,6 +27,10 @@ entries=[{'id':'zetslay.stars-relay','name':'Stars Relay','category':'sales','pr
 read_data={
  '/api/v1/auth/resume':session,
  '/api/v1/profile':profile,
+ '/api/v1/reviews':{'target':'any','summary':{'count':2,'average':4.5},'nextOffset':None,'reviews':[
+  {'id':'rv_qa1','target':'any','rating':5,'text':'Длинный отзыв '+'очень '*40+'полезно.','createdAt':'2026-11-14T10:00:00Z','updatedAt':'2026-11-14T10:00:00Z','author':{'displayName':'QA покупатель','initials':'QП','avatarUrl':None}},
+  {'id':'rv_qa2','target':'any','rating':4,'text':'Коротко: хорошо.','createdAt':'2026-11-13T10:00:00Z','updatedAt':'2026-11-13T10:00:00Z','author':{'displayName':'nightowl77','initials':'N','avatarUrl':None}}]},
+ '/api/v1/reviews/mine':{'target':'any','canReview':True,'reason':None,'review':None},
  '/api/v1/plugin-catalog':{'entries':entries,'canManage':False},
  '/api/v1/plugin-audit':{'entries':[]},
  '/api/v1/subscription/status':{'workspace':workspace,'trial':{'state':'used'}},
@@ -114,7 +118,17 @@ with sync_playwright() as p:
     product_art.evaluate('(img)=>img.decode()')
     check('plugin product uses restored master',product_art.evaluate('(img)=>img.currentSrc.includes("quality-v2/")&&img.naturalWidth>=1200'))
     check('kosell settings retained',page.locator('[data-plugin-page]').inner_text().find('Kosell')>=0)
+    # Reviews (15.11): a tab of its own on every plugin page; cards carry avatar, nickname, 5 stars, date, text.
+    page.evaluate("window.ZSCabinetFidelity.refresh()")
+    check('plugin reviews tab exists',page.locator('[data-zsf-product-tab="reviews"]').count()==1)
+    page.locator('[data-zsf-product-tab="reviews"]').click();page.locator('[data-zsf-role="reviews"] .zsr-card').first.wait_for(timeout=3000)
+    reviews=page.locator('[data-zsf-role="reviews"]')
+    check('plugin reviews panel is the only visible panel',reviews.is_visible() and page.locator('.plugin-page-main > section:not([hidden])').count()==1)
+    check('review card parts',reviews.locator('.zsr-card').first.evaluate("(c)=>!!c.querySelector('.zsr-avatar')&&!!c.querySelector('strong').textContent&&c.querySelectorAll('.zsr-stars i').length===5&&c.querySelectorAll('.zsr-stars i.is-on').length===5&&!!c.querySelector('time').textContent&&!!c.querySelector('p').textContent"))
+    check('review form with five-star picker',reviews.locator('[data-zsr-form] [data-zsr-star]').count()==5 and reviews.locator('[data-zsr-text]').get_attribute('maxlength')=='1000')
+    check('review summary shown',reviews.locator('.zsr-summary').inner_text().startswith('4,5'))
     page.screenshot(path=str(OUT/'kosell-desktop.png'),full_page=True)
+    page.locator('[data-zsf-product-tab="about"]').click()
     for width in [320,390,768,1024]:
         page.set_viewport_size({'width':width,'height':844})
         for view in ['profile','plugins','billing','messages','security']:
@@ -227,7 +241,7 @@ with sync_playwright() as p:
     check('plugin tab panel has no duplicate heading',direct.evaluate("[...document.querySelectorAll('.plugin-page-main > [role=tabpanel]:not([hidden]) > .plugin-page-section-heading')].every(h=>getComputedStyle(h).display==='none')"))
     # Handoff plugin tabs over host blocks: «Умеет»/«Нужно» first, arrows move focus, «Нужно» shows the host access block.
     labels=direct.evaluate("[...document.querySelectorAll('[data-zsf-product-tab]')].map(b=>b.textContent)")
-    check('plugin page uses handoff tab names',labels[:2]==['Умеет','Нужно'] and set(labels)<= {'Умеет','Нужно','Настройки','Очередь','История'})
+    check('plugin page uses handoff tab names',labels[:2]==['Умеет','Нужно'] and set(labels)<= {'Умеет','Нужно','Настройки','Очередь','История','Отзывы'} and labels[-1]=='Отзывы')
     direct.locator('[data-zsf-product-tab="about"]').focus();direct.keyboard.press('ArrowRight');direct.wait_for_timeout(200)
     check('plugin tabs follow arrow keys',direct.evaluate("document.activeElement?.dataset.zsfProductTab")=='needs' and direct.evaluate("document.querySelector('[data-zsf-product-tab=needs]').getAttribute('aria-selected')")=='true')
     check('«Нужно» shows the host access block',direct.evaluate("(()=>{const s=document.querySelector('[data-zsf-role=needs]');return !!s&&!s.hidden&&!!s.querySelector('.plugin-page-permissions')})()"))
