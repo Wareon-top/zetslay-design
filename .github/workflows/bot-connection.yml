@@ -2,6 +2,7 @@ name: Verify separate bot password setup
 on:
   push:
     paths:
+      - 'app/cabinet-v3/**'
       - 'app/app.js'
       - 'app/connection-wizard*'
       - 'deploy/*bot-connection*'

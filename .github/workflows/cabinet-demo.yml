@@ -2,6 +2,7 @@ name: Verify cabinet design and onboarding
 on:
   push:
     paths:
+      - 'app/cabinet-v3/**'
       - 'app/cabinet-demo*'
       - 'app/subscription-access*'
       - 'app/learning*'

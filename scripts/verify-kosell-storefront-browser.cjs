@@ -31,7 +31,7 @@ const server=http.createServer((req,res)=>{
   await page.locator('[data-sf-search]').fill('Body');assert.equal(await page.locator('.sf-product').count(),1);assert.equal(await page.locator('.sf-product').evaluate(el=>getComputedStyle(el).display),'flex','Game rows retain layout under existing Kosell label styles');
   if(theme==='light')assert.equal(await page.locator('.sf-product strong').evaluate(el=>getComputedStyle(el).color),'rgb(34, 35, 43)','Game names remain readable in light theme');
   const initialCreations=creations;await page.getByRole('button',{name:'Выбрать все доступные (2)',exact:true}).click();await page.waitForFunction(()=>sfState().entries.length===2&&!sfState().busy);assert.equal(await page.locator('.sf-selection').count(),2,'Selection includes the game outside the search');assert.equal(creations,initialCreations,'Bulk selection performs only category reads');await page.getByRole('button',{name:'Снять выбор',exact:true}).click();
-  await page.locator('[data-sf-select="86"]').check();await page.getByText('Параметры готовы',{exact:true}).waitFor();
+  await page.locator('[data-sf-select="86"]').check();/* Since 224739e a ready game row reads «Готово» (.sf-row-state). */await page.locator('.sf-row-state',{hasText:/^Готово$/}).first().waitFor();
   await page.locator('[data-sf-durations]').fill('24');await page.locator('[data-sf-reviewed]').check();
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,'No horizontal overflow on '+name);
   await page.screenshot({path:join(output,name+'.png'),fullPage:true});

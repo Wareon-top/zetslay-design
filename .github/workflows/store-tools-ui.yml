@@ -2,6 +2,7 @@ name: Verify store automation interface
 on:
   push:
     paths:
+      - 'app/cabinet-v3/**'
       - 'app/store-tools*'
       - 'deploy/*store-tools*'
       - 'app/app.js'
