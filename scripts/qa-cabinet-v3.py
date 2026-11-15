@@ -252,6 +252,9 @@ with sync_playwright() as p:
         closed=drawer.evaluate("({vis:getComputedStyle(document.querySelector('.sidebar')).visibility,scrim:getComputedStyle(document.querySelector('.sidebar-backdrop')).visibility,back:!!document.activeElement?.matches('[data-sidebar-open]')})")
         check(f'drawer closes and the scrim stops covering the page at {width}',closed['vis']=='hidden' and closed['scrim']=='hidden' and closed['back'])
         drawer.close()
+    # Real inboxes have dozens of threads in a fixed-height list: rows must not shrink into each other (15.11 report).
+    shrink=page.evaluate("(()=>{const probe=(cls,parent)=>{const box=document.createElement('div');box.className=parent;box.style.cssText='display:flex;flex-direction:column;height:40px;overflow:auto';const row=document.createElement(cls[0]);row.className=cls[1];box.append(row);document.body.append(box);const v=getComputedStyle(row).flexShrink;box.remove();return v};return [probe(['button','messages-page-thread'],'messages-page-list'),probe(['button','ec-row'],'ec-list')]})()")
+    check('message and event rows never shrink in long lists',shrink==['0','0'])
     check('no JS runtime errors',not errors)
     check('all local assets exist',not failed_assets)
     # Failure is not converted into an apparent success or a fixture.
