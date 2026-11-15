@@ -197,6 +197,27 @@ async def main():
         if SHOTS: await pg.screenshot(path=os.path.join(SHOTS, 'privacy-settings-1440.png'))
         await ctx.close()
 
+        # 9. reviews wall (15.11): hidden without real reviews, cards with avatar/nickname/5 stars/date/text when present
+        rv = {'data': {'target': 'service', 'summary': {'count': 3, 'average': 4.7}, 'nextOffset': None, 'reviews': [
+            {'id': 'rv_l%d' % i, 'target': 'service', 'rating': r, 'text': t, 'createdAt': '2026-11-1%dT10:00:00Z' % i, 'updatedAt': '2026-11-1%dT10:00:00Z' % i,
+             'author': {'displayName': n, 'initials': n[:2].upper(), 'avatarUrl': None}} for i, (r, t, n) in enumerate([(5, 'Отличный сервис ' * 12, 'GmaillShop'), (5, 'Коротко и ясно.', 'Artem525'), (4, 'Удобно.', 'buyer_with_a_very_very_long_nickname_for_overflow')])]}}
+        for label, status, body in [('with reviews', 200, rv), ('api missing', 404, {'error': {'code': 'NOT_FOUND'}}), ('empty', 200, {'data': {'summary': {'count': 0, 'average': 0}, 'reviews': [], 'nextOffset': None}})]:
+            for w, h in ([(1440, 900), (390, 844), (320, 640)] if label == 'with reviews' else [(1440, 900)]):
+                ctx, pg, errs, hosts = await newpage(b, w, h)
+                async def rh(route, request=None, s=status, bd=body): await route.fulfill(status=s, content_type='application/json', body=json.dumps(bd))
+                await pg.route('**/api/v1/reviews?*', rh)
+                await pg.goto(BASE + '/', wait_until='networkidle'); await pg.wait_for_timeout(300)
+                r = await pg.evaluate("""() => { const s = document.querySelector('[data-landing-reviews]'), cw = document.documentElement.clientWidth, cards = [...s.querySelectorAll('.zl-review')];
+                  return { hidden: s.hidden, cards: cards.length, parts: cards.every(c => c.querySelector('.zl-review__avatar') && c.querySelector('strong').textContent && c.querySelectorAll('.zl-stars i').length === 5 && c.querySelector('time').textContent && c.querySelector('p').textContent),
+                    wide: [...s.querySelectorAll('*')].filter(e => e.getBoundingClientRect().right > cw + 1).length, sw: document.documentElement.scrollWidth, score: s.querySelector('[data-landing-reviews-score] b')?.textContent } }""")
+                tag = 'reviews ' + label + ' ' + str(w)
+                if label == 'with reviews':
+                    ok(tag + ': wall visible with complete cards, no overflow', not r['hidden'] and r['cards'] == 3 and r['parts'] and r['wide'] == 0 and r['sw'] <= w and r['score'] == '4,7', r)
+                    if SHOTS and w in (1440, 390): await (await pg.query_selector('[data-landing-reviews]')).screenshot(path=os.path.join(SHOTS, 'reviews-%d.png' % w))
+                else:
+                    ok(tag + ': section stays hidden', r['hidden'] and r['cards'] == 0, r)
+                await ctx.close()
+
         await b.close()
     passed = sum(1 for r in results if r[1])
     print(str(passed) + '/' + str(len(results)) + ' checks passed')

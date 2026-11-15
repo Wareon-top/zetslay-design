@@ -216,19 +216,24 @@
     productFacts(hero);
     const nav=$('.zs-product-tabs',root),main=$('.plugin-page-main',root);if(!nav||!main)return;
     // Handoff tabs built from the host's own blocks: nothing is invented, a tab exists only when a real block backs it.
-    const sections=$$(':scope > section',main);
+    // Reviews of this plugin (reviews.js): one block of our own at the end, always a tab of its own.
+    const pid=typeof parsePluginPageRoute==='function'?parsePluginPageRoute(location.hash.slice(1))?.id:'';
+    let reviews=$(':scope > [data-zsf-role="reviews"]',main);
+    if(window.ZSReviews&&pid){if(!reviews){reviews=make('section','zsf-reviews');reviews.dataset.zsfRole='reviews';main.append(reviews);}window.ZSReviews.mountPlugin(reviews,pid,$('h1',hero)?.textContent.trim()||'');}
+    else if(reviews){reviews.hidden=true;reviews=null;}
+    const sections=$$(':scope > section',main).filter(n=>n.dataset.zsfRole!=='reviews'||n===reviews);
     for(const n of sections)if(!n.dataset.zsfRole)n.dataset.zsfRole=n.matches('[aria-labelledby="plugin-description-title"]')?'about':n.matches('[aria-labelledby="plugin-access-title"]')?'needs':'plugin';
-    const about=sections.find(n=>n.dataset.zsfRole==='about')||sections[0],needs=sections.find(n=>n.dataset.zsfRole==='needs'),panels=sections.filter(n=>n!==about&&n!==needs),kinds=new Set();
+    const about=sections.find(n=>n.dataset.zsfRole==='about')||sections[0],needs=sections.find(n=>n.dataset.zsfRole==='needs'),panels=sections.filter(n=>n!==about&&n!==needs&&n!==reviews),kinds=new Set();
     for(const panel of panels){const subs=$$('section.plugin-page-panel',panel).filter(n=>{const outer=n.parentElement.closest('section.plugin-page-panel');return !outer||outer===panel||!panel.contains(outer);});
       const tag=box=>{for(const child of box.children){const sub=subs.includes(child)?child:null;const kind=sub?paneKind(sub):subs.some(n=>child.contains(n))?null:'settings';if(kind===null){tag(child);continue;}if(child.dataset.zsfPane!==kind)child.dataset.zsfPane=kind;kinds.add(kind);}};
       if(subs.length)tag(panel);else{for(const child of panel.children)if(child.dataset.zsfPane!=='settings')child.dataset.zsfPane='settings';kinds.add('settings');}}
-    const available=productTabs.filter(([k])=>k==='about'?!!about:k==='needs'?!!needs:kinds.has(k)),id=R()?.route||'';
+    const available=productTabs.filter(([k])=>k==='about'?!!about:k==='needs'?!!needs:k==='reviews'?!!reviews:kinds.has(k)),id=R()?.route||'';
     let selected=tabsByPlugin.get(id);if(!available.some(([k])=>k===selected))selected='about';
     const signature=available.map(([k])=>k).join(',');
     if(nav.dataset.zsfTabs!==signature){nav.dataset.zsfTabs=signature;nav.replaceChildren(...available.map(([k,label])=>{const b=make('button','tab',label);b.type='button';b.id='zs-pp-tab-'+k;b.dataset.zsfProductTab=k;b.setAttribute('role','tab');return b;}));}
     nav.classList.add('tabs');nav.setAttribute('role','tablist');nav.setAttribute('aria-label','Разделы плагина');
     for(const b of $$('[data-zsf-product-tab]',nav)){const on=b.dataset.zsfProductTab===selected;b.setAttribute('aria-selected',String(on));b.tabIndex=on?0:-1;}
-    const visible=selected==='about'?[about]:selected==='needs'?[needs]:panels;
+    const visible=selected==='about'?[about]:selected==='needs'?[needs]:selected==='reviews'?[reviews]:panels;
     for(const section of sections){section.setAttribute('role','tabpanel');section.setAttribute('aria-labelledby','zs-pp-tab-'+selected);show(section,visible.includes(section));}
     if(root.dataset.zsfTab!==selected)root.dataset.zsfTab=selected;
     if(!productObserver){productObserver=new MutationObserver(()=>{if(!productQueued){productQueued=true;requestAnimationFrame(()=>{productQueued=false;product();});}});}
@@ -303,7 +308,7 @@
       bot.append(card);bot.classList.add('zsf-bot-grid');
     }
   }
-  const productTabs=[['about','Умеет'],['needs','Нужно'],['settings','Настройки'],['queue','Очередь'],['history','История']];
+  const productTabs=[['about','Умеет'],['needs','Нужно'],['settings','Настройки'],['queue','Очередь'],['history','История'],['reviews','Отзывы']];
   let productObserver=null,productObserved=null,productQueued=false;
   // A host block goes to the tab its own eyebrow or title names; anything unclear stays in «Настройки».
   function paneKind(section){

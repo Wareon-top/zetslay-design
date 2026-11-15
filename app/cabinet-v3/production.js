@@ -79,7 +79,7 @@
   }
   function profile() {
     const root=$('[data-profile]');if(!root||!authState.user||!$('.profile-grid',root))return;
-    if($('[data-zs-profile]',root)) { distribute();return; }
+    if($('[data-zs-profile]',root)) { distribute();window.ZSReviews?.mountProfile();return; }
     const grid=$('.profile-grid',root), sections=$$(':scope > section',grid);
     const account=sections[0], store=sections[1], bot=sections[2], plan=sections[3], editor=$('.profile-editor',root);
     const card=typeof profileState!=='undefined'?profileState.data?.profile:null;
@@ -103,7 +103,7 @@
     const editing=document.createElement('details');editing.className='zs-profile-edit';editing.dataset.zsProfileEditor='';editing.innerHTML='<summary>Данные аккаунта и карточка автора</summary>';
     if(account)editing.append(account);if(editor)editing.append(editor);main.append(editing);
     if(bot){bot.dataset.zsBotPanel='';main.append(bot);}
-    body.append(aside,main);grid.replaceWith(body);drawProfilePlugins();distribute();
+    body.append(aside,main);grid.replaceWith(body);drawProfilePlugins();distribute();window.ZSReviews?.mountProfile();
   }
   function drawProfilePlugins() {
     const host=$('[data-zs-profile-plugins]');if(!host)return;
@@ -275,9 +275,10 @@
     hook('renderPlugins',()=>{catalogue();schedule();});
     hook('renderPluginPage',()=>{pluginPage();schedule();});
     hook('renderBilling',billing);hook('renderAuthState',schedule);hook('renderAccountSecurity',()=>{distribute();schedule();});hook('renderLegalRequests',()=>{distribute();schedule();});
+    hook('renderAdminPanel',()=>window.ZSReviews?.mountAdmin());
     hook('pluginCatalogFailed',catalogue);hook('renderStoreTools',()=>window.ZSCabinetFidelity?.refresh());
     const hostReset=resetAccountData;resetAccountData=function(...args){
-      window.ZSCabinetFidelity?.reset();
+      window.ZSCabinetFidelity?.reset();window.ZSReviews?.reset();
       for(const id of virtual){const target=$(`[data-view="${id}"] [data-zs-account-content]`);if(target){target.replaceChildren();delete target.dataset.signature;}}
       $$('[data-zs-profile-plugins]').forEach(n=>n.replaceChildren());return hostReset.apply(this,args);
     };
