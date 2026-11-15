@@ -54,6 +54,40 @@ class InstallerTests(unittest.TestCase):
   source='<head><link href="workspace-upgrade.css?v=old"><link href="event-center.css?v=old"><link href="basic-automation.css?v=old"></head><body><script src="workspace-upgrade.js?v=old"></script><script src="basic-automation.js?v=old"></script></body>'
   result=mod.includes(source)
   self.assertEqual(result.count('src="workspace-upgrade.js'),1);self.assertEqual(result.count('src="basic-automation.js'),1)
+ def install_old_release(self):
+  # The previous release of this installer, then a newer package in the same source.
+  old={'production.js':b'old presentation production.js','production.css':b'old presentation production.css'}
+  files=[]
+  for name,data in old.items():
+   (self.source/'app/cabinet-v3'/name).write_bytes(data);files.append({'path':'app/cabinet-v3/'+name,'sha256':mod.sha(data)})
+  manifest=json.loads((self.source/'deploy/cabinet-v3-manifest.json').read_text());manifest['files']=files
+  (self.source/'deploy/cabinet-v3-manifest.json').write_text(json.dumps(manifest))
+  with patch.object(mod,'RELEASE','20261114-claude-fidelity12'):self.publish()
+  manifest['files']=self.files;(self.source/'deploy/cabinet-v3-manifest.json').write_text(json.dumps(manifest))
+  for name in ['production.js','production.css']:(self.source/'app/cabinet-v3'/name).write_bytes(('new presentation '+name).encode())
+  return old
+ def test_upgrade_from_previous_release_and_rollback(self):
+  old=self.install_old_release();before=(self.site/'app/index.html').read_bytes()
+  info=self.publish();text=(self.site/'app/index.html').read_text()
+  self.assertTrue(info['upgraded']);self.assertIn('?v='+mod.RELEASE,text);self.assertNotIn('fidelity12',text)
+  self.assertEqual(text.count('<!-- '+mod.MARKER+' CSS -->'),1);self.assertIn('preserve forms and custom scripts',text)
+  self.assertEqual((self.site/'app/cabinet-v3/production.js').read_bytes(),b'new presentation production.js')
+  self.assertEqual(self.publish()['installed'],True);self.assertEqual((self.site/'app/index.html').read_text(),text)
+  mod.rollback(self.site,Path(info['backup']))
+  self.assertEqual((self.site/'app/index.html').read_bytes(),before)
+  self.assertEqual((self.site/'app/cabinet-v3/production.js').read_bytes(),old['production.js'])
+ def test_upgrade_failure_restores_previous_release(self):
+  old=self.install_old_release();before=(self.site/'app/index.html').read_bytes()
+  with patch.object(mod.urllib.request,'urlopen',side_effect=OSError('network failure')):
+   with self.assertRaises(OSError):self.publish(verify_url='https://example.invalid')
+  self.assertEqual((self.site/'app/index.html').read_bytes(),before)
+  self.assertEqual((self.site/'app/cabinet-v3/production.css').read_bytes(),old['production.css'])
+ def test_upgrade_refuses_hand_edited_or_mixed_blocks(self):
+  self.install_old_release();index=self.site/'app/index.html';text=index.read_text()
+  for edited in [text.replace('</body>','<script src="cabinet-v3/custom.js"></script></body>'),text.replace('production.js?v=20261114-claude-fidelity12','production.js?v=20261110-other',1)]:
+   index.write_text(edited)
+   with self.assertRaises(ValueError):self.publish()
+   self.assertEqual(index.read_text(),edited)
  @unittest.skipIf(os.name=='nt','POSIX permissions are tested on VPS/Linux')
  def test_assets_readable_with_private_umask(self):
   old=os.umask(0o077)
