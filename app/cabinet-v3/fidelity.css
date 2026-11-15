@@ -542,3 +542,193 @@
 @media (max-width:560px){.zs-production.zs-reference [data-view="proxy-shop"] .mp-lease{grid-template-columns:minmax(0,1fr)}.zs-production.zs-reference [data-view="proxy-shop"] .mp-lease > div + div{border-left:0;border-top:1px solid #2c2c2e}}
 /* profile: the proxy strip duplicates the «Прокси» row of the account list (handoff has no strip) */
 .zs-production.zs-reference [data-view="profile"] :is([data-proxy-invite],[data-proxy-entry]){display:none}
+
+/* ======================= messages: handoff msg-split (list + thread) ======================= */
+.zs-production.zs-reference [data-view="messages"] :is(.messages-page-summary,.messages-page-auto){display:none}
+.zs-production.zs-reference [data-view="messages"] .messages-page-notice:empty{display:none}
+.zs-production.zs-reference .messages-page-inbox{display:grid;grid-template-columns:minmax(280px,.8fr) minmax(0,1.4fr);gap:16px;align-items:stretch;height:min(720px,calc(100dvh - 120px));min-height:520px;margin-top:16px;padding:0;border:0;border-radius:0;background:none;box-shadow:none;overflow:visible}
+.zs-production.zs-reference .messages-page-sidebar{display:flex;flex-direction:column;gap:10px;min-height:0;padding:12px;border:0;border-radius:24px;background:#1c1c1e}
+.zs-production.zs-reference .messages-page-sidebar-top{display:flex;flex-direction:column;gap:10px;padding:0;border:0;background:none}
+.zs-production.zs-reference .messages-page-sidebar-title,.zs-production.zs-reference .messages-page-filter-label{display:none}
+.zs-production.zs-reference .messages-page-search{display:flex;align-items:center;gap:10px;height:44px;padding:0 14px;border:0;border-radius:999px;background:#2c2c2e;color:#8e8e93}
+.zs-production.zs-reference .messages-page-search input{flex:1;min-width:0;height:100%;padding:0;border:0;background:none;color:#fff;font-size:14.5px;box-shadow:none;outline:none}
+.zs-production.zs-reference .messages-page-search svg{width:16px;height:16px;flex:none}
+.zs-production.zs-reference .messages-page-sidebar-controls{display:flex;align-items:center;gap:8px;padding:0;border:0}
+.zs-production.zs-reference .messages-page-sidebar-controls label{display:flex;align-items:center;gap:8px;font-size:13px;color:#8e8e93}
+.zs-production.zs-reference .messages-page-sidebar-controls select{min-height:36px;padding:0 12px;border:1px solid #3a3a3d;border-radius:12px;background:#232325;color:#fff;font-size:13.5px}
+.zs-production.zs-reference .messages-page-icon-button{display:inline-grid;place-items:center;flex:none;width:36px;height:36px;padding:0;border:0;border-radius:50%;background:#2c2c2e;color:#c7c7cc}
+.zs-production.zs-reference .messages-page-icon-button:hover{background:#3a3a3d;color:#fff}
+.zs-production.zs-reference .messages-page-list{display:flex;flex-direction:column;gap:2px;flex:1;min-height:0;overflow-y:auto;padding:0;border:0;background:none}
+.zs-production.zs-reference .messages-page-thread{display:flex;align-items:center;gap:12px;width:100%;min-height:0;padding:10px;border:0;border-radius:14px;background:none;box-shadow:none;text-align:left}
+.zs-production.zs-reference .messages-page-thread::before{display:none}
+.zs-production.zs-reference .messages-page-thread:hover{background:#232325}
+.zs-production.zs-reference .messages-page-thread.is-active{background:#2c2c2e}
+.zs-production.zs-reference .messages-page-avatar{display:inline-grid;place-items:center;flex:none;width:36px;height:36px;border-radius:50%;background:#2c2c2e;color:#c7c7cc;font-size:12px;font-weight:700;box-shadow:none}
+.zs-production.zs-reference .messages-page-thread-content{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:10px;flex:1;min-width:0}
+.zs-production.zs-reference .messages-page-thread-content > span:first-child{display:contents}
+.zs-production.zs-reference .messages-page-thread-content strong{grid-column:1;font-size:14.5px;line-height:20px;font-weight:600;color:#fff;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.zs-production.zs-reference .messages-page-thread-content small{grid-column:2;grid-row:1;font-size:12px;line-height:20px;color:#8e8e93;white-space:nowrap}
+.zs-production.zs-reference .messages-page-preview{grid-column:1 / -1;font-size:13px;line-height:18px;color:#8e8e93;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.zs-production.zs-reference .messages-page-preview b{font-weight:500;color:#c7c7cc}
+.zs-production.zs-reference .messages-page-thread-foot{display:none}
+.zs-production.zs-reference .messages-page-sidebar-footer{display:flex;flex-direction:column;gap:4px;padding:6px 4px 0;border:0;font-size:12.5px;color:#8e8e93}
+.zs-production.zs-reference .messages-page-sidebar-footer button{align-self:flex-start;padding:0;border:0;background:none;color:#c7c7cc;font-size:12.5px;text-decoration:underline;text-underline-offset:3px}
+/* thread */
+.zs-production.zs-reference .messages-page-chat{display:flex;flex-direction:column;min-width:0;min-height:0;border:0;border-radius:24px;background:#1c1c1e;overflow:hidden}
+.zs-production.zs-reference .messages-page-chat-header{display:flex;align-items:center;gap:12px;padding:12px 16px;border:0;background:none;box-shadow:inset 0 -1px 0 #2c2c2e}
+.zs-production.zs-reference .messages-page-chat-identity{flex:1;min-width:0}
+.zs-production.zs-reference .messages-page-chat-identity h2{margin:0;font-size:16px;line-height:22px;font-weight:650;color:#fff}
+.zs-production.zs-reference .messages-page-chat-identity p{margin:0;font-size:13px;line-height:18px;color:#8e8e93}
+.zs-production.zs-reference .messages-page-chat-tools{display:flex;gap:6px}
+.zs-production.zs-reference .messages-page-history{display:flex;justify-content:center;padding:10px 16px 0;border:0;background:none}
+.zs-production.zs-reference .messages-page-history button{padding:0;border:0;background:none;color:#8e8e93;font-size:13px;text-decoration:underline;text-underline-offset:3px}
+.zs-production.zs-reference .messages-page-body{display:flex;flex-direction:column;gap:8px;flex:1;min-height:0;overflow-y:auto;padding:16px;background:none}
+.zs-production.zs-reference .messages-page-day{display:flex;justify-content:center;margin:4px 0}
+.zs-production.zs-reference .messages-page-day span{padding:3px 10px;border:0;border-radius:999px;background:#232325;color:#8e8e93;font-size:12px}
+.zs-production.zs-reference .messages-page-message{display:flex;max-width:none;margin:0;gap:0}
+.zs-production.zs-reference .messages-page-message > .messages-page-avatar{display:none}
+.zs-production.zs-reference .messages-page-message--seller{justify-content:flex-end}
+.zs-production.zs-reference .messages-page-bubble{display:flex;flex-direction:column-reverse;max-width:min(78%,520px);padding:9px 13px 7px;border:0;border-radius:18px;border-bottom-left-radius:6px;background:#2c2c2e;color:#fff;box-shadow:none}
+.zs-production.zs-reference .messages-page-message--seller .messages-page-bubble{border-bottom-left-radius:18px;border-bottom-right-radius:6px;background:#e9692c;color:#fff}
+.zs-production.zs-reference .messages-page-bubble p{margin:0;font-size:14.5px;line-height:21px;white-space:pre-wrap;overflow-wrap:anywhere}
+.zs-production.zs-reference .messages-page-message-meta{display:flex;justify-content:flex-end;margin:2px 0 0;padding:0}
+.zs-production.zs-reference .messages-page-message-meta strong{display:none}
+.zs-production.zs-reference .messages-page-message-meta time{font-size:11.5px;line-height:15px;color:#8e8e93}
+.zs-production.zs-reference .messages-page-message--seller .messages-page-message-meta time{color:rgba(255,246,236,.78)}
+.zs-production.zs-reference .messages-page-chat-footer{display:flex;flex-direction:column;gap:8px;padding:12px 16px 16px;border:0;background:none;box-shadow:inset 0 1px 0 #2c2c2e}
+.zs-production.zs-reference .messages-page-date-note{display:none}
+.zs-production.zs-reference .messages-page-composer{margin:0;padding:0;border:0;background:none;box-shadow:none}
+.zs-production.zs-reference .messages-page-composer textarea{min-height:46px;padding:11px 14px;border:1px solid #3a3a3d;border-radius:14px;background:#232325;color:#fff;font-size:14.5px}
+@media (max-width:899px){
+ .zs-production.zs-reference .messages-page-inbox{grid-template-columns:minmax(0,1fr);height:auto}
+ .zs-production.zs-reference .messages-page-sidebar{max-height:520px}
+}
+
+/* ======================= event centre: handoff ev-split ======================= */
+.zs-production.zs-reference .ec-inbox{display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);gap:16px;align-items:start;margin-top:16px;padding:0;border:0;background:none;box-shadow:none}
+.zs-production.zs-reference .ec-sidebar{display:flex;flex-direction:column;gap:12px;min-width:0;padding:0;border:0;background:none;box-shadow:none}
+.zs-production.zs-reference .ec-controls{display:flex;flex-direction:column;gap:10px;padding:0;border:0;background:none}
+.zs-production.zs-reference .ec-search{display:flex;align-items:center;gap:10px;height:44px;padding:0 14px;border:0;border-radius:999px;background:#1c1c1e;color:#8e8e93}
+.zs-production.zs-reference .ec-search input{flex:1;min-width:0;height:100%;padding:0;border:0;background:none;color:#fff;font-size:14.5px;box-shadow:none;outline:none}
+.zs-production.zs-reference .ec-search kbd{display:none}
+.zs-production.zs-reference .ec-list{display:flex;flex-direction:column;gap:2px;padding:8px;border:0;border-radius:24px;background:#1c1c1e}
+.zs-production.zs-reference .ec-group-label{display:none}
+.zs-production.zs-reference .ec-row{position:relative;display:flex;align-items:center;gap:12px;width:100%;min-width:0;padding:12px;border:0;border-radius:14px;background:none;box-shadow:none;text-align:left}
+.zs-production.zs-reference .ec-row::before{display:none}
+.zs-production.zs-reference .ec-row:hover{background:#232325}
+.zs-production.zs-reference .ec-row:is(.is-selected,.is-active,[aria-current="true"],[aria-pressed="true"]){background:#2c2c2e}
+.zs-production.zs-reference .ec-symbol{display:grid;place-items:center;flex:none;width:38px;height:38px;border:0;border-radius:12px;background:#2c2c2e;color:#c7c7cc}
+.zs-production.zs-reference .ec-symbol svg{width:18px;height:18px}
+.zs-production.zs-reference .ec-row-content{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+.zs-production.zs-reference .ec-row-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.zs-production.zs-reference .ec-row-top strong{font-size:14.5px;line-height:20px;font-weight:500;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.zs-production.zs-reference .ec-row.is-unread .ec-row-top strong{font-weight:650}
+.zs-production.zs-reference .ec-row-top time{flex:none;font-size:12.5px;color:#8e8e93}
+.zs-production.zs-reference .ec-row-description{font-size:12.5px;line-height:17px;color:#8e8e93;overflow-wrap:anywhere}
+.zs-production.zs-reference .ec-row-meta{display:none}
+.zs-production.zs-reference .ec-row.needs-attention .ec-row-meta{display:block;font-size:12px;color:#ff9f0a}
+.zs-production.zs-reference .ec-row.needs-attention .ec-row-meta > span{display:none}
+.zs-production.zs-reference .ec-unread-dot{display:block;flex:none;width:9px;height:9px;border-radius:50%;background:#ff8b45}
+.zs-production.zs-reference .ec-row .ec-unread-dot{position:static;align-self:flex-end;margin-bottom:6px}
+.zs-production.zs-reference .ec-list-footer{display:flex;justify-content:space-between;align-items:center;padding:4px 6px 0;border:0;font-size:12.5px;color:#8e8e93}
+.zs-production.zs-reference .ec-shortcut{display:none}
+.zs-production.zs-reference .ec-detail{position:sticky;top:88px;padding:18px 20px;border:0;border-radius:24px;background:#1c1c1e;box-shadow:none}
+.zs-production.zs-reference .ec-detail h2{font-size:19px;line-height:25px;font-weight:650;color:#fff}
+.zs-production.zs-reference .ec-empty-detail{padding:24px 8px;text-align:center}
+.zs-production.zs-reference .ec-empty-illustration i,.zs-production.zs-reference .ec-empty-legend{display:none}
+@media (max-width:899px){.zs-production.zs-reference .ec-inbox{grid-template-columns:minmax(0,1fr)}.zs-production.zs-reference .ec-detail{position:static}}
+
+/* event centre: selected row + detail like the handoff ev-pane */
+.zs-production.zs-reference .ec-row[aria-current="true"]{background:#2c2c2e}
+.zs-production.zs-reference .ec-row[aria-current="true"] .ec-symbol{background:#1c1c1e}
+.zs-production.zs-reference .ec-list-status:empty{display:none}
+.zs-production.zs-reference .ec-detail-toolbar{display:flex;align-items:center;gap:8px;margin:0 0 6px;padding:0;border:0;background:none}
+.zs-production.zs-reference .ec-type{display:inline-flex;align-items:center;gap:6px;flex:1;font-size:13px;color:#8e8e93}
+.zs-production.zs-reference .ec-type svg{width:15px;height:15px}
+.zs-production.zs-reference .ec-close{display:inline-grid;place-items:center;width:32px;height:32px;border:0;border-radius:50%;background:#2c2c2e;color:#c7c7cc}
+.zs-production.zs-reference .ec-detail-body{display:flex;flex-direction:column;gap:12px;padding:0;border:0;background:none}
+.zs-production.zs-reference .ec-detail-meta{order:-1;font-size:13px;color:#8e8e93}
+.zs-production.zs-reference .ec-detail-body h2{margin:0;font-size:19px;line-height:25px;font-weight:650;color:#fff}
+.zs-production.zs-reference .ec-detail-description{margin:0;font-size:14.5px;line-height:22px;color:#e5e5ea}
+.zs-production.zs-reference .ec-context{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border:0;border-radius:14px;background:#232325}
+.zs-production.zs-reference .ec-context .ec-symbol{display:none}
+.zs-production.zs-reference .ec-context > div{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:1}
+.zs-production.zs-reference .ec-context small{font-size:13px;color:#8e8e93}
+.zs-production.zs-reference .ec-context strong{font-size:14px;font-weight:650;color:#fff}
+.zs-production.zs-reference .ec-detail-action{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:0;border:0;background:none}
+.zs-production.zs-reference .ec-detail-action p{flex-basis:100%;margin:0;font-size:12.5px;color:#8e8e93}
+.zs-production.zs-reference .ec-button{display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:0 18px;border:0;border-radius:999px;background:#2c2c2e;color:#fff;font-size:14px;font-weight:600}
+.zs-production.zs-reference .ec-button--primary{background:#ff8b45;color:#1a0d05}
+.zs-production.zs-reference .ec-button--primary:hover{background:#ff9d61}
+.zs-production.zs-reference .ec-back{display:none}
+.zs-production.zs-reference .ec-read-state{display:flex;align-items:center;gap:8px;padding:12px 14px;border:0;border-radius:14px;background:#232325;font-size:13px;color:#8e8e93}
+.zs-production.zs-reference .ec-read-state svg{width:15px;height:15px}
+.zs-production.zs-reference .ec-read-state button{margin-left:auto;min-height:34px;padding:0 14px;border:0;border-radius:999px;background:#2c2c2e;color:#fff;font-size:13px;font-weight:600}
+@media (max-width:899px){.zs-production.zs-reference .ec-back{display:inline-grid}}
+
+/* ======================= orders & lots: handoff tables ======================= */
+/* the cover already carries connection state; the period chips stay, their caption goes */
+.zs-production.zs-reference [data-view="orders"] .orders-page-context,
+.zs-production.zs-reference [data-view="orders"] .orders-page-period-heading,
+.zs-production.zs-reference [data-view="orders"] .orders-page-notice:empty{display:none}
+.zs-production.zs-reference [data-view="orders"] .orders-page-period-panel{margin-top:16px;padding:0;border:0;background:none;box-shadow:none}
+/* neutral stat icons like the handoff */
+.zs-production.zs-reference :is(.orders-page-icon,.inventory-summary [class*="icon"]){border:0;border-radius:10px;background:#2c2c2e!important;color:#c7c7cc!important}
+/* order table rows */
+.zs-production.zs-reference .orders-page-panel tbody td{padding-top:11px;padding-bottom:11px;vertical-align:middle}
+.zs-production.zs-reference .orders-page-order{display:flex;flex-direction:column-reverse;align-items:flex-start;gap:1px;padding:0;border:0;background:none;text-align:left}
+.zs-production.zs-reference .orders-page-order strong{font-size:12.5px;font-weight:500;color:#8e8e93}
+.zs-production.zs-reference .orders-page-order span{font-size:14px;font-weight:650;color:#fff}
+.zs-production.zs-reference .orders-page-avatar,.zs-production.zs-reference .orders-page-buyer small{display:none}
+.zs-production.zs-reference .orders-page-buyer strong{font-size:13.5px;font-weight:500;color:#e5e5ea}
+.zs-production.zs-reference :is(.orders-page-status,.inventory-status){display:inline-flex;align-items:center;gap:6px;padding:0;border:0;background:none!important;font-size:13px;font-weight:600}
+.zs-production.zs-reference :is(.orders-page-status,.inventory-status) i{width:7px;height:7px;border-radius:50%}
+.zs-production.zs-reference .orders-page-date time{display:flex;gap:6px;font-size:13px;color:#c7c7cc;white-space:nowrap}
+.zs-production.zs-reference .orders-page-date time small{font-size:13px;color:#c7c7cc}
+.zs-production.zs-reference .orders-page-amount strong{font-size:14px;color:#fff}
+.zs-production.zs-reference .orders-page-detail-button{display:inline-flex;align-items:center;min-height:32px;padding:0 14px;border:0;border-radius:999px;background:#2c2c2e;color:#fff;font-size:13px;font-weight:600}
+.zs-production.zs-reference .orders-page-detail-button > *{display:none}
+.zs-production.zs-reference .orders-page-detail-button::after{content:"Подробнее"}
+.zs-production.zs-reference .orders-page-row-arrow{text-align:right;width:1%}
+.zs-production.zs-reference [data-view="orders"] .orders-page-scope{font-size:12.5px;color:#8e8e93}
+
+/* lots: assortment table */
+.zs-production.zs-reference [data-view="lots"] .inventory-alert{display:none}
+.zs-production.zs-reference [data-view="lots"] .inventory-tools{display:none}
+.zs-production.zs-reference .inventory-product__icon{display:none}
+.zs-production.zs-reference .inventory-product__name{padding:0;border:0;background:none;color:#fff;font-size:14px;font-weight:650;text-align:left}
+.zs-production.zs-reference .inventory-product span{font-size:12.5px;color:#8e8e93}
+.zs-production.zs-reference .inventory-price{font-size:14px;font-weight:650;color:#fff;white-space:nowrap}
+.zs-production.zs-reference .inventory-price small{display:none}
+.zs-production.zs-reference .inventory-stock{font-size:13px;color:#c7c7cc}
+.zs-production.zs-reference .inventory-row-actions{white-space:nowrap;text-align:right}
+.zs-production.zs-reference .inventory-row-actions > :is(button,a){display:inline-grid;place-items:center;width:32px;height:32px;margin-left:4px;padding:0;border:0;border-radius:50%;background:none;color:#8e8e93;vertical-align:middle}
+.zs-production.zs-reference .inventory-row-actions > :is(button,a):hover{background:#2c2c2e;color:#fff}
+.zs-production.zs-reference .inventory-row-actions > .inventory-edit-action{display:inline-flex;width:auto;min-height:32px;padding:0 14px;border-radius:999px;background:#2c2c2e;color:#fff;font-size:13px;font-weight:600}
+.zs-production.zs-reference .inventory-row-actions > .inventory-edit-action svg{display:none}
+.zs-production.zs-reference .inventory-panel tbody td{padding-top:11px;padding-bottom:11px;vertical-align:middle}
+.zs-production.zs-reference .lot-raise{padding:18px 20px;border:0;border-radius:22px;background:#1c1c1e;box-shadow:none}
+.zs-production.zs-reference .lot-operations{padding:18px 20px;border:0;border-radius:22px;background:#1c1c1e;box-shadow:none}
+.zs-production.zs-reference [data-view="orders"] .orders-page-row-arrow .orders-page-detail-button{display:inline-flex!important;width:auto!important;height:32px!important;min-width:0;padding:0 14px!important;border:0!important;border-radius:999px!important;background:#2c2c2e!important;color:#fff!important;font-size:13px!important;font-weight:600;line-height:32px;white-space:nowrap}
+.zs-production.zs-reference [data-view="orders"] .orders-page-row-arrow .orders-page-detail-button::before{display:none!important}
+.zs-production.zs-reference [data-view="orders"] .orders-page-row-arrow .orders-page-detail-button::after{content:"Подробнее"!important;display:inline!important;position:static!important;width:auto!important;height:auto!important;border:0!important;background:none!important;transform:none!important;mask:none!important;-webkit-mask:none!important}
+.zs-production.zs-reference [data-view="orders"] .orders-page-row-arrow{width:auto!important}
+
+/* ======================= support: list card + thread card (handoff) ======================= */
+.zs-production.zs-reference .sup-layout{display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);gap:16px;align-items:start;padding:0;border:0;border-radius:0;background:none;box-shadow:none;overflow:visible;min-height:0}
+.zs-production.zs-reference .sup-sidebar{display:flex;flex-direction:column;gap:10px;padding:12px;border:0;border-radius:24px;background:#1c1c1e;box-shadow:none}
+.zs-production.zs-reference .sup-content{min-width:0;padding:0;border:0;border-radius:24px;background:#1c1c1e;box-shadow:none;overflow:hidden}
+.zs-production.zs-reference .sup-sidebar input[type="search"],.zs-production.zs-reference .sup-sidebar input[data-sup-search]{height:42px;padding:0 14px;border:0;border-radius:999px;background:#2c2c2e;color:#fff}
+.zs-production.zs-reference .sup-ticket{display:block;width:100%;padding:12px;border:0;border-radius:14px;background:none;box-shadow:none;text-align:left}
+.zs-production.zs-reference .sup-ticket::before{display:none}
+.zs-production.zs-reference .sup-ticket:hover{background:#232325}
+.zs-production.zs-reference .sup-ticket[aria-current="true"]{background:#2c2c2e}
+.zs-production.zs-reference .sup-ticket-top{font-size:12px;color:#8e8e93}
+.zs-production.zs-reference .sup-ticket strong{display:block;font-size:14px;font-weight:650;color:#fff}
+@media (max-width:899px){.zs-production.zs-reference .sup-layout{grid-template-columns:minmax(0,1fr)}}
+.zs-production.zs-reference .sup-sidebar .sup-list-filters{justify-content:flex-start}
+.zs-production.zs-reference .sup-sidebar .sup-list-filters > button{flex:0 0 auto;margin:0}
+.zs-production.zs-reference .sup-sidebar label:has(input[type="search"]) input,.zs-production.zs-reference .sup-sidebar input[data-sup-search]{padding-left:40px}
+@media (max-width:380px){.zs-production.zs-reference .messages-page-chat-header{gap:8px;padding:10px 12px}.zs-production.zs-reference .messages-page-chat-tools{gap:4px}.zs-production.zs-reference .messages-page-chat-header .messages-page-icon-button{width:30px;height:30px}.zs-production.zs-reference .messages-page-chat-header .messages-page-avatar{width:30px;height:30px}}
+.zs-production.zs-reference .messages-page-sidebar-controls label{flex:1;min-width:0}
+.zs-production.zs-reference .messages-page-sidebar-controls select{flex:1;min-width:0;width:100%}

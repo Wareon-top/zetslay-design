@@ -1,5 +1,5 @@
 {
- "release": "20261114-claude-fidelity10",
+ "release": "20261114-claude-fidelity11",
  "handoffSha256": "8903ee1109989cf36686184459aa8d38bdbcc52bbdb54800256dbb676a1f18a6",
  "host": {
   "app/app.js": [
@@ -361,8 +361,8 @@
   },
   {
    "path": "app/cabinet-v3/fidelity.css",
-   "bytes": 64782,
-   "sha256": "01a8fad19d059c5ebbf436b29c52569950e6a3b0bfbcac8138b2fe993e2ad300"
+   "bytes": 87169,
+   "sha256": "3fdae95eec9fd31e00ebb9a59bc38615fed598fdf115f7d30cd1a1cbacd700b0"
   },
   {
    "path": "app/cabinet-v3/icons.js",
