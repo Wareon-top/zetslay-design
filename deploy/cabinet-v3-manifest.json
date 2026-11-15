@@ -1,5 +1,5 @@
 {
- "release": "20261114-claude-fidelity13",
+ "release": "20261115-mobile-banner-icons",
  "handoffSha256": "8903ee1109989cf36686184459aa8d38bdbcc52bbdb54800256dbb676a1f18a6",
  "host": {
   "app/app.js": [
@@ -386,8 +386,8 @@
   },
   {
    "path": "app/cabinet-v3/production.js",
-   "bytes": 28480,
-   "sha256": "0eb214c789e1eaf5352817d9bc40a601f4a381d0cc731ed11c7608c757bdd332"
+   "bytes": 28489,
+   "sha256": "1cda3306ff701b5a29472f6044af37d006456be297abdaf18400940658144bb1"
   },
   {
    "path": "app/cabinet-v3/profile.css",
@@ -396,8 +396,8 @@
   },
   {
    "path": "app/cabinet-v3/reference-ui.css",
-   "bytes": 45229,
-   "sha256": "1a3328811ef401a9738a90e26f2710f5918104adb3464b68fdecc1c538f1487d"
+   "bytes": 45418,
+   "sha256": "66720b63bf94a4ff8fa348c3f91d980fea74b2d2b2f91b2914588f7882820c9b"
   },
   {
    "path": "app/cabinet-v3/reference-ui.js",
