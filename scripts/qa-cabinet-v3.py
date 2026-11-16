@@ -266,6 +266,44 @@ with sync_playwright() as p:
         closed=drawer.evaluate("({vis:getComputedStyle(document.querySelector('.sidebar')).visibility,scrim:getComputedStyle(document.querySelector('.sidebar-backdrop')).visibility,back:!!document.activeElement?.matches('[data-sidebar-open]')})")
         check(f'drawer closes and the scrim stops covering the page at {width}',closed['vis']=='hidden' and closed['scrim']=='hidden' and closed['back'])
         drawer.close()
+    # Demo mode (16.11): no trial and no paid plan. What stopped, what is kept, how to switch on; sample shop below.
+    saved_fixtures={k:read_data.get(k) for k in ['/api/v1/auth/resume','/api/v1/profile','/api/v1/subscription/status','/api/v1/onboard','/api/v1/onboarding','/api/v1/subscription/trial']}
+    def no_plan(trial_state,plan_id=None):
+        plan={'id':plan_id,'active':False,'activatedAt':None,'expiresAt':(now-timedelta(days=2)).isoformat() if plan_id else None}
+        ws={**workspace,'plan':plan};trial={'state':trial_state,'durationHours':72,'serverNow':now.isoformat(),'remainingSeconds':259200 if trial_state=='available' else 0}
+        read_data.update({'/api/v1/auth/resume':{**session,'workspace':ws},'/api/v1/profile':{**profile,'plan':plan},'/api/v1/subscription/status':{'workspace':ws,'discounts':[],'trial':trial},'/api/v1/subscription/trial':trial,
+            '/api/v1/onboard':{'state':'plan_required','activePlan':False,'telegram':{'linked':True,'botConfigured':True},'funPay':{'proxyConfigured':True}}})
+        read_data['/api/v1/onboarding']=read_data['/api/v1/onboard']
+    def demo_page(width):
+        d=context.new_page();d.set_viewport_size({'width':width,'height':900});d.on('pageerror',lambda error:errors.append(str(error)))
+        d.goto(f'http://127.0.0.1:{server.server_port}/app/#dashboard',wait_until='networkidle');d.wait_for_timeout(900)
+        d.evaluate('window.ZSCabinetFidelity.refresh()');d.wait_for_timeout(200);return d
+    no_plan('available');writes_before=sum(r['method']!='GET' and r['path']!='/api/v1/auth/resume' for r in requests)
+    demo=demo_page(1440);gate=demo.locator('[data-view="dashboard"] > [data-access-gate]')
+    check('demo mode: dashboard shows the access screen',gate.locator('.zs-access').is_visible() and gate.locator('.zs-access-cover').is_visible())
+    check('demo mode: section title is the only labelled heading',demo.locator('#access-dashboard-title').count()==1 and demo.locator('[data-view="dashboard"]').get_attribute('aria-labelledby')=='access-dashboard-title')
+    check('demo mode: trial offer uses the host trial action',gate.locator('.zs-access [data-access-trial]').inner_text().strip()=='Активировать пробный период')
+    check('demo mode: explains what stopped, what is kept and how to switch on',gate.locator('.zs-access-card').count()==3 and gate.locator('.zs-access-saved__row').count()==4)
+    check('demo mode: kept bindings come from the server snapshot',gate.locator('.zs-access-saved__row.is-ok').count()>=2)
+    check('demo mode: sample shop retained without its old offer blocks',gate.locator('.demo-experience').count()==1 and gate.locator('.demo-start,.demo-intro,.demo-footer').count()==0)
+    period=gate.locator('[data-demo-period="month"]');period.click();demo.wait_for_timeout(150)
+    check('demo mode: sample shop stays interactive',gate.locator('[data-demo-period="month"]').get_attribute('aria-pressed')=='true')
+    demo.evaluate("setView('plugins')");demo.wait_for_timeout(250)
+    check('demo mode: open sections carry the paused-operations strip',demo.locator('[data-view="plugins"] > [data-zs-access-strip]').is_visible())
+    demo.screenshot(path=str(OUT/'demo-mode-plugins-desktop.png'),full_page=False)
+    demo.evaluate("setView('dashboard')");demo.wait_for_timeout(200);demo.screenshot(path=str(OUT/'demo-mode-dashboard-desktop.png'),full_page=True);demo.close()
+    demo=demo_page(390)
+    check('demo mode: no horizontal scroll at 390px',demo.evaluate('document.documentElement.scrollWidth')<=390)
+    demo.screenshot(path=str(OUT/'demo-mode-dashboard-390.png'),full_page=True);demo.close()
+    no_plan('used');demo=demo_page(1440)
+    check('demo mode: used trial asks for a plan only',demo.locator('#zs-access-dashboard-offer').inner_text()=='Пробный период уже использован' and demo.locator('[data-view="dashboard"] .zs-access [data-access-trial]').count()==0)
+    demo.close();no_plan('used','growth');demo=demo_page(1440)
+    check('demo mode: lapsed plan is named',demo.locator('#zs-access-dashboard-offer').inner_text()=='Тариф «Рост» закончился')
+    demo.close()
+    check('demo mode: nothing is written to the API',sum(r['method']!='GET' and r['path']!='/api/v1/auth/resume' for r in requests)==writes_before)
+    for k,v in saved_fixtures.items():
+        if v is None:read_data.pop(k,None)
+        else:read_data[k]=v
     # Real inboxes have dozens of threads in a fixed-height list: rows must not shrink into each other (15.11 report).
     shrink=page.evaluate("(()=>{const probe=(cls,parent)=>{const box=document.createElement('div');box.className=parent;box.style.cssText='display:flex;flex-direction:column;height:40px;overflow:auto';const row=document.createElement(cls[0]);row.className=cls[1];box.append(row);document.body.append(box);const v=getComputedStyle(row).flexShrink;box.remove();return v};return [probe(['button','messages-page-thread'],'messages-page-list'),probe(['button','ec-row'],'ec-list')]})()")
     check('message and event rows never shrink in long lists',shrink==['0','0'])
