@@ -56,10 +56,12 @@
     const store=typeof selectedStore==='function'?selectedStore():null;
     const plugins=typeof state!=='undefined'&&Array.isArray(state.plugins)?state.plugins.filter(p=>p.installed).length:0;
     const licenses=Array.isArray(authState.workspace?.pluginLicenses)?authState.workspace.pluginLicenses.length:0;
-    const row=(image,title,value,ok)=>`<li class="zs-access-saved__row${ok?' is-ok':''}">${art(image,'zs-access-saved__art')}<span><strong>${title}</strong><small>${E(value)}</small></span>${ok?`<i class="zs-access-saved__mark" aria-label="Сохранено">${I('check')}</i>`:''}</li>`;
+    const row=(image,title,value,ok,cls='')=>`<li class="zs-access-saved__row${ok?' is-ok':''}${cls}">${art(image,'zs-access-saved__art')}<span><strong>${title}</strong><small>${E(value)}</small></span>${ok?`<i class="zs-access-saved__mark" aria-label="Сохранено">${I('check')}</i>`:''}</li>`;
     const pluginText=plugins?`Установлено: ${plugins} · настройки сохранены`:'Пока не установлены';
+    // «demo-start» on the FunPay row is the anchor the host learning tour (app/learning.js, step «Подключение FunPay»)
+    // falls back to; the old demo offer it used to point at is no longer rendered here.
     return row('telegram-bot','Telegram-бот',!known?'Нет данных':ob.telegram?.linked?'Привязан':'Не привязан',known&&ob.telegram?.linked)
-      +row('funpay-store','Магазин FunPay',store?.displayName?store.displayName+(store.storeId?' · ID '+store.storeId:''):(known&&ob.funPay?.storeId?'Привязан · ID '+ob.funPay.storeId:'Не подключён'),Boolean(store||ob?.funPay?.storeId))
+      +row('funpay-store','Магазин FunPay',store?.displayName?store.displayName+(store.storeId?' · ID '+store.storeId:''):(known&&ob.funPay?.storeId?'Привязан · ID '+ob.funPay.storeId:'Не подключён'),Boolean(store||ob?.funPay?.storeId),' demo-start')
       +row('proxy-router','Прокси',!known?'Нет данных':ob.funPay?.proxyConfigured?'Настроен':'Не настроен',known&&ob.funPay?.proxyConfigured)
       +row('cat-tools','Плагины',pluginText+(licenses?` · лицензий навсегда: ${licenses}`:''),plugins>0||licenses>0);
   }

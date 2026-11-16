@@ -285,7 +285,9 @@ with sync_playwright() as p:
     check('demo mode: trial offer uses the host trial action',gate.locator('.zs-access [data-access-trial]').inner_text().strip()=='Активировать пробный период')
     check('demo mode: explains what stopped, what is kept and how to switch on',gate.locator('.zs-access-card').count()==3 and gate.locator('.zs-access-saved__row').count()==4)
     check('demo mode: kept bindings come from the server snapshot',gate.locator('.zs-access-saved__row.is-ok').count()>=2)
-    check('demo mode: sample shop retained without its old offer blocks',gate.locator('.demo-experience').count()==1 and gate.locator('.demo-start,.demo-intro,.demo-footer').count()==0)
+    check('demo mode: sample shop retained without its old offer blocks',gate.locator('.demo-experience').count()==1 and gate.locator('section.demo-start,.demo-intro,.demo-footer').count()==0)
+    # The learning tour step «Подключение FunPay» falls back to `.demo-start`: the FunPay row carries it (16.11, phones had no target).
+    check('demo mode: tour connection step has a visible anchor',gate.locator('.zs-access-saved__row.demo-start').count()==1 and gate.locator('.zs-access-saved__row.demo-start').is_visible())
     period=gate.locator('[data-demo-period="month"]');period.click();demo.wait_for_timeout(150)
     check('demo mode: sample shop stays interactive',gate.locator('[data-demo-period="month"]').get_attribute('aria-pressed')=='true')
     demo.evaluate("setView('plugins')");demo.wait_for_timeout(250)
