@@ -306,7 +306,7 @@
  .zs-production.zs-reference .zs-cover{min-height:180px;padding:20px;border-radius:22px;margin-bottom:20px}
  .zs-production.zs-reference .zs-cover .cover__identity{max-width:calc(100% - 100px);gap:12px}
  .zs-production.zs-reference .zs-cover .cover__copy h1{font-size:30px;line-height:34px;overflow-wrap:anywhere}
- .zs-production.zs-reference .zs-cover .cover__emblem{right:12px;width:100px;height:100px;margin-top:-50px}
+ .zs-production.zs-reference .zs-cover .cover__emblem{top:50%;bottom:auto;right:12px;width:100px;height:100px;margin-top:-50px}
  .zs-production.zs-reference .zs-cover .cover__copy p{font-size:12px}
  .zs-production.zs-reference .zs-cover .cover__lead{font-size:13px;line-height:18px}
  .zs-production.zs-reference .cover-chip{font-size:11px;min-height:24px;padding:0 8px}

@@ -3,7 +3,7 @@
 from pathlib import Path, PurePosixPath
 import argparse, hashlib, json, os, tempfile, urllib.request
 
-RELEASE='20261115-landing-reviews1'
+RELEASE='20261115-landing-trim'
 FIXED={'index.html','landing-v2.css','landing-v2.js','assets/landing-v2/PROVENANCE.json',
        'legal/legal-controls-20261109.css','legal/privacy-controls-20261109.js'}
 
@@ -61,7 +61,7 @@ def publish(source,site,backups,verify_url=None,preflight_only=False):
     backups.mkdir(parents=True,exist_ok=True)
     backup=Path(tempfile.mkdtemp(prefix='zetslay-before-landing-v2.',dir=backups));os.chmod(backup,0o700)
     index=site/'index.html';before=index.read_bytes();atomic(backup/'index.html',before,0o600)
-    after=(source/'index.html').read_bytes();created=[]
+    after=(source/'index.html').read_bytes();created=[];replaced=[]
     try:
         # Assets first, then the single page entry point.
         for entry in m['files']:
@@ -69,7 +69,15 @@ def publish(source,site,backups,verify_url=None,preflight_only=False):
             if rel=='index.html':continue
             target=safe(site,rel);data=(source/rel).read_bytes()
             if target.exists():
-                if host_sha(target)!=entry['sha256']:raise ValueError('Ассет изменён во время подготовки: '+rel)
+                old=target.read_bytes()
+                normalized=old.replace(b'\r\n',b'\n') if target.suffix in {'.html','.css','.js','.json','.txt','.svg'} else old
+                if sha(normalized)==entry['sha256']:continue
+                if sha(normalized) not in entry.get('allowedBefore',[]):raise ValueError('Ассет изменён во время подготовки: '+rel)
+                kept=safe(backup/'assets',rel);kept.parent.mkdir(parents=True,exist_ok=True)
+                atomic(kept,old,0o600)
+                if target.read_bytes()!=old:raise ValueError('Ассет изменён во время подготовки: '+rel)
+                replaced.append({'path':rel,'before':sha(old),'after':entry['sha256']})
+                atomic(target,data)
                 continue
             directories(target.parent,site);atomic(target,data);created.append(rel)
         if index.read_bytes()!=before:raise ValueError('Главная изменилась во время подготовки')
@@ -80,11 +88,14 @@ def publish(source,site,backups,verify_url=None,preflight_only=False):
                 req=urllib.request.Request(url,headers={'Accept-Encoding':'identity','Cache-Control':'no-cache'})
                 with urllib.request.urlopen(req,timeout=15) as response:actual=response.read()
                 if sha(actual)!=entry['sha256']:raise ValueError('HTTP-проверка не пройдена: '+rel)
-        state={'release':RELEASE,'indexBefore':sha(before),'indexAfter':sha(after),'created':created}
+        state={'release':RELEASE,'indexBefore':sha(before),'indexAfter':sha(after),'created':created,'replaced':replaced}
         atomic(backup/'rollback.json',json.dumps(state,indent=2).encode(),0o600)
         return {'installed':True,'files':len(m['files']),'backup':str(backup),'publicChecked':bool(verify_url)}
     except BaseException:
         if index.read_bytes()==after:atomic(index,before)
+        for entry in reversed(replaced):
+            p=safe(site,entry['path']);kept=safe(backup/'assets',entry['path'])
+            if p.is_file() and sha(p.read_bytes())==entry['after']:atomic(p,kept.read_bytes())
         expected={e['path']:e['sha256'] for e in m['files']}
         for rel in reversed(created):
             p=site/rel
@@ -96,7 +107,16 @@ def rollback(site,backup):
     if sha(index.read_bytes())!=state['indexAfter']:raise ValueError('Главная изменена после установки; откат остановлен')
     before=(backup/'index.html').read_bytes()
     if sha(before)!=state['indexBefore']:raise ValueError('Повреждена резервная копия')
+    restored=[]
+    for entry in state.get('replaced',[]):
+        rel=entry['path']
+        if rel=='index.html' or not allowed(rel):raise ValueError('Неверный путь в резервной копии')
+        p=safe(site,rel);kept=safe(backup/'assets',rel);data=kept.read_bytes()
+        if not p.is_file() or sha(p.read_bytes())!=entry['after']:raise ValueError('Ассет изменён после установки: '+rel)
+        if sha(data)!=entry['before']:raise ValueError('Повреждена резервная копия: '+rel)
+        restored.append((p,data))
     atomic(index,before)
+    for p,data in restored:atomic(p,data)
     return {'rolledBack':True,'assetsRetainedForOpenTabs':True}
 
 def main():

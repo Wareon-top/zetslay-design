@@ -10,7 +10,7 @@
   const artSource=name=>Object.hasOwn(hq,name)?'cabinet-v3/assets/quality-v2/'+hq[name]:base+name+'.webp';
   const svg=n=>window.ZSIcons.svg(n), art=(name,cls='')=>`<img class="${cls}" src="${artSource(name)}" alt="" loading="lazy" decoding="async">`;
   const virtual=new Set(['connection','telegram','security','documents','proxy-shop']);
-  const R=window.ZetSlayCabinet={release:'20261114-reference1',route:'dashboard',sub:'',pending:false};
+  const R=window.ZetSlayCabinet={release:'20261116-reviews-mobile1',route:'dashboard',sub:'',pending:false};
   let activeRoute='dashboard', menuOpener=null, scheduled=false;
   const session=()=>`${authState.user?.id||''}:${sessionGeneration}`;
   const titleOf=v=>M.groups.flatMap(g=>g.items).find(it=>it[0]===v)?.[1]||viewTitles[v]||'Кабинет';

@@ -66,16 +66,16 @@ async def main():
         ctx, pg, errs, hosts = await newpage(b, 1440, 900)
         await pg.goto(BASE + '/', wait_until='networkidle')
         s = await pg.evaluate('''() => ({ h1: document.querySelectorAll('h1').length, h1t: document.querySelector('h1').textContent,
-          ids: ['main','top','features','plugins','tariffs','steps','faq','security','comparison','faq-connection','faq-errors','faq-secrets'].filter(i => !document.getElementById(i)),
+          ids: ['main','top','features','plugins','tariffs','faq','comparison','faq-connection','faq-errors','faq-secrets'].filter(i => !document.getElementById(i)),
           deadHash: [...document.querySelectorAll('a[href^="#"]')].map(a => a.getAttribute('href')).filter(h => h.length > 1 && !document.getElementById(h.slice(1))),
           heroCta: [...document.querySelectorAll('.zsh-actions a')].map(a => a.getAttribute('href')),
           login: [...document.querySelectorAll('a[href="app/?auth=login"]')].length, reg: [...document.querySelectorAll('a[href="app/?auth=register"]')].length,
-          legal: ['/legal/','/legal/offer.html','/legal/privacy.html','/legal/refunds.html','/legal/#operator','/security/','/security/#data'].filter(h => !document.querySelector('a[href="' + h + '"]')),
+          legal: ['/legal/','/legal/offer.html','/legal/privacy.html','/legal/refunds.html','/legal/#operator','/security/'].filter(h => !document.querySelector('a[href="' + h + '"]')),
           support: document.querySelector('[data-support-contact]')?.getAttribute('href'),
           canonical: document.querySelector('link[rel=canonical]').href, og: document.querySelector('meta[property="og:image"]').content, lang: document.documentElement.lang,
           title: document.title, desc: document.querySelector('meta[name=description]').content,
           plugins: [...document.querySelectorAll('[data-public-plugin]')].map(n => n.dataset.publicPlugin), count: document.querySelector('[data-public-plugin-count]').textContent,
-          hooks: ['data-platform-ribbon','data-landing-features','data-landing-plugin-showcase','data-landing-steps','data-landing-pricing','data-landing-faq','data-landing-footer','data-legal-links','data-privacy-settings','data-operator-requisites','data-support-contact','data-footer-year','data-pricing-trial','data-pricing-platform','data-pricing-comparison','data-session-guest','data-session-cabinet'].filter(h => !document.querySelector('[' + h + ']')),
+          hooks: ['data-platform-ribbon','data-landing-features','data-landing-plugin-showcase','data-landing-pricing','data-landing-faq','data-landing-footer','data-legal-links','data-privacy-settings','data-operator-requisites','data-support-contact','data-footer-year','data-pricing-trial','data-pricing-platform','data-pricing-comparison','data-session-guest','data-session-cabinet'].filter(h => !document.querySelector('[' + h + ']')),
           skipped: (() => { let prev = 1, bad = []; document.querySelectorAll('main h1, main h2, main h3, main h4, footer h2').forEach(h => { const l = +h.tagName[1]; if (l > prev + 1) bad.push(h.tagName + ':' + h.textContent.slice(0, 30)); prev = l; }); return bad; })(),
           words: document.body.innerText.length })''')
         ok('exactly one h1 = approved hero title', s['h1'] == 1 and 'Автоматизация' in s['h1t'] and 'FunPay' in s['h1t'], s['h1t'])
