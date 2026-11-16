@@ -46,8 +46,8 @@
 .zs-production.zs-reference .zs-plugin-tile .pcard__price strong{font:inherit;color:inherit}
 .zs-production.zs-reference .zs-plugin-tile .plugin-card__status{display:inline-flex;align-items:center;min-height:30px;padding:0 12px;border-radius:999px;background:rgba(38,12,2,.62);color:#fff;font-size:12.5px;font-weight:650;backdrop-filter:blur(6px)}
 .zs-production.zs-reference .zs-plugin-tile .plugin-card__navigation{position:absolute;top:calc(var(--hang) + 12px);right:12px;margin:0;padding:0;border:0}
-.zs-production.zs-reference .zs-plugin-tile .plugin-card__navigation a{display:grid;place-items:center;width:32px;height:32px;padding:0;border-radius:50%;background:rgba(38,12,2,.3);color:#fff;font-size:0;line-height:0;transition:background-color .3s,transform .3s}
-.zs-production.zs-reference .zs-plugin-tile .plugin-card__navigation a svg{width:16px;height:16px}
+.zs-production.zs-reference .zs-plugin-tile .plugin-card__navigation a{display:flex;align-items:center;justify-content:center;gap:0;box-sizing:border-box;width:32px;height:32px;min-width:32px;min-height:32px;padding:0;border-radius:50%;background:rgba(38,12,2,.3);color:#fff;font-size:0;line-height:0;transition:background-color .3s,transform .3s}
+.zs-production.zs-reference .zs-plugin-tile .plugin-card__navigation a svg{display:block;flex:0 0 16px;width:16px;height:16px;margin:0}
 .zs-production.zs-reference .zs-plugin-tile:hover .plugin-card__navigation a{background:rgba(38,12,2,.5);transform:translateX(2px)}
 .zs-production.zs-reference .zs-plugin-tile .plugin-card__cover .plugin-rarity + *{display:none}
 /* rarity badge sits where the chevron is in the reference; move it into the footer row visually */

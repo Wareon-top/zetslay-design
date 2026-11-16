@@ -1,5 +1,5 @@
 {
- "release": "20261116-reviews-mobile1",
+ "release": "20261116-catalog-arrow1",
  "handoffSha256": "8903ee1109989cf36686184459aa8d38bdbcc52bbdb54800256dbb676a1f18a6",
  "host": {
   "app/app.js": [
@@ -361,8 +361,8 @@
   },
   {
    "path": "app/cabinet-v3/fidelity.css",
-   "bytes": 89043,
-   "sha256": "0d5efc550dc944c1cac6c6058d60a1b36b038e339e6e05eb0bb45823220de028"
+   "bytes": 89162,
+   "sha256": "5dbd042d2040a122ed6d3a8b665e3c129c506278ecd06d512f4015a5977c61ca"
   },
   {
    "path": "app/cabinet-v3/icons.js",
@@ -386,8 +386,8 @@
   },
   {
    "path": "app/cabinet-v3/production.js",
-   "bytes": 28642,
-   "sha256": "f13ed0b2c2502bbca938568740f52445ae356ba2ea15ee5375e48f5063a027fd"
+   "bytes": 28641,
+   "sha256": "d52974343941bb49d136a6daa5a0471a858b39a5901db1519e4180784658e522"
   },
   {
    "path": "app/cabinet-v3/profile.css",
