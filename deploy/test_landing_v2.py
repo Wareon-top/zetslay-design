@@ -44,6 +44,41 @@ class LandingInstallerTests(unittest.TestCase):
   (self.site/'landing-v2.css').write_bytes(b'custom CSS')
   with self.assertRaises(ValueError):self.publish()
   self.assertEqual((self.site/'landing-v2.css').read_bytes(),b'custom CSS')
+ def previous_assets(self):
+  old={'landing-v2.css':b'previous CSS\r\n','landing-v2.js':b'previous JS\n'}
+  for rel,data in old.items():
+   (self.site/rel).write_bytes(data)
+   next(e for e in self.manifest['files'] if e['path']==rel)['allowedBefore']=[mod.sha(data.replace(b'\r\n',b'\n'))]
+  self.save_manifest();return old
+ def test_reviewed_asset_upgrade_and_exact_manual_rollback(self):
+  old=self.previous_assets()
+  self.assertTrue(self.publish(preflight_only=True)['preflight']);self.assertFalse(self.backup.exists())
+  for rel,data in old.items():self.assertEqual((self.site/rel).read_bytes(),data)
+  result=self.publish();backup=Path(result['backup'])
+  for rel,data in old.items():
+   self.assertEqual((self.site/rel).read_bytes(),(self.source/rel).read_bytes())
+   self.assertEqual((backup/'assets'/rel).read_bytes(),data)
+  mod.rollback(self.site,backup)
+  self.assertEqual((self.site/'index.html').read_bytes(),self.before)
+  for rel,data in old.items():self.assertEqual((self.site/rel).read_bytes(),data)
+ def test_failed_upgrade_restores_existing_assets_and_index(self):
+  old=self.previous_assets()
+  with patch.object(mod.urllib.request,'urlopen',side_effect=OSError('HTTP unavailable')):
+   with self.assertRaises(OSError):self.publish(verify_url='https://example.invalid')
+  self.assertEqual((self.site/'index.html').read_bytes(),self.before)
+  for rel,data in old.items():self.assertEqual((self.site/rel).read_bytes(),data)
+  self.assertFalse((self.site/'legal/privacy-controls-20261109.js').exists())
+ def test_rollback_refuses_later_asset_edit_before_changing_index(self):
+  self.previous_assets();result=self.publish();index=(self.site/'index.html').read_bytes()
+  (self.site/'landing-v2.js').write_bytes(b'newer independent fix')
+  with self.assertRaises(ValueError):mod.rollback(self.site,Path(result['backup']))
+  self.assertEqual((self.site/'index.html').read_bytes(),index)
+  self.assertEqual((self.site/'landing-v2.js').read_bytes(),b'newer independent fix')
+ def test_upgrade_rollback_refuses_corrupt_asset_backup(self):
+  self.previous_assets();result=self.publish();backup=Path(result['backup']);index=(self.site/'index.html').read_bytes()
+  (backup/'assets/landing-v2.css').write_bytes(b'corrupt')
+  with self.assertRaises(ValueError):mod.rollback(self.site,backup)
+  self.assertEqual((self.site/'index.html').read_bytes(),index)
  def test_corrupt_distribution_refused(self):
   (self.source/'landing-v2.js').write_bytes(b'broken')
   with self.assertRaises(ValueError):self.publish()

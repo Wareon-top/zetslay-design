@@ -153,20 +153,25 @@
       "allowedBefore": [
         "e60ab5b4f93d532e52daf60e25c0f9d9b25e0ced3b6c04a396ddfa205493a511",
         "776e6aeee4fc5c60876f1844e9281b8b593f22abc7116b82770b6fcc5777b2b1",
-        "818961ba25325f7fe3603c5b4f0100b8001bb752704e69a8bfbe6cdb376165cf"
+        "818961ba25325f7fe3603c5b4f0100b8001bb752704e69a8bfbe6cdb376165cf",
+        "1a7a25ae3fdc0e982e144bb333e96f1d3dbfe4d045f6e00569aaa2d6bcfa1636"
       ]
     },
     {
       "path": "landing-v2.css",
       "bytes": 50923,
       "sha256": "03df2e1d82c66e41ddddbfca741b3c9ea4613e5c31d57899ca78bd39c0d59bf5",
-      "allowedBefore": []
+      "allowedBefore": [
+        "cd1ec84c6edaad29eb6875e19a65ccfbb511a559143136f4732d43695789108c"
+      ]
     },
     {
       "path": "landing-v2.js",
       "bytes": 4935,
       "sha256": "345ba271d2ba11a333be3ebe5a5b20d32dd4a9bedc621940d5100b733f51229b",
-      "allowedBefore": []
+      "allowedBefore": [
+        "9ce30727e1e5f4e4348499fc370af8b0f1d7b3fbfc7455b4704fff692071b5a7"
+      ]
     },
     {
       "path": "legal/legal-controls-20261109.css",
