@@ -90,3 +90,5 @@
   .zs .zs-access-strip__actions { grid-column: 1 / -1; }
   .zs .zs-access-strip__actions .btn { width: 100%; }
 }
+/* the FunPay row doubles as the learning-tour anchor (.demo-start): keep the row look, not the old demo offer box */
+.zs .zs-access-saved__row.demo-start { margin: 0; border: 0; border-radius: 12px; background: none; }
