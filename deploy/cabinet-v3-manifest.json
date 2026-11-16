@@ -1,5 +1,5 @@
 {
- "release": "20261115-claude-reviews1",
+ "release": "20261116-claude-demo1",
  "handoffSha256": "8903ee1109989cf36686184459aa8d38bdbcc52bbdb54800256dbb676a1f18a6",
  "host": {
   "app/app.js": [
@@ -34,6 +34,16 @@
   ]
  },
  "files": [
+  {
+   "path": "app/cabinet-v3/access.css",
+   "bytes": 9980,
+   "sha256": "c981552051cbd5353fa5010f0438e8300deb452a9d25fcfba402228348f5ebfe"
+  },
+  {
+   "path": "app/cabinet-v3/access.js",
+   "bytes": 14892,
+   "sha256": "8cb6ab7ea7614e0da1d14785b0d583f022e3cdb52933559892640442babe34bc"
+  },
   {
    "path": "app/cabinet-v3/assets/catalog-icons-derived.json",
    "bytes": 3804,
