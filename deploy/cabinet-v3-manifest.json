@@ -1,5 +1,5 @@
 {
- "release": "20261116-claude-tour1",
+ "release": "20261116-claude-tour2",
  "handoffSha256": "8903ee1109989cf36686184459aa8d38bdbcc52bbdb54800256dbb676a1f18a6",
  "host": {
   "app/app.js": [
@@ -371,8 +371,8 @@
   },
   {
    "path": "app/cabinet-v3/fidelity.css",
-   "bytes": 103529,
-   "sha256": "582e4a13022e8f1b3b123a1fe1de2beaa579b8c45370b7ae91074acf08208eb3"
+   "bytes": 103648,
+   "sha256": "acce6bf6cd13e6bfd42c4cf4049f7db9177dd10c0452985bd6833de60d0c0585"
   },
   {
    "path": "app/cabinet-v3/icons.js",
@@ -396,8 +396,8 @@
   },
   {
    "path": "app/cabinet-v3/production.js",
-   "bytes": 28637,
-   "sha256": "f59ae0eeec031e6452050303ed81f68f5ab5ee167b40bea654da7ed6853a6cb6"
+   "bytes": 28639,
+   "sha256": "2e6b3abe1a6df78b28ad3f4cbf12c8cd7c623cd41a40e72efd6d47f7fc2bf112"
   },
   {
    "path": "app/cabinet-v3/profile.css",

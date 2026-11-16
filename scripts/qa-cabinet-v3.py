@@ -202,9 +202,13 @@ with sync_playwright() as p:
     check('all 15 published plugins rendered',page.locator('.zs-plugin-tile').count()==15)
     check('all 15 plugins have full resolution 3D art',artwork.evaluate_all('(images)=>images.length===15&&images.every(i=>i.currentSrc.includes("quality-v2/plg-")&&i.naturalWidth>=1200)'))
     check('each plugin has distinct artwork',artwork.evaluate_all('(images)=>new Set(images.map(i=>i.currentSrc)).size===15'))
+    def centered_catalogue_arrows():
+        return page.locator('.zs-plugin-tile .plugin-card__navigation a').evaluate_all('''links=>links.length===15&&links.every(a=>{const b=a.getBoundingClientRect(),s=a.querySelector('svg')?.getBoundingClientRect();return s&&b.width>0&&Math.abs(b.width-b.height)<.5&&Math.abs((s.left+s.width/2)-(b.left+b.width/2))<.5&&Math.abs((s.top+s.height/2)-(b.top+b.height/2))<.5})''')
+    check('catalogue arrows are centered inside circular controls on desktop',centered_catalogue_arrows())
     page.screenshot(path=str(OUT/'all-plugins-desktop.png'),full_page=True)
     page.set_viewport_size({'width':390,'height':844})
     check('complete catalog fits phone',page.evaluate('document.documentElement.scrollWidth<=innerWidth+1'))
+    check('catalogue arrows stay centered inside circular controls on phone',centered_catalogue_arrows())
     page.screenshot(path=str(OUT/'all-plugins-phone.png'),full_page=True)
     for plugin in ['roblox-lzt-market','tiktok-lzt-market','ticket-pilot','confirm-reminder','auto-review-bonus']:
         page.evaluate('(id)=>setView("plugins/zetslay."+id)',plugin);page.wait_for_timeout(80)
