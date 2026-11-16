@@ -1,5 +1,5 @@
 {
- "release": "20261115-claude-reviews1",
+ "release": "20261116-reviews-mobile1",
  "handoffSha256": "8903ee1109989cf36686184459aa8d38bdbcc52bbdb54800256dbb676a1f18a6",
  "host": {
   "app/app.js": [
@@ -386,8 +386,8 @@
   },
   {
    "path": "app/cabinet-v3/production.js",
-   "bytes": 28637,
-   "sha256": "f59ae0eeec031e6452050303ed81f68f5ab5ee167b40bea654da7ed6853a6cb6"
+   "bytes": 28642,
+   "sha256": "f13ed0b2c2502bbca938568740f52445ae356ba2ea15ee5375e48f5063a027fd"
   },
   {
    "path": "app/cabinet-v3/profile.css",
@@ -396,8 +396,8 @@
   },
   {
    "path": "app/cabinet-v3/reference-ui.css",
-   "bytes": 45229,
-   "sha256": "1a3328811ef401a9738a90e26f2710f5918104adb3464b68fdecc1c538f1487d"
+   "bytes": 45249,
+   "sha256": "0cee025a2c41454b70f7cc27a7509d5f216706f482fa2d3c2f1c7c4953922ecc"
   },
   {
    "path": "app/cabinet-v3/reference-ui.js",
