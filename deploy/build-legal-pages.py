@@ -16,7 +16,7 @@ def publication(data, config):
         assert config.get('operatorName') and re.fullmatch(r'\d{12}',config.get('inn','')), 'Operator required'
         assert config.get('legalTelegram') or config.get('legalEmail'), 'Contact required'
     resolved=json.dumps(data,ensure_ascii=False,sort_keys=True,separators=(',',':'))
-    for key,value in {'operatorName':config.get('operatorName',''),'operatorInn':config.get('inn',''),'legalTelegram':config.get('legalTelegram','')}.items():
+    for key,value in {'operatorName':config.get('operatorName',''),'operatorInn':config.get('inn',''),'legalTelegram':config.get('legalTelegram',''),'legalEmail':config.get('legalEmail','')}.items():
         resolved=resolved.replace('{{'+key+'}}',value)
     return {'version':data['version'],'status':data['status'],'effectiveFrom':data.get('effectiveFrom'),
         'effectiveRule':data.get('effectiveRule'),'hash':hashlib.sha256(resolved.encode()).hexdigest(),
@@ -27,9 +27,16 @@ def publication(data, config):
 
 def support_contact(config):
     handle=config.get('legalTelegram','').strip()
-    if not handle:return ''
-    if not re.fullmatch(r'@[A-Za-z][A-Za-z0-9_]{4,31}',handle):raise ValueError('Некорректный контакт поддержки Telegram')
-    return '<a data-support-contact href="https://t.me/'+handle[1:]+'">Поддержка '+html.escape(handle)+'</a>'
+    email=config.get('legalEmail','').strip()
+    links=[]
+    if handle:
+        if not re.fullmatch(r'@[A-Za-z][A-Za-z0-9_]{4,31}',handle):raise ValueError('Некорректный контакт поддержки Telegram')
+        links.append('<a data-support-contact href="https://t.me/'+handle[1:]+'">Поддержка '+html.escape(handle)+'</a>')
+    if email:
+        if not re.fullmatch(r'[A-Za-z0-9._+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+',email):raise ValueError('Некорректный email поддержки')
+        safe_email=html.escape(email,quote=True)
+        links.append('<a data-support-email href="mailto:'+safe_email+'">'+safe_email+'</a>')
+    return ' '.join(links)
 
 def operator_requisites(config,compact=False):
     name=config.get('operatorName','').strip();inn=config.get('inn','').strip()
@@ -42,7 +49,7 @@ def update_operator_footer(text,config):
     if len(matches)!=1:raise ValueError('Не найден единственный подвал сайта')
     m=matches[0];footer=m.group()
     footer=re.sub(r'\s*<p\b[^>]*\bdata-operator-requisites\b[^>]*>.*?</p>','',footer,flags=re.S)
-    footer=re.sub(r'\s*<a\b[^>]*\bdata-support-contact\b[^>]*>.*?</a>','',footer,flags=re.S)
+    footer=re.sub(r'\s*<a\b[^>]*\bdata-support-(?:contact|email)\b[^>]*>.*?</a>','',footer,flags=re.S)
     line=operator_requisites(config,compact=True)
     if line:
         marker='<div class="wave-footer__bottom">'
@@ -58,7 +65,7 @@ def build(root):
     release=publication(data,config);active=release['status']=='active'
     esc=lambda s:html.escape(str(s),quote=True)
     contact=support_contact(config)
-    replacements={'{{operatorName}}':config.get('operatorName') or 'ФИО пока не указано','{{operatorInn}}':config.get('inn') or 'ИНН пока не указан','{{legalTelegram}}':config.get('legalTelegram') or 'внешний контакт ещё не указан'}
+    replacements={'{{operatorName}}':config.get('operatorName') or 'ФИО пока не указано','{{operatorInn}}':config.get('inn') or 'ИНН пока не указан','{{legalTelegram}}':config.get('legalTelegram') or 'внешний контакт ещё не указан','{{legalEmail}}':config.get('legalEmail') or 'адрес электронной почты пока не указан'}
     def legal_text(value):
         for marker,replacement in replacements.items():value=value.replace(marker,replacement)
         return esc(value)
@@ -79,7 +86,7 @@ def build(root):
 '''
         if active:result=result.replace(' — проект юридического документа ZetSlay.',' — юридический документ ZetSlay.').replace('noindex,follow','index,follow')
         return result
-    operator=[('Статус',config['operatorType']),('ФИО',config['operatorName'] or 'Пока не указано'),('ИНН',config['inn'] or 'Пока не указан'),('Адрес для обращений',config['postalAddress'] or 'Пока не указан'),('Юридический email',config['legalEmail'] or 'Пока не указан')]
+    operator=[('Статус',config['operatorType']),('ФИО',config['operatorName'] or 'Пока не указано'),('ИНН',config['inn'] or 'Пока не указан'),('Адрес для обращений',config['postalAddress'] or 'Пока не указан')]
     if active:
         operator=[(k,v) for k,v in operator if v not in ['Пока не указан','Пока не указано']]
     facts=''.join(f'<dt>{esc(k)}</dt><dd>{esc(v)}</dd>' for k,v in operator)
