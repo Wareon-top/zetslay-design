@@ -82,6 +82,7 @@ const server = http.createServer(async (req,res) => {
       });
       const tabs = page.getByRole('tablist',{name:'Разделы плагина'});
       const autoSmm = page.locator('[data-autosmm]');
+      await page.waitForFunction(() => document.querySelector('.zs-product-art img[src$="/plg-autosmm.webp"]')?.naturalWidth > 0);
       await tabs.getByRole('tab',{name:'Очередь',exact:true}).click();
       assert.equal(await page.getByRole('heading',{name:'Поставщики',exact:true}).isVisible(),false);
       await page.getByText('#TEST100',{exact:true}).click();
