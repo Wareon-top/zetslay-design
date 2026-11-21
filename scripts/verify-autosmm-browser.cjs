@@ -59,14 +59,15 @@ const server = http.createServer(async (req,res) => {
         : route.fulfill({status:401,contentType:'application/json',body:'{"error":{"code":"UNAUTHORIZED"}}'}));
       await page.goto(origin + '/app/');
       await page.locator('[data-privacy-notice]').getByRole('button',{name:'Понятно'}).click();
-      await page.evaluate(() => {
+      await page.evaluate(async () => {
         document.querySelector('.toast-region')?.replaceChildren();
         authState.user = { id:'autosmm-fixture-user', email:'seller@example.invalid' };
         authState.token = 'fixture';
-        authState.workspace = { id:'autosmm-fixture-workspace', plan:{id:'maximum',active:true}, pluginLicenses:[] };
+        authState.workspace = { id:'autosmm-fixture-workspace', plan:{id:'growth',active:true,expiresAt:new Date(Date.now()+86400000).toISOString()}, pluginLicenses:[] };
         state.onboarding = {state:'connected_read_only',activePlan:true};
-        const plugin = { id:'zetslay.auto-smm', name:'AutoSMM', category:'sales', installed:true, active:true, priceRub:149, price:'149 ₽',
-          description:'Обрабатывает оплаченные заказы FunPay через Soxy Liker и SOC-ROCKET.', permissions:['orders:read'], events:['order.paid'] };
+        const plugin = { id:'zetslay.auto-smm', name:'AutoSMM', category:'sales', published:true, priceRub:149, installation:null,
+          description:'Обрабатывает оплаченные заказы FunPay через Soxy Liker и SOC-ROCKET.', permissions:['orders:read','messages:read','replies:queue'], events:['order.paid'] };
+        window.installCalls = [];
         apiRequest = async (path, options = {}) => {
           if (path.startsWith('/api/v1/plugins/auto-smm/')) {
             const response = await fetch(path, { method:options.method, headers:{'content-type':'application/json'},
@@ -74,14 +75,36 @@ const server = http.createServer(async (req,res) => {
             return response.json();
           }
           if (path === '/api/v1/plugins') return {plugins:[plugin]};
+          if (path === '/api/v1/plugin-catalog') return {entries:[structuredClone(plugin)]};
+          if (path === '/api/v1/subscription/status') return {workspace:structuredClone(authState.workspace)};
+          if (path === '/api/v1/plugins/zetslay.auto-smm/install') {
+            installCalls.push(['install',options.body.permissions]);plugin.installation={enabled:false};return {};
+          }
+          if (path === '/api/v1/plugins/zetslay.auto-smm/enable') {
+            installCalls.push(['enable']);plugin.installation.enabled=true;return {};
+          }
           if (path === '/api/v1/learning') return {version:1,revision:0,welcomeSeen:true,status:'completed',step:5};
           return {};
         };
         renderAuthState();setAuthModal(false);
-        state.plugins = [plugin];pluginCatalogLoaded();setView('plugins/zetslay.auto-smm');
+        await loadPluginCatalog();setView('plugins/zetslay.auto-smm');
       });
+      const install = page.locator('[data-plugin-page] [data-plugin-id="zetslay.auto-smm"]');
+      await install.waitFor();
+      assert.equal(await install.isDisabled(),true,'Growth without a license cannot install');
+      await page.evaluate(() => {
+        authState.workspace.pluginLicenses=['zetslay.auto-smm'];subscriptionApply();
+      });
+      assert.equal(await install.isEnabled(),true,'lifetime license unlocks a paid plan');
+      await page.evaluate(() => {
+        authState.workspace.pluginLicenses=[];authState.workspace.plan.id='pro';subscriptionApply();
+      });
+      assert.equal(await install.isEnabled(),true,'Pro includes AutoSMM');
+      await install.click();
       const tabs = page.getByRole('tablist',{name:'Разделы плагина'});
       const autoSmm = page.locator('[data-autosmm]');
+      await tabs.getByRole('tab',{name:'Очередь',exact:true}).waitFor();
+      assert.deepEqual(await page.evaluate(() => installCalls), [['install',['orders:read','messages:read','replies:queue']],['enable']]);
       assert.deepEqual(await page.evaluate(() => {
         const plugin = state.plugins[0];
         const purchase = pluginPurchaseModel(plugin);
