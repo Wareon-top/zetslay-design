@@ -15,7 +15,13 @@ test('catalogue, knowledge base, connection wizard and financial terms explain t
 });
 test('new legal version preserves the previous immutable definition and links to its archive',()=>{
  const current=JSON.parse(read('../legal/publication.json')),previous=JSON.parse(read('../legal/archive/2026-10-12-v1/publication.json')),old=JSON.parse(read('../legal/archive/2026-10-12-v1/documents.json'));
- assert.equal(current.version,'2026-10-16-v1');assert.equal(previous.hash,'03a2b39ae1c55b43d8a979c5ebc48965858338583d4bf016f5f39648c16d5819');assert.equal(old.version,previous.version);assert.notEqual(previous.hash,current.hash);assert.ok(read('../legal/index.html').includes('/legal/archive/2026-10-12-v1/index.html'));
+ const archived=JSON.parse(read('../legal/archive/2026-10-16-v1/publication.json'));
+ assert.equal(current.version,'2026-11-21-v1');
+ assert.equal(current.hostingCountry,'Россия');
+ assert.equal(current.localizationReviewed,false);
+ assert.equal(archived.hash,'d3231659f380f1cf368e64564a8706df9d06fb181340bac139aa2506f6aa04d6');
+ assert.ok(read('../legal/index.html').includes('/legal/archive/2026-10-16-v1/index.html'));
+ assert.equal(previous.hash,'03a2b39ae1c55b43d8a979c5ebc48965858338583d4bf016f5f39648c16d5819');assert.equal(old.version,previous.version);assert.notEqual(previous.hash,current.hash);assert.ok(read('../legal/index.html').includes('/legal/archive/2026-10-12-v1/index.html'));
  const offer=JSON.parse(read('../legal/documents.json')).documents.find(d=>d.id==='offer');const text=JSON.stringify(offer);assert.match(text,/бессрочной лицензии/);assert.match(text,/не изменяет задним числом/);assert.match(text,/не аннулирует/);
 });
 test('owned-plugin metadata cannot bypass inactive cabinet access; Priority Orders follows the common tariff',()=>{
