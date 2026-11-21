@@ -65,7 +65,7 @@ const server = http.createServer(async (req,res) => {
         authState.token = 'fixture';
         authState.workspace = { id:'autosmm-fixture-workspace', plan:{id:'maximum',active:true}, pluginLicenses:[] };
         state.onboarding = {state:'connected_read_only',activePlan:true};
-        const plugin = { id:'zetslay.auto-smm', name:'AutoSMM', category:'sales', installed:true, active:true, price:'В тарифе «Максимум»',
+        const plugin = { id:'zetslay.auto-smm', name:'AutoSMM', category:'sales', installed:true, active:true, priceRub:149, price:'149 ₽',
           description:'Обрабатывает оплаченные заказы FunPay через Soxy Liker и SOC-ROCKET.', permissions:['orders:read'], events:['order.paid'] };
         apiRequest = async (path, options = {}) => {
           if (path.startsWith('/api/v1/plugins/auto-smm/')) {
@@ -82,6 +82,11 @@ const server = http.createServer(async (req,res) => {
       });
       const tabs = page.getByRole('tablist',{name:'Разделы плагина'});
       const autoSmm = page.locator('[data-autosmm]');
+      assert.deepEqual(await page.evaluate(() => {
+        const plugin = state.plugins[0];
+        const purchase = pluginPurchaseModel(plugin);
+        return [pluginRarity(plugin).key, purchase.amount, purchase.plan.id];
+      }), ['ultra',14900,'pro']);
       await page.waitForFunction(() => document.querySelector('.zs-product-art img[src$="/plg-autosmm.webp"]')?.naturalWidth > 0);
       await tabs.getByRole('tab',{name:'Очередь',exact:true}).click();
       assert.equal(await page.getByRole('heading',{name:'Поставщики',exact:true}).isVisible(),false);
