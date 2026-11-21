@@ -30,6 +30,16 @@ function autoSmmReset() {
 const autoSmmEscape = value => escapeHtml(String(value ?? ''));
 const autoSmmButton = (name, action, value, primary = false) =>
   `<button type="button" class="button button--${primary ? 'primary' : 'ghost'}" data-smm-action="${action}" data-smm-value="${autoSmmEscape(value)}" ${autoSmmView.busy ? 'disabled' : ''}>${autoSmmEscape(name)}</button>`;
+const autoSmmChoice = (name, action, value, selected) =>
+  `<button type="button" class="button button--ghost" data-smm-action="${action}" data-smm-value="${value}" aria-pressed="${selected}" ${autoSmmView.busy ? 'disabled' : ''}>${autoSmmEscape(name)}</button>`;
+const autoSmmBadge = (label, state) =>
+  `<span class="autosmm-badge" data-state="${autoSmmEscape(state)}">${autoSmmEscape(label)}</span>`;
+
+function autoSmmConfirmation() {
+  const { intent } = autoSmmView;
+  return intent ? `<div class="autosmm-confirm" role="group" aria-labelledby="autosmm-confirm-title"><strong id="autosmm-confirm-title" tabindex="-1">${autoSmmEscape(intent.text)}</strong><div class="autosmm-bar">${autoSmmButton('Подтвердить', 'accept', '', true)}${autoSmmButton('Отмена', 'dismiss')}</div></div>` : '';
+}
+
 function autoSmmMarkup(plugin) {
   if (plugin.id !== 'zetslay.auto-smm' || !plugin.installed) return '';
   const v = autoSmmView;
@@ -39,40 +49,47 @@ function autoSmmMarkup(plugin) {
     queueMicrotask(() => autoSmmRequest('status'));
   }
   const s = v.data;
-  if (!s) return `<section class="plugin-page-panel autosmm-panel" data-autosmm><h2>AutoSMM</h2><p role="status">${autoSmmEscape(v.error || 'Загружаем очередь и настройки…')}</p>${autoSmmButton('Обновить', 'reload')}</section>`;
-  return `<section class="plugin-page-panel autosmm-panel" aria-labelledby="autosmm-title" data-autosmm aria-busy="${v.busy}">
-    <header class="autosmm-head"><div><h2 id="autosmm-title">AutoSMM</h2><p>Оплаченные заказы FunPay → SMM-поставщики</p></div>
-      <span class="autosmm-badge" data-state="${autoSmmEscape(s.mode)}">${autoSmmEscape(autoSmmMode[s.mode])}</span></header>
-    <div class="autosmm-bar" aria-label="Управление AutoSMM">
-      ${autoSmmButton('Заказы', 'tab', 'queue', v.tab === 'queue')}
-      ${autoSmmButton('Настройки', 'tab', 'settings', v.tab === 'settings')}
-      ${autoSmmButton('Обновить', 'reload')}</div>
-    <p class="autosmm-note" role="status">${autoSmmEscape(v.error || v.notice || (!s.runnable
-      ? 'Для обработанных заказов включите плагин, проверьте разрешения и состояние фоновой обработки.'
-      : !s.purchaseEnabled ? 'Отправка заказов поставщику выключена администратором.'
-      : s.mode !== 'paused' && !s.baselineReady ? 'Ждём первого чтения FunPay. В обработку попадут новые заказы.' : ''))}</p>
-    ${v.tab === 'settings' ? autoSmmSettings(s) : autoSmmQueue(s)}
-    ${v.intent ? `<div class="autosmm-confirm" role="group" aria-label="Подтверждение"><strong>${autoSmmEscape(v.intent.text)}</strong><div class="autosmm-bar">${autoSmmButton('Подтвердить', 'accept', '', true)}${autoSmmButton('Отмена', 'dismiss')}</div></div>` : ''}
+  const note = v.error || v.notice || (s && (!s.runnable
+    ? 'Для обработки заказов проверьте подключение магазина, разрешения и состояние плагина.'
+    : !s.purchaseEnabled ? 'Отправка заказов поставщику выключена администратором.'
+    : s.mode !== 'paused' && !s.baselineReady ? 'Ждём первой синхронизации FunPay. В обработку попадут новые заказы.' : ''));
+  const toolbar = `<div class="autosmm-head autosmm-toolbar">
+    <div>${s ? autoSmmBadge(autoSmmMode[s.mode], s.mode) : v.loading ? '<span role="status" class="autosmm-note">Загружаем AutoSMM…</span>' : ''}</div>
+    ${autoSmmButton('Обновить', 'reload')}
+  </div><p class="autosmm-note" role="status">${autoSmmEscape(note)}</p>`;
+  return `<section class="autosmm-panel" aria-label="Управление AutoSMM" data-autosmm aria-busy="${v.busy}">
+    <div class="autosmm-fallback autosmm-bar" role="group" aria-label="Разделы AutoSMM">
+      ${autoSmmChoice('Очередь', 'tab', 'queue', v.tab === 'queue')}
+      ${autoSmmChoice('Настройки', 'tab', 'settings', v.tab === 'settings')}
+    </div>
+    <section class="plugin-page-panel autosmm-pane" data-smm-active="${v.tab === 'queue'}">
+      <h2 hidden>Очередь заказов</h2>${toolbar}${s ? autoSmmQueue(s) : ''}
+    </section>
+    <section class="plugin-page-panel autosmm-pane" data-smm-active="${v.tab === 'settings'}">
+      <h2 hidden>Настройки</h2>${toolbar}${s ? autoSmmSettings(s) : ''}
+    </section>
   </section>`;
 }
 function autoSmmQueue(s) {
   const v = autoSmmView;
   const list = v.filter === 'attention' ? s.attention : s.orders;
   const task = [...s.orders, ...s.attention].find(item => item.id === v.selected);
-  return `<div class="autosmm-orders"><div class="autosmm-bar">
-    ${autoSmmButton(`Требуют внимания (${s.attention.length})`, 'filter', 'attention', v.filter === 'attention')}
-    ${autoSmmButton('Последние заказы', 'filter', 'all', v.filter === 'all')}</div>
+  const empty = v.filter === 'attention' ? 'Сейчас нет заказов, которые требуют вашего внимания.' : 'Здесь появятся заказы по привязанным лотам FunPay.';
+  return `<div class="autosmm-queue" ${task ? 'data-order-open' : ''}><section class="plugin-page-panel autosmm-card">
+    <h2>Заказы</h2><div class="autosmm-bar" role="group" aria-label="Фильтр заказов">
+    ${autoSmmChoice(`Требуют внимания (${s.attention.length})`, 'filter', 'attention', v.filter === 'attention')}
+    ${autoSmmChoice('Последние заказы', 'filter', 'all', v.filter === 'all')}</div>
     <div class="autosmm-order-list">${list.map(item => `<button type="button" class="autosmm-order" data-smm-action="open" data-smm-value="${autoSmmEscape(item.id)}" aria-pressed="${item.id === v.selected}">
-      <span><strong>#${autoSmmEscape(item.orderId)}</strong><small>${autoSmmEscape(s.panels.find(p => p.id === item.panelId)?.name || 'FunPay')} · ${item.quantity ? autoSmmEscape(item.quantity) + ' ед.' : 'проверка'}</small></span>
-      <span class="autosmm-badge" data-state="${autoSmmEscape(item.status)}">${autoSmmEscape(autoSmmStates[item.status])}</span>
-    </button>`).join('') || '<p class="autosmm-empty">Здесь появятся заказы, когда покупатель оформит привязанный лот.</p>'}</div>
+      <span><strong>#${autoSmmEscape(item.orderId)}</strong><small>${autoSmmEscape(s.panels.find(p => p.id === item.panelId)?.name || 'FunPay')}${item.quantity ? ' · ' + autoSmmEscape(item.quantity) + ' ед.' : ''}</small></span>
+      ${autoSmmBadge(autoSmmStates[item.status], item.status)}
+    </button>`).join('') || `<p class="autosmm-empty">${empty}</p>`}</div></section>
     ${task ? autoSmmOrder(s, task) : ''}</div>`;
 }
 function autoSmmOrder(s, task) {
   const status = task.status;
   const retry = ['SMM_UNAVAILABLE','SMM_READ_FAILED','SMM_INSUFFICIENT','SMM_LIMIT','SMM_RATE_CHANGED','SMM_SERVICE'].includes(task.issue);
-  return `<article class="autosmm-detail"><header class="autosmm-head"><div><h3>Заказ #${autoSmmEscape(task.orderId)}</h3><p>${autoSmmEscape(autoSmmStates[status])}</p></div>
-    <a href="https://funpay.com/orders/${autoSmmEscape(task.orderId)}/" target="_blank" rel="noopener noreferrer">Открыть FunPay ↗</a></header>
+  return `<section class="plugin-page-panel autosmm-card autosmm-detail"><header class="autosmm-head"><div><h2 tabindex="-1">Заказ #${autoSmmEscape(task.orderId)}</h2>${autoSmmBadge(autoSmmStates[status], status)}</div>
+    <a class="button button--ghost" href="https://funpay.com/orders/${autoSmmEscape(task.orderId)}/" target="_blank" rel="noopener noreferrer">Открыть FunPay ↗</a></header>
     <dl class="autosmm-facts">
       <div><dt>Количество</dt><dd>${autoSmmEscape(task.quantity ?? '—')}</dd></div>
       <div><dt>Расчёт</dt><dd>${task.quoted ? autoSmmEscape(task.quoted + ' ' + task.currency) : '—'}</dd></div>
@@ -87,12 +104,13 @@ function autoSmmOrder(s, task) {
       ${status === 'processing' ? autoSmmButton('Проверить статус', 'task', 'refresh') : ''}
       ${['review','queued','waiting_link','waiting_confirmation','blocked'].includes(status) ? autoSmmButton('Пропустить', 'task-intent', 'skip') : ''}
     </div>
+    ${autoSmmView.intent?.action === 'task' ? autoSmmConfirmation() : ''}
     ${status === 'uncertain' ? `<form data-smm-form="reconcile"><fieldset ${autoSmmView.busy ? 'disabled' : ''}><legend>Привязать подтверждённый номер</legend>
-      <label>Номер в панели<input name="providerOrderId" autocomplete="off" inputmode="numeric" pattern="[1-9][0-9]{0,17}" required></label>
+      <label class="field">Номер в панели<input class="input" name="providerOrderId" autocomplete="off" inputmode="numeric" pattern="[1-9][0-9]{0,17}" required></label>
       <label class="autosmm-check"><input name="verified" type="checkbox" required>Я сверил заказ, получателя, время и сумму</label>
       <button type="submit" class="button button--primary">Сверить и привязать</button></fieldset></form>` : ''}
     <details><summary>История заказа</summary><ol class="autosmm-timeline">${(task.events || []).map(event => `<li><time datetime="${autoSmmEscape(event.at)}">${autoSmmEscape(new Date(event.at).toLocaleString('ru-RU'))}</time><span>${autoSmmEscape(autoSmmStates[event.status] || 'Проверка')}</span></li>`).join('')}</ol></details>
-  </article>`;
+  </section>`;
 }
 function autoSmmSettings(s) {
   const v = autoSmmView, m = v.mapping, options = s.panels.filter(p => p.connected);
@@ -102,38 +120,45 @@ function autoSmmSettings(s) {
   const knownLots = inventory?.loaded && typeof selectedStore === 'function' && String(selectedStore()?.id) === s.storeId
     ? inventory.lots.filter(lot => /^[1-9][0-9]{0,17}$/.test(lot.id)).slice(0, 250) : [];
   const fields = (name, label, placeholder = '', extra = '') =>
-    `<label>${label}<input name="${name}" value="${autoSmmEscape(m[name])}" placeholder="${placeholder}" autocomplete="off" required ${extra}></label>`;
+    `<label class="field">${label}<input class="input" name="${name}" value="${autoSmmEscape(m[name])}" placeholder="${placeholder}" autocomplete="off" required ${extra}></label>`;
   return `<div class="autosmm-settings">
-    <section><h3>Приём заказов</h3><p>С проверкой — продавец разрешает каждый заказ. В автоматическом режиме достаточно подтверждения покупателя и проверки лимитов.</p>
-      <div class="autosmm-bar">${Object.entries(autoSmmMode).map(([id, label]) => autoSmmButton(label, 'mode', id, id === s.mode)).join('')}</div></section>
-    <section><h3>Поставщики</h3><div class="autosmm-provider-grid">${s.panels.map(p => `<article class="autosmm-provider">
-      <h4>${autoSmmEscape(p.name)}</h4><p>${p.connected ? autoSmmEscape(p.balance.amount + ' ' + p.balance.currency + ' · услуг ' + p.serviceCount) : 'Ожидает подключения'}</p>
+    <section class="plugin-page-panel autosmm-card"><h2>Приём заказов</h2><p>В режиме проверки вы разрешаете каждый заказ. В автоматическом режиме достаточно подтверждения покупателя и проверки лимитов.</p>
+      <div class="autosmm-bar" role="group" aria-label="Режим приёма">${Object.entries(autoSmmMode).map(([id, label]) => autoSmmChoice(label, 'mode', id, id === s.mode)).join('')}</div>
+      ${v.intent?.action === 'mode' ? autoSmmConfirmation() : ''}</section>
+    <section class="plugin-page-panel autosmm-card"><h2>Поставщики</h2><div class="autosmm-provider-grid">${s.panels.map(p => `<article class="autosmm-provider">
+      <header class="autosmm-head"><h3>${autoSmmEscape(p.name)}</h3>${autoSmmBadge(p.connected ? 'Подключён' : 'Не подключён', p.connected ? 'connected' : 'paused')}</header>
+      ${p.connected ? `<dl class="autosmm-facts"><div><dt>Баланс</dt><dd>${autoSmmEscape(p.balance.amount + ' ' + p.balance.currency)}</dd></div><div><dt>Услуг</dt><dd>${autoSmmEscape(p.serviceCount)}</dd></div></dl>` : ''}
       ${p.checkedAt ? `<small>Проверено ${autoSmmEscape(new Date(p.checkedAt).toLocaleString('ru-RU'))}</small>` : ''}
-      ${p.connected ? autoSmmButton('Проверить баланс и услуги', 'panel-refresh', p.id) : ''}
-      ${p.spendingSuspended ? `<p class="autosmm-warning">Новые списания на паузе. Сверьте фактическую сумму в панели.</p>${s.mode === 'paused' ? autoSmmButton('Снять ограничение', 'panel-resume', p.id) : ''}` : ''}
-      ${p.connected && s.mode === 'paused' && !s.mappings.some(m => m.panelId === p.id) ? autoSmmButton('Отключить', 'panel-disconnect', p.id) : ''}
+      ${p.spendingSuspended ? '<p class="autosmm-warning">Новые списания на паузе. Сверьте фактическую сумму в панели.</p>' : ''}
+      <div class="autosmm-bar">
+        ${p.connected ? autoSmmButton('Проверить баланс', 'panel-refresh', p.id) : ''}
+        ${p.spendingSuspended && s.mode === 'paused' ? autoSmmButton('Снять ограничение', 'panel-resume', p.id) : ''}
+        ${p.connected && s.mode === 'paused' && !s.mappings.some(m => m.panelId === p.id) ? autoSmmButton('Отключить', 'panel-disconnect', p.id) : ''}
+      </div>
+      ${v.intent?.body.panelId === p.id ? autoSmmConfirmation() : ''}
       <details><summary>${p.connected ? 'Заменить API-ключ' : 'Подключить'}</summary>
         <form data-smm-form="panel" data-smm-panel="${p.id}"><fieldset ${v.busy ? 'disabled' : ''}>
-          <label>API-ключ<input type="password" name="key" minlength="8" maxlength="256" autocomplete="new-password" required></label>
+          <label class="field">API-ключ<input class="input" type="password" name="key" minlength="8" maxlength="256" autocomplete="new-password" required></label>
           <button type="submit" class="button button--primary">Проверить и сохранить</button>
         </fieldset></form></details></article>`).join('')}</div></section>
-    <section><h3>Привязки лотов</h3><p>${s.storeId ? 'Укажите номер действующего лота. Количество услуги умножится на количество единиц в заказе.' : 'Подключите магазин FunPay, чтобы добавлять привязки.'}</p>
+    <section class="plugin-page-panel autosmm-card"><h2>Привязки лотов</h2><p>${s.storeId ? 'Укажите номер действующего лота. Количество услуги на единицу умножается на количество единиц в заказе.' : 'Подключите магазин FunPay, чтобы добавлять привязки.'}</p>
       ${options.length && s.storeId ? `<form data-smm-form="mapping" class="autosmm-binding"><fieldset ${v.busy ? 'disabled' : ''}>
-        <label>Поставщик<select name="panelId">${options.map(p => `<option value="${p.id}" ${selected === p.id ? 'selected' : ''}>${autoSmmEscape(p.name)}</option>`).join('')}</select></label>
+        <label class="field">Поставщик<select class="input" name="panelId">${options.map(p => `<option value="${p.id}" ${selected === p.id ? 'selected' : ''}>${autoSmmEscape(p.name)}</option>`).join('')}</select></label>
         ${fields('lotId','Лот FunPay','Номер или выбор из списка','inputmode="numeric" pattern="[1-9][0-9]{0,17}" list="autosmm-funpay-lots"')}
         <datalist id="autosmm-funpay-lots">${knownLots.map(lot => `<option value="${autoSmmEscape(lot.id)}">${autoSmmEscape(lot.title)}</option>`).join('')}</datalist>
         ${fields('serviceId','Номер услуги','Из каталога панели','inputmode="numeric" pattern="[1-9][0-9]{0,17}"')}
         ${fields('unitsPerItem','Количество на единицу','Например, 100','type="number" min="1" max="10000000"')}
-        <label>Домен ссылки<select name="allowedDomain">${s.domains.map(domain => `<option ${m.allowedDomain === domain ? 'selected' : ''}>${autoSmmEscape(domain)}</option>`).join('')}</select></label>
-        ${fields('maxCost',`Потолок на заказ, ${autoSmmEscape(panel?.balance.currency)}`,'0.50','inputmode="decimal"')}
-        ${fields('dailyLimit',`Суточный потолок поставщика, ${autoSmmEscape(panel?.balance.currency)}`,'5.00','inputmode="decimal"')}
+        <label class="field">Домен ссылки<select class="input" name="allowedDomain">${s.domains.map(domain => `<option ${m.allowedDomain === domain ? 'selected' : ''}>${autoSmmEscape(domain)}</option>`).join('')}</select></label>
+        ${fields('maxCost',`Лимит на заказ, ${autoSmmEscape(panel?.balance.currency)}`,'0.50','inputmode="decimal"')}
+        ${fields('dailyLimit',`Лимит на сутки, ${autoSmmEscape(panel?.balance.currency)}`,'5.00','inputmode="decimal"')}
         <button type="submit" class="button button--primary">Сохранить привязку</button>
       </fieldset></form>
-      <form data-smm-form="search"><label>Поиск услуги<input name="query" maxlength="120" placeholder="Название, категория или номер"></label><button type="submit" class="button button--ghost" ${v.busy ? 'disabled' : ''}>Найти</button></form>
+      <form data-smm-form="search"><label class="field">Поиск услуги<input class="input" name="query" maxlength="120" placeholder="Название, категория или номер"></label><button type="submit" class="button button--ghost" ${v.busy ? 'disabled' : ''}>Найти</button></form>
       ${v.search ? `<div class="autosmm-services">${v.search.map(item => `<div><span><strong>${autoSmmEscape(item.name)}</strong><small>#${item.id} · ${item.min}–${item.max} · ${autoSmmEscape(item.rate)} / 1000</small></span>
         ${autoSmmButton('Выбрать', 'service', item.id)}</div>`).join('') || '<p class="autosmm-empty">Услуги не найдены. Измените запрос или обновите каталог.</p>'}</div>` : ''}` : ''}
-      <div class="autosmm-mappings">${s.mappings.map(item => `<article><span><strong>Лот ${autoSmmEscape(item.lotId)} → ${autoSmmEscape(item.serviceName)}</strong><small>${item.unitsPerItem} ед. · ${autoSmmEscape(item.allowedDomain)} · заказ до ${autoSmmEscape(item.maxCost + ' ' + item.currency)}</small></span><div class="autosmm-bar">
-        ${autoSmmButton('Изменить', 'mapping-edit', item.lotId)}${autoSmmButton(item.enabled ? 'Пауза' : 'Включить', 'mapping-toggle', item.lotId)}${s.mode === 'paused' ? autoSmmButton('Удалить привязку', 'mapping-remove', item.lotId) : ''}</div></article>`).join('')}</div></section>
+      <div class="autosmm-mappings">${s.mappings.map(item => `<article><span><strong>Лот ${autoSmmEscape(item.lotId)} → ${autoSmmEscape(item.serviceName)}</strong><small>${item.unitsPerItem} ед. · ${autoSmmEscape(item.allowedDomain)} · заказ до ${autoSmmEscape(item.maxCost + ' ' + item.currency)}${item.enabled ? '' : ' · На паузе'}</small></span><div class="autosmm-bar">
+        ${autoSmmButton('Изменить', 'mapping-edit', item.lotId)}${autoSmmButton(item.enabled ? 'Пауза' : 'Включить', 'mapping-toggle', item.lotId)}${s.mode === 'paused' ? autoSmmButton('Удалить привязку', 'mapping-remove', item.lotId) : ''}</div>
+        ${v.intent?.body.lotId === item.lotId ? autoSmmConfirmation() : ''}</article>`).join('')}</div></section>
   </div>`;
 }
 function autoSmmRender() {
@@ -201,6 +226,11 @@ document.addEventListener('click', event => {
   if (action === 'task-intent') v.intent = { action: 'task', body: { id: v.selected, action: value },
     text: value === 'approve' ? 'Разрешить отправку после проверки суммы, оплаты и лимитов?' : 'Убрать заказ из автоматической обработки?' };
   autoSmmRender();
+  if (action === 'open') document.querySelector('[data-autosmm] .autosmm-detail h2')?.focus();
+  else if (v.intent) document.getElementById('autosmm-confirm-title')?.focus();
+  else if (action === 'tab' || action === 'filter') {
+    document.querySelector(`[data-autosmm] [data-smm-action="${action}"][aria-pressed="true"]`)?.focus();
+  }
 });
 document.addEventListener('submit', event => {
   const form = event.target.closest?.('[data-autosmm] [data-smm-form]');
