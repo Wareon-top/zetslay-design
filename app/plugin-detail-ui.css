@@ -41,7 +41,10 @@
 .plugin-page .plugin-detail-prose p { margin:0 0 13px; line-height:1.8; white-space:pre-wrap; }
 .plugin-page .plugin-detail-prose strong { color:#e8edf6; font-weight:600; }
 .plugin-page .plugin-detail-prose ul,.plugin-page .plugin-detail-prose ol { display:grid; gap:9px; margin:8px 0 16px; padding-left:22px; }
-.plugin-page .plugin-detail-prose li { padding-left:4px; line-height:1.75; }
+.plugin-page .plugin-detail-prose ul { list-style-type:disc; }
+.plugin-page .plugin-detail-prose ol { list-style-type:decimal; }
+.plugin-page .plugin-page-description .plugin-detail-content .plugin-detail-prose :is(p,li) { font-size:inherit; line-height:1.65; color:var(--text-body,var(--detail-muted)); }
+.plugin-page .plugin-detail-prose li { padding-left:4px; }
 .plugin-detail-prose li::marker { color:#a3b6d9; font-weight:600; }
 .plugin-page .plugin-detail-prose blockquote { margin:16px 0; padding:14px 16px; border:1px solid #33425a; border-left:3px solid #88a9df; border-radius:8px; background:#192230; color:#b5c4dd; }
 .plugin-page .plugin-detail-prose blockquote p { margin:0; }

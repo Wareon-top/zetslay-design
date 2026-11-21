@@ -4,13 +4,13 @@
   "operatorName": "Гильманов Джалиль Дильшатович",
   "inn": "026416567354",
   "postalAddress": "",
-  "legalEmail": "",
+  "legalEmail": "ddgalil@mail.ru",
   "legalTelegram": "@zetslaysupport",
-  "hostingLocation": "Германия",
+  "hostingLocation": "Россия",
   "providers": [],
   "retentionSchedule": "По цели обработки и обязательным срокам закона; запросы исполняются оператором",
   "localizationReviewed": false,
   "approved": true,
-  "approvedVersion": "2026-10-16-v1",
-  "effectiveFrom": "2026-10-16"
+  "approvedVersion": "2026-11-21-v2",
+  "effectiveFrom": "2026-11-21"
 }

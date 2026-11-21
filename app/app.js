@@ -1316,6 +1316,8 @@ function renderPlugins() {
     const index = state.plugins.indexOf(plugin);
     const href = typeof pluginPageHref === 'function' ? pluginPageHref(plugin.id) : `#plugins/${encodeURIComponent(plugin.id)}`;
     const cover = typeof pluginCoverSource === 'function' ? pluginCoverSource(plugin) : plugin.cover;
+    const summary = typeof pluginDetailSummary === 'function' ? pluginDetailSummary(plugin.description)
+      : String(plugin.description || '').split(/\r?\n/, 1)[0].replace(/\*\*/g, '');
     const [status, tone] = typeof pluginDisplayStatus === 'function' ? pluginDisplayStatus(plugin) : [plugin.planned ? 'Скоро' : plugin.active ? 'Включён' : plugin.installed ? 'На паузе' : 'Не установлен', 'muted'];
     const uploadingCover = typeof pluginCoverUploadId === 'function' ? pluginCoverUploadId() : null;
     const adminMark = canManagePluginCatalog() ? `<button class="plugin-cover__edit" type="button" data-cover-plugin="${escapeHtml(plugin.id)}" ${uploadingCover ? 'disabled' : ''} aria-busy="${uploadingCover === plugin.id}" aria-label="Загрузить обложку для ${escapeHtml(plugin.name)}">${icon('plus')}</button>` : '';
@@ -1323,7 +1325,7 @@ function renderPlugins() {
     const pending = typeof pluginPageState !== 'undefined' && pluginPageState.busyId !== null;
     return `<article class="plugin-card" style="--plugin-rgb:${colors[index % colors.length]}">
       <div class="plugin-card__cover"><a href="${escapeHtml(href)}" aria-label="Подробнее о плагине ${escapeHtml(plugin.name)}">${cover ? `<img data-plugin-cover data-cover-category="${escapeHtml(plugin.category)}" src="${escapeHtml(cover)}" alt="${escapeHtml(plugin.name)}" loading="lazy">` : `<span class="plugin-cover__placeholder">${icon('puzzle')}</span>`}</a>${typeof pluginRarityMarkup === 'function' ? pluginRarityMarkup(plugin) : ''}</div>${adminMark ? `<div class="plugin-card__cover-meta">${adminMark}</div>` : ''}
-      <div class="plugin-card__body"><h3><a class="plugin-card__title-link" href="${escapeHtml(href)}">${escapeHtml(plugin.name)}</a></h3><p>${escapeHtml(String(plugin.description || '').replace(/^>\s?/gm, '').replace(/\*\*/g, ''))}</p>
+      <div class="plugin-card__body"><h3><a class="plugin-card__title-link" href="${escapeHtml(href)}">${escapeHtml(plugin.name)}</a></h3><p>${escapeHtml(summary)}</p>
         <div class="plugin-permissions">${(plugin.permissions || []).map(permission => `<span>${escapeHtml(typeof PLUGIN_PERMISSION_LABELS !== 'undefined' ? PLUGIN_PERMISSION_LABELS[permission]?.[0] || permission : permission)}</span>`).join('')}</div>
         <div class="plugin-card__bottom"><div class="plugin-card__price"><small>Цена</small><strong>${escapeHtml(plugin.price)}</strong></div><span class="plugin-card__status">${status}</span></div>
         <div class="plugin-card__navigation"><a href="${escapeHtml(href)}" data-plugin-page-link>Подробнее ${icon('chevron-right')}</a><button type="button" data-plugin-id="${escapeHtml(plugin.id)}" ${plugin.planned || plugin.published === false || pending ? 'disabled' : ''} aria-busy="${busy}" aria-label="${actionOf(plugin)} ${escapeHtml(plugin.name)}">${busy ? 'Сохраняем…' : actionOf(plugin)}</button></div>
