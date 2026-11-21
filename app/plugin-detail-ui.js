@@ -11,6 +11,14 @@ function pluginDetailInline(value) {
   }).join('');
 }
 
+function pluginDetailSummary(description) {
+  const lines = String(description || '').split(/\r?\n/);
+  const first = lines.find(line => line.trim() && !/^\s*(?:#{1,3}\s|>|[-*•]\s|\d+[.)]\s|```)/.test(line) && !/^\s*\*\*[^*]+\*\*\s*$/.test(line))
+    || lines.find(line => line.trim()) || '';
+  const plain = first.replace(/^\s*(?:#{1,3}\s+|>\s?)/, '').replace(/\*\*|`/g, '').trim();
+  return plain.length > 260 ? plain.slice(0, 257).trimEnd() + '…' : plain;
+}
+
 function pluginDetailDescription(description, pluginId) {
   const prefix = `plugin-detail-${String(pluginId || 'module').replace(/[^a-z0-9-]/gi, '-').slice(0, 100)}`;
   const sections = [{ title: '', blocks: [] }];
@@ -60,11 +68,7 @@ function pluginDetailDescription(description, pluginId) {
       ${item.title ? `<div class="plugin-detail-content__heading"><span aria-hidden="true">${String(number).padStart(2, '0')}</span><h3 id="${id}-title">${pluginDetailInline(item.title)}</h3></div>` : ''}
       <div class="plugin-detail-prose">${item.blocks.map(render).join('')}</div></section>`;
   }).join('') || '<p class="plugin-detail-no-description">Описание пока не добавлено.</p>';
-  const lines = String(description || '').split(/\r?\n/);
-  const first = lines.find(line => line.trim() && !/^\s*(?:#{1,3}\s|>|[-*•]\s|\d+[.)]\s|```)/.test(line) && !/^\s*\*\*[^*]+\*\*\s*$/.test(line))
-    || lines.find(line => line.trim()) || 'Подробности модуля ZetSlay';
-  const plain = first.replace(/^\s*(?:#{1,3}\s+|>\s?)/, '').replace(/\*\*|`/g, '').trim();
-  const summary = plain.length > 260 ? plain.slice(0, 257).trimEnd() + '…' : plain;
+  const summary = pluginDetailSummary(description) || 'Подробности модуля ZetSlay';
   return { markup, contents, prefix, summary };
 }
 

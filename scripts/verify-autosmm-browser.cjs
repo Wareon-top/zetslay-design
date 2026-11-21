@@ -66,7 +66,8 @@ const server = http.createServer(async (req,res) => {
         authState.workspace = { id:'autosmm-fixture-workspace', plan:{id:'growth',active:true,expiresAt:new Date(Date.now()+86400000).toISOString()}, pluginLicenses:[] };
         state.onboarding = {state:'connected_read_only',activePlan:true};
         const plugin = { id:'zetslay.auto-smm', name:'AutoSMM', category:'sales', published:true, priceRub:149, installation:null,
-          description:'Обрабатывает оплаченные заказы FunPay через Soxy Liker и SOC-ROCKET.', permissions:['orders:read','messages:read','replies:queue'], events:['order.paid'] };
+          description:'Отправляет оплаченные SMM-заказы в выбранную панель.\n\n## Заказы и расходы\n- Задайте лимит на один заказ и на сутки.',
+          permissions:['orders:read','messages:read','replies:queue'], events:['order.paid'] };
         window.installCalls = [];
         apiRequest = async (path, options = {}) => {
           if (path.startsWith('/api/v1/plugins/auto-smm/')) {
@@ -87,8 +88,12 @@ const server = http.createServer(async (req,res) => {
           return {};
         };
         renderAuthState();setAuthModal(false);
-        await loadPluginCatalog();setView('plugins/zetslay.auto-smm');
+        await loadPluginCatalog();setView('plugins');
       });
+      const card=page.locator('#plugin-grid .plugin-card', {hasText:'AutoSMM'});
+      assert.equal(await card.locator('.plugin-card__body > p').innerText(),'Отправляет оплаченные SMM-заказы в выбранную панель.');
+      await page.evaluate(() => setView('plugins/zetslay.auto-smm'));
+      await page.locator('[data-plugin-page] .plugin-detail-content li', {hasText:'Задайте лимит на один заказ и на сутки.'}).waitFor();
       const install = page.locator('[data-plugin-page] [data-plugin-id="zetslay.auto-smm"]');
       await install.waitFor();
       assert.equal(await install.isDisabled(),true,'Growth without a license cannot install');
