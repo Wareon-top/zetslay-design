@@ -193,17 +193,24 @@ with sync_playwright() as p:
     # A complete public catalog must not fall back to generic artwork for known plugins.
     public_catalog=json.loads((Path(__file__).resolve().parents[1]/'subscription-plans.json').read_text(encoding='utf-8'))
     public_plugins=[plugin for group in public_catalog['pluginGroups'] for plugin in group['plugins']]
-    read_data['/api/v1/plugin-catalog']['entries']=[{'id':p['id'],'name':p['name'],'priceRub':990,'description':'Изолированная проверка оформления','published':True,'permissions':[],'events':[],'installation':None} for p in public_plugins]
+    count=len(public_plugins)
+    read_data['/api/v1/plugin-catalog']['entries']=[{'id':p['id'],'name':p['name'],'priceRub':0 if p['id']=='zetslay.auto-gift' else 990,'description':'Изолированная проверка оформления','published':True,'permissions':[],'events':[],'installation':None} for p in public_plugins]
     page.set_viewport_size({'width':1440,'height':1000})
     page.evaluate("setView('plugins');loadPluginCatalog()")
     page.wait_for_timeout(250)
     artwork=page.locator('.zs-plugin-tile > .pcard__icon')
     artwork.evaluate_all('(images)=>Promise.all(images.map(i=>{i.loading="eager";return i.decode()}))')
-    check('all 15 published plugins rendered',page.locator('.zs-plugin-tile').count()==15)
-    check('all 15 plugins have full resolution 3D art',artwork.evaluate_all('(images)=>images.length===15&&images.every(i=>i.currentSrc.includes("quality-v2/plg-")&&i.naturalWidth>=1200)'))
-    check('each plugin has distinct artwork',artwork.evaluate_all('(images)=>new Set(images.map(i=>i.currentSrc)).size===15'))
+    check('all published plugins rendered',page.locator('.zs-plugin-tile').count()==count)
+    check('all plugins have full resolution 3D art',artwork.evaluate_all('(images,n)=>images.length===n&&images.every(i=>(i.currentSrc.includes("quality-v2/plg-")||i.currentSrc.endsWith("/plg-autosmm.webp"))&&i.naturalWidth>=1200)',count))
+    check('each plugin has distinct artwork',artwork.evaluate_all('(images,n)=>new Set(images.map(i=>i.currentSrc)).size===n',count))
+    gift=page.locator('.zs-plugin-tile[data-zs-plugin="zetslay.auto-gift"]')
+    check('Auto GIFT has a blue card and shows both conditions',gift.evaluate('''card=>
+        getComputedStyle(card.querySelector('.pcard__bg')).backgroundImage.includes('rgb(48, 93, 181)') &&
+        card.querySelector('.pcard__price').textContent.trim()==='Бесплатно' &&
+        card.querySelector('.plugin-card__access-note').textContent.trim()==='С тарифа «Старт»'
+    '''))
     def centered_catalogue_arrows():
-        return page.locator('.zs-plugin-tile .plugin-card__navigation a').evaluate_all('''links=>links.length===15&&links.every(a=>{const b=a.getBoundingClientRect(),s=a.querySelector('svg')?.getBoundingClientRect();return s&&b.width>0&&Math.abs(b.width-b.height)<.5&&Math.abs((s.left+s.width/2)-(b.left+b.width/2))<.5&&Math.abs((s.top+s.height/2)-(b.top+b.height/2))<.5})''')
+        return page.locator('.zs-plugin-tile .plugin-card__navigation a').evaluate_all('''(links,n)=>links.length===n&&links.every(a=>{const b=a.getBoundingClientRect(),s=a.querySelector('svg')?.getBoundingClientRect();return s&&b.width>0&&Math.abs(b.width-b.height)<.5&&Math.abs((s.left+s.width/2)-(b.left+b.width/2))<.5&&Math.abs((s.top+s.height/2)-(b.top+b.height/2))<.5})''',count)
     check('catalogue arrows are centered inside circular controls on desktop',centered_catalogue_arrows())
     page.screenshot(path=str(OUT/'all-plugins-desktop.png'),full_page=True)
     page.set_viewport_size({'width':390,'height':844})

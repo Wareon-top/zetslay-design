@@ -52,6 +52,16 @@ test('zero price is free access without invented purchases; unavailable modules 
   h.run('input.planned=true; renderPluginPage()');assert.match(h.page.innerHTML,/Плагин не найден/);
   const pending=h.run('pluginPurchaseOptionsMarkup(input)');assert.match(pending,/Пока недоступен/);assert.doesNotMatch(pending,/data-plugin-subscription=/);
 });
+test('Auto GIFT is free with Start and explains the separate Stars balance',()=>{
+  const h=harness({id:'zetslay.auto-gift',priceRub:0,price:'Бесплатно'});
+  const model=JSON.parse(h.run('JSON.stringify(pluginPurchaseModel(input))'));
+  assert.equal(model.plan.id,'start');
+  const markup=h.run('pluginPurchaseOptionsMarkup(input)');
+  assert.match(markup,/>Бесплатно</);
+  assert.match(markup,/активного тарифа «Старт»/);
+  assert.match(markup,/Stars с баланса вашего Telegram-бота/);
+  assert.doesNotMatch(markup,/Разовая покупка|data-plugin-buy/);
+});
 test('an existing Stars Relay license shows setup or access guidance without another purchase', () => {
   const h = harness({ id:'zetslay.stars-relay', installed:false, active:false });
   h.run('authState.workspace = { pluginLicenses:[input.id] };');

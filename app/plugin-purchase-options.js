@@ -17,6 +17,15 @@ function pluginPurchaseModel(plugin, pricing = typeof ZetSlayPricing === 'object
 
 function pluginPurchaseOptionsMarkup(plugin) {
   const model = pluginPurchaseModel(plugin);
+  if (plugin.id === 'zetslay.auto-gift' && model.available && model.amount === 0) {
+    return `<div class="plugin-purchase-options" aria-label="Доступ к Auto GIFT">
+      <section class="plugin-purchase-option">
+        <h2>Бесплатно</h2>
+        <p>Auto GIFT доступен с активного тарифа «Старт». Подарки оплачиваются Stars с баланса вашего Telegram-бота.</p>
+        <a class="button button--ghost button--wide" href="#billing">Посмотреть тарифы</a>
+      </section>
+    </div>`;
+  }
   const starsRelay = plugin.id === 'zetslay.stars-relay';
   const owned = typeof authState !== 'undefined' && authState.workspace?.pluginLicenses?.includes(plugin.id) === true;
   if (owned) {

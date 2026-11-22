@@ -178,6 +178,11 @@
           "id": "zetslay.priority-orders",
           "name": "Приоритетные заказы",
           "description": "Уведомления о крупных сделках"
+        },
+        {
+          "id": "zetslay.auto-gift",
+          "name": "Auto GIFT",
+          "description": "Выдача подарков Telegram"
         }
       ]
     },
@@ -225,6 +230,11 @@
           "id": "zetslay.ticket-pilot",
           "name": "Ticket Pilot",
           "description": "Обращения по выполненным неподтверждённым заказам"
+        },
+        {
+          "id": "zetslay.auto-smm",
+          "name": "AutoSMM",
+          "description": "Отправляет оплаченные SMM-заказы в выбранную панель."
         }
       ]
     },

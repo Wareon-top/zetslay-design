@@ -8,9 +8,12 @@ const M=context.ZSCabinetModel;
 
 test('every plugin in the published plan catalog has its own existing 3D asset',()=>{
   const catalog=JSON.parse(readFileSync(new URL('../../subscription-plans.json',import.meta.url),'utf8'));
-  const ids=catalog.pluginGroups.flatMap(group=>group.plugins.map(plugin=>plugin.id));
+  const entries=catalog.pluginGroups.flatMap(group=>group.plugins.map(plugin=>plugin.id));
+  const ids=entries.filter(id=>id!=='zetslay.auto-smm');
+  assert.ok(entries.includes('zetslay.auto-smm'));
+  assert.ok(existsSync(new URL('../assets/plugin-covers/plg-autosmm.webp',import.meta.url)));
   const artwork=ids.map(id=>M.art[id]);
-  assert.equal(new Set(ids).size,15);
+  assert.equal(new Set(entries).size,entries.length);
   assert.equal(new Set(artwork).size,ids.length);
   for(const id of ids){
     assert.match(M.art[id]||'',/^plg-/);
@@ -19,6 +22,7 @@ test('every plugin in the published plan catalog has its own existing 3D asset',
   assert.equal(M.category('zetslay.roblox-lzt-market').id,'rent');
   assert.equal(M.category('zetslay.tiktok-lzt-market').id,'rent');
   assert.equal(M.category('zetslay.ticket-pilot').id,'reviews');
+  assert.equal(M.category('zetslay.auto-gift').id,'currency');
 });
 test('reference URLs resolve to host routes, including old links',()=>{
   for(const [input,view,sub] of [['#/automation/templates','store-tools','templates'],['#proxy','proxy-shop',''],['#plugins/zetslay.kosell-rent','plugins/zetslay.kosell-rent',''],['#authors/author_123','authors/author_123',''],['/billing/plans','billing','plans'],['#security','security',''],['','dashboard','']]){

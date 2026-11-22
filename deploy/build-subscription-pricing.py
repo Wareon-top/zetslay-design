@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 import re
 
-VERSION = '20261017-ticket-pilot-catalog'
+VERSION = '20261122-auto-gift'
 CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>'
 esc = lambda value: html.escape(str(value), quote=True)
 
@@ -119,6 +119,10 @@ def landing_page(text, data):
         # landing-pricing.css. Keep the shared FAQ and the pricing runtime in sync; never overwrite the cards.
         # Card names, prices and benefits are compared with the cabinet by app/billing.test.mjs.
         if len(re.findall(r'<section\b[^>]*\bid="tariffs"',text))!=1:raise ValueError('Не найден единственный раздел тарифов на главной')
+        text, comparisons = re.subn(
+            r'<details\b[^>]*\bdata-pricing-comparison\b[^>]*>.*?</details>',
+            lambda _: comparison_markup(data), text, flags=re.S)
+        if comparisons > 1:raise ValueError('Найдено несколько сравнений тарифов на главной')
         return cache(faq(text,data),['landing-pricing.js'])
     return cache(faq(replace_section(text,'tariffs',markup(data)),data),['landing-pricing.js','landing-pricing.css'])
 

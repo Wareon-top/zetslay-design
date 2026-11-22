@@ -22,6 +22,7 @@ function pluginPageHref(id) { return `#plugins/${encodeURIComponent(id)}`; }
 function pluginCoverSource(plugin) {
   const cover = String(plugin.cover || '');
   if (typeof isPluginCoverDataUrl === 'function' && isPluginCoverDataUrl(cover)) return cover;
+  if (plugin.id === 'zetslay.auto-gift') return 'cabinet-v3/assets/quality-v2/plg-auto-gift.webp';
   if (plugin.id === 'zetslay.auto-smm') return 'assets/plugin-covers/plg-autosmm.webp';
   const category = Object.hasOwn(PLUGIN_CATEGORIES, plugin.category) ? plugin.category : 'control';
   if(plugin.id==='zetslay.ticket-pilot')return 'assets/plugin-covers/ticket-pilot.svg';

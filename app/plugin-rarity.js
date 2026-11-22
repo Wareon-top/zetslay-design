@@ -14,7 +14,7 @@ const PLUGIN_RARITY_BY_ID = Object.freeze({
   'zetslay.robux-relay':'ultra',
   'zetslay.stars-relay':'legendary',
   'zetslay.auto-smm':'ultra',
-  'zetslay.auto-gift':'ultra',
+  'zetslay.auto-gift':'common',
   'zetslay.roblox-lzt-market':'legendary',
   'zetslay.tiktok-lzt-market':'legendary',
   'zetslay.sales-pause':'advanced',

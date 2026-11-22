@@ -1323,9 +1323,11 @@ function renderPlugins() {
     const adminMark = canManagePluginCatalog() ? `<button class="plugin-cover__edit" type="button" data-cover-plugin="${escapeHtml(plugin.id)}" ${uploadingCover ? 'disabled' : ''} aria-busy="${uploadingCover === plugin.id}" aria-label="Загрузить обложку для ${escapeHtml(plugin.name)}">${icon('plus')}</button>` : '';
     const busy = typeof pluginPageState !== 'undefined' && pluginPageState.busyId === plugin.id;
     const pending = typeof pluginPageState !== 'undefined' && pluginPageState.busyId !== null;
-    return `<article class="plugin-card" style="--plugin-rgb:${colors[index % colors.length]}">
+    const autoGiftCard = plugin.id === 'zetslay.auto-gift';
+    return `<article class="plugin-card${autoGiftCard ? ' plugin-card--auto-gift' : ''}" style="--plugin-rgb:${autoGiftCard ? '73,133,246' : colors[index % colors.length]}">
       <div class="plugin-card__cover"><a href="${escapeHtml(href)}" aria-label="Подробнее о плагине ${escapeHtml(plugin.name)}">${cover ? `<img data-plugin-cover data-cover-category="${escapeHtml(plugin.category)}" src="${escapeHtml(cover)}" alt="${escapeHtml(plugin.name)}" loading="lazy">` : `<span class="plugin-cover__placeholder">${icon('puzzle')}</span>`}</a>${typeof pluginRarityMarkup === 'function' ? pluginRarityMarkup(plugin) : ''}</div>${adminMark ? `<div class="plugin-card__cover-meta">${adminMark}</div>` : ''}
       <div class="plugin-card__body"><h3><a class="plugin-card__title-link" href="${escapeHtml(href)}">${escapeHtml(plugin.name)}</a></h3><p>${escapeHtml(summary)}</p>
+        ${autoGiftCard ? '<small class="plugin-card__access-note">С тарифа «Старт»</small>' : ''}
         <div class="plugin-permissions">${(plugin.permissions || []).map(permission => `<span>${escapeHtml(typeof PLUGIN_PERMISSION_LABELS !== 'undefined' ? PLUGIN_PERMISSION_LABELS[permission]?.[0] || permission : permission)}</span>`).join('')}</div>
         <div class="plugin-card__bottom"><div class="plugin-card__price"><small>Цена</small><strong>${escapeHtml(plugin.price)}</strong></div><span class="plugin-card__status">${status}</span></div>
         <div class="plugin-card__navigation"><a href="${escapeHtml(href)}" data-plugin-page-link>Подробнее ${icon('chevron-right')}</a><button type="button" data-plugin-id="${escapeHtml(plugin.id)}" ${plugin.planned || plugin.published === false || pending ? 'disabled' : ''} aria-busy="${busy}" aria-label="${actionOf(plugin)} ${escapeHtml(plugin.name)}">${busy ? 'Сохраняем…' : actionOf(plugin)}</button></div>
