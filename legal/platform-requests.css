@@ -1,0 +1,83 @@
+.platform-request-jump { margin-bottom: 16px; }
+
+.platform-requests {
+  scroll-margin-top: 20px;
+}
+
+.platform-requests > p {
+  max-width: 76ch;
+  color: var(--legal-muted);
+}
+
+.platform-requests > p a {
+  color: var(--legal-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.platform-requests form,
+.platform-request-draft {
+  max-width: 740px;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--legal-line);
+}
+
+.platform-request-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.platform-request-wide { grid-column: 1 / -1; }
+
+.platform-request-fields label {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.platform-request-fields small,
+.platform-requests form > p,
+.platform-request-draft [role="status"] {
+  color: var(--legal-muted);
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.platform-requests :is(input, select, textarea) {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  box-sizing: border-box;
+  border: 1px solid var(--legal-line);
+  border-radius: 10px;
+  padding: 9px 12px;
+  background: var(--legal-surface);
+  color: var(--legal-text);
+  font: inherit;
+  font-weight: 400;
+}
+
+.platform-requests :is(input, select, textarea):focus-visible {
+  outline: 2px solid var(--legal-accent);
+  outline-offset: 2px;
+}
+
+.platform-requests textarea { resize: vertical; }
+.platform-request-draft h3 { margin: 0 0 12px; }
+.platform-request-draft .legal-actions { margin: 14px 0; }
+.platform-requests .legal-button { box-sizing: border-box; }
+.platform-requests a.legal-button--primary { color: #22180f; }
+.platform-requests a.legal-button--primary:hover { text-decoration: underline; }
+
+@media (max-width: 560px) {
+  .platform-request-fields { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media print {
+  .platform-requests form,
+  .platform-request-draft,
+  .platform-request-jump { display: none; }
+}

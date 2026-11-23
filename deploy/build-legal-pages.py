@@ -60,6 +60,53 @@ def update_operator_footer(text,config):
         footer=footer.replace(marker,contact+'\n      '+marker,1) if marker in footer else footer.replace('</footer>',contact+'\n</footer>',1)
     return text[:m.start()]+footer+text[m.end():]
 
+def platform_requests(email):
+    email=html.escape(email,quote=True)
+    return f'''
+<section class="legal-operator platform-requests" id="platform-requests" aria-labelledby="platform-requests-title">
+  <h2 id="platform-requests-title">Запросы торговых площадок</h2>
+  <p>Уполномоченные представители FunPay и других площадок могут запросить ограничение, отключение или снятие с публикации интеграции, а также удаление связанного проекта автоматизации из ZetSlay.</p>
+  <p>ZetSlay проверяет полномочия заявителя, связь запроса с площадкой и его основание. При наличии оснований ZetSlay может приостановить работу затронутых функций, отключить интеграцию или удалить связанный проект в пределах закона и применимых условий. Связанные данные обрабатываются по правилам <a href="/legal/privacy.html">политики конфиденциальности</a>.</p>
+  <p>Укажите сведения, необходимые для проверки, и ссылку на применимое правило или документ. Перед отправкой удалите из письма пароли, токены, коды доступа и личные данные покупателей.</p>
+  <p>Обращение можно направить с официального адреса площадки на <a href="mailto:{email}">{email}</a>.</p>
+  <form data-platform-request-form data-platform-email="{email}" method="post" hidden>
+    <div class="platform-request-fields">
+      <label>Площадка<input name="platform" placeholder="FunPay" maxlength="80" required></label>
+      <label>Организация и ваша роль<input name="representative" maxlength="120" required></label>
+      <label>Служебный email<input name="contact" type="email" maxlength="160" required></label>
+      <label>Запрашиваемое действие
+        <select name="action" required>
+          <option value="">Выберите действие</option>
+          <option>Приостановить автоматизацию</option>
+          <option>Отключить подключение</option>
+          <option>Удалить проект автоматизации</option>
+          <option>Снять интеграцию с публикации</option>
+          <option>Другое</option>
+        </select>
+      </label>
+      <label class="platform-request-wide">Интеграция или проект
+        <input name="target" aria-describedby="platform-request-target-help" maxlength="300" required>
+        <small id="platform-request-target-help">Название интеграции, ссылка или идентификатор проекта</small>
+      </label>
+      <label class="platform-request-wide">Основание запроса
+        <textarea name="reason" rows="4" maxlength="1500" required></textarea>
+      </label>
+    </div>
+    <p>Форма собирает текст письма. После проверки отправьте его со служебной почты.</p>
+    <button type="submit" class="legal-button legal-button--primary">Подготовить письмо</button>
+  </form>
+  <section class="platform-request-draft" data-platform-request-draft aria-labelledby="platform-request-draft-title" hidden>
+    <h3 id="platform-request-draft-title" tabindex="-1">Письмо готово к отправке</h3>
+    <textarea rows="8" aria-label="Текст обращения" readonly></textarea>
+    <div class="legal-actions">
+      <a class="legal-button legal-button--primary" data-platform-request-open>Открыть письмо</a>
+      <button class="legal-button" type="button" data-platform-request-copy>Скопировать текст</button>
+    </div>
+    <p role="status"></p>
+  </section>
+</section>
+'''
+
 def build(root):
     root=Path(root);data=json.loads((root/'documents.json').read_text(encoding='utf-8'));config=json.loads((root/'site-config.json').read_text(encoding='utf-8'))
     release=publication(data,config);active=release['status']=='active'
@@ -99,7 +146,12 @@ def build(root):
             if entry.is_dir() and re.fullmatch(r'\d{4}-\d{2}-\d{2}-(?:v\d+|draft-\d+)',entry.name):
                 links+='<a class="legal-button" href="/legal/archive/'+esc(entry.name)+'/index.html">Архив редакции '+esc(entry.name)+'</a>'
     home=f'<div class="legal-hero"><span class="legal-eyebrow">ZetSlay / Документы</span><h1>Правила, данные<br>и ваши права.</h1><p>Условия доступа, границы автоматизации, расходы, обработка данных и понятный порядок обращений.</p><div class="legal-meta"><span>Редакция {esc(data["version"])}</span><span>{esc(data["date"])}</span></div></div>{notice}<div class="legal-actions">{contact}</div><div class="legal-grid">{cards}</div>{independence}<section class="legal-operator" id="operator"><h2>Оператор проекта</h2><dl>{facts}</dl></section><section class="legal-operator"><h2>Обращения и запросы</h2><p>Пользователь может направить запрос о данных, удалении аккаунта, отзыве согласия, инциденте, оплате или претензии через профиль. Ответ сохраняется в кабинете.</p><p>Отправка обращения не запускает автоматическое удаление или возврат. Для обращений лиц без аккаунта или с утраченным доступом используйте контакт поддержки, указанный ниже.</p><p>Срок зависит от основания запроса: например, сведения об обработке — 10 рабочих дней по ст. 20 152-ФЗ; отдельные денежные требования потребителя — 10 дней по ст. 31 закона о защите потребителей. Номер заявки не переносит начало обязательного срока на дату решения оператора.</p><div class="legal-actions"><a class="legal-button legal-button--primary" href="/app/#profile">Перейти к обращениям</a><button class="legal-button" data-privacy-settings type="button">Настройки cookies</button></div></section>'
-    (root/'index.html').write_text(page('Юридическая информация',home),encoding='utf-8')
+    home_page=page('Юридическая информация',home)
+    if active and config.get('legalEmail'):
+        home_page=home_page.replace('</head>','<link rel="stylesheet" href="/legal/platform-requests.css?v=20261123"><script src="/legal/platform-requests.js?v=20261123" defer></script></head>',1)
+        home_page=home_page.replace('<div class="legal-grid">','<a class="legal-button platform-request-jump" href="#platform-requests">Запросы площадок</a><div class="legal-grid">',1)
+        home_page=home_page.replace('</main>',platform_requests(config['legalEmail'])+'</main>',1)
+    (root/'index.html').write_text(home_page,encoding='utf-8')
     (root/'publication.json').write_text(json.dumps(release,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
     for d in docs:
         toc='<nav class="legal-toc" aria-label="Содержание"><strong>В этом документе</strong>'+''.join(f'<a href="#section-{n+1}">{esc(s["title"])}</a>' for n,s in enumerate(d['sections']))+'<a href="/legal/">← Все документы</a></nav>'
