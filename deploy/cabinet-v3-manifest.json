@@ -406,8 +406,8 @@
   },
   {
    "path": "app/cabinet-v3/reference-ui.css",
-   "bytes": 45229,
-   "sha256": "1a3328811ef401a9738a90e26f2710f5918104adb3464b68fdecc1c538f1487d"
+   "bytes": 45873,
+   "sha256": "b943d20daba33d4ff27487153ba939f03c9843f483e5173c4b2be69a5f65713c"
   },
   {
    "path": "app/cabinet-v3/reference-ui.js",
