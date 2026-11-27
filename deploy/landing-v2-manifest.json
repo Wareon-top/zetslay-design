@@ -1,5 +1,5 @@
 {
-  "release": "20261115-landing-reviews1",
+  "release": "20261115-landing-trim",
   "handoffSha256": "5c3f3f3cd0427056cc188a0c22ed750491e9c80a67788b2b5deea006ebce4b0c",
   "files": [
     {
@@ -148,11 +148,12 @@
     },
     {
       "path": "index.html",
-      "bytes": 99538,
-      "sha256": "818961ba25325f7fe3603c5b4f0100b8001bb752704e69a8bfbe6cdb376165cf",
+      "bytes": 91014,
+      "sha256": "cabd218a3b95577da038e4de7abce7230824423da216620faa767664cedb2b66",
       "allowedBefore": [
         "e60ab5b4f93d532e52daf60e25c0f9d9b25e0ced3b6c04a396ddfa205493a511",
-        "776e6aeee4fc5c60876f1844e9281b8b593f22abc7116b82770b6fcc5777b2b1"
+        "776e6aeee4fc5c60876f1844e9281b8b593f22abc7116b82770b6fcc5777b2b1",
+        "818961ba25325f7fe3603c5b4f0100b8001bb752704e69a8bfbe6cdb376165cf"
       ]
     },
     {
